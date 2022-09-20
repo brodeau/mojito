@@ -36,8 +36,9 @@ dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 da
 dt_scan =    3*3600 ; # time increment while scanning for valid time intervals
 dt_tolr =    1*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
-Nb_min_stream = 500 ; # minimum number of buoys to consider a stream a stream!
+Nb_min_stream = 100 ; # minimum number of buoys to consider a stream a stream! 
 
+Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
 idebug = 2 ; 
 
@@ -79,17 +80,18 @@ if __name__ == '__main__':
     print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
 
 
-    # Build time axis at the buoys' `dt` for reference:
-    rdt = dt_scan # time increment: 1d [s]
-
-    Nts = int(round((rdt2 - rdt1) / rdt)) + 1
+    # Build scan time axis willingly at relative high frequency (dt_scan << dt_buoy)
+    Nts = int(round((rdt2 - rdt1) / dt_scan)) + 1
     print("\n *** New fixed time axis to use to scan data:")
     print( "   ===> Nts = "+str(Nts)+" days!")
-    vTscan = nmp.zeros((Nts,3)) ; cTref = nmp.zeros(Nts, dtype='U19')
-    vTscan[0,0] = rdt1 ; cTref[0] = epoch2clock(rdt1)
+    vTscan = nmp.zeros((Nts,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
+    cTscan = nmp.zeros( Nts   , dtype='U19')
+    vTscan[0,0] =             rdt1
+    cTscan[0]   = epoch2clock(rdt1)
     for jt in range(1,Nts):
-        vTscan[jt,0] = vTscan[jt-1,0] + rdt
-        cTref[jt] = epoch2clock(vTscan[jt,0])
+        tt = vTscan[jt-1,0] + dt_scan
+        vTscan[jt,0] = tt
+        cTscan[jt]   = epoch2clock(tt)
     # bounds:
     vTscan[:,1] = vTscan[:,0] - dt_tolr
     vTscan[:,2] = vTscan[:,0] + dt_tolr
@@ -97,7 +99,7 @@ if __name__ == '__main__':
         
     if idebug>0:
         for jt in range(Nts):
-            print("   --- jt: "+str(jt)+" => ",vTscan[jt,0]," => ",cTref[jt])
+            print("   --- jt: "+str(jt)+" => ",vTscan[jt,0]," => ",cTscan[jt])
             print("          => bounds: "+epoch2clock(vTscan[jt,1])+" - "+epoch2clock(vTscan[jt,2])+"\n")
             
 
@@ -185,22 +187,22 @@ if __name__ == '__main__':
     istream = -1
     for jt in range(Nts):
         #
-        rt = vTscan[jt,0]
-        print("\n *** Selection of buoys that exist at "+cTref[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
+        rt = vTscan[jt,0] ; # current scan time
         #
+        print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
         idx_ok, = nmp.where( nmp.abs( vtime0[:] - rt ) <= dt_tolr )
-        Np      = len(idx_ok)
-        #
-        if idebug>1: print("    => "+str(Np)+" buoys satisfy this!")
+        Nok      = len(idx_ok)
+        if idebug>1: print("    => "+str(Nok)+" buoys satisfy this!")
         #
         Nbuoys_stream = 0
         
-        if Np > Nb_min_stream and rt < rt_prev_stream+dt_buoy -dt_tolr:
+        #if Nok > Nb_min_stream and rt < rt_prev_stream+dt_buoy -dt_tolr:
+        if Nok > Nb_min_stream :
             #
             # That's a new stream
             istream   = istream+1
             #
-            if idebug>0: print("    => this date will the be the start of stream #"+str(istream)+", with "+str(Np)+" buoys!")
+            if idebug>0: print("    => this date will the be the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
 
             rt_prev_stream = rt
             
@@ -215,14 +217,14 @@ if __name__ == '__main__':
 
                 vt = vtime0[idx_id]
                 #
-                if idebug>1:
+                if idebug>2:
                     print("    => ID="+str(jid)+": current and following times:")                    
                     for rt in vt:
                         print(epoch2clock(rt))
                 #
-                # We want at least 2 consecutive records for the buoy:
+                # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
                 ntt = len(vt)
-                if ntt > 1:                    
+                if ntt >= Nb_min_cnsctv:                    
                     Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
                     Xmsk[istream,ib] = 1      ; # valid point
                     XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!                    
@@ -247,17 +249,23 @@ if __name__ == '__main__':
             VNB.append(Nbuoys_stream)
             VTi.append(rt)
             
-        else:
-            print("    => no buoys in this time range!")
+        #else:
+        #    print("    => no buoys in this time range!")
 
             
             
-        if istream >= 2: break ; #DEBUG!
+        if istream >= 5: break ; #DEBUG!
     ### for jt in range(Nts)
 
     # Masking arrays:
     XIDs = nmp.ma.masked_where( Xmsk==0, XIDs )
 
+    Nstreams = istream+1
+    print('\n *** Number of identified streams: '+str(Nstreams), len(VNB))
+    if len(VNB) != Nstreams: print('ERROR: number of streams?'); exit(0)
+
+
+    
     
     if idebug>0:
         for js in range(len(VNB)):
@@ -278,7 +286,7 @@ if __name__ == '__main__':
             for jb in range(Nvb):
                 jid  = vids[jb]
                 idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
-                print("ID = "+str(jid)+" => points =>",idx_id)
+                if idebug>2: print("ID = "+str(jid)+" => points =>",idx_id)
                 ip = idx_id[0] ; # Only initial point!!!
                 #print(ip); exit(0)
                 vlon.append( vlon0[ip] )
