@@ -261,14 +261,12 @@ if __name__ == '__main__':
     XIDs = nmp.ma.masked_where( Xmsk==0, XIDs )
 
     Nstreams = istream+1
-    print('\n *** Number of identified streams: '+str(Nstreams), len(VNB))
     if len(VNB) != Nstreams: print('ERROR: number of streams?'); exit(0)
+    print('\n *** Number of identified streams: '+str(Nstreams))
 
-
-    
     
     if idebug>0:
-        for js in range(len(VNB)):
+        for js in range(Nstreams):
             vids = nmp.ma.MaskedArray.compressed( XIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
             Nvb  = VNB[js]
             if Nvb != len(vids): print('ERROR Z1!'); exit(0)
@@ -293,8 +291,9 @@ if __name__ == '__main__':
                 vlat.append( vlat0[ip] )
                 
             #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
-            kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS' )
-            exit(0)
+            kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
+            
+        exit(0)
             #print(" xstreams['istream']", xstreams[0:10]['istream'])
             #idx = nmp.where( xstreams['istream']==js )
             #print( " idx = ", idx )
