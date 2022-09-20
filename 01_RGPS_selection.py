@@ -25,7 +25,7 @@ rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-cdt2 = 'YYYY-01-31_00:00:00'
+cdt2 = 'YYYY-01-10_00:00:00'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
@@ -199,7 +199,7 @@ if __name__ == '__main__':
             # That's a new stream
             istream   = istream+1
             #
-            if idebug>0: print("    => this date will the be the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
+            if idebug>0: print("    => this date will be the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
 
             rt_prev_stream = rt
             
