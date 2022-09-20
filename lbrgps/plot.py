@@ -102,3 +102,27 @@ def ShowBuoysMap( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
         
     
 
+def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
+    #
+    # For debugging:
+    # Overlay of original source F(t) series vFs(vTs)
+    # and interpolated version vFt on vTt axis
+    #
+    import matplotlib.dates as mdates
+    #
+    cfig = 'debug_interp_'+cname+'_ID'+'%6.6i'%(iID)+'.'+fig_type
+    fig = plt.figure(num=1, figsize=(12,5), dpi=None, facecolor='w', edgecolor='k')
+    ax  = plt.axes([0.05, 0.13, 0.9, 0.8])
+    #plt.axis([ min(vTt)-rdt, max(vTt)+rdt, min(xlat[:,ic])-0.01, max(xlat[:,ic])+0.01])
+    #
+    func = nmp.vectorize(dt.utcfromtimestamp)
+    pl1 = plt.plot( mdates.date2num(func(vTs)), vFs, 'o-', color='#041a4d', linewidth=4., ms=10.)
+    pl2 = plt.plot( mdates.date2num(func(vTt)), vFt, '*-', color='r'      , linewidth=1., ms=3)
+    date_fmt = '%Y/%m/%d'
+    date_formatter = mdates.DateFormatter(date_fmt)
+    ax.xaxis.set_major_formatter(date_formatter)
+    fig.autofmt_xdate()
+    #
+    print('     ===> saving figure: '+cfig)
+    plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
+    plt.close(1)

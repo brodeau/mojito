@@ -29,8 +29,8 @@ cdt2 = 'YYYY-01-31_00:00:00'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
-dt_buoy = 3*24*3600 ; # the expected mean time step of the input data, ~ 3 days [s]
-dt_scan =    3*3600 ; # time increment while searching valid time intervals
+dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
+dt_scan =    3*3600 ; # time increment while scanning for valid time intervals
 dt_tolr =    1*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
 idebug = 1 ; 
@@ -42,36 +42,6 @@ idbg_subsmpl = 0 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
 interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
-
-
-
-def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
-    #
-    # For debugging:
-    # Overlay of original source F(t) series vFs(vTs)
-    # and interpolated version vFt on vTt axis
-    #
-    import matplotlib.dates as mdates
-    #
-    cfig = 'debug_interp_'+cname+'_ID'+'%6.6i'%(iID)+'.'+fig_type
-    fig = plt.figure(num=1, figsize=(12,5), dpi=None, facecolor='w', edgecolor='k')
-    ax  = plt.axes([0.05, 0.13, 0.9, 0.8])
-    #plt.axis([ min(vTt)-rdt, max(vTt)+rdt, min(xlat[:,ic])-0.01, max(xlat[:,ic])+0.01])
-    #
-    func = nmp.vectorize(dt.utcfromtimestamp)
-    pl1 = plt.plot( mdates.date2num(func(vTs)), vFs, 'o-', color='#041a4d', linewidth=4., ms=10.)
-    pl2 = plt.plot( mdates.date2num(func(vTt)), vFt, '*-', color='r'      , linewidth=1., ms=3)
-    date_fmt = '%Y/%m/%d'
-    date_formatter = mdates.DateFormatter(date_fmt)
-    ax.xaxis.set_major_formatter(date_formatter)
-    fig.autofmt_xdate()
-    #
-    print('     ===> saving figure: '+cfig)
-    plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
-    plt.close(1)
-
-
-
 
 
 
@@ -363,11 +333,6 @@ if __name__ == '__main__':
         xlon[0:Ntz,ic] = f(vTscan[0:Ntz])
 
         if l_shorten: xmsk[Ntz:Nt,ic] = 0
-
-        if idebug>1 and Nb<=20:
-            # Visual control of interpolation:
-            plot_interp_series( jid, 'lat', vt, vTscan[0:Ntz], vlat0[idx], xlat[0:Ntz,ic] )
-            plot_interp_series( jid, 'lon', vt, vTscan[0:Ntz], vlon0[idx], xlon[0:Ntz,ic] )
 
 
     #

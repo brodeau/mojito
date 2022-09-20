@@ -4,5 +4,5 @@
 ############################################################################
 
 
-from .plot import ShowBuoysMap
+from .plot import ShowBuoysMap, plot_interp_series
 
