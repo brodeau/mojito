@@ -145,14 +145,14 @@ if __name__ == '__main__':
 
 
     # Masking all point that are before and beyond our period of interest:
-    vmask = nmp.zeros(Np0, dtype=int) + 1
-    vmask[nmp.where(vtime0 < rdt1-dt_tolr)] = 0
-    vmask[nmp.where(vtime0 > rdt2-dt_tolr)] = 0
+    vmsk_time = nmp.zeros(Np0, dtype=int) + 1
+    vmsk_time[nmp.where(vtime0 < rdt1-dt_tolr)] = 0
+    vmsk_time[nmp.where(vtime0 > rdt2-dt_tolr)] = 0
 
-    vIDrgps0 =  nmp.ma.masked_where( vmask==0, vIDrgps0 )
-    vtime0   =  nmp.ma.masked_where( vmask==0, vtime0   )
-    vlon0    =  nmp.ma.masked_where( vmask==0, vlon0   )
-    vlat0    =  nmp.ma.masked_where( vmask==0, vlat0   )
+    vIDrgps0 =  nmp.ma.masked_where( vmsk_time==0, vIDrgps0 )
+    vtime0   =  nmp.ma.masked_where( vmsk_time==0, vtime0   )
+    vlon0    =  nmp.ma.masked_where( vmsk_time==0, vlon0   )
+    vlat0    =  nmp.ma.masked_where( vmsk_time==0, vlat0   )
     
 
     
@@ -171,6 +171,7 @@ if __name__ == '__main__':
     # Vectors along streams:
     #VNB = nmp.zeros(  Ns_max     , dtype=int) - 999 ; # Number of valid buoys in each stream
     VNB = [] ;  # Number of valid buoys in each stream
+    VTi = [] ;  # Nominal initial time we retain for each stream
     
     XIDs = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
     #XStr = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the streams ....
@@ -211,6 +212,7 @@ if __name__ == '__main__':
             for jid in vidsT:
                 ib = ib + 1
                 idx_id, = nmp.where( vIDrgps0 == jid)
+
                 vt = vtime0[idx_id]
                 #
                 if idebug>1:
@@ -243,6 +245,7 @@ if __name__ == '__main__':
             if Nbuoys_stream>1: print("  * we retained "+str(Nbuoys_stream)+" buoys in this stream...")
             #VNB[istream] = Nbuoys_stream
             VNB.append(Nbuoys_stream)
+            VTi.append(rt)
             
         else:
             print("    => no buoys in this time range!")
@@ -259,6 +262,9 @@ if __name__ == '__main__':
     if idebug>0:
         for js in range(len(VNB)):
             vids = nmp.ma.MaskedArray.compressed( XIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
+            Nvb  = VNB[js]
+            if Nvb != len(vids): print('ERROR Z1!'); exit(0)
+            #
             print('\n\n *** Having a look at stream #'+str(js)+' !')
             print('     ===> has '+str(VNB[js])+' valid buoys!')
             if idebug>1:
@@ -267,8 +273,20 @@ if __name__ == '__main__':
                 print('')
             #
             # Show them on a map:
-            
+            vlon = []
+            vlat = []
+            for jb in range(Nvb):
+                jid  = vids[jb]
+                idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+                print("ID = "+str(jid)+" => points =>",idx_id)
+                ip = idx_id[0] ; # Only initial point!!!
+                #print(ip); exit(0)
+                vlon.append( vlon0[ip] )
+                vlat.append( vlat0[ip] )
                 
+            #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
+            kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS' )
+            exit(0)
             #print(" xstreams['istream']", xstreams[0:10]['istream'])
             #idx = nmp.where( xstreams['istream']==js )
             #print( " idx = ", idx )

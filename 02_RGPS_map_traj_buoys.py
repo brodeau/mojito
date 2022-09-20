@@ -72,5 +72,5 @@ if __name__ == '__main__':
     id_in.close()
 
     
-    kf = lbr.ShowBuoysMap( vtime, xlon, xlat )
+    kf = lbr.ShowBuoysMap_Trec( vtime, xlon, xlat )
     
