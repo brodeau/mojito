@@ -25,10 +25,7 @@ rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-#
-cdtI = 'YYYY-01-31_23:00:00' ; # "intermediate date": we drop buoys that do not go beyond this date (series would be too short)
-#
-cdt2 = 'YYYY-01-10_00:00:00'
+cdt2 = 'YYYY-01-31_00:00:00'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
@@ -63,7 +60,6 @@ if __name__ == '__main__':
 
 
     cdt1 = str.replace(cdt1, 'YYYY',cyear)
-    cdtI = str.replace(cdtI, 'YYYY',cyear)
     cdt2 = str.replace(cdt2, 'YYYY',cyear)
     
     cf_out = 'RGPS_ice_drift_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
@@ -71,10 +67,8 @@ if __name__ == '__main__':
 
     print("\n *** Date range to restrain data to:")
     print(" ==> "+cdt1+" to "+cdt2 )
-    print("      with buoys that do not pass "+cdtI+" canceled!")
 
     rdt1 = clock2epoch(cdt1)
-    rdtI = clock2epoch(cdtI)
     rdt2 = clock2epoch(cdt2)
     print( "   ===> in epoch time: ", rdt1, "to", rdt2 )
     print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
@@ -182,6 +176,9 @@ if __name__ == '__main__':
     XT2  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
     Xmsk = nmp.zeros((Ns_max, Nb), dtype=int)    
 
+
+    ID_in_use = []
+    
     xstreams = []
     rt_prev_stream = 1e12
     istream = -1
@@ -212,49 +209,58 @@ if __name__ == '__main__':
             ib = -1 ; # buoy counter...
             
             for jid in vidsT:
-                ib = ib + 1
-                idx_id, = nmp.where( vIDrgps0 == jid)
-
-                vt = vtime0[idx_id]
                 #
-                if idebug>2:
-                    print("    => ID="+str(jid)+": current and following times:")                    
-                    for rt in vt:
-                        print(epoch2clock(rt))
-                #
-                # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
-                ntt = len(vt)
-                if ntt >= Nb_min_cnsctv:                    
-                    Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
-                    Xmsk[istream,ib] = 1      ; # valid point
-                    XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!                    
-                    #XStr[istream,ib] = istream; # keeps memory of stream
-                    XNrc[istream,ib] = ntt    ; # keeps memory of stream
-                    XT1[ istream,ib] = vt[0]  ; # keeps memory of
-                    XT2[ istream,ib] = vt[ntt-1] ; # keeps memory of 
+                if not jid in ID_in_use:
                     #
-                    xstreams.append({
-                        'istream': istream,
-                        'id':      jid,
-                        'Nrec':    ntt,
-                        't0':      vt[0],
-                        'tN':      vt[ntt-1],
-                        'ct0':     epoch2clock(vt[0]),
-                        'ctN':     epoch2clock(vt[ntt-1]),
-                        })
+                    ib = ib + 1
+                    idx_id, = nmp.where( vIDrgps0 == jid)
+    
+                    vt = vtime0[idx_id]
                     #
-
-            if Nbuoys_stream>1: print("  * we retained "+str(Nbuoys_stream)+" buoys in this stream...")
-            #VNB[istream] = Nbuoys_stream
-            VNB.append(Nbuoys_stream)
-            VTi.append(rt)
+                    if idebug>2:
+                        print("    => ID="+str(jid)+": current and following times:")                    
+                        for rt in vt:
+                            print(epoch2clock(rt))
+                    #
+                    # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
+                    ntt = len(vt)
+                    if ntt >= Nb_min_cnsctv:
+                        ID_in_use.append(jid)
+                        Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
+                        Xmsk[istream,ib] = 1      ; # valid point
+                        XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!                    
+                        #XStr[istream,ib] = istream; # keeps memory of stream
+                        XNrc[istream,ib] = ntt    ; # keeps memory of stream
+                        XT1[ istream,ib] = vt[0]  ; # keeps memory of
+                        XT2[ istream,ib] = vt[ntt-1] ; # keeps memory of 
+                        #
+                        xstreams.append({
+                            'istream': istream,
+                            'id':      jid,
+                            'Nrec':    ntt,
+                            't0':      vt[0],
+                            'tN':      vt[ntt-1],
+                            'ct0':     epoch2clock(vt[0]),
+                            'ctN':     epoch2clock(vt[ntt-1]),
+                            })
+                        #
+                    ### if ntt >= Nb_min_cnsctv
+                ### if not jid in ID_in_use
+            ### for jid in vidsT
             
-        #else:
-        #    print("    => no buoys in this time range!")
-
             
+            if Nbuoys_stream>1:
+                print("  * we retained "+str(Nbuoys_stream)+" buoys in this stream...")
+                #VNB[istream] = Nbuoys_stream
+                VNB.append(Nbuoys_stream)
+                VTi.append(rt)
+            else:
+                print("  * well, none of the buoys of this stream had a at least "+str(Nb_min_cnsctv)+" following records!")
+                istream = istream - 1
+                if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
+                
             
-        if istream >= 5: break ; #DEBUG!
+        #if istream >= 5: break ; #DEBUG!
     ### for jt in range(Nts)
 
     # Masking arrays:
