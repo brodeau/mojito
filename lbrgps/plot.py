@@ -50,7 +50,7 @@ def ShowBuoysMap( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
     '''
     
     (Nt,Nb) = nmp.shape(pvlon)
-    if Nt =/ len(pvt):
+    if Nt != len(pvt):
         print("\n *** ERROR [ShowBuoysMap]: record length different for `pvt` and `coordinates`!")
         exit(0)
     
@@ -97,6 +97,8 @@ def ShowBuoysMap( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
         plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
         plt.close(1)
 
-        
     #
+    return 0
+        
+    
 
