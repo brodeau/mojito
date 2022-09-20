@@ -14,6 +14,8 @@ from netCDF4 import Dataset
 
 from scipy import interpolate
 
+from cartopy.crs import NorthPolarStereo
+
 import climporn as cp
 from   lbrgps import plot_interp_series
 
@@ -22,13 +24,10 @@ rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-#cdt1 = '2007-12-03_00:00:00'
 #
-cdtI = 'YYYY-01-31_23:00:00' ; # "intermediate date": we drop buoys that do not go beyond this date (series would be too short)
+cdtI = 'YYYY-01-15_23:00:00' ; # "intermediate date": we drop buoys that do not go beyond this date (series would be too short)
 #
-#cdt2 = '2008-04-30_00:00:00'
-cdt2 = 'YYYY-03-31_00:00:00'
-#cdt2 = '2008-01-01_00:00:00'
+cdt2 = 'YYYY-01-31_00:00:00'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
@@ -355,8 +354,7 @@ if __name__ == '__main__':
         
     #endif l_drop_doublons
 
-    # convert to meters in neXtSIM projection
-    from cartopy.crs import NorthPolarStereo
+    # convert to meters in neXtSIM projection    
     srs_nextsim = NorthPolarStereo(central_longitude=-45, true_scale_latitude=60)
     srs_rgps    = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
     xpos,ypos,_ = srs_nextsim.transform_points(srs_rgps, xlon, xlat).T * 1000.
