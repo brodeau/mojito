@@ -17,6 +17,9 @@ from scipy import interpolate
 #import climporn as cp
 from climporn import chck4f, epoch2clock, clock2epoch
 
+import lbrgps as lbr
+
+
 l_drop_doublons = True
 rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
@@ -25,13 +28,16 @@ cdt1 = 'YYYY-01-01_00:00:00'
 #
 cdtI = 'YYYY-01-31_23:00:00' ; # "intermediate date": we drop buoys that do not go beyond this date (series would be too short)
 #
-cdt2 = 'YYYY-01-31_00:00:00'
+cdt2 = 'YYYY-01-10_00:00:00'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 dt_scan =    3*3600 ; # time increment while scanning for valid time intervals
 dt_tolr =    1*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
+
+Nb_min_stream = 500 ; # minimum number of buoys to consider a stream a stream!
+
 
 idebug = 1 ; 
 
@@ -162,7 +168,12 @@ if __name__ == '__main__':
     #
     Ns_max = 2000 # Max number of Stream
 
-    XX = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
+    XIDs = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
+    #XStr = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the streams ....
+    XNrc = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    XT1  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    XT2  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+
 
     xstreams = []
     rt_prev_stream = 1e12
@@ -177,21 +188,22 @@ if __name__ == '__main__':
         #
         if idebug>1: print("    => "+str(Np)+" buoys satisfy this!")
         #
-        if Np > 500 and rt < rt_prev_stream+dt_buoy -dt_tolr:
-            #
-            rt_prev_stream = rt
+        Nb_stream = 0
+        
+        if Np > Nb_min_stream and rt < rt_prev_stream+dt_buoy -dt_tolr:
             #
             # That's a new stream
-            istream = istream+1
+            istream   = istream+1
             #
             if idebug>0: print("    => this date will the be the start of stream #"+str(istream)+", with "+str(Np)+" buoys!")
-            
+
+            rt_prev_stream = rt
             
             # Which are the buoys:
             vidsT = vIDrgps0[idx_ok]
-            nbb   = len(vidsT)
 
-            ib = -1
+            ib = -1 ; # buoy counter...
+            
             for jid in vidsT:
                 ib = ib + 1
                 idx_id, = nmp.where( vIDrgps0 == jid)
@@ -202,9 +214,16 @@ if __name__ == '__main__':
                     for rt in vt:
                         print(epoch2clock(rt))
                 #
+                # We want at least 2 consecutive records for the buoy:
                 ntt = len(vt)
-                if ntt > 1:
-                    XX[istream,ib] = jid ; # keeps memory of buoys that have been used!
+                if ntt > 1:                    
+                    Nb_stream = Nb_stream + 1 ; # this is another valid buoy for this stream
+                    XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!
+                    #XStr[istream,ib] = istream; # keeps memory of stream
+                    XNrc[istream,ib] = ntt    ; # keeps memory of stream
+                    XT1[ istream,ib] = vt[0]  ; # keeps memory of
+                    XT2[ istream,ib] = vt[ntt-1] ; # keeps memory of 
+                    #
                     xstreams.append({
                         'istream': istream,
                         'id':      jid,
@@ -218,11 +237,28 @@ if __name__ == '__main__':
         else:
             print("    => no buoys in this time range!")
 
-        if istream >= 2: break ; #DEBUG!
+        if Nb_stream>1: print("  * we retained "+str(Nb_stream)+" buoys in this stream...")
+            
+        if istream >= 1: break ; #DEBUG!
 
+
+    #
+
+        
     for js in range(2):
-        print('\n *** stream #'+str(js)+' => IDs =')
-        for jii in XX[js,:]:
+        #print('\n *** Having a look at stream #'+str(js)+' => IDs =')
+        print('\n\n *** Having a look at stream #'+str(js)+' !')
+        #print(" xstreams['istream']", xstreams[0:10]['istream'])
+        #idx = nmp.where( xstreams['istream']==js )
+        #print( " idx = ", idx )
+
+
+
+
+        
+        exit(0)
+        
+        for jii in XIDs[js,:]:
             if jii>0: print(jii)
 
 
