@@ -25,7 +25,7 @@ import climporn as cp
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
 color_top = 'w'
 clr_yellow = '#ffed00'
-pt_sz_track = 5
+#pt_sz_track = 5
 fig_type='png'
 rDPI = 150
 rzoom = 1.
@@ -40,7 +40,7 @@ col_bg = '#041a4d'
 vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # North Pole Arctic (zoom)
 
 
-def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
+def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5 ):
     '''
         IN:
             * pt    => the date as epoch/unix time (integer)
@@ -73,8 +73,8 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
     ax  = plt.axes(vsporg, facecolor=col_bg)
 
     x0,y0 = PROJ(pvlon[:],pvlat[:])
-    #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=pt_sz_track*rzoom )
-    csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=0.5, s=pt_sz_track*rzoom ) ; # facecolors='none', edgecolors='r'
+    #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=ms*rzoom )
+    csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
     if len(pvIDs) > 0:
         for ii in range(Nb):
@@ -100,7 +100,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
 
 
 
-def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
+def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5 ):
     '''
         IN:
             * pvt   => vector of length Nt containing the dates as epoch/unix time (integer)
@@ -136,8 +136,8 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS' ):
         ax  = plt.axes(vsporg, facecolor=col_bg)
 
         x0,y0 = PROJ(pvlon[jt,:],pvlat[jt,:])
-        #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=pt_sz_track*rzoom )
-        csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=0.5, s=pt_sz_track*rzoom ) ; # facecolors='none', edgecolors='r'
+        #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=ms*rzoom )
+        csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
         if len(pvIDs) > 0:
             for ii in range(Nb):

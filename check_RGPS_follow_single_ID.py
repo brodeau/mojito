@@ -162,4 +162,4 @@ for jt in range(Nt):
     
 cFigPref = 'buoy_'+'%6.6i'%(id_fl)
 
-kf = lbr.ShowBuoysMap_Trec( vtimb, vlonb, vlatb, pvIDs=vIDs, cnmfig=cFigPref )
+kf = lbr.ShowBuoysMap_Trec( vtimb, vlonb, vlatb, pvIDs=vIDs, cnmfig=cFigPref, ms=20, ralpha=1 )
