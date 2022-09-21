@@ -37,24 +37,10 @@ idebug = 1
 
 narg = len(argv)
 if not narg in [3]:
-    print('Usage: '+argv[0]+' <file_RGPS.nc> <buoy_ID_to_follow (single: `ID`, or range: `ID1,ID2`>')
+    print('Usage: '+argv[0]+' <file_RGPS.nc> <buoy_ID_to_follow>')
     exit(0)
-cf_in = argv[1]
-cf_bf = argv[2]
-
-l_id_range = (',' in cf_bf)
-if l_id_range:
-    vv = split(',', path.basename(cf_bf))
-    ib1 = int(vv[0])
-    ib2 = int(vv[1])
-    if ib2<=ib1: print("ERROR: your buoy ID range makes no sense!"); exit(0)
-    vid_fl  = nmp.arange(ib1+1,ib2+1)
-else:
-    vid_fl  = [ int(argv[2]) ]
-    
-print("\n *** List of buoys' IDs to follow: ", vid_fl[:])
-
-Nbf = len(vid_fl)
+cf_in  = argv[1]
+id_fl  = int(argv[2])
 
 
 
@@ -135,39 +121,24 @@ Nb   = len(vIDs)
 
 print("\n *** There are "+str(Nb)+" buoys to follow: ID "+str(id_min)+" to ID "+str(id_max)+" !")
 
+if not id_fl in vIDs:
+    print("\n ERROR: buoy ID #'+str(id_fl)+' does not exist in the file!")
 
-IX = nmp.zeros((Nbf,2000), dtype=int) - 999 ; #fixme!  2000 is max number of records for a given buoy!
-Ntmax = 0
-#idx_buoy_longest ???
-ib = 0
-for id_fl in vid_fl:
-    if not id_fl in vIDs:  print("\n ERROR: buoy ID #'+str(id_fl)+' does not exist in the file!"); exit(0)    
-    # Indexes of "points" that deal with this buoy:
-    idx_buoy, = nmp.where( vindex == id_fl )
-    Nt = len(idx_buoy)
-    if Nt > Ntmax: Ntmax = Nt
-    IX[ib,0:Nt] = idx_buoy
-    ib = ib + 1
+print("\n *** We are going to follow buoy with ID: "+str(id_fl))
 
-
-
-
-print(nmp.shape(IX), Ntmax)
-
-vIX = IX[:,Ntmax]
-
-#exit(0)
-
-
+# Indexes of "points" that deal with this buoy:
+idx_buoy, = nmp.where( vindex == id_fl )
+Nt = len(idx_buoy)
 
 
 # What is going to be plotted:
 
-#vIDs = [ vid_fl ]
+vIDs = [ id_fl ]
+Nbf = len(vIDs)
 
-vtimb = nmp.zeros( Ntmax   , dtype=int)
-vlonb = nmp.zeros((Ntmax,Nbf))
-vlatb = nmp.zeros((Ntmax,Nbf))
+vtimb = nmp.zeros( Nt   , dtype=int)
+vlonb = nmp.zeros((Nt,Nbf))
+vlatb = nmp.zeros((Nt,Nbf))
 
 vtimb[:]      = vtime[ idx_buoy ]
 if Nbf>1:
@@ -189,6 +160,6 @@ for jt in range(Nt):
 
 # Figures:
     
-cFigPref = 'buoy_'+'%6.6i'%(vid_fl)
+cFigPref = 'buoy_'+'%6.6i'%(id_fl)
 
-kf = lbr.ShowBuoysMap_Trec( vtimb, vlonb, vlatb, pvIDs=vid_fl, cnmfig=cFigPref )
+kf = lbr.ShowBuoysMap_Trec( vtimb, vlonb, vlatb, pvIDs=vIDs, cnmfig=cFigPref )
