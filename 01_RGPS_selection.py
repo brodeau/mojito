@@ -14,14 +14,13 @@ from netCDF4 import Dataset
 
 from scipy import interpolate
 
-#import climporn as cp
 from climporn import chck4f, epoch2clock, clock2epoch
 
 import lbrgps as lbr
 
 
-l_drop_doublons = True
-rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
+#l_drop_doublons = True
+#rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
@@ -33,13 +32,15 @@ dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 da
 dt_scan =    3*3600 ; # time increment while scanning for valid time intervals
 dt_tolr =    1*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
-Nb_min_stream = 100 ; # minimum number of buoys to consider a stream a stream! 
+Ns_max = 200  # Max number of Streams, guess!!! #fixme...
+
+Nb_min_stream = 100 ; # minimum number of buoys for considering a stream a stream! 
 
 Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
-idebug = 2 ; 
+idebug = 2 ;
 
-idbg_subsmpl = 0 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805 ] ; l_show_IDs_fig = True ; # Debug: pick a tiny
+#idbg_subsmpl = 0 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805 ] ; l_show_IDs_fig = True ; # Debug: pick a tiny
 
 
 
@@ -97,40 +98,41 @@ if __name__ == '__main__':
             print("          => bounds: "+epoch2clock(vTscan[jt,1])+" - "+epoch2clock(vTscan[jt,2])+"\n")
             
 
-    # Opening and inspecting input file
+    # Opening and inspecting the input file
+    #######################################
     chck4f(cf_in)
 
     id_in    = Dataset(cf_in)
-    #
+
     list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
     if not 'points' in list_dim:
         print(' ERROR: no dimensions `points` found into input file!'); exit(0)
-    #
+
     list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
     for cv in list_expected_var:
         if not cv in list_var:
             print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
-    #
+
     Np0 = id_in.dimensions['points'].size
     print(' *** Number of provided virtual buoys = ', Np0)
 
-
-    vlon0  = id_in.variables['lon'][:]
-    vlat0  = id_in.variables['lat'][:]
-
-    rlat_min = nmp.min(vlat0)
-    print('     ==> Southernmost latitude = ', rlat_min)
-
-    rlat_max = nmp.max(vlat0)
-    print('     ==> Northernmost latitude = ', rlat_max)
-
+    # Time records:
     ctunits = id_in.variables['time'].units
     if not ctunits == ctunits_expected:
-        print(" ERROR: we expect '"+ctunits_expected+"' as units for time variables, yet we have: "+ctunits)
-
+        print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
+        exit(0)
     vtime0 = nmp.zeros(Np0, dtype=int)
     vtime0 = id_in.variables['time'][:]
 
+    # Coordinates:
+    vlon0  = id_in.variables['lon'][:]
+    vlat0  = id_in.variables['lat'][:]
+    #rlat_min = nmp.min(vlat0)
+    #print('     ==> Southernmost latitude = ', rlat_min)
+    #rlat_max = nmp.max(vlat0)
+    #print('     ==> Northernmost latitude = ', rlat_max)
+
+    # Buoys' IDs:
     vIDrgps0    = nmp.zeros(Np0, dtype=int)
     vIDrgps0[:] = id_in.variables['index'][:]
 
@@ -149,39 +151,30 @@ if __name__ == '__main__':
     vtime0   =  nmp.ma.masked_where( vmsk_time==0, vtime0   )
     vlon0    =  nmp.ma.masked_where( vmsk_time==0, vlon0   )
     vlat0    =  nmp.ma.masked_where( vmsk_time==0, vlat0   )
-    
 
-    
-    if idbg_subsmpl>0:
-        vIDs = nmp.array(vIDdbg, dtype=int)
-    else:
-        vIDs = nmp.sort( nmp.unique( vIDrgps0 ) )
-        
+    # Remaining buoys (IDs)
+    vIDs = nmp.sort( nmp.unique( vIDrgps0 ) )        
     Nb   = len(vIDs)
     print("\n *** There are "+str(Nb)+" buoys to follow...")
-    #exit(0)
 
-    #
-    Ns_max = 2000 # Max number of Streams, guess!!! #fixme...
 
     # Vectors along streams:
-    #VNB = nmp.zeros(  Ns_max     , dtype=int) - 999 ; # Number of valid buoys in each stream
     VNB = [] ;  # Number of valid buoys in each stream
     VTi = [] ;  # Nominal initial time we retain for each stream
-    
+
+    # In the following, both Ns_max & Nb are excessive upper bound values #fixme
     XIDs = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
-    #XStr = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the streams ....
     XNrc = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
     XT1  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
     XT2  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
     Xmsk = nmp.zeros((Ns_max, Nb), dtype=int)    
 
 
-    ID_in_use = []
+    ID_in_use = []  ; # keeps memory of buoys that are already been considered!    
+    xstreams  = []  ; # array of dictionnary with informations to store...
     
-    xstreams = []
     rt_prev_stream = 1e12
-    istream = -1
+    istream        = -1
     for jt in range(Nts):
         #
         rt = vTscan[jt,0] ; # current scan time
@@ -229,7 +222,6 @@ if __name__ == '__main__':
                         Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
                         Xmsk[istream,ib] = 1      ; # valid point
                         XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!                    
-                        #XStr[istream,ib] = istream; # keeps memory of stream
                         XNrc[istream,ib] = ntt    ; # keeps memory of stream
                         XT1[ istream,ib] = vt[0]  ; # keeps memory of
                         XT2[ istream,ib] = vt[ntt-1] ; # keeps memory of 
@@ -247,23 +239,19 @@ if __name__ == '__main__':
                     ### if ntt >= Nb_min_cnsctv
                 ### if not jid in ID_in_use
             ### for jid in vidsT
-            
-            
+                        
             if Nbuoys_stream>1:
                 print("  * we retained "+str(Nbuoys_stream)+" buoys in this stream...")
-                #VNB[istream] = Nbuoys_stream
                 VNB.append(Nbuoys_stream)
                 VTi.append(rt)
             else:
                 print("  * well, none of the buoys of this stream had a at least "+str(Nb_min_cnsctv)+" following records!")
                 istream = istream - 1
                 if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
-                
-            
-        #if istream >= 5: break ; #DEBUG!
-    ### for jt in range(Nts)
 
+    
     # Masking arrays:
+    XIDs = nmp.ma.masked_where( Xmsk==0, XIDs )
     XIDs = nmp.ma.masked_where( Xmsk==0, XIDs )
 
     Nstreams = istream+1
@@ -284,31 +272,58 @@ if __name__ == '__main__':
                 for jii in vids: print(jii,' ', end="")
                 print('')
             #
-            # Show them on a map:
-            vlon = []
-            vlat = []
+
+            # Some scanning
+            # 1- longest record of all the byous
+            Nt_max =  0
+            jb_max = -1
             for jb in range(Nvb):
                 jid  = vids[jb]
                 idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
-                if idebug>2: print("ID = "+str(jid)+" => points =>",idx_id)
-                ip = idx_id[0] ; # Only initial point!!!
-                #print(ip); exit(0)
-                vlon.append( vlon0[ip] )
-                vlat.append( vlat0[ip] )
-                
-            #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
-            kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
+                nr = len(idx_id)
+                if nr>Nt_max:
+                    Nt_max = nr
+                    jb_max = jb
+            Nt_lngst = nmp.max(XNrc[js,:]) ; # Max number of record from the buoy that has the most
+            if Nt_lngst != Nt_max: print('ERROR: YY!'); exit(0)
+
+            vt   = nmp.zeros( Nt_lngst , dtype=int)
+            xlon = nmp.zeros((Nt_lngst,Nvb))
+            xlat = nmp.zeros((Nt_lngst,Nvb))
             
-        exit(0)
-            #print(" xstreams['istream']", xstreams[0:10]['istream'])
-            #idx = nmp.where( xstreams['istream']==js )
-            #print( " idx = ", idx )
+            # Show them on a map:
+            for jb in range(Nvb):
+                jid  = vids[jb]
+                idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+                #if idebug>1: print("ID = "+str(jid)+" => points =>",idx_id)
+                nr = len(idx_id)
+                if jb==jb_max: vt[:] = vtime0[idx_id]
+                xlon[:nr,jb] = vlon0[idx_id]
+                xlat[:nr,jb] = vlat0[idx_id] 
 
 
 
+            #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
+            kf = lbr.ShowBuoysMap_Trec( vt, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
+        exit(0)    
+            
+            
+        #    # Show them on a map:
+        #    vlon = []
+        #    vlat = []
+        #    for jb in range(Nvb):
+        #        jid  = vids[jb]
+        #        idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+        #        if idebug>2: print("ID = "+str(jid)+" => points =>",idx_id)
+        #        ip = idx_id[0] ; # Only initial point!!!
+        #        #print(ip); exit(0)
+        #        vlon.append( vlon0[ip] )
+        #        vlat.append( vlat0[ip] )
+        #        
+        #    #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
+        #    kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
 
 
-        
 
-
+            
 
