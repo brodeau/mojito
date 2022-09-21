@@ -13,8 +13,6 @@ from re import split
 
 from netCDF4 import Dataset
 
-#import csv
-
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -23,7 +21,6 @@ import matplotlib.colors as colors
 from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.basemap import shiftgrid
 
-#from calendar import isleap
 from datetime import datetime as dt
 
 import climporn as cp
@@ -45,28 +42,17 @@ id_fl  = int(argv[2])
 
 
 # Getting time info and time step from input model file:
-vv = split('_', path.basename(cf_in))
-cdt2 = vv[-2]
-cdt1 = vv[-3]
-print('\n *** Date #1 = '+cdt1)
-print('\n *** Date #2 = '+cdt2)
-#vv = split('-|_', path.basename(cf_in))
-#cyear = vv[-4]
-#print('\n *** Year = '+cyear)
-#exit(0)
-#vm = vmn
-#if isleap(yr0): vm = vml
-
-
-#dir_conf = path.dirname(cf_in)
-#if dir_conf == '':  dir_conf = '.'
-#print('\n *** dir_conf =',dir_conf,'\n')
+#vv = split('_', path.basename(cf_in))
+#cdt2 = vv[-2]
+#cdt1 = vv[-3]
+#print('\n *** Date #1 = '+cdt1)
+#print('\n *** Date #2 = '+cdt2)
 
 
 
 # Opening and inspecting input file
 cp.chck4f(cf_in)
-
+#
 id_in    = Dataset(cf_in)
 #
 list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
@@ -148,7 +134,7 @@ else:
     vlonb[:,0] =  vlon[ idx_buoy ]
     vlatb[:,0] =  vlat[ idx_buoy ]
 
-
+del vlon, vlat, vtime
 
 ctime = nmp.zeros(Nt, dtype='U32')
 

@@ -77,10 +77,14 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=
     csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
     if len(pvIDs) > 0:
+        if Nb != len(pvIDs):
+            print("\n *** ERROR [ShowBuoysMap]: `Nb` different for `pvIDs` and `coordinates`!"); exit(0)        
         for ii in range(Nb):
-            #x0,y0 = PROJ(pvlon[jt,ii],pvlat[jt,ii]) # 
+            x0,y0 = PROJ(pvlon[jt,ii],pvlat[jt,ii])
             ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
-    
+
+
+            
     PROJ.drawcoastlines(linewidth=0.5)
     PROJ.fillcontinents(color='grey') #, alpha=0)
     #PROJ.drawlsmask(land_color='coral',ocean_color='aqua',lakes=True)
@@ -112,8 +116,8 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
     (Nt,Nb) = nmp.shape(pvlon)
     if Nt != len(pvt):
         print("\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!")
-        exit(0)
-    
+        exit(0)        
+        
     if not path.exists("./figs"): mkdir("./figs")
     
     cp.fig_style( rzoom, clr_top=color_top )
@@ -140,8 +144,10 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
         csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
         if len(pvIDs) > 0:
+            if Nb != len(pvIDs):
+                print("\n *** ERROR [ShowBuoysMap_Trec]: `Nb` different for `pvIDs` and `coordinates`!"); exit(0)        
             for ii in range(Nb):
-                #x0,y0 = PROJ(pvlon[jt,ii],pvlat[jt,ii]) # 
+                x0,y0 = PROJ(pvlon[jt,ii],pvlat[jt,ii])
                 ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
         
         PROJ.drawcoastlines(linewidth=0.5)
