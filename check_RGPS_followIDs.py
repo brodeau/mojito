@@ -13,8 +13,6 @@ from re import split
 
 from netCDF4 import Dataset
 
-#import csv
-
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -23,17 +21,17 @@ import matplotlib.colors as colors
 from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.basemap import shiftgrid
 
-#from calendar import isleap
 from datetime import datetime as dt
 
 import climporn as cp
 import lbrgps   as lbr
 
-l_control_IDs = False
-
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
 idebug = 1
+
+rtol_sec = 3600.*12. # tolerance in seconds, to consider it's the "same time" !!! :(
+
 
 narg = len(argv)
 if not narg in [3]:
@@ -48,39 +46,29 @@ if l_id_range:
     ib1 = int(vv[0])
     ib2 = int(vv[1])
     if ib2<=ib1: print("ERROR: your buoy ID range makes no sense!"); exit(0)
-    vid_fl  = nmp.arange(ib1+1,ib2+1)
+    vid_fl  = nmp.arange(ib1,ib2+1)
 else:
     vid_fl  = [ int(argv[2]) ]
     
-print("\n *** List of buoys' IDs to follow: ", vid_fl[:])
+#print("\n *** List of buoys' IDs to follow: ", vid_fl[:])
 
 Nbf = len(vid_fl)
 
-
+print("\n *** There are "+str(Nbf)+" buoys to follow: ID "+str(ib1)+" to ID "+str(ib2)+" !")
+#print( vid_fl )
 
 # Getting time info and time step from input model file:
-vv = split('_', path.basename(cf_in))
-cdt2 = vv[-2]
-cdt1 = vv[-3]
-print('\n *** Date #1 = '+cdt1)
-print('\n *** Date #2 = '+cdt2)
-#vv = split('-|_', path.basename(cf_in))
-#cyear = vv[-4]
-#print('\n *** Year = '+cyear)
-#exit(0)
-#vm = vmn
-#if isleap(yr0): vm = vml
-
-
-#dir_conf = path.dirname(cf_in)
-#if dir_conf == '':  dir_conf = '.'
-#print('\n *** dir_conf =',dir_conf,'\n')
+#vv = split('_', path.basename(cf_in))
+#cdt2 = vv[-2]
+#cdt1 = vv[-3]
+#print('\n *** Date #1 = '+cdt1)
+#print('\n *** Date #2 = '+cdt2)
 
 
 
 # Opening and inspecting input file
 cp.chck4f(cf_in)
-
+#
 id_in    = Dataset(cf_in)
 #
 list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
@@ -116,79 +104,95 @@ vindex[:] = id_in.variables['index'][:]
 id_in.close()
 
 
-## How many buoys (IDs) are there?
-id_min = nmp.min(vindex)
-id_max = nmp.max(vindex)
-#print(" Min, max ID:", id_min, id_max )
-
-if l_control_IDs:
-    for jid in range(id_min, id_max+1):
-        if jid in vindex[:]:
-            vIDs.append(jid)
-        else:
-            print(' there is no buoy with ID:', jid, '!')
-            exit(0)
 
 
-vIDs = nmp.arange(id_min, id_max+1) ; # this should be all the buoys IDs
-Nb   = len(vIDs)
-
-print("\n *** There are "+str(Nb)+" buoys to follow: ID "+str(id_min)+" to ID "+str(id_max)+" !")
 
 
-IX = nmp.zeros((Nbf,2000), dtype=int) - 999 ; #fixme!  2000 is max number of records for a given buoy!
-Ntmax = 0
-#idx_buoy_longest ???
+# Of all the buoys selected in range we are going to scan them all to see which one has the longest record!
+
+
+ib_longest = -1 ; Ntmax = 0 ; idx_buoy_longest = [] ; ID_longest = -1 ; vt_ref = []
 ib = 0
 for id_fl in vid_fl:
-    if not id_fl in vIDs:  print("\n ERROR: buoy ID #'+str(id_fl)+' does not exist in the file!"); exit(0)    
-    # Indexes of "points" that deal with this buoy:
-    idx_buoy, = nmp.where( vindex == id_fl )
+    if not id_fl in vid_fl:  print("\n ERROR: buoy ID #'+str(id_fl)+' does not exist in the file!"); exit(0)        
+    idx_buoy, = nmp.where( vindex == id_fl ) ; # Indexes of "points" that deal with this buoy:
     Nt = len(idx_buoy)
-    if Nt > Ntmax: Ntmax = Nt
-    IX[ib,0:Nt] = idx_buoy
+    if Nt > Ntmax:
+        Ntmax      = Nt
+        ID_longest = id_fl
+        ib_longest = ib
+        idx_buoy_longest = idx_buoy
+        vt_ref = vtime[idx_buoy]
     ib = ib + 1
 
+print("\n *** Buoy with the longest record has ID #"+str(ID_longest)+" !")
+print("     ==> number of records: Nmax = "+str(Ntmax))
 
 
+# Now, the real shit:
+vmskID = nmp.zeros( Nbf,        dtype=int)
+IX     = nmp.zeros((Ntmax,Nbf), dtype=int) - 999 ; #fixme!  2000 is max number of records for a given buoy!
+IM     = nmp.zeros((Ntmax,Nbf), dtype=int)       ; #fixme!  2000 is max number of records for a given buoy!
+vib    = [] ; # will store the valid `ib` indices...
+ib = 0
+for id_fl in vid_fl:
+    idx_buoy, = nmp.where( vindex == id_fl )
+    Nt = len(idx_buoy)
+    #
+    # We must ensure that the time records are pretty much the same as `vt_ref` !!!
+    vt = vtime[idx_buoy]
+    
+    if abs(vt_ref[0]-vt[0]) < rtol_sec and abs(vt_ref[Nt-1]-vt[Nt-1]) < rtol_sec:    
+        print('LOLO buoy #'+str(id_fl)+" works!")
+        vmskID[ib] = 1
+        #print('  vt_ref[0], vt[0] =', vt_ref[0], vt[0], abs(vt_ref[0]-vt[0])/3600.)
+        #print('  vt_ref[Nt-1], vt[Nt-1] =', vt_ref[Nt-1], vt[Nt-1], abs(vt_ref[Nt-1]-vt[Nt-1])/3600.)
+        #exit(0)    
+        IX[0:Nt,ib] = idx_buoy
+        IM[0:Nt,ib] = 1
+        vib.append(ib)
+    ib = ib + 1
 
-print(nmp.shape(IX), Ntmax)
+#exit(0)    
+IX   = nmp.ma.masked_where( IM==0,     IX )
+#vIDs = nmp.ma.masked_where( vmskID==0, vid_fl )
+vIDs = nmp.ma.MaskedArray.compressed( nmp.ma.masked_where( vmskID==0, vid_fl ) ) ; # valid remaining IDs...
+#for id in vIDs:    print(id)
 
-vIX = IX[:,Ntmax]
-
-#exit(0)
-
-
-
+Nbv = len(vIDs) ; # update Nbv !
+if Nbv != len(vib): print('ERROR ZZ!'); sys.exit(0)
+if Nbv < 2:         print("ERROR: not enough valid buoys!"); exit(0)
+print("\n *** There are now "+str(Nbv)+" VALID buoys to follow!")
 
 # What is going to be plotted:
-
-#vIDs = [ vid_fl ]
-
 vtimb = nmp.zeros( Ntmax   , dtype=int)
-vlonb = nmp.zeros((Ntmax,Nbf))
-vlatb = nmp.zeros((Ntmax,Nbf))
+vlonb = nmp.zeros((Ntmax,Nbv))
+vlatb = nmp.zeros((Ntmax,Nbv))
+vmskb = nmp.zeros((Ntmax,Nbv) , dtype=int)
 
-vtimb[:]      = vtime[ idx_buoy ]
-if Nbf>1:
-    vlonb[:,:Nbf] =  vlon[ idx_buoy ]
-    vlatb[:,:Nbf] =  vlat[ idx_buoy ]
-else:
-    vlonb[:,0] =  vlon[ idx_buoy ]
-    vlatb[:,0] =  vlat[ idx_buoy ]
+vtimb[:]      = vtime[ idx_buoy_longest ]
 
+for iv in range(Nbv):
+    ib = vib[iv]
+    print("ib = ", ib)
+    idx_buoy = nmp.ma.MaskedArray.compressed(IX[0:Nt,ib])
+    print("ib = ", ib, " => idx_buoy =", idx_buoy)
+    nl = len(idx_buoy)
+    vlonb[:nl,iv] =  vlon[ idx_buoy ]
+    vlatb[:nl,iv] =  vlat[ idx_buoy ]
+    vmskb[:nl,iv] = 1
 
+del vlon, vlat, vtime
 
-ctime = nmp.zeros(Nt, dtype='U32')
+vlonb = nmp.ma.masked_where( vmskb==0, vlonb )
+vlatb = nmp.ma.masked_where( vmskb==0, vlatb )
 
-print("     ===> it has "+str(Nt)+" time records")
-for jt in range(Nt):
-    ctime[jt] = cp.epoch2clock(vtimb[jt])
-    if l_control_IDs: print("       jt="+str(jt)+" => time = "+ctime[jt])
-    
 
 # Figures:
     
-cFigPref = 'buoy_'+'%6.6i'%(vid_fl)
+#cFigPref = 'buoys_'+'%6.6i'%(vIDs)
+cFigPref = 'buoys'
 
-kf = lbr.ShowBuoysMap_Trec( vtimb, vlonb, vlatb, pvIDs=vid_fl, cnmfig=cFigPref )
+kf = lbr.ShowBuoysMap_Trec( vtimb, vlonb, vlatb, pvIDs=vIDs, cnmfig=cFigPref )
+
+
