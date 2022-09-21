@@ -138,26 +138,18 @@ ib = 0
 for id_fl in vid_fl:
     idx_buoy, = nmp.where( vindex == id_fl )
     Nt = len(idx_buoy)
-    #
     # We must ensure that the time records are pretty much the same as `vt_ref` !!!
-    vt = vtime[idx_buoy]
-    
+    vt = vtime[idx_buoy]    
     if abs(vt_ref[0]-vt[0]) < rtol_sec and abs(vt_ref[Nt-1]-vt[Nt-1]) < rtol_sec:    
-        print('LOLO buoy #'+str(id_fl)+" works!")
+        if idebug>1: print("   * buoy #"+str(id_fl)+" works!")
         vmskID[ib] = 1
-        #print('  vt_ref[0], vt[0] =', vt_ref[0], vt[0], abs(vt_ref[0]-vt[0])/3600.)
-        #print('  vt_ref[Nt-1], vt[Nt-1] =', vt_ref[Nt-1], vt[Nt-1], abs(vt_ref[Nt-1]-vt[Nt-1])/3600.)
-        #exit(0)    
         IX[0:Nt,ib] = idx_buoy
         IM[0:Nt,ib] = 1
         vib.append(ib)
     ib = ib + 1
 
-#exit(0)    
 IX   = nmp.ma.masked_where( IM==0,     IX )
-#vIDs = nmp.ma.masked_where( vmskID==0, vid_fl )
 vIDs = nmp.ma.MaskedArray.compressed( nmp.ma.masked_where( vmskID==0, vid_fl ) ) ; # valid remaining IDs...
-#for id in vIDs:    print(id)
 
 Nbv = len(vIDs) ; # update Nbv !
 if Nbv != len(vib): print('ERROR ZZ!'); sys.exit(0)
