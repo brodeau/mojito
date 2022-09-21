@@ -40,6 +40,53 @@ col_bg = '#041a4d'
 vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # North Pole Arctic (zoom)
 
 
+
+
+def __figMap__( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png', ms=5, ralpha=0.5, caller='unknown' ):
+    '''
+        IN:
+            * pt     => the date as epoch/unix time (integer)
+            * pvlon  => 1D array (Nb) of longitudes (float)
+            * pvlat  => 1D array (Nb) of  latitudes (float)
+            * BMProj => the BaseMap projection object
+            * cdate  => string of current human-understandable date!
+            * pvIDs  => (OPTIONAL) vector of length Nb of buoys IDs (integer)
+    '''
+    #
+    fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
+    ax  = plt.axes(vsporg, facecolor=col_bg)
+
+    x0,y0 = BMProj(pvlon[:],pvlat[:])
+    #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=ms*rzoom )
+    csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
+
+    # Add IDs figure right next to buoys:
+    if len(pvIDs) > 0:
+        if Nb != len(pvIDs):
+            print('\n *** ERROR ['+caller+'/__figMap__]: `Nb` different for `pvIDs` and `coordinates`!'); exit(0)
+        for ii in range(Nb):
+            x0,y0 = BMProj(pvlon[jt,ii],pvlat[jt,ii])
+            ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
+
+
+
+    BMProj.drawcoastlines(linewidth=0.5)
+    BMProj.fillcontinents(color='grey') #, alpha=0)
+    #BMProj.drawlsmask(land_color='coral',ocean_color='aqua',lakes=True)
+    #BMProj.drawmapboundary()
+    BMProj.drawmeridians(nmp.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
+    BMProj.drawparallels(nmp.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
+
+    if cdate != '':
+        ax.annotate('Date: '+cdate, xy=(0.6, 0.93), xycoords='figure fraction', **cp.fig_style.cfont_clck)
+
+    print('     ===> saving figure: '+cfig)
+    plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
+    plt.close(1)
+
+    return 0
+
+
 def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5 ):
     '''
         IN:
@@ -51,57 +98,23 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=
     Nb = len(pvlon)
 
     if len(pvlat) != Nb:
-        print("\n *** ERROR [ShowBuoysMap]: lon and lat vectors disagree in length!")
+        print('\n *** ERROR [ShowBuoysMap]: lon and lat vectors disagree in length!')
         exit(0)
-    
-    if not path.exists("./figs"): mkdir("./figs")
-    
+
+    if not path.exists('./figs'): mkdir('./figs')
+
     cp.fig_style( rzoom, clr_top=color_top )
 
     PROJ = Basemap(llcrnrlon=vp[2], llcrnrlat=vp[3], urcrnrlon=vp[4], urcrnrlat=vp[5], \
                    resolution=vp[9], area_thresh=1000., projection='stere', \
                    lat_0=vp[6], lon_0=vp[7], epsg=None)
 
-
     ct = cp.epoch2clock(pt)
 
-    print('\n *** [ShowBuoysMap] plotting for time = '+ct)    
-    #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
-    cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png'
+    print('\n *** [ShowBuoysMap] plotting for time = '+ct)
+    cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
-    fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
-    ax  = plt.axes(vsporg, facecolor=col_bg)
-
-    x0,y0 = PROJ(pvlon[:],pvlat[:])
-    #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=ms*rzoom )
-    csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
-
-    if len(pvIDs) > 0:
-        if Nb != len(pvIDs):
-            print("\n *** ERROR [ShowBuoysMap]: `Nb` different for `pvIDs` and `coordinates`!"); exit(0)        
-        for ii in range(Nb):
-            x0,y0 = PROJ(pvlon[jt,ii],pvlat[jt,ii])
-            ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
-
-
-            
-    PROJ.drawcoastlines(linewidth=0.5)
-    PROJ.fillcontinents(color='grey') #, alpha=0)
-    #PROJ.drawlsmask(land_color='coral',ocean_color='aqua',lakes=True)
-    #PROJ.drawmapboundary()
-    PROJ.drawmeridians(nmp.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-    PROJ.drawparallels(nmp.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
-
-    ax.annotate('Date: '+ct, xy=(0.6, 0.93), xycoords='figure fraction', **cp.fig_style.cfont_clck)
-
-    print('     ===> saving figure: '+cfig)
-    plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
-    plt.close(1)
-
-    #
-    return 0
-
-
+    return __figMap__( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha, caller='ShowBuoysMap' )
 
 
 def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5 ):
@@ -112,14 +125,14 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
             * pvlat => 2D array (Nt,Nb) of  latitudes (float)
             * pvIDs => (OPTIONAL) vector of length Nb of buoys IDs (integer)
     '''
-    
+
     (Nt,Nb) = nmp.shape(pvlon)
     if Nt != len(pvt):
-        print("\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!")
-        exit(0)        
-        
-    if not path.exists("./figs"): mkdir("./figs")
-    
+        print('\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!')
+        exit(0)
+
+    if not path.exists('./figs'): mkdir('./figs')
+
     cp.fig_style( rzoom, clr_top=color_top )
 
     PROJ = Basemap(llcrnrlon=vp[2], llcrnrlat=vp[3], urcrnrlon=vp[4], urcrnrlat=vp[5], \
@@ -128,47 +141,21 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
 
     Nt = len(pvt)
 
+    kk = 0
+
     for jt in range(Nt):
 
         ct = cp.epoch2clock(pvt[jt])
-    
-        print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)    
-        #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
-        cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png'
 
-        fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
-        ax  = plt.axes(vsporg, facecolor=col_bg)
+        print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)
 
-        x0,y0 = PROJ(pvlon[jt,:],pvlat[jt,:])
-        #csct = plt.scatter(x0, y0, c=xFFs[:,jtt], cmap=pal_fld, norm=norm_fld, marker='.', s=ms*rzoom )
-        csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
+        cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
-        if len(pvIDs) > 0:
-            if Nb != len(pvIDs):
-                print("\n *** ERROR [ShowBuoysMap_Trec]: `Nb` different for `pvIDs` and `coordinates`!"); exit(0)        
-            for ii in range(Nb):
-                x0,y0 = PROJ(pvlon[jt,ii],pvlat[jt,ii])
-                ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
-        
-        PROJ.drawcoastlines(linewidth=0.5)
-        PROJ.fillcontinents(color='grey') #, alpha=0)
-        #PROJ.drawlsmask(land_color='coral',ocean_color='aqua',lakes=True)
-        #PROJ.drawmapboundary()
-        PROJ.drawmeridians(nmp.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-        PROJ.drawparallels(nmp.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
-
-        ax.annotate('Date: '+ct, xy=(0.6, 0.93), xycoords='figure fraction', **cp.fig_style.cfont_clck)
-    
-        print('     ===> saving figure: '+cfig)
-        plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
-        plt.close(1)
-
+        kk = kk + __figMap__( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
     #
-    return 0
+    return kk
 
 
-
-    
 
 def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
     #
