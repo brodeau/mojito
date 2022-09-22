@@ -6,10 +6,10 @@
 
 from sys import exit
 #from os import path, mkdir
-#import numpy as nmp
+import numpy as nmp
 #from re import split
 
-#import climporn as cp
+import climporn as cp
 
 #idebug = 0
 
@@ -39,7 +39,18 @@ def Dist2Coast( lon0, lat0, plon, plat, pdist2coat ):
           * plat:       1D array of latitudes  assosiated to `pdist2coat`
           * pdist2coat: 2D array containing rasterized distance to coast (originally read in NC file) [km]
     '''
+    rx = nmp.mod( lon0, 360. ) ; # [0:360] frame    
+    vx = nmp.mod( plon, 360. ) ; # [0:360] frame
+    # Are we dangerously close to the [0--360] cut?
+    #  => then will work in the [-180:180] frame:
+    if rx > 350.:
+        rx = cp.degE_to_degWE( rx )
+        vx = cp.degE_to_degWE( vx )
+    #print(' lon0, lat0 =', rx, lat0)
+    ip = nmp.argmin( nmp.abs(  vx[:] - rx  ) )
+    jp = nmp.argmin( nmp.abs(plat[:] - lat0) )
+    #print(' ip, jp =', ip, jp)
+    #print(' Nearest lon, lat =', plon[ip], plat[jp])
+    del vx, rx
+    return max( pdist2coat[jp,ip] , 0. )
 
-
-    rdist = 0.
-    return rdist
