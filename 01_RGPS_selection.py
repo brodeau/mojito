@@ -5,7 +5,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path
+from os import path, environ
 import numpy as nmp
 
 from re import split
@@ -31,8 +31,9 @@ fdist2coast_nc = '/MEDIA/data/data/dist2coast/dist2coast_4deg_North.nc'
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
-dt_scan =    3*3600 ; # time increment while scanning for valid time intervals
-dt_tolr =    1.499*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
+dt_scan =    6*3600 ; # time increment while scanning for valid time intervals
+#dt_tolr =    3*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
+dt_tolr = dt_scan/2.
 
 Ns_max = 200  # Max number of Streams, guess!!! #fixme...
 
@@ -56,9 +57,12 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 
 if __name__ == '__main__':
 
-    #print('LOLO: rd =', rd, 'km !')
-    #exit(0)
-
+    cdata_dir = environ.get('DATA_DIR')
+    if cdata_dir==None:
+        print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
+    fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
+    #print( ' cdata_dir = ',cdata_dir)
+    
     narg = len(argv)
     if not narg in [3]:
         print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR>')
@@ -258,7 +262,7 @@ if __name__ == '__main__':
             ### for jid in vidsT
 
             if Nbuoys_stream>1:
-                print("  * we retained "+str(Nbuoys_stream)+" buoys in this stream...")
+                print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
                 VNB.append(Nbuoys_stream)
                 VTi.append(rt)
             else:
