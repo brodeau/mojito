@@ -24,9 +24,9 @@ import lbrgps as lbr
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-cdt2 = 'YYYY-01-10_00:00:00'
+cdt2 = 'YYYY-01-05_00:00:00'
 
-fdist2coast_nc = '/MEDIA/data/data/dist2coast/dist2coast_4deg_North.nc'
+fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
