@@ -26,6 +26,8 @@ import lbrgps as lbr
 cdt1 = 'YYYY-01-01_00:00:00'
 cdt2 = 'YYYY-01-10_00:00:00'
 
+fdist2coast_nc = '/MEDIA/data/data/dist2coast/dist2coast_4deg_North.nc'
+
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
@@ -52,6 +54,17 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 
 if __name__ == '__main__':
 
+    vlon, vlat, xdist = lbr.LoadDist2CoastNC( fdist2coast_nc )
+    #for lon in vlon: print(lon, end=" ") ; print('')
+    #for lat in vlat: print(lat, end=" ") ; print('')
+
+    tlon = 2. ; tlat = 77. ; # somewhere in Fram Strait...
+
+    rd = lbr.Dist2Coast( tlon, tlat, vlon, vlat, xdist )
+
+    print('LOLO: rd =', rd)
+    exit(0)
+    
     narg = len(argv)
     if not narg in [3]:
         print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR>')
@@ -102,41 +115,39 @@ if __name__ == '__main__':
     #######################################
     chck4f(cf_in)
 
-    id_in    = Dataset(cf_in)
-
-    list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
-    if not 'points' in list_dim:
-        print(' ERROR: no dimensions `points` found into input file!'); exit(0)
-
-    list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
-    for cv in list_expected_var:
-        if not cv in list_var:
-            print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
-
-    Np0 = id_in.dimensions['points'].size
-    print(' *** Number of provided virtual buoys = ', Np0)
-
-    # Time records:
-    ctunits = id_in.variables['time'].units
-    if not ctunits == ctunits_expected:
-        print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
-        exit(0)
-    vtime0 = nmp.zeros(Np0, dtype=int)
-    vtime0 = id_in.variables['time'][:]
-
-    # Coordinates:
-    vlon0  = id_in.variables['lon'][:]
-    vlat0  = id_in.variables['lat'][:]
-    #rlat_min = nmp.min(vlat0)
-    #print('     ==> Southernmost latitude = ', rlat_min)
-    #rlat_max = nmp.max(vlat0)
-    #print('     ==> Northernmost latitude = ', rlat_max)
-
-    # Buoys' IDs:
-    vIDrgps0    = nmp.zeros(Np0, dtype=int)
-    vIDrgps0[:] = id_in.variables['index'][:]
-
-    id_in.close()
+    with Dataset(cf_in) as id_in:
+        
+        list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
+        if not 'points' in list_dim:
+            print(' ERROR: no dimensions `points` found into input file!'); exit(0)
+    
+        list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
+        for cv in list_expected_var:
+            if not cv in list_var:
+                print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
+    
+        Np0 = id_in.dimensions['points'].size
+        print(' *** Number of provided virtual buoys = ', Np0)
+    
+        # Time records:
+        ctunits = id_in.variables['time'].units
+        if not ctunits == ctunits_expected:
+            print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
+            exit(0)
+        vtime0 = nmp.zeros(Np0, dtype=int)
+        vtime0 = id_in.variables['time'][:]
+    
+        # Coordinates:
+        vlon0  = id_in.variables['lon'][:]
+        vlat0  = id_in.variables['lat'][:]
+        #rlat_min = nmp.min(vlat0)
+        #print('     ==> Southernmost latitude = ', rlat_min)
+        #rlat_max = nmp.max(vlat0)
+        #print('     ==> Northernmost latitude = ', rlat_max)
+    
+        # Buoys' IDs:
+        vIDrgps0    = nmp.zeros(Np0, dtype=int)
+        vIDrgps0[:] = id_in.variables['index'][:]
 
     
     vlon0[:] = nmp.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
