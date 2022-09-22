@@ -32,7 +32,7 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 dt_scan =    3*3600 ; # time increment while scanning for valid time intervals
-dt_tolr =    1*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
+dt_tolr =    1.499*3600 ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
 Ns_max = 200  # Max number of Streams, guess!!! #fixme...
 
@@ -284,7 +284,7 @@ if __name__ == '__main__':
             #
             print('\n\n *** Having a look at stream #'+str(js)+' !')
             print('     ===> has '+str(VNB[js])+' valid buoys!')
-            if idebug>1:
+            if idebug>2:
                 print('        => with following IDs:')
                 for jii in vids: print(jii,' ', end="")
                 print('')
