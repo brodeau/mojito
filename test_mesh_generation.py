@@ -11,6 +11,16 @@ from scipy.spatial import Delaunay
 
 #import pandas as pd
 
+import cartopy.crs as ccrs
+#import matplotlib.pyplot as plt
+
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+
+#from mpl_toolkits.basemap import Basemap
+
+
 
 xcapitals = []
 #
@@ -23,6 +33,14 @@ xcapitals.append({"city":"Berlin" , "lat":52.517037, "lon":13.388860})
 xcapitals.append({"city":"Bern"   , "lat":46.948271, "lon":7.451451 })
 # 51.510433, -0.129711
 xcapitals.append({"city":"London" , "lat":51.510433, "lon":-0.129711 })
+# 55.477434, 8.468160
+xcapitals.append({"city":"Esbjerg", "lat":55.477434, "lon":8.468160 })
+# 48.389657, -4.481700
+xcapitals.append({"city":"Brest",   "lat":48.389657, "lon":-4.481700 })
+# 36.802481, 10.168440
+xcapitals.append({"city":"Tunis",   "lat":36.802481, "lon":10.168440 })
+# 40.414060, -3.699336
+xcapitals.append({"city":"Madrid",  "lat":40.414060, "lon":-3.699336 })
 
 
 Nbc = len(xcapitals)
@@ -43,8 +61,6 @@ tri = Delaunay(X1)
 
 
 
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 #--- grafics -------
 figX = 25; figY = 18
 fig1 = plt.figure(figsize=(figX, figY), facecolor='white')
@@ -62,4 +78,4 @@ plt.scatter(xk,yk,s=1000,c='w')
 #    ax.annotate(txt, (X1[i,0], X1[i,1]), color='k', fontweight='bold')
 
 plt.savefig('Europe_A.png')
-plt.show()
+#plt.show()
