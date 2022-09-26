@@ -41,6 +41,8 @@ xcapitals.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); 
 xcapitals.append({"ID":ip,"city":"Bergen",  "lat":60.378183, "lon": 5.333694}); ip=ip+1
 # 59.310631, 18.067388
 xcapitals.append({"ID":ip,"city":"Stockholm","lat":59.310631,"lon":18.067388}); ip=ip+1
+# 32.483352, 3.681163
+xcapitals.append({"ID":ip,"city":"Ghardaia","lat":32.483352,"lon":3.681163}); ip=ip+1
 
 
 Nbc = len(xcapitals)
@@ -105,12 +107,12 @@ kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Eur
 
 
 # Attempt to merge triangles into quadrangles:
-# For now trying to merge #13 with #14
+# For now trying to merge #12 with #13
 #   => aka "Andorra - Rome - Bern" with "Tunis - Rome - Andorra"
 #  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
 #  (provided the 3 neighbors are not already merged with someone!)
-j1 = 13
-j2 = 14
+j1 = 12
+j2 = 13
 
 vp0  = Xsimplices[j1,:]   ; # 3 point indices forming the triangle
 vIDn = TRI.neighbors[j1]  ; # 3 neighbor triangles of triangle # j1
