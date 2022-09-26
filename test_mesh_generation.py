@@ -51,27 +51,28 @@ print('\n *** We have '+str(Nbc)+' cities!')
 
 
 # Conversion of dictionary to Numpy vectors:
-vIDs =  nmp.zeros(Nbc, dtype=int)
-vlat, vlon = nmp.zeros(Nbc), nmp.zeros(Nbc)
-vnam = nmp.zeros(Nbc, dtype='U32')
+vIDs  =  nmp.zeros(Nbc, dtype=int)
+Xcoor = nmp.zeros((Nbc,2))
+vnam  = nmp.zeros(Nbc, dtype='U32')
 
 for jc in range(Nbc):
-    vIDs[jc] = int( xcapitals[jc]["ID"] )
-    vlat[jc], vlon[jc] =  xcapitals[jc]["lat"], xcapitals[jc]["lon"]
-    vnam[jc] = xcapitals[jc]["city"]
+    vIDs[jc]    = int( xcapitals[jc]["ID"] )
+    Xcoor[jc,:] = [ xcapitals[jc]["lon"], xcapitals[jc]["lat"] ]
+    vnam[jc]    = xcapitals[jc]["city"]
 
 if idebug>0:
     for jc in range(Nbc):
-        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(vlat[jc],2))+', lon='+str(round(vlon[jc],2)))
+        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(Xcoor[jc,1],2))+', lon='+str(round(Xcoor[jc,0],2)))
     print('')
     
-#print(vlat) ; print('') ; print(vlon)
-#print(vIDs)
+
+#X1  = nmp.vstack((vlon,vlat)).T ; # Concatenate `vlon` (1D) and `vlat` (1D) in a single 2D array and transpose
+#print('Xcoor:', nmp.shape(Xcoor))
+#print('X1:', nmp.shape(X1))
 #exit(0)
 
-X1  = nmp.vstack((vlon,vlat)).T ; # Concatenate `vlon` (1D) and `vlat` (1D) in a single 2D array and transpose
 
-TRI = Delaunay(X1)
+TRI = Delaunay(Xcoor)
 
 
 Xsimplices = TRI.simplices.copy() ; # A simplex of 2nd order is a triangle! *_*
@@ -102,7 +103,7 @@ print('\n *** Grenoble is located into triangle #'+str(jx)+': ', vpl[:],'aka "'+
 
 
 # Show triangles on a map:
-kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
+kk = lbr.ShowMeshMap( Xcoor[:,0], Xcoor[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
 
 
@@ -117,39 +118,11 @@ kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Eur
 
 
 
-j1 = 12
-j2 = 13
+#j1 = 12 ; j2 = 13 ; # Join 2 triangles with common segment: "Andorra-Rome"
+j1 = 2  ; j2 = 5  ;  # Join 2 triangles with common segment: "London-Bergen"
 
-vp0  = Xsimplices[j1,:]   ; # 3 point indices forming the triangle
-vIDn = TRI.neighbors[j1]  ; # 3 neighbor triangles of triangle # j1
+Quad = lbr.Triangles2Quadrangle( Xsimplices, TRI.neighbors, j1, j2, Xcoor, pnam=vnam )
 
-if not j2 in vIDn: print('ERROR: triangle #'+str(j2)+' is not neighbor with triangle #'+str(j1)+'!'); exit(0)
-
-vpn = Xsimplices[j2,:]
-vcmn = nmp.intersect1d( vp0, vpn )
-print(' ==> the 2 vertices in common between triangles #'+str(j1)+' and #'+str(j2)+': ', vcmn, '=', [ vnam[i] for i in vcmn ])
-
-vID_unique_j2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
-
-jid = vID_unique_j2[0]
-print(' ==> Point to add to triangle '+str(j1)+' to form a quadrangle is #'+str(jid)+' aka "'+vnam[jid]+'"')
-
-
-quad = nmp.concatenate( [ vID_unique_j2, vp0 ] ) ; # This is our quadrangle !!!
-
-Iorder = [0,1,2,3]
-print('\n *** Order after triangle merge:', Iorder, '=>',[ vnam[i]         for i in quad ] )
-print('                                      =>' ,[ (round(vlat[i],2),round(vlon[i],2)) for i in quad ] )
-
-
-Zcoor = nmp.array([[vlon[i],vlat[i]] for i in quad ])
-
-# Ordering the 4 points in a clockwise fashion:
-Iorder = lbr.SortIndicesCCW(Zcoor)
-
-# Reordering quad:
-quadCCW = quad[Iorder]
-
-print(' *** new clockwize order:', Iorder, '=>',[ vnam[i]         for i in quadCCW ] )
-print('                                    =>' ,[ (round(vlat[i],2),round(vlon[i],2)) for i in quadCCW ] )
+print('\n *** Quadran created by merging triangles '+str(j1)+' & '+str(j2)+':', '=>',[ vnam[i]         for i in Quad ] )
+print('                             =>' ,[ (round(Xcoor[i,1],2),round(Xcoor[i,0],2)) for i in Quad ] )
 
