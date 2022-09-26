@@ -13,6 +13,9 @@ import lbrgps   as lbr
 
 idebug=2
 
+y_gre, x_gre = 45.184369, 5.734251
+
+
 xcapitals = [] ; ip = 0
 #
 xcapitals.append({"ID":ip,"city":"Paris"  , "lat":48.835334, "lon":2.353824 }); ip=ip+1
@@ -69,7 +72,7 @@ X1  = nmp.vstack((vlon,vlat)).T ; # Concatenate `vlon` (1D) and `vlat` (1D) in a
 TRI = Delaunay(X1)
 
 
-Xsimplices = TRI.simplices.copy()
+Xsimplices = TRI.simplices.copy() ; # A simplex of 2nd order is a triangle! *_*
 
 
 (Nbt,np) = nmp.shape(Xsimplices) ; # Nbt => number of traingles | np has to be = 3 !!! (triangles!)
@@ -85,7 +88,17 @@ if idebug>0:
         #print('     '+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]])
         print('    => neighbor triangles are:',TRI.neighbors[jx],'\n')
 
-# X1[:,0], X1[:,1], Xsimplices
-#kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, plon=vlon, plat=vlat )
+
+# In which simplex (aka triangle) is Grenoble:
+vlocate = nmp.array([(x_gre,y_gre)])
+kv_gre= TRI.find_simplex(vlocate)
+jx    = kv_gre[0]
+vpl = Xsimplices[jx,:]
+print('\n *** Grenoble is located into triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
+
+
+
+
+# Show triangles on a map:
 kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
