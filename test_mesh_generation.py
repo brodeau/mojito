@@ -36,7 +36,7 @@ xcapitals.append({"ID":ip,"city":"Porto",   "lat":41.144559, "lon":-8.622812}); 
 xcapitals.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); ip=ip+1
 Nbc = len(xcapitals)
 
-print('\n We have '+str(Nbc)+' cities!')
+print('\n *** We have '+str(Nbc)+' cities!')
 
 
 # Conversion of dictionary to Numpy vectors:
@@ -67,6 +67,8 @@ Xsimplices = TRI.simplices.copy()
 
 
 (Nbt,np) = nmp.shape(Xsimplices) ; # Nbt => number of traingles | np has to be = 3 !!! (triangles!)
+
+print('\n *** We have '+str(Nbt)+' triangles!')
 
 #if len(Xsimplices[:,0]) != Nbc: print('ERROR Z0!'); exit(0)
 

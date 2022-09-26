@@ -189,7 +189,7 @@ def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[], plon=[], plat=
     '''
     import cartopy.crs as ccrs
     
-    fig = plt.figure(num=1, figsize=(12.5,6), facecolor='white')
+    fig = plt.figure(num=1, figsize=(12,9), facecolor='white')
 
     Proj = ccrs.PlateCarree()
     
@@ -197,7 +197,7 @@ def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[], plon=[], plat=
     ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
     
     ax.stock_img()
-    ax.set_extent([-25, 40, 35, 65], crs=Proj)
+    ax.set_extent([-15, 30, 32, 65], crs=Proj)
 
     plt.triplot(pX, pY, TriMesh, color='r', linestyle='-', lw=3)
     plt.plot(   pX, pY, 's', ms=10,    color='k')
