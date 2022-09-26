@@ -27,13 +27,19 @@ xcapitals.append({"ID":ip,"city":"Esbjerg", "lat":55.477434, "lon":8.468160 }); 
 xcapitals.append({"ID":ip,"city":"Brest",   "lat":48.389657, "lon":-4.481700}); ip=ip+1
 xcapitals.append({"ID":ip,"city":"Tunis",   "lat":36.802481, "lon":10.168440}); ip=ip+1
 xcapitals.append({"ID":ip,"city":"Madrid",  "lat":40.414060, "lon":-3.699336}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Alger",   "lat":36.732591, "lon":3.101878}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Alger",   "lat":36.732591, "lon": 3.101878}); ip=ip+1
 # 53.341825, -6.267302
 xcapitals.append({"ID":ip,"city":"Dublin",  "lat":53.341825, "lon":-6.267302}); ip=ip+1
 # 41.144559, -8.622812
 xcapitals.append({"ID":ip,"city":"Porto",   "lat":41.144559, "lon":-8.622812}); ip=ip+1
 # 35.771494, -5.836354
 xcapitals.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); ip=ip+1
+# 60.378183, 5.333694
+xcapitals.append({"ID":ip,"city":"Bergen",  "lat":60.378183, "lon": 5.333694}); ip=ip+1
+# 59.310631, 18.067388
+xcapitals.append({"ID":ip,"city":"Stockholm","lat":59.310631,"lon":18.067388}); ip=ip+1
+
+
 Nbc = len(xcapitals)
 
 print('\n *** We have '+str(Nbc)+' cities!')
