@@ -184,12 +184,12 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', plon=[], plat=[] ):
+def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[], plon=[], plat=[] ):
     '''
     '''
     import cartopy.crs as ccrs
     
-    fig = plt.figure(num=12, figsize=(25,12), facecolor='white')
+    fig = plt.figure(num=1, figsize=(12.5,6), facecolor='white')
 
     Proj = ccrs.PlateCarree()
     
@@ -205,8 +205,11 @@ def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', plon=[], plat=[] ):
     if len(plon)>0 and len(plat)>0:
         plt.scatter(plon,plat,s=1000,c='w')
 
-    #for i, txt in enumerate(city):
-    #    ax.annotate(txt, (pX[i], pY[i]), color='k', fontweight='bold')
+    if len(pnames)>0:
+        i=0
+        for city in pnames:
+            ax.annotate(city, (pX[i], pY[i]), color='k', fontweight='bold')
+            i=i+1
 
     plt.savefig(cfig)
     plt.close(1)

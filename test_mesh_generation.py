@@ -11,50 +11,72 @@ from scipy.spatial import Delaunay
 
 import lbrgps   as lbr
 
+idebug=2
 
-
-xcapitals = []
+xcapitals = [] ; ip = 0
 #
-xcapitals.append({"city":"Paris"  , "lat":48.835334, "lon":2.353824 })
-xcapitals.append({"city":"Rome"   , "lat":41.89,     "lon":12.49 })
-xcapitals.append({"city":"Andorra", "lat":42.506939, "lon":1.521247 })
-xcapitals.append({"city":"Athen"  , "lat":37.984149, "lon":23.727984})
-xcapitals.append({"city":"Belgrad", "lat":44.817813, "lon":20.456897})
-xcapitals.append({"city":"Berlin" , "lat":52.517037, "lon":13.388860})
-xcapitals.append({"city":"Bern"   , "lat":46.948271, "lon":7.451451 })
-# 51.510433, -0.129711
-xcapitals.append({"city":"London" , "lat":51.510433, "lon":-0.129711 })
-# 55.477434, 8.468160
-xcapitals.append({"city":"Esbjerg", "lat":55.477434, "lon":8.468160 })
-# 48.389657, -4.481700
-xcapitals.append({"city":"Brest",   "lat":48.389657, "lon":-4.481700 })
-# 36.802481, 10.168440
-xcapitals.append({"city":"Tunis",   "lat":36.802481, "lon":10.168440 })
-# 40.414060, -3.699336
-xcapitals.append({"city":"Madrid",  "lat":40.414060, "lon":-3.699336 })
-
-
+xcapitals.append({"ID":ip,"city":"Paris"  , "lat":48.835334, "lon":2.353824 }); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Rome"   , "lat":41.89,     "lon":12.49    }); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Andorra", "lat":42.506939, "lon":1.521247 }); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Athen"  , "lat":37.984149, "lon":23.727984}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Belgrad", "lat":44.817813, "lon":20.456897}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Berlin" , "lat":52.517037, "lon":13.388860}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Bern"   , "lat":46.948271, "lon":7.451451 }); ip=ip+1
+xcapitals.append({"ID":ip,"city":"London" , "lat":51.510433, "lon":-0.129711}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Esbjerg", "lat":55.477434, "lon":8.468160 }); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Brest",   "lat":48.389657, "lon":-4.481700}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Tunis",   "lat":36.802481, "lon":10.168440}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Madrid",  "lat":40.414060, "lon":-3.699336}); ip=ip+1
+xcapitals.append({"ID":ip,"city":"Alger",   "lat":36.732591, "lon":3.101878}); ip=ip+1
+# 53.341825, -6.267302
+xcapitals.append({"ID":ip,"city":"Dublin",  "lat":53.341825, "lon":-6.267302}); ip=ip+1
+# 41.144559, -8.622812
+xcapitals.append({"ID":ip,"city":"Porto",   "lat":41.144559, "lon":-8.622812}); ip=ip+1
+# 35.771494, -5.836354
+xcapitals.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); ip=ip+1
 Nbc = len(xcapitals)
 
 print('\n We have '+str(Nbc)+' cities!')
 
-print( xcapitals[0]["city"] )
 
-yk, xk = nmp.zeros(Nbc), nmp.zeros(Nbc)
+# Conversion of dictionary to Numpy vectors:
+vIDs =  nmp.zeros(Nbc, dtype=int)
+vlat, vlon = nmp.zeros(Nbc), nmp.zeros(Nbc)
+vnam = nmp.zeros(Nbc, dtype='U32')
 
 for jc in range(Nbc):
-    yk[jc], xk[jc] =  xcapitals[jc]["lat"], xcapitals[jc]["lon"]
+    vIDs[jc] = int( xcapitals[jc]["ID"] )
+    vlat[jc], vlon[jc] =  xcapitals[jc]["lat"], xcapitals[jc]["lon"]
+    vnam[jc] = xcapitals[jc]["city"]
 
-#print(yk) ; print('') ; print(xk)
+if idebug>0:
+    for jc in range(Nbc):
+        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(vlat[jc],2))+', lon='+str(round(vlon[jc],2)))
+    print('')
+    
+#print(vlat) ; print('') ; print(vlon)
+#print(vIDs)
+#exit(0)
 
-X1  = nmp.vstack((xk,yk)).T ; # Concatenate `xk` (1D) and `yk` (1D) in a single 2D array and transpose
+X1  = nmp.vstack((vlon,vlat)).T ; # Concatenate `vlon` (1D) and `vlat` (1D) in a single 2D array and transpose
 
 TRI = Delaunay(X1)
 
-print(TRI.simplices)
+
+Xsimplices = TRI.simplices.copy()
 
 
-# X1[:,0], X1[:,1], TRI.simplices.copy()
-#kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], TRI.simplices.copy(), plon=xk, plat=yk )
-kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], TRI.simplices.copy(), cfig="Mesh_Map_TRIangles_Europe.png" )
+(Nbt,np) = nmp.shape(Xsimplices) ; # Nbt => number of traingles | np has to be = 3 !!! (triangles!)
+
+#if len(Xsimplices[:,0]) != Nbc: print('ERROR Z0!'); exit(0)
+
+if idebug>0:
+    for jx in range(Nbt):
+        vpl = Xsimplices[jx,:] ; # 3 point indices forming the triangle
+        print(' Triangle #'+str(jx)+' => ', vpl[:])
+        print('     '+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'\n')
+
+# X1[:,0], X1[:,1], Xsimplices
+#kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, plon=vlon, plat=vlat )
+kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
