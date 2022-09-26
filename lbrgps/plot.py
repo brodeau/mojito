@@ -181,3 +181,32 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
     plt.close(1)
+
+
+
+def ShowMeshMap( pX, pY, TriMesh, plon=[], plat=[] ):
+    '''
+    '''
+    import cartopy.crs as ccrs
+    
+    fig = plt.figure(num=12, figsize=(25,12), facecolor='white')
+
+    Proj = ccrs.PlateCarree()
+    
+    #ax = plt.axes(projection=Proj)
+    ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
+    
+    ax.stock_img()
+    ax.set_extent([-25, 40, 35, 65], crs=Proj)
+
+    plt.triplot(pX, pY, TriMesh, color='r', linestyle='-', lw=3)
+    plt.plot(   pX, pY, 's', ms=10,    color='k')
+
+    if len(plon)>0 and len(plat)>0:
+        plt.scatter(plon,plat,s=1000,c='w')
+
+    #for i, txt in enumerate(city):
+    #    ax.annotate(txt, (pX[i], pY[i]), color='k', fontweight='bold')
+
+    plt.savefig('Europe_B.png')
+    plt.close(1)

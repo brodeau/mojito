@@ -3,22 +3,13 @@
 #
 ##################################################################
 
-#from sys import argv, exit
+from sys import argv, exit
 #from os import path
 import numpy as nmp
 
 from scipy.spatial import Delaunay
 
-#import pandas as pd
-
-import cartopy.crs as ccrs
-#import matplotlib.pyplot as plt
-
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
-
-#from mpl_toolkits.basemap import Basemap
+import lbrgps   as lbr
 
 
 
@@ -60,22 +51,7 @@ X1  = nmp.vstack((xk,yk)).T
 tri = Delaunay(X1)
 
 
+# X1[:,0], X1[:,1], tri.simplices.copy()
+#kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy(), plon=xk, plat=yk )
+kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy() )
 
-#--- grafics -------
-figX = 25; figY = 18
-fig1 = plt.figure(figsize=(figX, figY), facecolor='white')
-
-myProjection = ccrs.PlateCarree()
-ax = plt.axes(projection=myProjection)
-ax.stock_img()
-ax.set_extent([-25, 40, 35, 65], crs=myProjection)
-
-plt.triplot(X1[:,0], X1[:,1], tri.simplices.copy(), color='r', linestyle='-',lw=2)
-plt.plot(X1[:,0], X1[:,1], 's', color='w')
-
-plt.scatter(xk,yk,s=1000,c='w')
-#for i, txt in enumerate(city):
-#    ax.annotate(txt, (X1[i,0], X1[i,1]), color='k', fontweight='bold')
-
-plt.savefig('Europe_A.png')
-#plt.show()
