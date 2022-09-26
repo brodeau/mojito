@@ -181,3 +181,61 @@ def SortIndicesCCW(xcoor):
     del xSorted, isortX, isortL, isortR, leftMost, rghtMost, isortML, isortMR
     
     return nmp.array([i1l, i1r, i2r, i2l])
+
+
+
+
+
+def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
+    '''
+    ###
+    ###          There are `Np` points that define `Nt` triangles !
+    ### Input:
+    ###        
+    ###         * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
+    ###         * pNghb:    the 3 triangle IDs being the neighbor,    shape: (Nt)   | origin: `scipy.Delaunay().neighbors`
+    ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
+    ###         * pcoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
+    ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
+    ###
+    '''
+    import numpy as nmp
+
+    ldebug = ( len(pnam)>0 )
+    
+    vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
+    vIDn = pNghb[it1]     ; # 3 neighbor triangles of triangle # it1
+
+    if not it2 in vIDn: print('   [util.Triangles2Quadrangle()]: ERROR: triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
+
+    vpn  = pTrgl[it2,:]
+    vcmn = nmp.intersect1d( vp0, vpn )
+    if ldebug: print('   [util.Triangles2Quadrangle()] ==> the 2 vertices in common between triangles #'+str(it1)+' and #'+str(it2)+': ', vcmn, '=', [ pnam[i] for i in vcmn ])
+
+    vID_unique_it2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
+
+    jid = vID_unique_it2[0]
+    if ldebug: print('   [util.Triangles2Quadrangle()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
+
+    quad = nmp.concatenate( [ vID_unique_it2, vp0 ] ) ; # This is our quadrangle !!!
+
+    iOrder = [0,1,2,3]
+    if ldebug:
+        print('   [util.Triangles2Quadrangle()] ==> order after triangle merge:', iOrder, '=>',[ pnam[i]         for i in quad ] )
+        print('                                    ===>' ,[ (round(pcoor[i,1],2),round(pcoor[i,0],2)) for i in quad ] )
+
+
+    Zcoor = nmp.array([[pcoor[i,0],pcoor[i,1]] for i in quad ])
+
+    # Ordering the 4 points in a clockwise fashion:
+    iOrder = SortIndicesCCW(Zcoor)
+
+    # Reordering quad:
+    quadCCW = quad[iOrder]
+
+    del quad, Zcoor
+    
+    return quadCCW
+
+    
+
