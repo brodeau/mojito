@@ -134,27 +134,21 @@ vID_unique_j2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` th
 jid = vID_unique_j2[0]
 print(' ==> Point to add to triangle '+str(j1)+' to form a quadrangle is #'+str(jid)+' aka "'+vnam[jid]+'"')
 
-quad = nmp.concatenate( [ vID_unique_j2, vp0 ] )
 
-print(' ===> quad =', quad, '=', [ vnam[i] for i in quad ])
+quad = nmp.concatenate( [ vID_unique_j2, vp0 ] ) ; # This is our quadrangle !!!
 
-Zcoor = nmp.zeros((4,2)) ; # Array of coordinates as [x,y] !
-Zcoor[:,0] = [ vlon[i] for i in quad ]
-Zcoor[:,1] = [ vlat[i] for i in quad ]
+Iorder = [0,1,2,3]
+print('\n *** Order after triangle merge:', Iorder, '=>',[ vnam[i]         for i in quad ] )
+print('                                      =>' ,[ (round(vlat[i],2),round(vlon[i],2)) for i in quad ] )
 
+Zcoor = nmp.array([[vlon[i],vlat[i]] for i in quad ])
 
 # Ordering the 4 points in a clockwise fashion:
 Iorder = lbr.SortIndicesCCW(Zcoor)
+
 # Reordering quad:
-quad = quad[Iorder]
+quadCCW = quad[Iorder]
 
-print(' *** new clockwize order   : ', Iorder, '=>',[ vnam[i] for i in quad ] )
+print(' *** new clockwize order:', Iorder, '=>',[ vnam[i]         for i in quadCCW ] )
+print('                                    =>' ,[ (round(vlat[i],2),round(vlon[i],2)) for i in quadCCW ] )
 
-
-
-exit(0)
-# Ordering the 4 points in a counter-clockwise fashion:
-
-Zcoor, Iorder = lbr.OrderCCW(Zcoor)
-
-print(' *** new quadran: ', Zcoor)
