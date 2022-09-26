@@ -11,6 +11,7 @@ figs
 *.nc4
 *.out
 *.err
+*.png
 
 # Distribution / packaging
 .Python

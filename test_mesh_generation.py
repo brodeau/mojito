@@ -53,5 +53,5 @@ tri = Delaunay(X1)
 
 # X1[:,0], X1[:,1], tri.simplices.copy()
 #kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy(), plon=xk, plat=yk )
-kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy() )
+kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy(), cfig="Mesh_Map_triangles_Europe.png" )
 

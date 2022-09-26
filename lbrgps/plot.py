@@ -184,7 +184,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowMeshMap( pX, pY, TriMesh, plon=[], plat=[] ):
+def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', plon=[], plat=[] ):
     '''
     '''
     import cartopy.crs as ccrs
@@ -208,5 +208,5 @@ def ShowMeshMap( pX, pY, TriMesh, plon=[], plat=[] ):
     #for i, txt in enumerate(city):
     #    ax.annotate(txt, (pX[i], pY[i]), color='k', fontweight='bold')
 
-    plt.savefig('Europe_B.png')
+    plt.savefig(cfig)
     plt.close(1)
