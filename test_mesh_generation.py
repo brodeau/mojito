@@ -102,3 +102,32 @@ print('\n *** Grenoble is located into triangle #'+str(jx)+': ', vpl[:],'aka "'+
 # Show triangles on a map:
 kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
+
+
+# Attempt to merge triangles into quadrangles:
+# For now trying to merge #13 with #14
+#   => aka "Andorra - Rome - Bern" with "Tunis - Rome - Andorra"
+#  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
+#  (provided the 3 neighbors are not already merged with someone!)
+j1 = 13
+j2 = 14
+
+vp0  = Xsimplices[j1,:]   ; # 3 point indices forming the triangle
+vIDn = TRI.neighbors[j1]  ; # 3 neighbor triangles of triangle # j1
+
+if not j2 in vIDn: print('ERROR: triangle #'+str(j2)+' is not neighbor with triangle #'+str(j1)+'!'); exit(0)
+
+vpn = Xsimplices[j2,:]
+vcmn = nmp.intersect1d( vp0, vpn )
+print(' ==> the 2 vertices in common between triangles #'+str(j1)+' and #'+str(j2)+': ', vcmn, '=', [ vnam[i] for i in vcmn ])
+
+vID_unique_j2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
+
+jid = vID_unique_j2[0]
+print(' ==> Point to add to triangle '+str(j1)+' to form a quadrangle is #'+str(jid)+' aka "'+vnam[jid]+'"')
+
+quad = nmp.concatenate( [ vID_unique_j2, vp0 ] )
+
+print(' ===> quad =', quad, '=', [ vnam[i] for i in quad ])
+
+# =>> but need to rearange so it's going anti-clockwise !!!
