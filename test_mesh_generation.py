@@ -111,6 +111,12 @@ kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Eur
 #   => aka "Andorra - Rome - Bern" with "Tunis - Rome - Andorra"
 #  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
 #  (provided the 3 neighbors are not already merged with someone!)
+
+
+
+
+
+
 j1 = 12
 j2 = 13
 
@@ -132,4 +138,23 @@ quad = nmp.concatenate( [ vID_unique_j2, vp0 ] )
 
 print(' ===> quad =', quad, '=', [ vnam[i] for i in quad ])
 
-# =>> but need to rearange so it's going anti-clockwise !!!
+Zcoor = nmp.zeros((4,2)) ; # Array of coordinates as [x,y] !
+Zcoor[:,0] = [ vlon[i] for i in quad ]
+Zcoor[:,1] = [ vlat[i] for i in quad ]
+
+
+# Ordering the 4 points in a clockwise fashion:
+Iorder = lbr.SortIndicesCCW(Zcoor)
+# Reordering quad:
+quad = quad[Iorder]
+
+print(' *** new clockwize order   : ', Iorder, '=>',[ vnam[i] for i in quad ] )
+
+
+
+exit(0)
+# Ordering the 4 points in a counter-clockwise fashion:
+
+Zcoor, Iorder = lbr.OrderCCW(Zcoor)
+
+print(' *** new quadran: ', Zcoor)
