@@ -81,8 +81,9 @@ print('\n *** We have '+str(Nbt)+' triangles!')
 if idebug>0:
     for jx in range(Nbt):
         vpl = Xsimplices[jx,:] ; # 3 point indices forming the triangle
-        print(' Triangle #'+str(jx)+' => ', vpl[:])
-        print('     '+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'\n')
+        print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
+        #print('     '+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]])
+        print('    => neighbor triangles are:',TRI.neighbors[jx],'\n')
 
 # X1[:,0], X1[:,1], Xsimplices
 #kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], Xsimplices, plon=vlon, plat=vlat )
