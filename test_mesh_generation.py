@@ -141,6 +141,7 @@ Iorder = [0,1,2,3]
 print('\n *** Order after triangle merge:', Iorder, '=>',[ vnam[i]         for i in quad ] )
 print('                                      =>' ,[ (round(vlat[i],2),round(vlon[i],2)) for i in quad ] )
 
+
 Zcoor = nmp.array([[vlon[i],vlat[i]] for i in quad ])
 
 # Ordering the 4 points in a clockwise fashion:
