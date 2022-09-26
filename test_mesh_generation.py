@@ -51,7 +51,7 @@ X1  = nmp.vstack((xk,yk)).T ; # Concatenate `xk` (1D) and `yk` (1D) in a single 
 
 TRI = Delaunay(X1)
 
-print(TRI)
+print(TRI.simplices)
 
 
 # X1[:,0], X1[:,1], TRI.simplices.copy()
