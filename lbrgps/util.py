@@ -210,12 +210,14 @@ def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
 
     vpn  = pTrgl[it2,:]
     vcmn = nmp.intersect1d( vp0, vpn )
-    if ldebug: print('   [util.Triangles2Quadrangle()] ==> the 2 vertices in common between triangles #'+str(it1)+' and #'+str(it2)+': ', vcmn, '=', [ pnam[i] for i in vcmn ])
+    if ldebug:
+        print('   [util.Triangles2Quadrangle()] ==> the 2 vertices in common between triangles #'+str(it1)+' and #'+str(it2)+': ', vcmn, '=', [ pnam[i] for i in vcmn ])
 
     vID_unique_it2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
 
     jid = vID_unique_it2[0]
-    if ldebug: print('   [util.Triangles2Quadrangle()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
+    if ldebug:
+        print('   [util.Triangles2Quadrangle()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
 
     quad = nmp.concatenate( [ vID_unique_it2, vp0 ] ) ; # This is our quadrangle !!!
 
