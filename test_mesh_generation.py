@@ -47,11 +47,14 @@ for jc in range(Nbc):
 
 #print(yk) ; print('') ; print(xk)
 
-X1  = nmp.vstack((xk,yk)).T
-tri = Delaunay(X1)
+X1  = nmp.vstack((xk,yk)).T ; # Concatenate `xk` (1D) and `yk` (1D) in a single 2D array and transpose
+
+TRI = Delaunay(X1)
+
+print(TRI)
 
 
-# X1[:,0], X1[:,1], tri.simplices.copy()
-#kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy(), plon=xk, plat=yk )
-kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], tri.simplices.copy(), cfig="Mesh_Map_triangles_Europe.png" )
+# X1[:,0], X1[:,1], TRI.simplices.copy()
+#kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], TRI.simplices.copy(), plon=xk, plat=yk )
+kk = lbr.ShowMeshMap( X1[:,0], X1[:,1], TRI.simplices.copy(), cfig="Mesh_Map_TRIangles_Europe.png" )
 
