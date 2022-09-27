@@ -165,9 +165,12 @@ del Quads
 
 if len(idxT_used)/2 != NbQ or len(idxT_used)%2 !=0: print('ERROR of agreement between number of merged triangles and quadrangles created!'); exit(0)
 
-print('\n *** Triangles that have sucessfully be merged into acceptable Quads:\n           ==>', idxT_used)
+print('\n *** Triangles that have sucessfully be merged into acceptable Quads:\n   ==>', idxT_used)
 
-print('   ==> '+str(NbQ)+' quadrangles:\n', xQuads)
+print('   ==> Summary of '+str(NbQ)+' generated quadrangles:')
+for jQ in range(NbQ):
+    print('    * Quad #'+str(jQ)+' => ', xQuads[jQ,:], '(', [ vnam[i] for i in xQuads[jQ,:] ],')')
+
 
 exit(0)
 
