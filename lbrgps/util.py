@@ -124,8 +124,13 @@ def OrderCCW(xcoor):
     ##
     '''
     zz = xcoor.copy()
-    zz[1:4,:] = OrderCW(xcoor)[:0:-1,:]
-    return zz, 
+    iz = nmp.array([0,1,2,3])
+    zt, it = OrderCW(xcoor)
+    #
+    zz[1:4,:] = zt[:0:-1,:]
+    iz[1:4]   = it[:0:-1]
+    del zt, it
+    return zz, iz
 
 
 
@@ -141,7 +146,6 @@ def SortIndicesCCW(xcoor):
     ##        xcoor: 2D array of coordinates of shape (N,2) => N `[x,y]` coordinates
     ##
     '''
-
     # sort the points based on their x-coordinates
     isortX  = nmp.argsort(xcoor[:,0])
     xSorted = xcoor[isortX,:]
@@ -198,8 +202,6 @@ def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     '''
     ldebug = ( len(pnam)>0 )
 
-    if ldebug: print('')
-    
     vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
 
     if not it2 in pNghb[it1,:]:
@@ -239,32 +241,33 @@ def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     #if ldebug: print('      --- angles for common point '+str(v2com[1])+', respect. seen from tri. #'+str(it1)+' & #'+str(it2)+':',ra2)
 
     # The four angles of the quadrangle (without any order):
-    viQuad = nmp.concatenate([     v2com     ,     v2sol              ])   
-    vaQuad = nmp.concatenate([ [ nmp.sum(ra1), nmp.sum(ra2) ], va_sol ])
+    vIquad = nmp.concatenate([     v2com     ,     v2sol              ])   
+    vAquad = nmp.concatenate([ [ nmp.sum(ra1), nmp.sum(ra2) ], va_sol ])
     
+    # Sorting in a counter-clockwize fasion:
+    zcoor = nmp.array( [ pcoor[i,:] for i in vIquad ] )
+    vsidx = SortIndicesCCW(zcoor)
+    vIquad = vIquad[vsidx]
+    vAquad = vAquad[vsidx]
+
     if ldebug:
-        print('   [QuadAnglesFrom2Tri()] ==> the four angles of the quadrangle =',vaQuad)
-        print('   [QuadAnglesFrom2Tri()] ===> for ',[ pnam[i] for i in viQuad ],'\n')
+        print('   [QuadAnglesFrom2Tri()] ==> the 4 angles of the CCW-sorted quadrangle =',vAquad)
+        print('   [QuadAnglesFrom2Tri()]       ===> for ',[ pnam[i] for i in vIquad ])
+        
+    # Return the CCW-sorted points and angles for the 4 vertices of the quadrangle:
+    return vIquad, vAquad
 
-    # Return the unsorted points and angles for the 4 vertices of the quadrangle:
-    return viQuad, vaQuad
 
-
-
-def WouldBeValidQuad( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
+def IsValidQuad( pAngles ):
     '''
+    ###     Tells if a uqdrangle should be kept or rejected (outrageously unrectangular shape)
     ###
-    ###          There are `Np` points that define `Nt` triangles !
     ### Input:
     ###        
-    ###         * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
-    ###         * pNghb:    the 3 triangle IDs being the neighbors,   shape: (Nt,3) | origin: `scipy.Delaunay().neighbors`
-    ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
-    ###         * pcoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
-    ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
+    ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
     ###
     '''
-
+    return (not (any(pAngles>120.) or any(pAngles<50.)) )
 
 
 
@@ -317,6 +320,9 @@ def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     del quad, Zcoor
     
     return quadCCW
+
+
+    
 
 
 

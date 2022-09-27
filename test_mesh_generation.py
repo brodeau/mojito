@@ -101,14 +101,16 @@ kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], Xtriangles, cfig="Mesh_Map_TRIang
 
 NbR = 0 ; # Number of quadrangles
 
-idxT_cancel = [] ; # IDs of canceled triangles
-
+idxT_cancel = []   ; # IDs of canceled triangles
+Quads       = [[]]
 
 for jT in range(NbT):
 
     v3pnts = Xtriangles[jT,:] ; # 3 point IDs composing the triangle.
     #zcoorT = nmp.array([ Xcoor[j,:] for j in v3pnts ])    ; # Coordinates of the 3 points of a given triangle:
-    if idebug>0: print('\n *** Focus on triange #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
+    if idebug>0:
+        print('\n ******************************************************************')
+        print(' *** Focus on triangle #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
     
     if lbr.AnglesOfTriangleNotOK(jT, Xtriangles, Xcoor):
         # Cancel this triangle
@@ -129,21 +131,25 @@ for jT in range(NbT):
                 if not lbr.AnglesOfTriangleNotOK(jN, Xtriangles, Xcoor):
                     valid_nb.append(jN)
                     if idebug>1: print(' is valid!')
+                else:
+                    if idebug>1: print(' is NOT valid!')
                     
         if len(valid_nb)>0:
             # We have a valid (jT) triangle with at least one valid neighbor in `valid_nb`
             #  => need to check which of the neighbors in `valid_nb` gives the best quadrangle!
             if idebug>0: print('       => valid neighbors for triangle #'+str(jT)+':',valid_nb)
             for jN in valid_nb:
-                if idebug>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                vidx, vang = lbr.QuadAnglesFrom2Tri( Xtriangles, Xneighbors, jT, jN, Xcoor, pnam=vnam )
-                print(vang)
-                exit(0)
-
-                print('')
+                if idebug>1:
+                    print('          ==> trying neighbor triangle '+str(jN)+':')
+                vidx, vang = lbr.QuadAnglesFrom2Tri( Xtriangles, Xneighbors, jT, jN, Xcoor) #, pnam=vnam )
+                lvalidQuad = lbr.IsValidQuad( vang )
+                if lvalidQuad:
+                    print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" is a valid Quad! (',[vnam[i] for i in vidx],')\n')
+                else:
+                    print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" is NOT valid Quad! (',[vnam[i] for i in vidx],')\n')
         else:
             print('       => No valid neighbors for this triangle...')
-        exit(0)
+    #exit(0)
         # 1st neighbor:
         #Quad1 = Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, jT, vnghbs[0], Xcoor, pnam=vnam )
 exit(0)
