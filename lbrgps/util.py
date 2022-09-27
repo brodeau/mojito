@@ -243,7 +243,7 @@ def __lengthSquare__(X, Y):
     yDiff = X[1] - Y[1]
     return xDiff*xDiff + yDiff*yDiff
 
-def AnglesOfTriangle(pcoor):
+def ThreeAngles(pcoor):
     from math import sqrt, acos, pi
     ## pcoor: `x,y` coordinates of the 3 points shape=(3,2)
     # Square of lengths be a2, b2, c2
@@ -270,12 +270,25 @@ def AnglesOfTriangle(kT, pTrgl, pcoor):
     '''
     #### Wrapper for AnglesOfTriangle
     ###
+    ###  *   kT :     ID of triangle we are working with
     ###  * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
+    ###  * pcoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
+    '''    
+    v3p = pTrgl[kT,:] ; # 3 point IDs composing the triangle with ID `kt`    
+    zcoorT = nmp.array([ pcoor[j,:] for j in v3p ])    
+    return ThreeAngles( zcoorT )
+    
+def AnglesOfTriangleNotOK(kT, pTrgl, pcoor):
     '''
-    
-    v3p = pTrgl[kT,:] ; # 3 point IDs composing the triangle with ID `kt`
-    
-    zcoorT = nmp.array([ pcoor[j,:] for j in v3p ])
-
-    return
+    #### Wrapper for AnglesOfTriangle
+    ###  => returns Boolean
+    ###
+    ###  *   kT :     ID of triangle we are working with
+    ###  * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
+    ###  * pcoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
+    '''    
+    v3p = pTrgl[kT,:] ; # 3 point IDs composing the triangle with ID `kt`    
+    zcoorT = nmp.array([ pcoor[j,:] for j in v3p ])    
+    va = ThreeAngles( zcoorT )
+    return (nmp.any(va>110.) or nmp.any(va<30.))
     

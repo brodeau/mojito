@@ -107,35 +107,32 @@ idxT_cancel = [] ; # IDs of canceled triangles
 for jT in range(NbT):
 
     v3pnts = Xtriangles[jT,:] ; # 3 point IDs composing the triangle.
+    #zcoorT = nmp.array([ Xcoor[j,:] for j in v3pnts ])    ; # Coordinates of the 3 points of a given triangle:
     if idebug>0: print('\n *** Focus on triange #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
     
-    zcoorT = nmp.array([ Xcoor[j,:] for j in v3pnts ])    ; # Coordinates of the 3 points of a given triangle:
-    
-    vangles = lbr.AnglesOfTriangle( zcoorT )
-    if idebug>1: print('        => angles of the 3 vertices =',vangles)
-
-    if nmp.any(vangles>110.) or nmp.any(vangles<30.):
+    if lbr.AnglesOfTriangleNotOK(jT, Xtriangles, Xcoor):
         # Cancel this triangle
-        if idebug>0: print('Disregarding this triangle!!! (there is an angle >120. or <30 degrees!)')
+        if idebug>0: print('       => disregarding this triangle!!! (an angle >120. or <30 degrees!)')
         idxT_cancel.append(jT)
         
     else:
         # Triangle seems fine!
-        vtmp = Xneighbors[jT,:]
+        vtmp   = Xneighbors[jT,:]
         vnghbs = vtmp[vtmp >= 0] ; # shrink if `-1` are presents!
-        NbN = len(vnghbs)
-        if idebug>0:print('        => its '+str(NbN)+' neighbor triangles are:', vnghbs)
+        NbN    = len(vnghbs)
+        if idebug>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
 
-        
+        valid_nb = []
+        for jN in vnghbs:
+            if not jN in idxT_cancel:
+                if idebug>1: print('          ==> triangle '+str(jN)+':',end='')
+                if not lbr.AnglesOfTriangleNotOK(jN, Xtriangles, Xcoor):
+                    valid_nb.append(jN)
+                    if idebug>1: print(' is valid!')
+        if idebug>0: print('       => valid neighbors:',valid_nb)
+        exit(0)
         # 1st neighbor:
-        Quad1 = Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, jT, vnghbs[0], Xcoor, pnam=vnam )
-
-
-
-    #exit(0)
-
-
-    
+        #Quad1 = Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, jT, vnghbs[0], Xcoor, pnam=vnam )
 exit(0)
 
 #j1 = 12 ; j2 = 13 ; # Join 2 triangles with common segment: "Andorra-Rome"
