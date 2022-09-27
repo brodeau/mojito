@@ -136,7 +136,8 @@ for jT in range(NbT):
             if idebug>0: print('       => valid neighbors for triangle #'+str(jT)+':',valid_nb)
             for jN in valid_nb:
                 if idebug>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                Quad = lbr.WouldBeValidQuad( Xtriangles, Xneighbors, jT, jN, Xcoor, pnam=vnam )
+                vidx, vang = lbr.QuadAnglesFrom2Tri( Xtriangles, Xneighbors, jT, jN, Xcoor, pnam=vnam )
+                print(vang)
                 exit(0)
 
                 print('')

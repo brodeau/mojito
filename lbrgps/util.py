@@ -183,7 +183,7 @@ def SortIndicesCCW(xcoor):
 
 
 
-def WouldBeValidQuad( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
+def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     '''
     ###
     ###          There are `Np` points that define `Nt` triangles !
@@ -197,25 +197,27 @@ def WouldBeValidQuad( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     ###
     '''
     ldebug = ( len(pnam)>0 )
+
+    if ldebug: print('')
     
     vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
 
     if not it2 in pNghb[it1,:]:
-        print('   [util.WouldBeValidQuad()]: ERROR: triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
+        print('   [QuadAnglesFrom2Tri()]: ERROR: triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
 
     vpn  = pTrgl[it2,:]
     v2com = nmp.intersect1d( vp0, vpn )
     v2sol = nmp.concatenate([nmp.setdiff1d(vp0, vpn),nmp.setdiff1d(vpn, vp0)]) ; # First value being the one of triangle it1
     if ldebug:
-        print('   [util.WouldBeValidQuad()] Triangles #'+str(it1)+' and #'+str(it2)+':')
-        print('   [util.WouldBeValidQuad()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
-        print('   [util.WouldBeValidQuad()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
+        print('   [QuadAnglesFrom2Tri()] 4 angles of quad when merge triangles #'+str(it1)+' and #'+str(it2)+':')
+        print('   [QuadAnglesFrom2Tri()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
+        print('   [QuadAnglesFrom2Tri()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
 
     vID_unique_it2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
 
     jid = vID_unique_it2[0]
     if ldebug:
-        print('   [util.WouldBeValidQuad()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
+        print('   [QuadAnglesFrom2Tri()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
 
     # Now we look at the angles of the 2 triangles: lilo
     va1 = AnglesOfTriangle(it1, pTrgl, pcoor)
@@ -223,50 +225,45 @@ def WouldBeValidQuad( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     if ldebug:
         vp1 = pTrgl[it1,:]
         vp2 = pTrgl[it2,:]
-        print('    --- angles for triangle #'+str(it1)+':', va1,'(',[ pnam[i] for i in vp1 ],')')
-        print('    --- angles for triangle #'+str(it2)+':', va2,'(',[ pnam[i] for i in vp2 ],')')
+        #print('    --- angles for triangle #'+str(it1)+':', va1,'(',[ pnam[i] for i in vp1 ],')')
+        #print('    --- angles for triangle #'+str(it2)+':', va2,'(',[ pnam[i] for i in vp2 ],')')
 
-    # 2 angles associated to v2sol:
-    idsolo = v2sol[0]
-    ([ii],) = nmp.where(vp0==idsolo)
-    print(' angle for solo point '+str(idsolo)+' ('+pnam[idsolo]+') =',va1[ii])
+    # 2 angles associated for the 2 solitary points:
+    va_sol = nmp.concatenate([ va1[nmp.where(vp0==v2sol[0])],va2[nmp.where(vpn==v2sol[1])] ])
+    #if ldebug: print('      --- angles for solo points:', va_sol,'(',[ pnam[i] for i in v2sol ],')')
+
+    # 2 angles associated for the 2 common points:
+    ra1 = nmp.concatenate([ va1[nmp.where(vp0==v2com[0])] , va2[nmp.where(vpn==v2com[0])] ])
+    #if ldebug: print('      --- angles for common point '+str(v2com[0])+', respect. seen from tri. #'+str(it1)+' & #'+str(it2)+':',ra1)
+    ra2 = nmp.concatenate([ va1[nmp.where(vp0==v2com[1])] , va2[nmp.where(vpn==v2com[1])] ])
+    #if ldebug: print('      --- angles for common point '+str(v2com[1])+', respect. seen from tri. #'+str(it1)+' & #'+str(it2)+':',ra2)
+
+    # The four angles of the quadrangle (without any order):
+    viQuad = nmp.concatenate([     v2com     ,     v2sol              ])   
+    vaQuad = nmp.concatenate([ [ nmp.sum(ra1), nmp.sum(ra2) ], va_sol ])
     
-    idsolo = v2sol[1]
-    ([ii],) = nmp.where(vpn==idsolo)
-    print(' angle for solo point '+str(idsolo)+' ('+pnam[idsolo]+') =',va2[ii])
-
-
-
-    
-    for iv in v2com:
-        print('   - lolo: vertex#'+str(iv)+' ('+pnam[iv]+'):')
-
-
-
-
-    
-    exit(0)
-        
-    quad = nmp.concatenate( [ vID_unique_it2, vp0 ] ) ; # This is our quadrangle !!!
-
-    iOrder = [0,1,2,3]
     if ldebug:
-        print('   [util.WouldBeValidQuad()] ==> order after triangle merge:', iOrder, '=>',[ pnam[i]         for i in quad ] )
-        print('                                    ===>' ,[ (round(pcoor[i,1],2),round(pcoor[i,0],2)) for i in quad ] )
+        print('   [QuadAnglesFrom2Tri()] ==> the four angles of the quadrangle =',vaQuad)
+        print('   [QuadAnglesFrom2Tri()] ===> for ',[ pnam[i] for i in viQuad ],'\n')
+
+    # Return the unsorted points and angles for the 4 vertices of the quadrangle:
+    return viQuad, vaQuad
 
 
-    Zcoor = nmp.array([[pcoor[i,0],pcoor[i,1]] for i in quad ])
 
-    # Ordering the 4 points in a clockwise fashion:
-    iOrder = SortIndicesCCW(Zcoor)
-
-    # Reordering quad:
-    quadCCW = quad[iOrder]
-
-    del quad, Zcoor
-    
-    return quadCCW
-
+def WouldBeValidQuad( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
+    '''
+    ###
+    ###          There are `Np` points that define `Nt` triangles !
+    ### Input:
+    ###        
+    ###         * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
+    ###         * pNghb:    the 3 triangle IDs being the neighbors,   shape: (Nt,3) | origin: `scipy.Delaunay().neighbors`
+    ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
+    ###         * pcoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
+    ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
+    ###
+    '''
 
 
 
