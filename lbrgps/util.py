@@ -6,7 +6,7 @@
 
 from sys import exit
 #from os import path, mkdir
-#import numpy as nmp
+import numpy as nmp
 #from re import split
 #import climporn as cp
 
@@ -38,19 +38,18 @@ def Dist2Coast( lon0, lat0, plon, plat, pdist2coat ):
           * plat:       1D array of latitudes  assosiated to `pdist2coat`
           * pdist2coat: 2D array containing rasterized distance to coast (originally read in NC file) [km]
     '''
-    from numpy    import mod, argmin, abs
     from climporn import degE_to_degWE
     #
-    rx = mod( lon0, 360. ) ; # [0:360] frame
-    vx = mod( plon, 360. ) ; # [0:360] frame
+    rx = nmp.mod( lon0, 360. ) ; # [0:360] frame
+    vx = nmp.mod( plon, 360. ) ; # [0:360] frame
     # Are we dangerously close to the [0--360] cut?
     #  => then will work in the [-180:180] frame:
     if rx > 355.:
         rx = degE_to_degWE( rx )
         vx = degE_to_degWE( vx )
         #print(' lon0, lat0 =', rx, lat0)
-    ip = argmin( abs(  vx[:] - rx  ) )
-    jp = argmin( abs(plat[:] - lat0) )
+    ip = nmp.argmin( nmp.abs(  vx[:] - rx  ) )
+    jp = nmp.argmin( nmp.abs(plat[:] - lat0) )
     #print(' ip, jp =', ip, jp)
     #print(' Nearest lon, lat =', plon[ip], plat[jp])
     del vx, rx
@@ -68,8 +67,7 @@ def OrderCW(xcoor):
     ##        xcoor: 2D array of coordinates of shape (N,2) => N `[x,y]` coordinates
     ##
     '''
-    import numpy as nmp
-    
+
     # sort the points based on their x-coordinates
     isortX  = nmp.argsort(xcoor[:,0])
     xSorted = xcoor[isortX,:]
@@ -143,8 +141,7 @@ def SortIndicesCCW(xcoor):
     ##        xcoor: 2D array of coordinates of shape (N,2) => N `[x,y]` coordinates
     ##
     '''
-    import numpy as nmp
-    
+
     # sort the points based on their x-coordinates
     isortX  = nmp.argsort(xcoor[:,0])
     xSorted = xcoor[isortX,:]
@@ -199,8 +196,6 @@ def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
     ###
     '''
-    import numpy as nmp
-
     ldebug = ( len(pnam)>0 )
     
     vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
@@ -239,5 +234,48 @@ def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     
     return quadCCW
 
+
+
+
+
+def __lengthSquare__(X, Y):
+    xDiff = X[0] - Y[0]
+    yDiff = X[1] - Y[1]
+    return xDiff*xDiff + yDiff*yDiff
+
+def AnglesOfTriangle(pcoor):
+    from math import sqrt, acos, pi
+    ## pcoor: `x,y` coordinates of the 3 points shape=(3,2)
+    # Square of lengths be a2, b2, c2
+    a2 = __lengthSquare__(pcoor[1,:], pcoor[2,:])
+    b2 = __lengthSquare__(pcoor[0,:], pcoor[2,:])
+    c2 = __lengthSquare__(pcoor[0,:], pcoor[1,:])
+    
+    # length of sides be a, b, c
+    a = sqrt(a2);
+    b = sqrt(b2);
+    c = sqrt(c2);
+    
+    # From Cosine law
+    alpha = acos((b2 + c2 - a2) / (2 * b * c));
+    betta = acos((a2 + c2 - b2) / (2 * a * c));
+    gamma = acos((a2 + b2 - c2) / (2 * a * b));
+    
+    # Converting to degree
+    return nmp.array([ alpha, betta, gamma ])* 180. / pi
     
 
+
+def AnglesOfTriangle(kT, pTrgl, pcoor):
+    '''
+    #### Wrapper for AnglesOfTriangle
+    ###
+    ###  * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
+    '''
+    
+    v3p = pTrgl[kT,:] ; # 3 point IDs composing the triangle with ID `kt`
+    
+    zcoorT = nmp.array([ pcoor[j,:] for j in v3p ])
+
+    return
+    

@@ -65,6 +65,10 @@ Xneighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
 print('\n *** We have '+str(NbT)+' triangles!')
 
+#print('\n',nmp.shape(TRI.points))
+#exit(0)
+
+
 
 if idebug>1:
     for jx in range(NbT):
@@ -75,9 +79,9 @@ if idebug>1:
 if idebug>1:
     # In which simplex (aka triangle) is Grenoble:
     vlocate = nmp.array([(x_gre,y_gre)])
-    kv_gre= TRI.find_simplex(vlocate)
-    jx    = kv_gre[0]
-    vpl = Xtriangles[jx,:]
+    kv_gre  = TRI.find_simplex(vlocate)
+    jx      = kv_gre[0]
+    vpl     = Xtriangles[jx,:]
     print('\n *** Grenoble is located in triangle #'+str(jx)+':', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
 
 
@@ -97,13 +101,41 @@ kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], Xtriangles, cfig="Mesh_Map_TRIang
 
 NbR = 0 ; # Number of quadrangles
 
+idxT_cancel = [] ; # IDs of canceled triangles
+
+
 for jT in range(NbT):
-    v3pnts = Xtriangles[jT,:]
-    print('\n *** Focus on triange #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
-    vtmp = Xneighbors[jT,:]
-    vnghbs = vtmp[vtmp >= 0] ; # shrink if `-1` are presents!
-    NbN = len(vnghbs)
-    print('       => the '+str(NbN)+' neighbor triangles of triange #'+str(jT)+' are:', vnghbs)
+
+    v3pnts = Xtriangles[jT,:] ; # 3 point IDs composing the triangle.
+    if idebug>0: print('\n *** Focus on triange #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
+    
+    zcoorT = nmp.array([ Xcoor[j,:] for j in v3pnts ])    ; # Coordinates of the 3 points of a given triangle:
+    
+    vangles = lbr.AnglesOfTriangle( zcoorT )
+    if idebug>1: print('        => angles of the 3 vertices =',vangles)
+
+    if nmp.any(vangles>110.) or nmp.any(vangles<30.):
+        # Cancel this triangle
+        if idebug>0: print('Disregarding this triangle!!! (there is an angle >120. or <30 degrees!)')
+        idxT_cancel.append(jT)
+        
+    else:
+        # Triangle seems fine!
+        vtmp = Xneighbors[jT,:]
+        vnghbs = vtmp[vtmp >= 0] ; # shrink if `-1` are presents!
+        NbN = len(vnghbs)
+        if idebug>0:print('        => its '+str(NbN)+' neighbor triangles are:', vnghbs)
+
+        
+        # 1st neighbor:
+        Quad1 = Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, jT, vnghbs[0], Xcoor, pnam=vnam )
+
+
+
+    #exit(0)
+
+
+    
 exit(0)
 
 #j1 = 12 ; j2 = 13 ; # Join 2 triangles with common segment: "Andorra-Rome"
