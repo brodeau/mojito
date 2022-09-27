@@ -129,7 +129,14 @@ for jT in range(NbT):
                 if not lbr.AnglesOfTriangleNotOK(jN, Xtriangles, Xcoor):
                     valid_nb.append(jN)
                     if idebug>1: print(' is valid!')
-        if idebug>0: print('       => valid neighbors:',valid_nb)
+                    
+        if len(valid_nb)>0:
+            # We have a valid (jT) triangle with at least one valid neighbor in `valid_nb`
+            #  => need to check which of the neighbors in `valid_nb` gives the best quadrangle!
+            if idebug>0: print('       => valid neighbors for triangle #'+str(jT)+':',valid_nb)
+
+        else:
+            print('       => No valid neighbors for this triangle...')
         exit(0)
         # 1st neighbor:
         #Quad1 = Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, jT, vnghbs[0], Xcoor, pnam=vnam )
