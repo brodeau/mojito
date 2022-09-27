@@ -57,11 +57,11 @@ if idebug>0:
 # Generating triangular meshes out of the cloud of points:
 TRI = Delaunay(Xcoor)
 
-Xtriangles = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+xTriangles = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
-(NbT,_) = nmp.shape(Xtriangles) ; # NbT => number of triangles
+(NbT,_) = nmp.shape(xTriangles) ; # NbT => number of triangles
 
-Xneighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
 print('\n *** We have '+str(NbT)+' triangles!')
 
@@ -72,16 +72,16 @@ print('\n *** We have '+str(NbT)+' triangles!')
 
 if idebug>1:
     for jx in range(NbT):
-        vpl = Xtriangles[jx,:] ; # 3 point indices forming the triangle
+        vpl = xTriangles[jx,:] ; # 3 point indices forming the triangle
         print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-        print('    => neighbor triangles are:',Xneighbors[jx,:],'\n')
+        print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
 
 if idebug>1:
     # In which simplex (aka triangle) is Grenoble:
     vlocate = nmp.array([(x_gre,y_gre)])
     kv_gre  = TRI.find_simplex(vlocate)
     jx      = kv_gre[0]
-    vpl     = Xtriangles[jx,:]
+    vpl     = xTriangles[jx,:]
     print('\n *** Grenoble is located in triangle #'+str(jx)+':', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
 
 
@@ -89,7 +89,7 @@ if idebug>1:
 
 # Show triangles on a map:
 
-kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], Xtriangles, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
+kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
 
 # Attempt to merge triangles into quadrangles:
@@ -103,17 +103,17 @@ NbR = 0 ; # Number of quadrangles
 
 idxT_cancel = []   ; # IDs of canceled triangles
 idxT_used   = []   ; # IDs of triangles already in use in a quadrangle
-Quads       = [[]]
+Quads       = []
 
 for jT in range(NbT):
 
-    v3pnts = Xtriangles[jT,:] ; # 3 point IDs composing the triangle.
+    v3pnts = xTriangles[jT,:] ; # 3 point IDs composing the triangle.
     #zcoorT = nmp.array([ Xcoor[j,:] for j in v3pnts ])    ; # Coordinates of the 3 points of a given triangle:
     if idebug>0:
         print('\n ******************************************************************')
         print(' *** Focus on triangle #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
     
-    if lbr.AnglesOfTriangleNotOK(jT, Xtriangles, Xcoor):
+    if lbr.AnglesOfTriangleNotOK(jT, xTriangles, Xcoor):
         # Cancel this triangle
         if idebug>0: print('       => disregarding this triangle!!! (an angle >120. or <30 degrees!)')
         idxT_cancel.append(jT)
@@ -123,7 +123,7 @@ for jT in range(NbT):
     else:
         # Triangle seems fine!
         #
-        vtmp   = Xneighbors[jT,:]
+        vtmp   = xNeighbors[jT,:]
         vnghbs = vtmp[vtmp >= 0] ; # shrink if `-1` are presents!
         NbN    = len(vnghbs)
         if idebug>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
@@ -132,7 +132,7 @@ for jT in range(NbT):
         for jN in vnghbs:
             if (not jN in idxT_cancel) and (not jN in idxT_used):
                 if idebug>1: print('          ==> triangle '+str(jN)+':',end='')
-                if not lbr.AnglesOfTriangleNotOK(jN, Xtriangles, Xcoor):
+                if not lbr.AnglesOfTriangleNotOK(jN, xTriangles, Xcoor):
                     valid_nb.append(jN)
                     if idebug>1: print(' is valid!')
                 else:
@@ -145,21 +145,29 @@ for jT in range(NbT):
             for jN in valid_nb:
                 if idebug>1:
                     print('          ==> trying neighbor triangle '+str(jN)+':')
-                vidx, vang = lbr.QuadAnglesFrom2Tri( Xtriangles, Xneighbors, jT, jN, Xcoor) #, pnam=vnam )
-                lvalidQuad = lbr.IsValidQuad( vang )
+                vidx, vang = lbr.QuadAnglesFrom2Tri( xTriangles, xNeighbors, jT, jN, Xcoor) #, pnam=vnam )
+                lvalidQuad = lbr.IsValidQuad( vang[:] )
                 if lvalidQuad:
                     print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" is a valid Quad! (',[vnam[i] for i in vidx],')\n')
                     idxT_used.append(jT)
                     idxT_used.append(jN)
+                    Quads.append(vidx)
                 else:
                     print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" is NOT valid Quad! (',[vnam[i] for i in vidx],')\n')
         else:
             print('       => No valid neighbors for this triangle...')
 
 
+xQuads = nmp.array(Quads)
+del Quads
+
+(NbQ,_) = nmp.shape(xQuads)
+
+if len(idxT_used)/2 != NbQ or len(idxT_used)%2 !=0: print('ERROR of agreement between number of merged triangles and quadrangles created!'); exit(0)
 
 print('\n *** Triangles that have sucessfully be merged into acceptable Quads:\n           ==>', idxT_used)
 
+print('   ==> '+str(NbQ)+' quadrangles:\n', xQuads)
 
 exit(0)
 
@@ -172,14 +180,4 @@ exit(0)
 
 
 
-
-
-
-#j1 = 12 ; j2 = 13 ; # Join 2 triangles with common segment: "Andorra-Rome"
-j1 = 2  ; j2 = 5  ;  # Join 2 triangles with common segment: "London-Bergen"
-
-Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, j1, j2, Xcoor, pnam=vnam )
-
-print('\n *** Quadran created by merging triangles '+str(j1)+' & '+str(j2)+':', '=>',[ vnam[i]         for i in Quad ] )
-print('                             =>' ,[ (round(Xcoor[i,1],2),round(Xcoor[i,0],2)) for i in Quad ] )
 
