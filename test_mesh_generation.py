@@ -134,7 +134,12 @@ for jT in range(NbT):
             # We have a valid (jT) triangle with at least one valid neighbor in `valid_nb`
             #  => need to check which of the neighbors in `valid_nb` gives the best quadrangle!
             if idebug>0: print('       => valid neighbors for triangle #'+str(jT)+':',valid_nb)
+            for jN in valid_nb:
+                if idebug>1: print('          ==> trying neighbor triangle '+str(jN)+':')
+                Quad = lbr.WouldBeValidQuad( Xtriangles, Xneighbors, jT, jN, Xcoor, pnam=vnam )
+                exit(0)
 
+                print('')
         else:
             print('       => No valid neighbors for this triangle...')
         exit(0)
