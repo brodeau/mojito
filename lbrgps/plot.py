@@ -184,16 +184,18 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[], plon=[], plat=[] ):
+def ShowTMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[] ):
     '''
+    ### Show triangle meshes on the map...
     '''
     import cartopy.crs as ccrs
     
     fig = plt.figure(num=1, figsize=(12,9), facecolor='white')
 
     Proj = ccrs.PlateCarree()
+
+    (nbT,_) = nmp.shape(TriMesh); # Number of triangles
     
-    #ax = plt.axes(projection=Proj)
     ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
     
     ax.stock_img()
@@ -202,9 +204,12 @@ def ShowMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[], plon=[], plat=
     plt.triplot(pX, pY, TriMesh, color='r', linestyle='-', lw=3)
     plt.plot(   pX, pY, 's', ms=10,    color='k')
 
-    if len(plon)>0 and len(plat)>0:
-        plt.scatter(plon,plat,s=1000,c='w')
-
+    # Indicate triangle # in its center:    
+    for jT in range(nbT):
+        vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
+        rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+        ax.annotate(str(jT), (rmLon, rmLat), color='b', fontweight='bold')
+    
     if len(pnames)>0:
         i=0
         for city in pnames:
