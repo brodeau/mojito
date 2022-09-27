@@ -102,6 +102,7 @@ kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], Xtriangles, cfig="Mesh_Map_TRIang
 NbR = 0 ; # Number of quadrangles
 
 idxT_cancel = []   ; # IDs of canceled triangles
+idxT_used   = []   ; # IDs of triangles already in use in a quadrangle
 Quads       = [[]]
 
 for jT in range(NbT):
@@ -116,9 +117,12 @@ for jT in range(NbT):
         # Cancel this triangle
         if idebug>0: print('       => disregarding this triangle!!! (an angle >120. or <30 degrees!)')
         idxT_cancel.append(jT)
+    elif jT in idxT_used:
+        if idebug>0: print('       => this triangle is in use a quadrangle already defined!')
         
     else:
         # Triangle seems fine!
+        #
         vtmp   = Xneighbors[jT,:]
         vnghbs = vtmp[vtmp >= 0] ; # shrink if `-1` are presents!
         NbN    = len(vnghbs)
@@ -126,7 +130,7 @@ for jT in range(NbT):
 
         valid_nb = []
         for jN in vnghbs:
-            if not jN in idxT_cancel:
+            if (not jN in idxT_cancel) and (not jN in idxT_used):
                 if idebug>1: print('          ==> triangle '+str(jN)+':',end='')
                 if not lbr.AnglesOfTriangleNotOK(jN, Xtriangles, Xcoor):
                     valid_nb.append(jN)
@@ -145,14 +149,31 @@ for jT in range(NbT):
                 lvalidQuad = lbr.IsValidQuad( vang )
                 if lvalidQuad:
                     print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" is a valid Quad! (',[vnam[i] for i in vidx],')\n')
+                    idxT_used.append(jT)
+                    idxT_used.append(jN)
                 else:
                     print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" is NOT valid Quad! (',[vnam[i] for i in vidx],')\n')
         else:
             print('       => No valid neighbors for this triangle...')
-    #exit(0)
-        # 1st neighbor:
-        #Quad1 = Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, jT, vnghbs[0], Xcoor, pnam=vnam )
+
+
+
+print('\n *** Triangles that have sucessfully be merged into acceptable Quads:\n           ==>', idxT_used)
+
+
 exit(0)
+
+
+
+
+
+
+
+
+
+
+
+
 
 #j1 = 12 ; j2 = 13 ; # Join 2 triangles with common segment: "Andorra-Rome"
 j1 = 2  ; j2 = 5  ;  # Join 2 triangles with common segment: "London-Bergen"
