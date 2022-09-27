@@ -184,7 +184,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowTMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[] ):
+def ShowTMeshMap( pX, pY, TriMesh, cfig='mesh_tri_map.png', pnames=[] ):
     '''
     ### Show triangle meshes on the map...
     '''
@@ -218,3 +218,66 @@ def ShowTMeshMap( pX, pY, TriMesh, cfig='mesh_map.png', pnames=[] ):
 
     plt.savefig(cfig)
     plt.close(1)
+
+
+
+
+def quatplot(x,y, quadrangles, ax=None, **kwargs):
+    if not ax: ax=plt.gca()
+    xy = nmp.c_[x,y]
+    verts=xy[quadrangles]
+    pc = mpl.collections.PolyCollection(verts, **kwargs)
+    ax.add_collection(pc)
+    ax.autoscale()
+
+
+
+def ShowQMeshMap( pX, pY, QuadMesh, cfig='mesh_quad_map.png', pnames=[], TriMesh=[] ):
+    '''
+    ### Show triangle meshes on the map...
+    '''
+    import cartopy.crs as ccrs
+    
+    fig = plt.figure(num=1, figsize=(12,9), facecolor='white')
+
+    Proj = ccrs.PlateCarree()
+
+    (nbQ,_) = nmp.shape(QuadMesh); # Number of quadrangles
+    
+    ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
+    
+    ax.stock_img()
+    ax.set_extent([-15, 30, 32, 65], crs=Proj)
+
+    # Showing points:
+    plt.plot( pX, pY, '.', ms=10, color='w', zorder=200) ; #, alpha=0.5)
+
+    
+    # Adding quadrangles:
+    (nbQ,_) = nmp.shape(QuadMesh)
+    for jQ in range(nbQ):
+        vids = QuadMesh[jQ,:]
+        vx, vy  = pX[vids], pY[vids]
+        vX, vY = nmp.concatenate([vx[:], vx[0:1]]), nmp.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
+        plt.plot(vX,vY, 'b', lw=5, zorder=100)
+        # Indicate quadrangle # in its center:
+        rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+        ax.annotate(str(jQ), (rmLon, rmLat), color='b', fontweight='bold', zorder=110)
+
+    # Adding original triangles?
+    if len(TriMesh)>0:
+        (nbT,_) = nmp.shape(TriMesh); # Number of triangles
+        plt.triplot(pX, pY, TriMesh, color='r', linestyle='-', lw=1, zorder=50)    
+        # Indicate triangle # in its center:    
+        #for jQ in range(nbQ):
+        #    vids  = QuadMesh[jQ,:] ; # the IDs of the 3 points that constitute our triangle        
+    
+    if len(pnames)>0:
+        i=0
+        for city in pnames:
+            ax.annotate(city, (pX[i], pY[i]), color='0.4', fontweight='bold', zorder=220)
+            i=i+1
+
+    plt.savefig(cfig)
+    plt.close(1)
+

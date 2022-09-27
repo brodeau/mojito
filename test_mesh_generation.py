@@ -88,8 +88,7 @@ if idebug>1:
 
 
 # Show triangles on a map:
-
-kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
+kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
 
 # Attempt to merge triangles into quadrangles:
@@ -170,6 +169,9 @@ print('\n *** Triangles that have sucessfully be merged into acceptable Quads:\n
 print('   ==> Summary of '+str(NbQ)+' generated quadrangles:')
 for jQ in range(NbQ):
     print('    * Quad #'+str(jQ)+' => ', xQuads[jQ,:], '(', [ vnam[i] for i in xQuads[jQ,:] ],')')
+
+# Show quadrangles on a map:
+kk = lbr.ShowQMeshMap( Xcoor[:,0], Xcoor[:,1], xQuads, cfig="02_Mesh_Map_Quadrangles_Europe.png", pnames=vnam, TriMesh=xTriangles )
 
 
 exit(0)
