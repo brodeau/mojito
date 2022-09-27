@@ -16,95 +16,76 @@ idebug=2
 y_gre, x_gre = 45.184369, 5.734251
 
 
-xcapitals = [] ; ip = 0
+xcities = [] ; ip = 0
 #
-xcapitals.append({"ID":ip,"city":"Paris"  , "lat":48.835334, "lon":2.353824 }); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Rome"   , "lat":41.89,     "lon":12.49    }); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Andorra", "lat":42.506939, "lon":1.521247 }); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Athen"  , "lat":37.984149, "lon":23.727984}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Belgrad", "lat":44.817813, "lon":20.456897}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Berlin" , "lat":52.517037, "lon":13.388860}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Bern"   , "lat":46.948271, "lon":7.451451 }); ip=ip+1
-xcapitals.append({"ID":ip,"city":"London" , "lat":51.510433, "lon":-0.129711}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Esbjerg", "lat":55.477434, "lon":8.468160 }); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Brest",   "lat":48.389657, "lon":-4.481700}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Tunis",   "lat":36.802481, "lon":10.168440}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Madrid",  "lat":40.414060, "lon":-3.699336}); ip=ip+1
-xcapitals.append({"ID":ip,"city":"Alger",   "lat":36.732591, "lon": 3.101878}); ip=ip+1
-# 53.341825, -6.267302
-xcapitals.append({"ID":ip,"city":"Dublin",  "lat":53.341825, "lon":-6.267302}); ip=ip+1
-# 41.144559, -8.622812
-xcapitals.append({"ID":ip,"city":"Porto",   "lat":41.144559, "lon":-8.622812}); ip=ip+1
-# 35.771494, -5.836354
-xcapitals.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); ip=ip+1
-# 60.378183, 5.333694
-xcapitals.append({"ID":ip,"city":"Bergen",  "lat":60.378183, "lon": 5.333694}); ip=ip+1
-# 59.310631, 18.067388
-xcapitals.append({"ID":ip,"city":"Stockholm","lat":59.310631,"lon":18.067388}); ip=ip+1
-# 32.483352, 3.681163
-xcapitals.append({"ID":ip,"city":"Ghardaia","lat":32.483352,"lon":3.681163}); ip=ip+1
+xcities.append({"ID":ip,"city":"Paris"  , "lat":48.835334, "lon":2.353824 }); ip=ip+1
+xcities.append({"ID":ip,"city":"Rome"   , "lat":41.89,     "lon":12.49    }); ip=ip+1
+xcities.append({"ID":ip,"city":"Andorra", "lat":42.506939, "lon":1.521247 }); ip=ip+1
+xcities.append({"ID":ip,"city":"Athen"  , "lat":37.984149, "lon":23.727984}); ip=ip+1
+xcities.append({"ID":ip,"city":"Belgrad", "lat":44.817813, "lon":20.456897}); ip=ip+1
+xcities.append({"ID":ip,"city":"Berlin" , "lat":52.517037, "lon":13.388860}); ip=ip+1
+xcities.append({"ID":ip,"city":"Bern"   , "lat":46.948271, "lon":7.451451 }); ip=ip+1
+xcities.append({"ID":ip,"city":"London" , "lat":51.510433, "lon":-0.129711}); ip=ip+1
+xcities.append({"ID":ip,"city":"Esbjerg", "lat":55.477434, "lon":8.468160 }); ip=ip+1
+xcities.append({"ID":ip,"city":"Brest",   "lat":48.389657, "lon":-4.481700}); ip=ip+1
+xcities.append({"ID":ip,"city":"Tunis",   "lat":36.802481, "lon":10.168440}); ip=ip+1
+xcities.append({"ID":ip,"city":"Madrid",  "lat":40.414060, "lon":-3.699336}); ip=ip+1
+xcities.append({"ID":ip,"city":"Alger",   "lat":36.732591, "lon": 3.101878}); ip=ip+1
+xcities.append({"ID":ip,"city":"Dublin",  "lat":53.341825, "lon":-6.267302}); ip=ip+1
+xcities.append({"ID":ip,"city":"Porto",   "lat":41.144559, "lon":-8.622812}); ip=ip+1
+xcities.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); ip=ip+1
+xcities.append({"ID":ip,"city":"Bergen",  "lat":60.378183, "lon": 5.333694}); ip=ip+1
+xcities.append({"ID":ip,"city":"Stockholm","lat":59.310631,"lon":18.067388}); ip=ip+1
+xcities.append({"ID":ip,"city":"Ghardaia","lat":32.483352,"lon":3.681163}); ip=ip+1
+
+NbP = len(xcities) ; # number of points
+
+print('\n *** We have '+str(NbP)+' cities!')
 
 
-Nbc = len(xcapitals)
-
-print('\n *** We have '+str(Nbc)+' cities!')
-
-
-# Conversion of dictionary to Numpy vectors:
-vIDs  =  nmp.zeros(Nbc, dtype=int)
-Xcoor = nmp.zeros((Nbc,2))
-vnam  = nmp.zeros(Nbc, dtype='U32')
-
-for jc in range(Nbc):
-    vIDs[jc]    = int( xcapitals[jc]["ID"] )
-    Xcoor[jc,:] = [ xcapitals[jc]["lon"], xcapitals[jc]["lat"] ]
-    vnam[jc]    = xcapitals[jc]["city"]
+# Conversion of dictionary to Numpy arrays:
+vIDs  = nmp.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
+Xcoor = nmp.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
+vnam  = nmp.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
 
 if idebug>0:
-    for jc in range(Nbc):
+    for jc in range(NbP):
         print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(Xcoor[jc,1],2))+', lon='+str(round(Xcoor[jc,0],2)))
     print('')
-    
-
-#X1  = nmp.vstack((vlon,vlat)).T ; # Concatenate `vlon` (1D) and `vlat` (1D) in a single 2D array and transpose
-#print('Xcoor:', nmp.shape(Xcoor))
-#print('X1:', nmp.shape(X1))
-#exit(0)
 
 
+# Generating triangular meshes out of the cloud of points:
 TRI = Delaunay(Xcoor)
 
+Xtriangles = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
-Xsimplices = TRI.simplices.copy() ; # A simplex of 2nd order is a triangle! *_*
+(NbT,_) = nmp.shape(Xtriangles) ; # NbT => number of triangles
+
+Xneighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+
+print('\n *** We have '+str(NbT)+' triangles!')
 
 
-(Nbt,np) = nmp.shape(Xsimplices) ; # Nbt => number of traingles | np has to be = 3 !!! (triangles!)
-
-print('\n *** We have '+str(Nbt)+' triangles!')
-
-#if len(Xsimplices[:,0]) != Nbc: print('ERROR Z0!'); exit(0)
-
-if idebug>0:
-    for jx in range(Nbt):
-        vpl = Xsimplices[jx,:] ; # 3 point indices forming the triangle
+if idebug>1:
+    for jx in range(NbT):
+        vpl = Xtriangles[jx,:] ; # 3 point indices forming the triangle
         print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-        #print('     '+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]])
-        print('    => neighbor triangles are:',TRI.neighbors[jx],'\n')
+        print('    => neighbor triangles are:',Xneighbors[jx,:],'\n')
 
-
-# In which simplex (aka triangle) is Grenoble:
-vlocate = nmp.array([(x_gre,y_gre)])
-kv_gre= TRI.find_simplex(vlocate)
-jx    = kv_gre[0]
-vpl = Xsimplices[jx,:]
-print('\n *** Grenoble is located into triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
+if idebug>1:
+    # In which simplex (aka triangle) is Grenoble:
+    vlocate = nmp.array([(x_gre,y_gre)])
+    kv_gre= TRI.find_simplex(vlocate)
+    jx    = kv_gre[0]
+    vpl = Xtriangles[jx,:]
+    print('\n *** Grenoble is located in triangle #'+str(jx)+':', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
 
 
 
 
 # Show triangles on a map:
-kk = lbr.ShowMeshMap( Xcoor[:,0], Xcoor[:,1], Xsimplices, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
+kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], Xtriangles, cfig="Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
 
 # Attempt to merge triangles into quadrangles:
@@ -114,14 +95,21 @@ kk = lbr.ShowMeshMap( Xcoor[:,0], Xcoor[:,1], Xsimplices, cfig="Mesh_Map_TRIangl
 #  (provided the 3 neighbors are not already merged with someone!)
 
 
+NbR = 0 ; # Number of quadrangles
 
-
-
+for jT in range(NbT):
+    v3pnts = Xtriangles[jT,:]
+    print('\n *** Focus on triange #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
+    vtmp = Xneighbors[jT,:]
+    vnghbs = vtmp[vtmp >= 0] ; # shrink if `-1` are presents!
+    NbN = len(vnghbs)
+    print('       => the '+str(NbN)+' neighbor triangles of triange #'+str(jT)+' are:', vnghbs)
+exit(0)
 
 #j1 = 12 ; j2 = 13 ; # Join 2 triangles with common segment: "Andorra-Rome"
 j1 = 2  ; j2 = 5  ;  # Join 2 triangles with common segment: "London-Bergen"
 
-Quad = lbr.Triangles2Quadrangle( Xsimplices, TRI.neighbors, j1, j2, Xcoor, pnam=vnam )
+Quad = lbr.Triangles2Quadrangle( Xtriangles, Xneighbors, j1, j2, Xcoor, pnam=vnam )
 
 print('\n *** Quadran created by merging triangles '+str(j1)+' & '+str(j2)+':', '=>',[ vnam[i]         for i in Quad ] )
 print('                             =>' ,[ (round(Xcoor[i,1],2),round(Xcoor[i,0],2)) for i in Quad ] )

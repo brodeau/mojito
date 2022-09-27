@@ -4,4 +4,4 @@
 ############################################################################
 
 from .util import *
-from .plot import ShowBuoysMap, ShowBuoysMap_Trec, ShowMeshMap, plot_interp_series
+from .plot import ShowBuoysMap, ShowBuoysMap_Trec, ShowTMeshMap, plot_interp_series
