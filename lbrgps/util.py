@@ -267,7 +267,7 @@ def IsValidQuad( pAngles ):
     ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
     ###
     '''
-    return (not (any(pAngles>120.) or any(pAngles<50.)) )
+    return (not (any(pAngles>140.) or any(pAngles<30.)) )
 
 
 
