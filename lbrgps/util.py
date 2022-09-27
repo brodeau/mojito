@@ -193,7 +193,7 @@ def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     ### Input:
     ###        
     ###         * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
-    ###         * pNghb:    the 3 triangle IDs being the neighbor,    shape: (Nt)   | origin: `scipy.Delaunay().neighbors`
+    ###         * pNghb:    the 3 triangle IDs being the neighbors,   shape: (Nt,3) | origin: `scipy.Delaunay().neighbors`
     ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
     ###         * pcoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
     ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
@@ -204,7 +204,7 @@ def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     ldebug = ( len(pnam)>0 )
     
     vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
-    vIDn = pNghb[it1]     ; # 3 neighbor triangles of triangle # it1
+    vIDn = pNghb[it1,:]   ; # 3 neighbor triangles of triangle # it1
 
     if not it2 in vIDn: print('   [util.Triangles2Quadrangle()]: ERROR: triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
 
