@@ -33,7 +33,8 @@ import lbrgps as lbr
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-cdt2 = 'YYYY-01-31_00:00:00'
+#cdt2 = 'YYYY-01-31_00:00:00'
+cdt2 = 'YYYY-01-13_00:00:00'
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -189,10 +190,11 @@ if __name__ == '__main__':
     XT2  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
     Xmsk = nmp.zeros((Ns_max, Nb), dtype=int)
 
-
     ID_in_use = []  ; # keeps memory of buoys that are already been considered!
     xstreams  = []  ; # array of dictionnary with informations to store...
 
+    
+    
     rt_prev_stream = 1e12
     istream        = -1
     for jt in range(Nts):
@@ -326,14 +328,13 @@ if __name__ == '__main__':
                 idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
                 #if idebug>1: print("ID = "+str(jid)+" => points =>",idx_id)
                 nr = len(idx_id)
-                if jb==jb_max: vt[:] = vtime0[idx_id]
+                if jb==jb_max: vt[:] = vtime0[idx_id] ; #lolo
+                
                 xlon[:nr,jb] = vlon0[idx_id]
                 xlat[:nr,jb] = vlat0[idx_id]
 
-
-
             #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
-            kf = lbr.ShowBuoysMap_Trec( vt, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
+            kf = lbr.ShowBuoysMap_Trec( vt, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js), clock_res='d' )
         exit(0)
 
 
@@ -351,7 +352,6 @@ if __name__ == '__main__':
         #
         #    #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
         #    kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
-
 
 
 
