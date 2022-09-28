@@ -339,7 +339,7 @@ if __name__ == '__main__':
         # Saving 1 file per stream and per date:
         for jt in range(len(vt)):
             ct = split('_',epoch2clock(vt[jt]))[0] ; # just the day !            
-            cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+ct+'.npz'
+            cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
             nmp.savez( cf_out, vt[jt], xlon[jt,:], xlat[jt] )
             
         if idebug>0:
