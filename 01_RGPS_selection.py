@@ -14,7 +14,7 @@
 #
 
 from sys import argv, exit
-from os import path, environ
+from os import path, environ, mkdir
 import numpy as nmp
 
 from re import split
@@ -71,6 +71,9 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
     #print( ' cdata_dir = ',cdata_dir)
+
+
+    if not path.exists('./npz'): mkdir('./npz')
     
     narg = len(argv)
     if not narg in [3]:
@@ -290,69 +293,58 @@ if __name__ == '__main__':
     print('\n *** Number of identified streams: '+str(Nstreams))
 
 
-    if idebug>0:
-        for js in range(Nstreams):
-            vids = nmp.ma.MaskedArray.compressed( XIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
-            Nvb  = VNB[js]
-            if Nvb != len(vids): print('ERROR Z1!'); exit(0)
-            #
-            print('\n\n *** Having a look at stream #'+str(js)+' !')
-            print('     ===> has '+str(VNB[js])+' valid buoys!')
-            if idebug>2:
-                print('        => with following IDs:')
-                for jii in vids: print(jii,' ', end="")
-                print('')
-            #
 
-            # Some scanning
-            # 1- longest record of all the byous
-            Nt_max =  0
-            jb_max = -1
-            for jb in range(Nvb):
-                jid  = vids[jb]
-                idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
-                nr = len(idx_id)
-                if nr>Nt_max:
-                    Nt_max = nr
-                    jb_max = jb
-            Nt_lngst = nmp.max(XNrc[js,:]) ; # Max number of record from the buoy that has the most
-            if Nt_lngst != Nt_max: print('ERROR: YY!'); exit(0)
+    for js in range(Nstreams):
+        vids = nmp.ma.MaskedArray.compressed( XIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
+        Nvb  = VNB[js]
+        if Nvb != len(vids): print('ERROR Z1!'); exit(0)
+        #
+        print('\n\n *** Having a look at stream #'+str(js)+' !')
+        print('     ===> has '+str(VNB[js])+' valid buoys!')
+        if idebug>2:
+            print('        => with following IDs:')
+            for jii in vids: print(jii,' ', end="")
+            print('')
+        #
 
-            vt   = nmp.zeros( Nt_lngst , dtype=int)
-            xlon = nmp.zeros((Nt_lngst,Nvb))
-            xlat = nmp.zeros((Nt_lngst,Nvb))
+        # Some scanning
+        # 1- longest record of all the byous
+        Nt_max =  0
+        jb_max = -1
+        for jb in range(Nvb):
+            jid  = vids[jb]
+            idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+            nr = len(idx_id)
+            if nr>Nt_max:
+                Nt_max = nr
+                jb_max = jb
+        Nt_lngst = nmp.max(XNrc[js,:]) ; # Max number of record from the buoy that has the most
+        if Nt_lngst != Nt_max: print('ERROR: YY!'); exit(0)
 
-            # Show them on a map:
-            for jb in range(Nvb):
-                jid  = vids[jb]
-                idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
-                #if idebug>1: print("ID = "+str(jid)+" => points =>",idx_id)
-                nr = len(idx_id)
-                if jb==jb_max: vt[:] = vtime0[idx_id] ; #lolo
-                
-                xlon[:nr,jb] = vlon0[idx_id]
-                xlat[:nr,jb] = vlat0[idx_id]
+        vt   = nmp.zeros( Nt_lngst , dtype=int)
+        xlon = nmp.zeros((Nt_lngst,Nvb))
+        xlat = nmp.zeros((Nt_lngst,Nvb))
 
+        # Show them on a map:
+        for jb in range(Nvb):
+            jid  = vids[jb]
+            idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+            #if idebug>1: print("ID = "+str(jid)+" => points =>",idx_id)
+            nr = len(idx_id)
+            if jb==jb_max: vt[:] = vtime0[idx_id] ; #lolo
+            
+            xlon[:nr,jb] = vlon0[idx_id]
+            xlat[:nr,jb] = vlat0[idx_id]
+
+        # Saving 1 file per stream and per date:
+        for jt in range(len(vt)):
+            ct = split('_',epoch2clock(vt[jt]))[0] ; # just the day !            
+            cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+ct+'.npz'
+            nmp.savez( cf_out, vt[jt], xlon[jt,:], xlat[jt] )
+            
+        if idebug>0:
             #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
             kf = lbr.ShowBuoysMap_Trec( vt, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js), clock_res='d' )
-        exit(0)
 
-
-        #    # Show them on a map:
-        #    vlon = []
-        #    vlat = []
-        #    for jb in range(Nvb):
-        #        jid  = vids[jb]
-        #        idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
-        #        if idebug>2: print("ID = "+str(jid)+" => points =>",idx_id)
-        #        ip = idx_id[0] ; # Only initial point!!!
-        #        #print(ip); exit(0)
-        #        vlon.append( vlon0[ip] )
-        #        vlat.append( vlat0[ip] )
-        #
-        #    #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
-        #    kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js) )
-
-
-
-
+            
+            

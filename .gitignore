@@ -12,6 +12,7 @@ figs
 *.out
 *.err
 *.png
+*.npz
 
 # Distribution / packaging
 .Python
