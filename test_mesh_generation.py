@@ -85,16 +85,10 @@ if idebug>1:
     print('\n *** Grenoble is located in triangle #'+str(jx)+':', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
 
 
-
-
 # Show triangles on a map:
 kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRIangles_Europe.png", pnames=vnam )
 
-
-# Attempt to merge triangles into quadrangles:
-#  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
-#  (provided the 3 neighbors are not already merged with someone!)
-
+# Merge triangles into quadrangles:
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
 
 (NbQ,_) = nmp.shape(xQuads)
@@ -102,6 +96,4 @@ print('\n *** We have '+str(NbQ)+' quadrangles!')
 
 # Show quadrangles on a map:
 kk = lbr.ShowQMeshMap( Xcoor[:,0], Xcoor[:,1], xQuads, cfig="02_Mesh_Map_Quadrangles_Europe.png", pnames=vnam, TriMesh=xTriangles )
-
-
 
