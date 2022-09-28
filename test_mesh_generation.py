@@ -92,115 +92,15 @@ kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRI
 
 
 # Attempt to merge triangles into quadrangles:
-# For now trying to merge #12 with #13
-#   => aka "Andorra - Rome - Bern" with "Tunis - Rome - Andorra"
 #  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
 #  (provided the 3 neighbors are not already merged with someone!)
 
+xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
 
-NbR = 0 ; # Number of quadrangles
-
-idxTdead = []   ; # IDs of canceled triangles
-idxTused  = []   ; # IDs of triangles already in use in a quadrangle
-Quads       = []
-
-for jT in range(NbT):
-    # Loop along triangles
-
-    v3pnts = xTriangles[jT,:] ; # 3 point IDs composing the triangle.
-
-    if idebug>0:
-        print('\n ******************************************************************')
-        print(' *** Focus on triangle #'+str(jT)+' =>',[ vnam[i] for i in v3pnts ])
-    
-    if lbr.lTriangleOK(jT, xTriangles, Xcoor):        
-        if idebug>0: print('       => disregarding this triangle!!! (an angle >120. or <30 degrees!)')
-        idxTdead.append(jT) ; # Cancel this triangle
-        #
-    elif jT in idxTused:
-        if idebug>0: print('       => this triangle is in use a quadrangle already defined!')
-        #
-        #
-    else:
-        # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
-        # -----------------------------------------------------------------------------
-        #
-        vtmp   = xNeighbors[jT,:]
-        vnghbs = vtmp[vtmp >= 0] ; # shrink it, only retain non `-1`-flagged values...
-        NbN    = len(vnghbs)     ; # number of neighbors
-        if idebug>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
-
-        NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use, and decent shape!
-        for jN in vnghbs:
-            lTok = (not jN in idxTdead)and(not jN in idxTused)and(not lbr.lTriangleOK(jN, xTriangles, Xcoor))
-            if lTok:
-                NgbrTvalid.append(jN)
-                if idebug>1: print('          ==> triangle '+str(jN)+' is valid!')
-            else:
-                if idebug>1: print('          ==> triangle '+str(jN)+' is NOT valid!')
-                    
-        if len(NgbrTvalid)>0:
-            # `jT` is a valid+available triangle with at least one valid neighbor in `NgbrTvalid`
-            #   => need to check which of the neighbors in `NgbrTvalid` gives the best quadrangle!
-            if idebug>0: print('       => valid neighbors for triangle #'+str(jT)+':',NgbrTvalid)
-
-            #NNTok  = 0  ; # number of neighbor triangles are ok for forming a "decent" quad
-            vjNok  = [] ; # stores the neighbor triangles that are ok for forming a "decent" quad
-            vscore = [] ; #   => store their score of "OK-ness" !
-            xidx   = []
-            for jN in NgbrTvalid:
-                if idebug>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                vidx, vang  = lbr.QuadAnglesFrom2Tri( xTriangles, xNeighbors, jT, jN, Xcoor) #, pnam=vnam )
-                lQok, score = lbr.lQuadOK( vang[:] )
-                cc = 'does NOT'
-                if lQok:
-                    vjNok.append(jN)
-                    vscore.append(score)
-                    xidx.append(vidx)
-                    cc = 'does'
-                if idebug>1: print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
-            # Now we have to chose the best neighbor triangle to use (based on the score):
-            if len(vjNok)>0:
-                if idebug>0: print('       => We have '+str(len(vjNok))+' Quad candidates!')
-                xidx = nmp.array(xidx)
-                iwin = nmp.argmax(vscore)
-                jN   = vjNok[iwin] ; # our winner neighbor triangle
-                Quads.append(xidx[iwin,:]) ; # saving the winner Quad!
-                idxTused.append(jT)
-                idxTused.append(jN)
-                if idebug>0: print('         ==> Selected Quad: "triangles '+str(jT)+'+'+str(jN)+'" give Quad',[vnam[i] for i in xidx[iwin,:]],'\n')
-                #if len(vjNok)>1: exit(0) ; # LOLO DEBUG
-        else:
-            if idebug>0: print('       => No valid neighbors for this triangle...')
-
-
-xQuads = nmp.array(Quads)
-del Quads
-
-(NbQ,_) = nmp.shape(xQuads)
-
-if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
-    print('ERROR of agreement between number of merged triangles and quadrangles created!'); exit(0)
-
-print('\n *** Triangles that have sucessfully be merged into acceptable Quads:\n   ==>', idxTused)
-
-print('   ==> Summary of '+str(NbQ)+' generated quadrangles:')
-for jQ in range(NbQ):
-    print('    * Quad #'+str(jQ)+' => ', xQuads[jQ,:], '(', [ vnam[i] for i in xQuads[jQ,:] ],')')
+#(NbQ,_) = nmp.shape(xQuads)
 
 # Show quadrangles on a map:
 kk = lbr.ShowQMeshMap( Xcoor[:,0], Xcoor[:,1], xQuads, cfig="02_Mesh_Map_Quadrangles_Europe.png", pnames=vnam, TriMesh=xTriangles )
-
-
-exit(0)
-
-
-
-
-
-
-
-
 
 
 
