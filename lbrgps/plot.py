@@ -33,6 +33,7 @@ vfig_size = [ 7.54*rzoom, 7.2*rzoom ]
 vsporg = [0., 0., 1., 1.]
 col_bg = '#041a4d'
 
+col_blue = '#3475a3'
 
 
 # Projection:
@@ -259,10 +260,11 @@ def ShowQMeshMap( pX, pY, QuadMesh, cfig='mesh_quad_map.png', pnames=[], TriMesh
         vids = QuadMesh[jQ,:]
         vx, vy  = pX[vids], pY[vids]
         vX, vY = nmp.concatenate([vx[:], vx[0:1]]), nmp.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
-        plt.plot(vX,vY, 'b', lw=5, zorder=100)
+        plt.plot(vX,vY, col_blue, lw=5, zorder=100)
+        plt.fill_between(vX, vY, fc=col_blue, zorder=95, alpha=0.3)
         # Indicate quadrangle # in its center:
         rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-        ax.annotate(str(jQ), (rmLon, rmLat), color='b', fontweight='bold', zorder=110)
+        ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=110)
 
     # Adding original triangles?
     if len(TriMesh)>0:
