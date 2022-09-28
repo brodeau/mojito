@@ -340,7 +340,7 @@ if __name__ == '__main__':
         for jt in range(len(vt)):
             ct = split('_',epoch2clock(vt[jt]))[0] ; # just the day !            
             cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
-            nmp.savez( cf_out, itime=vt[jt], vlon=xlon[jt,:], vlat=xlat[jt] )
+            nmp.savez( cf_out, itime=vt[jt], vlon=xlon[jt,:], vlat=xlat[jt,:], vids=vids[:] )
             
         if idebug>0:
             #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )

@@ -9,10 +9,10 @@ import numpy as nmp
 
 from scipy.spatial import Delaunay
 
+from climporn import epoch2clock
 import lbrgps   as lbr
 
 idebug=2
-
 
 cf_in = 'npz/SELECTION_buoys_RGPS_stream001_1997-01-04.npz'
 
@@ -21,23 +21,29 @@ data = nmp.load(cf_in)
 it   = data['itime']
 vlon = data['vlon']
 vlat = data['vlat']
+vids = data['vids']
 
-print(it)
-
-
-
-exit(0)
-
-
-NbP = len(xcities) ; # number of points
-
-print('\n *** We have '+str(NbP)+' cities!')
+#print(it)
+#print(vlon)
+if len(vids) != len(vlon) or len(vids) != len(vlat):
+    print('ERROR Y1!')
+    exit(0)
 
 
-# Conversion of dictionary to Numpy arrays:
-vIDs  = nmp.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
-Xcoor = nmp.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
-vnam  = nmp.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
+ct = epoch2clock(it)
+
+print('\n *** Stream at '+ct)
+
+NbP = len(vlon) ; # number of points
+
+print('\n *** We have '+str(NbP)+' points!')
+
+
+vIDs  = nmp.array( vids )
+Xcoor = nmp.array([[vlon[i],vlat[i]] for i in range(NbP) ]             )
+vnam  = nmp.array([ str(i) for i in vids ], dtype='U32')
+#print(vnam)
+
 
 if idebug>0:
     for jc in range(NbP):
@@ -56,10 +62,6 @@ xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
 print('\n *** We have '+str(NbT)+' triangles!')
 
-#print('\n',nmp.shape(TRI.points))
-#exit(0)
-
-
 
 if idebug>1:
     for jx in range(NbT):
@@ -67,17 +69,11 @@ if idebug>1:
         print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
         print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
 
-if idebug>1:
-    # In which simplex (aka triangle) is Grenoble:
-    vlocate = nmp.array([(x_gre,y_gre)])
-    kv_gre  = TRI.find_simplex(vlocate)
-    jx      = kv_gre[0]
-    vpl     = xTriangles[jx,:]
-    print('\n *** Grenoble is located in triangle #'+str(jx)+':', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
-
 
 # Show triangles on a map:
-kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRIangles_Europe.png", pnames=vnam )
+kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRIangles_Europe.png",
+                       pnames=vnam, vextent=[10,350, 75,90] )
+exit(0)
 
 # Merge triangles into quadrangles:
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
