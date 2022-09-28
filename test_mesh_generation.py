@@ -97,7 +97,8 @@ kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRI
 
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
 
-#(NbQ,_) = nmp.shape(xQuads)
+(NbQ,_) = nmp.shape(xQuads)
+print('\n *** We have '+str(NbQ)+' quadrangles!')
 
 # Show quadrangles on a map:
 kk = lbr.ShowQMeshMap( Xcoor[:,0], Xcoor[:,1], xQuads, cfig="02_Mesh_Map_Quadrangles_Europe.png", pnames=vnam, TriMesh=xTriangles )

@@ -473,9 +473,7 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
-
     ## -- for jT in range(NbT) --
-
     zQuads = nmp.array(Quads)
     del Quads
 
@@ -486,7 +484,7 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
     if ivb>0: print('\n *** SUMMARY ***')
     if ivb>1:
-        print('       => Triangles sucessfully be merged into "acceptable" Quads:')
+        print('       => Triangles sucessfully merged into "acceptable" Quads:')
         print('       ==>',idxTused,)
     if ivb>0:
         print('       => Summary about the '+str(NbQ)+' Quads generated:')
