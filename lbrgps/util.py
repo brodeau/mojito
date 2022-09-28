@@ -258,16 +258,23 @@ def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pcoor, pnam=[] ):
     return vIquad, vAquad
 
 
-def IsValidQuad( pAngles ):
+def lQuadOK( pAngles ):
     '''
     ###     Tells if a uqdrangle should be kept or rejected (outrageously unrectangular shape)
+    ###       + gives a score [0-1] (for now based on 
+    ###     TO DO: add the height/width ratio !!!! (we want somethibg closer to as square than a rectangle)
     ###
     ### Input:
     ###        
     ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
     ###
     '''
-    return (not (any(pAngles>140.) or any(pAngles<30.)) )
+    rscore = -1.
+    lOK = ( not( any(pAngles>140.) or any(pAngles<30.) ) )
+    if lOK:
+        rscore = 1. - nmp.sum( nmp.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
+                          
+    return lOK, rscore
 
 
 
@@ -368,7 +375,7 @@ def AnglesOfTriangle(kT, pTrgl, pcoor):
     zcoorT = nmp.array([ pcoor[j,:] for j in v3p ])    
     return ThreeAngles( zcoorT )
     
-def AnglesOfTriangleNotOK(kT, pTrgl, pcoor):
+def lTriangleOK(kT, pTrgl, pcoor):
     '''
     #### Wrapper for AnglesOfTriangle
     ###  => returns Boolean
