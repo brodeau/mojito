@@ -430,6 +430,10 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
 
         else:
+            # DEBUG: interested what are the angles: lilo
+            if ivb>1: print('  ==> its 3 angles are:',AnglesOfTriangle(jT, pTrgl, pCoor))
+            # DEBUG.
+            
             # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
             # -----------------------------------------------------------------------------
             #
