@@ -15,6 +15,14 @@ rQang_min =  65. ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 120. ; # maximum angle tolerable in a quadrangle [degree]
 
 
+
+rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
+
+rQang_min =  75. ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 105. ; # maximum angle tolerable in a quadrangle [degree]
+
+
 def LoadDist2CoastNC( cNCfile ):
     from climporn import chck4f
     from netCDF4  import Dataset
