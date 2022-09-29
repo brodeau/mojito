@@ -86,7 +86,10 @@ if idebug>1:
 
 
 # Show triangles on a map:
-kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRIangles_Europe.png", pnames=vnam )
+kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="01_Mesh_Map_TRIangles_Europe.png",
+                     pnames=vnam, TriMesh=xTriangles )
+
+
 
 # Merge triangles into quadrangles:
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
@@ -95,5 +98,30 @@ xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=ide
 print('\n *** We have '+str(NbQ)+' quadrangles!')
 
 # Show quadrangles on a map:
-kk = lbr.ShowQMeshMap( Xcoor[:,0], Xcoor[:,1], xQuads, cfig="02_Mesh_Map_Quadrangles_Europe.png", pnames=vnam, TriMesh=xTriangles )
+kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="02_Mesh_Map_Quadrangles_Europe.png",
+                     pnames=vnam, QuadMesh=xQuads, TriMesh=xTriangles )
+
+
+
+
+
+### Mhh do the same in distance rather than `lon,lat`
+
+print('\n\n DISTANCES !!!')
+
+import pyproj as proj
+
+# setup your projections:
+crs_ggl = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
+crs_trg = proj.Proj(init='epsg:3035') # Europe ?
+
+x0 = Xcoor[:,0]
+y0 = Xcoor[:,1]
+
+x1, y1 = proj.transform(crs_ggl, crs_trg, x0, y0)
+x1, y1 = x1/1000., y1/1000. ; # to km...
+
+kk = lbr.ShowTQMesh( x1, y1, cfig="02_CARTESIAN_Mesh_Map_Quadrangles_Europe.png",
+                     pnames=vnam, QuadMesh=xQuads, TriMesh=xTriangles, lProj=False )
+
 
