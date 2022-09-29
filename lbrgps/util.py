@@ -22,6 +22,7 @@ rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  75. ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 105. ; # maximum angle tolerable in a quadrangle [degree]
 
+rdRatio_max = 0.25 ; # value that `1 - abs(L/H)` should not overshoot!
 
 def LoadDist2CoastNC( cNCfile ):
     from climporn import chck4f
@@ -81,8 +82,6 @@ def OrderCW(xcoor):
     # sort the points based on their x-coordinates
     isortX  = nmp.argsort(xcoor[:,0])
     xSorted = xcoor[isortX,:]
-    print('LOLO: Sorted by longitude => isortX =', isortX)
-
 
     # grab the left-most and right-most points from the sorted
     # x-roodinate points
@@ -98,7 +97,6 @@ def OrderCW(xcoor):
     leftMost   = leftMost[isortL,:]
     (tl, bl)   = leftMost
     [i1l, i2l] = isortML[isortL]
-    print('LOLO: isortL, idxL =', isortL, [i1l, i2l] )
 
     # if use Euclidean distance, it will run in error when the object
     # is trapezoid. So we should use the same simple y-coordinates order method.
@@ -110,7 +108,6 @@ def OrderCW(xcoor):
     rghtMost   = rghtMost[isortR,:]
     (tr, br)   = rghtMost
     [i1r, i2r] = isortMR[isortR]
-    print('LOLO: isortR, idxR =',isortR, [i1r, i2r] )
 
     #idx = nmp.concatenate([idxL,idxR])
     #isort = nmp.array([isortX[i] for i in nmp.concatenate([isortL,isortR])])
@@ -197,7 +194,7 @@ def SortIndicesCCW(xcoor):
 
 
 
-def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
+def QuadSpecsFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
     '''
     ###
     ###          There are `Np` points that define `Nt` triangles !
@@ -210,30 +207,43 @@ def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
     ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
     ###
     '''
+    from math import sqrt
+    
     ldebug = ( len(pnam)>0 )
 
-    vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
-
     if not it2 in pNghb[it1,:]:
-        print('   [QuadAnglesFrom2Tri()]: ERROR: triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
-
-    vpn  = pTrgl[it2,:]
-    v2com = nmp.intersect1d( vp0, vpn )
-    v2sol = nmp.concatenate([nmp.setdiff1d(vp0, vpn),nmp.setdiff1d(vpn, vp0)]) ; # First value being the one of triangle it1
+        print('ERROR: [QuadSpecsFrom2Tri()] => triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!')
+        exit(0)
+    
+    vp0 = pTrgl[it1,:] ; # 3 point IDs forming the vertices of triangle #1
+    vpn = pTrgl[it2,:] ; # 3 point IDs forming the vertices of triangle #2
+        
+    v2com     = nmp.intersect1d( vp0, vpn )
+    IDsingle2 = nmp.setdiff1d(vpn, vp0) ; # Return the ID of the only point of triangle #2 that does not belong to triangle #1
+    v2sol     = nmp.concatenate([nmp.setdiff1d(vp0, vpn),IDsingle2]) ; # the 2 points that are not part of the "common" segment! (1st value belongs tp triangle #1)
     if ldebug:
-        print('   [QuadAnglesFrom2Tri()] 4 angles of quad when merge triangles #'+str(it1)+' and #'+str(it2)+':')
-        print('   [QuadAnglesFrom2Tri()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
-        print('   [QuadAnglesFrom2Tri()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
+        print('   [QuadSpecsFrom2Tri()] 4 angles of quad when merge triangles #'+str(it1)+' and #'+str(it2)+':')
+        print('   [QuadSpecsFrom2Tri()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
+        print('   [QuadSpecsFrom2Tri()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
 
-    vID_unique_it2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
-
-    jid = vID_unique_it2[0]
+    
+    jid = IDsingle2[0]
     if ldebug:
-        print('   [QuadAnglesFrom2Tri()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
+        print('   [QuadSpecsFrom2Tri()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
 
+    # Ratio between apparent height and width of the quadrangle
+    zcoor_com = nmp.array([ pCoor[i,:] for i in v2com ])
+    zcoor_sol = nmp.array([ pCoor[i,:] for i in v2sol ])
+    Lc11 = sqrt( __lengthSquare__(zcoor_com[0,:], zcoor_sol[0,:]) ) ; #lilo
+    Lc21 = sqrt( __lengthSquare__(zcoor_com[1,:], zcoor_sol[0,:]) ) ; #lilo
+    Lc12 = sqrt( __lengthSquare__(zcoor_com[1,:], zcoor_sol[1,:]) ) ; #lilo
+    Lc22 = sqrt( __lengthSquare__(zcoor_com[0,:], zcoor_sol[1,:]) ) ; #lilo
+    ratio = (Lc11+Lc12) / (Lc21+Lc22)
+    del zcoor_com, zcoor_sol, Lc11, Lc21, Lc12, Lc22
+        
     # Now we look at the angles of the 2 triangles: lilo
-    va1 = AnglesOfTriangle(it1, pTrgl, pCoor)
-    va2 = AnglesOfTriangle(it2, pTrgl, pCoor)
+    va1 = AnglesOfTriangle( pCoor, vp0 )
+    va2 = AnglesOfTriangle( pCoor, vpn )
     if ldebug:
         vp1 = pTrgl[it1,:]
         vp2 = pTrgl[it2,:]
@@ -261,84 +271,30 @@ def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
     vAquad = vAquad[vsidx]
 
     if ldebug:
-        print('   [QuadAnglesFrom2Tri()] ==> the 4 angles of the CCW-sorted quadrangle =',vAquad)
-        print('   [QuadAnglesFrom2Tri()]       ===> for ',[ pnam[i] for i in vIquad ])
+        print('   [QuadSpecsFrom2Tri()] ==> the 4 angles of the CCW-sorted quadrangle =',vAquad)
+        print('   [QuadSpecsFrom2Tri()]       ===> for ',[ pnam[i] for i in vIquad ])
 
     # Return the CCW-sorted points and angles for the 4 vertices of the quadrangle:
-    return vIquad, vAquad
+    return vIquad, vAquad, ratio
 
 
-def lQuadOK( pAngles ):
+def lQuadOK( pAngles, ratio ):
     '''
     ###     Tells if a quadrangle should be kept or rejected (outrageously unrectangular shape)
     ###       + gives a score [0-1] (for now based on
     ###     TO DO: add the height/width ratio !!!! (we want somethibg closer to as square than a rectangle)
     ###
     ### Input:
-    ###
     ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
+    ###         * ratio:   ratio between apparent length and height of the quadrangle (a square would give 1)
     ###
     '''
     rscore = -1.
-    lOK = ( not( nmp.any(pAngles>rQang_max) or nmp.any(pAngles<rQang_min) ) )    
+    lOK = ( not( nmp.any(pAngles>rQang_max) or nmp.any(pAngles<rQang_min) or abs(1.-ratio)>rdRatio_max ) )    
     if lOK:
         rscore = 1. - nmp.sum( nmp.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
 
     return lOK, rscore
-
-
-
-def Triangles2Quadrangle( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
-    '''
-    ###
-    ###          There are `Np` points that define `Nt` triangles !
-    ### Input:
-    ###
-    ###         * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
-    ###         * pNghb:    the 3 triangle IDs being the neighbors,   shape: (Nt,3) | origin: `scipy.Delaunay().neighbors`
-    ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
-    ###         * pCoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
-    ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
-    ###
-    '''
-    ldebug = ( len(pnam)>0 )
-
-    vp0  = pTrgl[it1,:]   ; # 3 point indices forming the triangle
-
-    if not it2 in pNghb[it1,:]: print('   [util.Triangles2Quadrangle()]: ERROR: triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
-
-    vpn  = pTrgl[it2,:]
-    v2com = nmp.intersect1d( vp0, vpn )
-    if ldebug:
-        print('   [util.Triangles2Quadrangle()] ==> the 2 vertices in common between triangles #'+str(it1)+' and #'+str(it2)+': ', v2com, '=', [ pnam[i] for i in v2com ])
-
-    vID_unique_it2 = nmp.setdiff1d(vpn, vp0) ; # Return the unique values in `vpn` that are not in `vp0`.
-
-    jid = vID_unique_it2[0]
-    if ldebug:
-        print('   [util.Triangles2Quadrangle()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
-
-    quad = nmp.concatenate( [ vID_unique_it2, vp0 ] ) ; # This is our quadrangle !!!
-
-    iOrder = [0,1,2,3]
-    if ldebug:
-        print('   [util.Triangles2Quadrangle()] ==> order after triangle merge:', iOrder, '=>',[ pnam[i]         for i in quad ] )
-        print('                                    ===>' ,[ (round(pCoor[i,1],2),round(pCoor[i,0],2)) for i in quad ] )
-
-
-    Zcoor = nmp.array([[pCoor[i,0],pCoor[i,1]] for i in quad ])
-
-    # Ordering the 4 points in a clockwise fashion:
-    iOrder = SortIndicesCCW(Zcoor)
-
-    # Reordering quad:
-    quadCCW = quad[iOrder]
-
-    del quad, Zcoor
-
-    return quadCCW
-
-
 
 
 
@@ -350,13 +306,13 @@ def __lengthSquare__(X, Y):
     yDiff = X[1] - Y[1]
     return xDiff*xDiff + yDiff*yDiff
 
-def ThreeAngles(pCoor):
+def ThreeAngles(pCoorT):
     from math import sqrt, acos, pi
-    ## pCoor: `x,y` coordinates of the 3 points shape=(3,2)
+    ## pCoorT: `x,y` coordinates of the 3 points shape=(3,2)
     # Square of lengths be a2, b2, c2
-    a2 = __lengthSquare__(pCoor[1,:], pCoor[2,:])
-    b2 = __lengthSquare__(pCoor[0,:], pCoor[2,:])
-    c2 = __lengthSquare__(pCoor[0,:], pCoor[1,:])
+    a2 = __lengthSquare__(pCoorT[1,:], pCoorT[2,:])
+    b2 = __lengthSquare__(pCoorT[0,:], pCoorT[2,:])
+    c2 = __lengthSquare__(pCoorT[0,:], pCoorT[1,:])
 
     # length of sides be a, b, c
     a = sqrt(a2);
@@ -373,21 +329,17 @@ def ThreeAngles(pCoor):
 
 
 
-def AnglesOfTriangle(kT, pTrgl, pCoor):
+def AnglesOfTriangle( pCoor, p3p ):
     '''
-    #### Wrapper for AnglesOfTriangle
-    ###
     ###  *   kT :     ID of triangle we are working with
     ###  * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
     ###  * pCoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
     '''
-    v3p = pTrgl[kT,:] ; # 3 point IDs composing the triangle with ID `kt`
-    zcoorT = nmp.array([ pCoor[j,:] for j in v3p ])
+    zcoorT = nmp.array([ pCoor[j,:] for j in p3p ])
     return ThreeAngles( zcoorT )
 
 def lTriangleOK(kT, pTrgl, pCoor):
     '''
-    #### Wrapper for AnglesOfTriangle
     ###  => returns Boolean: True if the triangle has a "decent" shape!
     ###
     ###  *   kT :     ID of triangle we are working with
@@ -438,8 +390,8 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
 
         else:
-            # DEBUG: interested what are the angles: lilo
-            if ivb>1: print('  ==> its 3 angles are:',AnglesOfTriangle(jT, pTrgl, pCoor))
+            # DEBUG: interested what are the angles:
+            if ivb>1: print('  ==> its 3 angles are:',AnglesOfTriangle(pCoor, v3pnts))
             # DEBUG.
             
             # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
@@ -470,8 +422,8 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
                 xidx   = []
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                    vidx, vang  = QuadAnglesFrom2Tri( pTrgl, pNghb, jT, jN, pCoor) #, pnam=pnam )
-                    lQok, score = lQuadOK( vang[:] )
+                    vidx, vang, rat  = QuadSpecsFrom2Tri( pTrgl, pNghb, jT, jN, pCoor) #, pnam=pnam )
+                    lQok, score = lQuadOK( vang[:], rat )
                     cc = 'does NOT'
                     if lQok:
                         vjNok.append(jN)
@@ -480,7 +432,7 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
                         cc = 'does'
                     if ivb>1:
                         print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
-                        if not lQok: print('              ====> the 4 angles were:',vang[:])
+                        if not lQok: print('              ====> the 4 angles + ratio:',vang[:],rat)
                 
                 # Now we have to chose the best neighbor triangle to use (based on the score):
                 if len(vjNok)>0:
