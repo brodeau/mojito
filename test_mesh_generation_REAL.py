@@ -70,10 +70,23 @@ if idebug>1:
         print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
 
 
+zlon = Xcoor[:,0]
+zlat = Xcoor[:,1]
+
+
+from cartopy import crs
+srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps                                                     
+srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?                                                
+
+zx,zy,_ = srs_trg.transform_points(srs_src, zlon, zlat).T ; # km???
+
+
+
+        
 # Show triangles on a map:
-kk = lbr.ShowTMeshMap( Xcoor[:,0], Xcoor[:,1], xTriangles, cfig="01_Mesh_Map_TRIangles_Europe.png",
-                       pnames=vnam, vextent=[10,350, 75,90] )
-exit(0)
+kk = lbr.ShowTQMesh( zx, zy, cfig="01_Mesh_Map_TRIangles_Europe.png",
+                     pnames=vnam, TriMesh=xTriangles, lProj=False, izoom=7 )
+#exit(0)
 
 # Merge triangles into quadrangles:
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
@@ -81,6 +94,11 @@ xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=ide
 (NbQ,_) = nmp.shape(xQuads)
 print('\n *** We have '+str(NbQ)+' quadrangles!')
 
+kk = lbr.ShowTQMesh( zx, zy, cfig="01_Mesh_Map_TRIangles_Europe.png",
+                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, izoom=10 )
+
+
+
 # Show quadrangles on a map:
-kk = lbr.ShowQMeshMap( Xcoor[:,0], Xcoor[:,1], xQuads, cfig="02_Mesh_Map_Quadrangles_Europe.png", pnames=vnam, TriMesh=xTriangles )
+
 

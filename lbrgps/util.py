@@ -8,6 +8,12 @@ from sys import exit
 #from os import path, mkdir
 import numpy as nmp
 
+rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
+
+rQang_min =  65. ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 120. ; # maximum angle tolerable in a quadrangle [degree]
+
 
 def LoadDist2CoastNC( cNCfile ):
     from climporn import chck4f
@@ -256,7 +262,7 @@ def QuadAnglesFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
 
 def lQuadOK( pAngles ):
     '''
-    ###     Tells if a uqdrangle should be kept or rejected (outrageously unrectangular shape)
+    ###     Tells if a quadrangle should be kept or rejected (outrageously unrectangular shape)
     ###       + gives a score [0-1] (for now based on
     ###     TO DO: add the height/width ratio !!!! (we want somethibg closer to as square than a rectangle)
     ###
@@ -266,7 +272,7 @@ def lQuadOK( pAngles ):
     ###
     '''
     rscore = -1.
-    lOK = ( not( any(pAngles>140.) or any(pAngles<30.) ) )
+    lOK = ( not( nmp.any(pAngles>rQang_max) or nmp.any(pAngles<rQang_min) ) )    
     if lOK:
         rscore = 1. - nmp.sum( nmp.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
 
@@ -374,7 +380,7 @@ def AnglesOfTriangle(kT, pTrgl, pCoor):
 def lTriangleOK(kT, pTrgl, pCoor):
     '''
     #### Wrapper for AnglesOfTriangle
-    ###  => returns Boolean
+    ###  => returns Boolean: True if the triangle has a "decent" shape!
     ###
     ###  *   kT :     ID of triangle we are working with
     ###  * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
@@ -383,7 +389,9 @@ def lTriangleOK(kT, pTrgl, pCoor):
     v3p = pTrgl[kT,:] ; # 3 point IDs composing the triangle with ID `kt`
     zcoorT = nmp.array([ pCoor[j,:] for j in v3p ])
     va = ThreeAngles( zcoorT )
-    return (nmp.any(va>110.) or nmp.any(va<30.))
+    lOK = ( not( nmp.any(  va   >rTang_max) or nmp.any( va < rTang_min) ) )
+    #
+    return lOK
 
 
 
@@ -413,8 +421,8 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
             print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if lTriangleOK(jT, pTrgl, pCoor):
-            if ivb>0: print('       => disregarding this triangle!!! (an angle >120. or <30 degrees!)')
+        if not lTriangleOK(jT, pTrgl, pCoor):
+            if ivb>0: print('       => disregarding this triangle!!! (an angle >'+str(rTang_max)+' or <'+str(rTang_min)+' degrees!)')
             idxTdead.append(jT) ; # Cancel this triangle
 
         elif jT in idxTused:
@@ -432,7 +440,7 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
             NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use, and decent shape!
             for jN in vnghbs:
-                lTok = (not jN in idxTdead)and(not jN in idxTused)and(not lTriangleOK(jN, pTrgl, pCoor))
+                lTok = (not jN in idxTdead)and(not jN in idxTused)and(lTriangleOK(jN, pTrgl, pCoor))
                 if lTok:
                     NgbrTvalid.append(jN)
                     if ivb>1: print('          ==> triangle '+str(jN)+' is valid!')
@@ -458,7 +466,10 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
                         vscore.append(score)
                         xidx.append(vidx)
                         cc = 'does'
-                    if ivb>1: print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
+                    if ivb>1:
+                        print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
+                        if not lQok: print('              ====> the 4 angles were:',vang[:])
+                
                 # Now we have to chose the best neighbor triangle to use (based on the score):
                 if len(vjNok)>0:
                     if ivb>0: print('       => We have '+str(len(vjNok))+' Quad candidates!')
@@ -474,24 +485,30 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
     ## -- for jT in range(NbT) --
+
     zQuads = nmp.array(Quads)
     del Quads
 
-    # Some sanity checks:
-    if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
-        print('ERROR [Triangles2Quads]: agreement between number of merged triangles and created quads!')
-        exit(0)
+    if NbQ>0:
+                
+        # Some sanity checks:
+        if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
+            print('ERROR [Triangles2Quads]: agreement between number of merged triangles and created quads!')
+            exit(0)
 
-    if ivb>0: print('\n *** SUMMARY ***')
-    if ivb>1:
-        print('       => Triangles sucessfully merged into "acceptable" Quads:')
-        print('       ==>',idxTused,)
-    if ivb>0:
-        print('       => Summary about the '+str(NbQ)+' Quads generated:')
-        for jQ in range(NbQ):
-            print('        * Quad #'+str(jQ)+' => ', zQuads[jQ,:], '(', [ pnam[i] for i in zQuads[jQ,:] ],')')
-        print('')
+        if ivb>0: print('\n *** SUMMARY ***')
+        if ivb>1:
+            print('       => Triangles sucessfully merged into "acceptable" Quads:')
+            print('       ==>',idxTused,)
+        if ivb>0:
+            print('       => Summary about the '+str(NbQ)+' Quads generated:')
+            for jQ in range(NbQ):
+                print('        * Quad #'+str(jQ)+' => ', zQuads[jQ,:], '(', [ pnam[i] for i in zQuads[jQ,:] ],')')            
 
+    else:
+        print('\n WARNING => No Quads could be generated! :(')
+    print('')
+            
     return zQuads
 
 

@@ -94,6 +94,8 @@ kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="01_Mesh_Map_TRIangles_Europe.
 # Merge triangles into quadrangles:
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
 
+if len(xQuads) <= 0: exit(0)
+
 (NbQ,_) = nmp.shape(xQuads)
 print('\n *** We have '+str(NbQ)+' quadrangles!')
 
@@ -109,17 +111,32 @@ kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="02_Mesh_Map_Quadrangles_Europ
 
 print('\n\n DISTANCES !!!')
 
-import pyproj as proj
-
-# setup your projections:
-crs_ggl = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
-crs_trg = proj.Proj(init='epsg:3035') # Europe ?
-
 x0 = Xcoor[:,0]
 y0 = Xcoor[:,1]
 
-x1, y1 = proj.transform(crs_ggl, crs_trg, x0, y0)
-x1, y1 = x1/1000., y1/1000. ; # to km...
+lpyproj=True
+
+if lpyproj:
+    import pyproj as proj
+    # setup your projections:
+    crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
+    crs_trg = proj.Proj(init='epsg:3035') # Europe ?
+    #
+    #crs_src = proj.Proj(init='ups') # LatLon with WGS84 datum used by GPS units and Google Earth 
+
+    
+    x1, y1 = proj.transform(crs_src, crs_trg, x0, y0)
+    x1, y1 = x1/1000., y1/1000. ; # to km...
+else:
+    from cartopy import crs
+    #
+    #crs_src = crs.epsg(4326)
+    #crs_trg = crs.epsg(3035)
+    srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps
+    srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?
+    x1,y1,_ = crs_trg.transform_points(crs_src, x0, y0)
+
+    
 
 kk = lbr.ShowTQMesh( x1, y1, cfig="02_CARTESIAN_Mesh_Map_Quadrangles_Europe.png",
                      pnames=vnam, QuadMesh=xQuads, TriMesh=xTriangles, lProj=False )

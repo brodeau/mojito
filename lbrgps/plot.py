@@ -197,7 +197,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], QuadMesh=[], TriMesh=[], lProj=True ):
+def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMesh=[], lProj=True, izoom=1 ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -206,7 +206,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], QuadMesh=[], TriMes
     '''
     if lProj: import cartopy.crs as ccrs
     
-    fig = plt.figure(num=1, figsize=(12,9), facecolor='white')
+    fig = plt.figure(num=1, figsize=(12*izoom,9*izoom), facecolor='white')
     
     if lProj: 
         Proj = ccrs.PlateCarree()
