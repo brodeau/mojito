@@ -13,7 +13,9 @@ import lbrgps   as lbr
 
 idebug=2
 
-y_gre, x_gre = 45.184369, 5.734251
+l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+
+#y_gre, x_gre = 45.184369, 5.734251
 
 
 xcities = [] ; ip = 0
@@ -54,6 +56,24 @@ if idebug>0:
     print('')
 
 
+if l_work_with_dist:
+    
+    import pyproj as proj
+    crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
+    crs_trg = proj.Proj(init='epsg:3035') # Europe ?
+    
+    zx, zy = proj.transform(crs_src, crs_trg, Xcoor[:,0], Xcoor[:,1])
+    zx, zy = zx/1000., zy/1000. ; # to km...
+
+    Xcoor[:,0] = zx[:]
+    Xcoor[:,1] = zy[:]
+
+    del zx, zy
+
+
+
+
+    
 # Generating triangular meshes out of the cloud of points:
 TRI = Delaunay(Xcoor)
 
@@ -65,10 +85,6 @@ xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
 print('\n *** We have '+str(NbT)+' triangles!')
 
-#print('\n',nmp.shape(TRI.points))
-#exit(0)
-
-
 
 if idebug>1:
     for jx in range(NbT):
@@ -76,18 +92,10 @@ if idebug>1:
         print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
         print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
 
-if idebug>1:
-    # In which simplex (aka triangle) is Grenoble:
-    vlocate = nmp.array([(x_gre,y_gre)])
-    kv_gre  = TRI.find_simplex(vlocate)
-    jx      = kv_gre[0]
-    vpl     = xTriangles[jx,:]
-    print('\n *** Grenoble is located in triangle #'+str(jx)+':', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"\n')
-
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="01_Mesh_Map_TRIangles_Europe.png",
-                     pnames=vnam, TriMesh=xTriangles )
+                     pnames=vnam, TriMesh=xTriangles, lProj=(not l_work_with_dist))
 
 
 
@@ -101,12 +109,12 @@ print('\n *** We have '+str(NbQ)+' quadrangles!')
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="02_Mesh_Map_Quadrangles_Europe.png",
-                     pnames=vnam, QuadMesh=xQuads, TriMesh=xTriangles )
+                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=(not l_work_with_dist) )
 
 
 
 
-
+exit(0)
 ### Mhh do the same in distance rather than `lon,lat`
 
 print('\n\n DISTANCES !!!')

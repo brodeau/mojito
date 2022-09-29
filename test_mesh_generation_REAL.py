@@ -14,6 +14,8 @@ import lbrgps   as lbr
 
 idebug=2
 
+l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+
 cf_in = 'npz/SELECTION_buoys_RGPS_stream001_1997-01-04.npz'
 
 data = nmp.load(cf_in)
@@ -51,6 +53,21 @@ if idebug>0:
     print('')
 
 
+if l_work_with_dist:
+    from cartopy import crs
+    srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps
+    srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?
+
+    zx,zy,_ = srs_trg.transform_points(srs_src, Xcoor[:,0], Xcoor[:,1]).T ; # km
+    Xcoor[:,0] = zx[:]
+    Xcoor[:,1] = zy[:]
+
+    del zx, zy
+
+
+
+
+    
 # Generating triangular meshes out of the cloud of points:
 TRI = Delaunay(Xcoor)
 
@@ -70,35 +87,20 @@ if idebug>1:
         print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
 
 
-zlon = Xcoor[:,0]
-zlat = Xcoor[:,1]
-
-
-from cartopy import crs
-srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps                                                     
-srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?                                                
-
-zx,zy,_ = srs_trg.transform_points(srs_src, zlon, zlat).T ; # km???
-
-
-
-        
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( zx, zy, cfig="01_Mesh_Map_TRIangles_Europe.png",
+kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="01_Mesh_Map_TRIangles_Europe.png",
                      pnames=vnam, TriMesh=xTriangles, lProj=False, izoom=7 )
-#exit(0)
 
 # Merge triangles into quadrangles:
 xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
 
+if len(xQuads) <= 0: exit(0)
+
 (NbQ,_) = nmp.shape(xQuads)
 print('\n *** We have '+str(NbQ)+' quadrangles!')
 
-kk = lbr.ShowTQMesh( zx, zy, cfig="01_Mesh_Map_TRIangles_Europe.png",
-                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, izoom=10 )
-
-
-
 # Show quadrangles on a map:
+kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="02_Mesh_Map_Quadrangles_Europe.png",
+                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, izoom=10 )
 
 

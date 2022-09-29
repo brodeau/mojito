@@ -47,6 +47,31 @@ vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # No
 
 
 
+def __initStyle__( font_rat=1., color_top='k' ):
+    #
+    global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mail
+    #
+    params = { 'font.family':'Open Sans',
+               'font.weight':    'normal',
+               'font.size':       int(12.*font_rat),
+               'legend.fontsize': int(22.*font_rat),
+               'xtick.labelsize': int(12.*font_rat),
+               'ytick.labelsize': int(12.*font_rat),
+               'axes.labelsize':  int(15.*font_rat) }
+    #
+    mpl.rcParams.update(params)
+    #
+    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*font_rat), 'color':color_top }
+    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(18.*font_rat), 'color':color_top }
+    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*font_rat), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(25.*font_rat), 'color':color_top }
+    cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*font_rat), 'color':'0.8'}
+    #
+    return 0
+
+
+
+
 
 def __figMap__( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png', ms=5, ralpha=0.5, caller='unknown' ):
     '''
@@ -204,23 +229,36 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
     ###  * lProj: True   => we expect degrees for `pX,pY` and use a projection
     ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
     '''
-    if lProj: import cartopy.crs as ccrs
     
-    fig = plt.figure(num=1, figsize=(12*izoom,9*izoom), facecolor='white')
+    kk = __initStyle__(font_rat=1.)
     
-    if lProj: 
+    if lProj:
+        # Geograhic coordinates (lon,lat)
+        import cartopy.crs as ccrs
         Proj = ccrs.PlateCarree()
+        vfig = (12*izoom,9*izoom)
+    else:
+        # Cartesian coordinates (x,y)
+        #  => we want to preserve aspect ratio!
+        xA, yA = nmp.min(pX), nmp.min(pY)
+        xB, yB = nmp.max(pX), nmp.max(pY)
+        Lx, Ly = xB-xA, yB-yA
+        dx, dy = 0.05*(Lx), 0.05*(Ly)
+        vfig = (10*izoom,10*Ly/Lx*izoom)
+    
+    fig = plt.figure(num=1, figsize=vfig, facecolor='white')
+    
+    if lProj:         
         ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
         ax.stock_img()
-        ax.set_extent([-15, 30, 32, 65], crs=Proj)
+        ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
     else:
-        ax   = plt.axes([0.05, 0.05, 0.92, 0.92], facecolor='0.75')
-        dx, dy = 0.05*(nmp.max(pX)-nmp.min(pX)), 0.05*(nmp.max(pY)-nmp.min(pY))
-        plt.axis([nmp.min(pX)-dx,nmp.max(pX)+dx, nmp.min(pY)-dy,nmp.max(pY)+dy])
+        ddx = dx*Ly/Lx
+        ax   = plt.axes([ddx/Lx, dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
+        plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
 
     # Showing points:
     plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200) ; #, alpha=0.5)
-
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
