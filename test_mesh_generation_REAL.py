@@ -129,12 +129,14 @@ else:
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
-                     pnames=vnam, TriMesh=xTriangles, lProj=False, izoom=7 )
+                     TriMesh=xTriangles, lProj=False, zoom=20 )
+#                     pnames=vnam, TriMesh=xTriangles, lProj=False, zoom=7 )
 
 
     
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+cfroot+'.png',
-                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, izoom=7 )
+                     TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, zoom=20 )
+#                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, zoom=7 )
     
 
