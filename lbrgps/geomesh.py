@@ -11,7 +11,7 @@ class Triangle:
         '''
         self.length    = nT
         # ID:    [(nT)     array of integers] ID of the triangle
-        self.ID        = nmp.array([i for i in range(nT)])
+        self.ID        = nmp.array([i for i in range(nT)], dtype=int)
         self.pointIDs  = nmp.array(xPntID, dtype=int)
         self.pointCoor = nmp.array(xCoor)
         self.neighbors = nmp.array(xNbgh, dtype=int)
@@ -32,7 +32,7 @@ class Quadrangle:
         '''
         self.length    = nQ
         # ID:    [(nT)     array of integers] ID of the triangle
-        self.ID        = nmp.array([i for i in range(nQ)])
+        self.ID        = nmp.array([i for i in range(nQ)], dtype=int)
         self.pointIDs  = nmp.array(xPntID, dtype=int)
         self.pointCoor = nmp.array(xCoor)
 
