@@ -77,76 +77,66 @@ if l_work_with_dist:
 # Generating triangular meshes out of the cloud of points:
 TRI = Delaunay(Xcoor)
 
-xTriangles = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
-(NbT,_) = nmp.shape(xTriangles) ; # NbT => number of triangles
+(NbT,_) = nmp.shape(xTpnts) ; # NbT => number of triangles
 
 xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
 print('\n *** We have '+str(NbT)+' triangles!')
 
+zTcoor = nmp.array([ [ Xcoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
+
+# Conversion to the `Triangle` class:
+TRIAS = lbr.Triangle( NbT, xTpnts, zTcoor, xNeighbors )
+
+del xTpnts, zTcoor, xNeighbors, TRI
+
+#print('class TRIAS:')
+#print(TRIAS.length,'\n')
+#print(TRIAS.ID,'\n')
+#print(TRIAS.pointIDs,'\n')
+#print(TRIAS.pointCoor,'\n')
+#print(TRIAS.neighbors,'\n')
+
+
 
 if idebug>1:
-    for jx in range(NbT):
-        vpl = xTriangles[jx,:] ; # 3 point indices forming the triangle
-        print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-        print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
-
+    for jT in range(NbT):
+        vpl = TRIAS.pointIDs[jT,:] ;
+        print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
+        print('    => neighbor triangles are:',TRIAS.neighbors[jT,:],'\n')
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="01_Mesh_Map_TRIangles_Europe.png",
-                     pnames=vnam, TriMesh=xTriangles, lProj=(not l_work_with_dist))
-
+                     pnames=vnam, TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))
 
 
 # Merge triangles into quadrangles:
-xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, Xcoor, vnam,  iverbose=idebug )
+xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, Xcoor, vnam,  iverbose=idebug )
 
-if len(xQuads) <= 0: exit(0)
+if len(xQpnts) <= 0: exit(0)
 
-(NbQ,_) = nmp.shape(xQuads)
+(NbQ,_) = nmp.shape(xQpnts)
 print('\n *** We have '+str(NbQ)+' quadrangles!')
+
+
+
+QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
+#print('class QUADS:')
+#print(QUADS.length,'\n')
+#print(QUADS.ID,'\n')
+#print(QUADS.pointIDs,'\n')
+#print(QUADS.pointCoor,'\n')
+#exit(0)
+
+del xQpnts, xQcoor
+
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="02_Mesh_Map_Quadrangles_Europe.png",
-                     pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=(not l_work_with_dist) )
+                     pnames=vnam, TriMesh=TRIAS.pointIDs, QuadMesh=QUADS.pointIDs, lProj=(not l_work_with_dist) )
 
 
-
-
-exit(0)
-### Mhh do the same in distance rather than `lon,lat`
-
-print('\n\n DISTANCES !!!')
-
-x0 = Xcoor[:,0]
-y0 = Xcoor[:,1]
-
-lpyproj=True
-
-if lpyproj:
-    import pyproj as proj
-    # setup your projections:
-    crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
-    crs_trg = proj.Proj(init='epsg:3035') # Europe ?
-    #
-    #crs_src = proj.Proj(init='ups') # LatLon with WGS84 datum used by GPS units and Google Earth 
-
-    
-    x1, y1 = proj.transform(crs_src, crs_trg, x0, y0)
-    x1, y1 = x1/1000., y1/1000. ; # to km...
-else:
-    from cartopy import crs
-    #
-    #crs_src = crs.epsg(4326)
-    #crs_trg = crs.epsg(3035)
-    srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps
-    srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?
-    x1,y1,_ = crs_trg.transform_points(crs_src, x0, y0)
-
-    
-
-kk = lbr.ShowTQMesh( x1, y1, cfig="02_CARTESIAN_Mesh_Map_Quadrangles_Europe.png",
-                     pnames=vnam, QuadMesh=xQuads, TriMesh=xTriangles, lProj=False )
 
 

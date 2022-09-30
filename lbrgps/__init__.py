@@ -3,5 +3,6 @@
 #
 ############################################################################
 
-from .util import *
-from .plot import * ; #ShowBuoysMap, ShowBuoysMap_Trec, ShowTMeshMap, plot_interp_series, ShowQMeshMap, ShowTMeshMapCartesian
+from .util    import *
+from .plot    import *
+from .geomesh import *

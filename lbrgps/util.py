@@ -8,21 +8,20 @@ from sys import exit
 #from os import path, mkdir
 import numpy as nmp
 
+# Sloppy:
 rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
 rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
-
 rQang_min =  65. ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 120. ; # maximum angle tolerable in a quadrangle [degree]
+rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
 
+# Strict:
+#rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
+#rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
+#rQang_min =  75. ; # minimum angle tolerable in a quadrangle [degree]
+#rQang_max = 105. ; # maximum angle tolerable in a quadrangle [degree]
+#rdRatio_max = 0.25 ; # value that `1 - abs(L/H)` should not overshoot!
 
-
-rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
-
-rQang_min =  75. ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 105. ; # maximum angle tolerable in a quadrangle [degree]
-
-rdRatio_max = 0.25 ; # value that `1 - abs(L/H)` should not overshoot!
 
 def LoadDist2CoastNC( cNCfile ):
     from climporn import chck4f
@@ -450,11 +449,15 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
                 if ivb>0: print('       => No valid neighbors for this triangle...')
     ## -- for jT in range(NbT) --
 
-    zQuads = nmp.array(Quads)
+    zQpoints = nmp.array(Quads)
+    zQcoor   = []
     del Quads
-
+    
     if NbQ>0:
-                
+
+        # Coordinates of the points:
+        zQcoor = nmp.array([ [ pCoor[i,:] for i in zQpoints[jQ,:] ] for jQ in range(NbQ) ]) ; # Shape is (NbQ,4,2) !!!
+        
         # Some sanity checks:
         if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
             print('ERROR [Triangles2Quads]: agreement between number of merged triangles and created quads!')
@@ -467,12 +470,12 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
         if ivb>0:
             print('       => Summary about the '+str(NbQ)+' Quads generated:')
             for jQ in range(NbQ):
-                print('        * Quad #'+str(jQ)+' => ', zQuads[jQ,:], '(', [ pnam[i] for i in zQuads[jQ,:] ],')')            
+                print('        * Quad #'+str(jQ)+' => ', zQpoints[jQ,:], '(', [ pnam[i] for i in zQpoints[jQ,:] ],')')            
 
     else:
         print('\n WARNING => No Quads could be generated! :(')
     print('')
             
-    return zQuads
+    return zQpoints, zQcoor
 
 

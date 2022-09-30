@@ -230,7 +230,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
     ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
     '''
 
-    zrat = 7./zoom
+    zrat = 1./zoom
     
     kk = __initStyle__(font_rat=zrat)    
     
