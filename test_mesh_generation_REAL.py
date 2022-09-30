@@ -23,88 +23,118 @@ if not len(argv) in [2]:
     exit(0)
 cf_in = argv[1]
 
-data = nmp.load(cf_in)
 
-it   = data['itime']
-vlon = data['vlon']
-vlat = data['vlat']
-vids = data['vids']
+cfroot = split('.npz',path.basename(cf_in))[0]
 
-if len(vids) != len(vlon) or len(vids) != len(vlat):
-    print('ERROR Y1!')
-    exit(0)
+cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
+cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
-crfig = split('.npz',path.basename(cf_in))[0]
+
+if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
+
+    # Have to build triangle and quadrangle mesh!
+
+    print('\n *** We are going to build triangle and quad meshes!')
     
-ct = epoch2clock(it)
+    data = nmp.load(cf_in)
 
-print('\n *** Stream at '+ct)
+    it   = data['itime']
+    vlon = data['vlon']
+    vlat = data['vlat']
+    vids = data['vids']
 
-NbP = len(vlon) ; # number of points
+    if len(vids) != len(vlon) or len(vids) != len(vlat):
+        print('ERROR Y1!')
+        exit(0)
 
-print('\n *** We have '+str(NbP)+' points!')
+    ct = epoch2clock(it)
 
+    print('\n *** Stream at '+ct)
 
-vIDs  = nmp.array( vids )
-xCoor = nmp.array([[vlon[i],vlat[i]] for i in range(NbP) ]             )
-vnam  = nmp.array([ str(i) for i in vids ], dtype='U32')
-#print(vnam)
+    NbP = len(vlon) ; # number of points
 
-
-if idebug>0:
-    for jc in range(NbP):
-        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(xCoor[jc,1],2))+', lon='+str(round(xCoor[jc,0],2)))
-    print('')
+    print('\n *** We have '+str(NbP)+' points!')
 
 
-if l_work_with_dist:
-    from cartopy import crs
-    srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps
-    srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?
+    vIDs  = nmp.array( vids )
+    xCoor = nmp.array([[vlon[i],vlat[i]] for i in range(NbP) ]             )
+    vnam  = nmp.array([ str(i) for i in vids ], dtype='U32')
 
-    zx,zy,_ = srs_trg.transform_points(srs_src, xCoor[:,0], xCoor[:,1]).T ; # km
-    xCoor[:,0] = zx[:]
-    xCoor[:,1] = zy[:]
+    if idebug>0:
+        for jc in range(NbP):
+            print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(xCoor[jc,1],2))+', lon='+str(round(xCoor[jc,0],2)))
+        print('')
+    
+    
+    if l_work_with_dist:
+        from cartopy import crs
+        srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps
+        srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?
+    
+        zx,zy,_ = srs_trg.transform_points(srs_src, xCoor[:,0], xCoor[:,1]).T ; # km
+        xCoor[:,0] = zx[:]
+        xCoor[:,1] = zy[:]
+    
+        del zx, zy
+    
+                    
+    # Generating triangular meshes out of the cloud of points:
+    TRI = Delaunay(xCoor)
+    
+    xTriangles = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
-    del zx, zy
+    (NbT,_) = nmp.shape(xTriangles) ; # NbT => number of triangles
 
+    print('\n *** We have '+str(NbT)+' triangles!')
+
+    # Save the triangular mesh info:
+    nmp.savez( cf_npzT, Coor=xCoor, Triangles=xTriangles, names=vnam )
+    
+    
+    xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+
+    if idebug>1:
+        for jx in range(NbT):
+            vpl = xTriangles[jx,:] ; # 3 point indices forming the triangle
+            print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
+            print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
+    
+    # Merge triangles into quadrangles:
+    xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, xCoor, vnam,  iverbose=idebug )
+    
+    if len(xQuads) <= 0: exit(0)
+    
+    (NbQ,_) = nmp.shape(xQuads)
+    print('\n *** We have '+str(NbQ)+' quadrangles!')
+
+    # Save the quadrangular mesh info:
+    nmp.savez( cf_npzQ, Coor=xCoor, Quads=xQuads, names=vnam )
+
+else:
+
+    print('\n *** We are going to READ triangle and quad meshes in the npz files...')
+
+    dataT = nmp.load(cf_npzT)
+    xCoor      = dataT['Coor'] 
+    xTriangles = dataT['Triangles']
+    vnam       = dataT['names'] 
+
+    dataQ = nmp.load(cf_npzQ)
+    xQuads = dataQ['Quads'] 
 
 
 
     
-# Generating triangular meshes out of the cloud of points:
-TRI = Delaunay(xCoor)
-
-xTriangles = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-
-(NbT,_) = nmp.shape(xTriangles) ; # NbT => number of triangles
-
-xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
-print('\n *** We have '+str(NbT)+' triangles!')
-
-
-if idebug>1:
-    for jx in range(NbT):
-        vpl = xTriangles[jx,:] ; # 3 point indices forming the triangle
-        print(' Triangle #'+str(jx)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-        print('    => neighbor triangles are:',xNeighbors[jx,:],'\n')
 
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+crfig+'.png',
+kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
                      pnames=vnam, TriMesh=xTriangles, lProj=False, izoom=7 )
 
-# Merge triangles into quadrangles:
-xQuads = lbr.Triangles2Quads( xTriangles, xNeighbors, xCoor, vnam,  iverbose=idebug )
 
-if len(xQuads) <= 0: exit(0)
-
-(NbQ,_) = nmp.shape(xQuads)
-print('\n *** We have '+str(NbQ)+' quadrangles!')
-
+    
 # Show quadrangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+crfig+'.png',
+kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+cfroot+'.png',
                      pnames=vnam, TriMesh=xTriangles, QuadMesh=xQuads, lProj=False, izoom=7 )
-
+    
 
