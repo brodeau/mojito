@@ -17,9 +17,11 @@ idebug=2
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 
-#cf_in = 'npz/SELECTION_buoys_RGPS_stream000_1997-01-04.npz'
-#cf_in = 'npz/SELECTION_buoys_RGPS_stream002_1997-01-06.npz'
-cf_in = 'npz/SELECTION_buoys_RGPS_stream002_1997-01-07.npz'
+
+if not len(argv) in [2]:
+    print('Usage: '+argv[0]+' <file_RGPS.npz>')
+    exit(0)
+cf_in = argv[1]
 
 data = nmp.load(cf_in)
 
@@ -28,12 +30,9 @@ vlon = data['vlon']
 vlat = data['vlat']
 vids = data['vids']
 
-#print(it)
-#print(vlon)
 if len(vids) != len(vlon) or len(vids) != len(vlat):
     print('ERROR Y1!')
     exit(0)
-
 
 crfig = split('.npz',path.basename(cf_in))[0]
     
