@@ -113,8 +113,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     #print(TRIAS.neighbors,'\n')
 
     # Save the triangular mesh info:
-    #nmp.savez( cf_npzT, Coor=xCoor, Triangles=xTpnts, names=vnam )
-    nmp.savez( cf_npzT, pointCoordinates=xCoor, triangles=TRIAS )
+    nmp.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.pointIDs, names=vnam )
     print('\n *** "'+cf_npzT+'" written!')
 
 
@@ -126,11 +125,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     cc = '_gc'
     if l_work_with_dist: cc = '_cc'
-
-    # Show triangles on a map:
-    kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
-                         pnames=vnam, TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))
-
 
     # Merge triangles into quadrangles:
     xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
@@ -150,10 +144,14 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xQpnts, xQcoor
 
     # Save the quadrangular mesh info:
-    #nmp.savez( cf_npzQ, Coor=xCoor, Quads=xQuads, names=vnam )
-    nmp.savez( cf_npzQ, pointCoordinates=xCoor, quadrangles=QUADS )
+    nmp.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.pointIDs, names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
 
+    # For plot to come:
+    Triangles   = TRIAS.pointIDs
+    Quadrangles = QUADS.pointIDs
+
+    
 else:
 
     print('\n *** We are going to READ triangle and quad meshes in the npz files...')
@@ -161,25 +159,23 @@ else:
     dataT = nmp.load(cf_npzT, allow_pickle=True)
     xCoor      = dataT['pointCoordinates']
     #vnam       = dataT['names']
-    TRIAS = dataT['triangles']
+    Triangles  = dataT['Triangles']
     
     dataQ = nmp.load(cf_npzQ, allow_pickle=True)
-    QUADS = dataQ['quadrangles']
+    Quadrangles = dataQ['Quadrangles']
 
     print('')
 
 
 
 
-print(TRIAS)
-
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
-                     TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))
+                     TriMesh=Triangles, lProj=(not l_work_with_dist), zoom=3)
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+cfroot+'.png',
-                     TriMesh=TRIAS.pointIDs, QuadMesh=QUADS.pointIDs, lProj=(not l_work_with_dist) )
+                     TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist), zoom=3 )
 
 
 
