@@ -13,8 +13,11 @@ import lbrgps   as lbr
 
 idebug=2
 
-#l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
-l_work_with_dist = False ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+l_cartopy = True
+#l_cartopy = False
+
+#l_work_with_dist = False ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 
 #y_gre, x_gre = 45.184369, 5.734251
 
@@ -56,15 +59,27 @@ if idebug>0:
 
 
 if l_work_with_dist:
-    # Distance, not degrees...
-    import pyproj as proj
-    crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
-    crs_trg = proj.Proj(init='epsg:3035') # Europe ?
-    
-    zx, zy = proj.transform(crs_src, crs_trg, Xcoor[:,0], Xcoor[:,1])
-    Xcoor[:,0], Xcoor[:,1] = zx/1000., zy/1000. ; # to km...
+    # Distance, aka cartesian coordinates, not degrees... => [km]
+    x0, y0 = Xcoor[:,0], Xcoor[:,1]
+    if l_cartopy:
+        from cartopy.crs import PlateCarree, NorthPolarStereo, epsg    
+        crs_src = PlateCarree() 
+        #crs_trg = NorthPolarStereo(central_longitude=nmp.min(Xcoor[:,0]), true_scale_latitude=45) ; # Europe!, x-axis starts at westernmost city!
+        # Alternative:
+        #crs_trg = epsg(4326) ; # LatLon with WGS84 datum used by GPS units and Google Earth
+        crs_trg = epsg(3035)  ; # Europe!
+        zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T ; # to km!
+        
+    else:
+        import pyproj as proj
+        crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
+        crs_trg = proj.Proj(init='epsg:3035') # Europe ?    
+        zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)  # to km...
+        
 
-    del zx, zy
+    Xcoor[:,0],Xcoor[:,1] = zx/1000., zy/1000.
+
+    del x0, y0, zx, zy
 
 
 # Generating triangular meshes out of the cloud of points:

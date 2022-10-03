@@ -23,6 +23,14 @@ rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
 #rdRatio_max = 0.25 ; # value that `1 - abs(L/H)` should not overshoot!
 
 
+def __distSquare__(pC1, pC2):
+    ''' Square of the distance between 2 points based on their [x,y] coordinates '''    
+    xDiff = pC1[0] - pC2[0]
+    yDiff = pC1[1] - pC2[1]
+    return xDiff*xDiff + yDiff*yDiff
+
+
+
 def LoadDist2CoastNC( cNCfile ):
     from climporn import chck4f
     from netCDF4  import Dataset
@@ -233,10 +241,10 @@ def QuadSpecsFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
     # Ratio between apparent height and width of the quadrangle
     zcoor_com = nmp.array([ pCoor[i,:] for i in v2com ])
     zcoor_sol = nmp.array([ pCoor[i,:] for i in v2sol ])
-    Lc11 = sqrt( __lengthSquare__(zcoor_com[0,:], zcoor_sol[0,:]) ) ; #lilo
-    Lc21 = sqrt( __lengthSquare__(zcoor_com[1,:], zcoor_sol[0,:]) ) ; #lilo
-    Lc12 = sqrt( __lengthSquare__(zcoor_com[1,:], zcoor_sol[1,:]) ) ; #lilo
-    Lc22 = sqrt( __lengthSquare__(zcoor_com[0,:], zcoor_sol[1,:]) ) ; #lilo
+    Lc11 = sqrt( __distSquare__(zcoor_com[0,:], zcoor_sol[0,:]) ) ; #lilo
+    Lc21 = sqrt( __distSquare__(zcoor_com[1,:], zcoor_sol[0,:]) ) ; #lilo
+    Lc12 = sqrt( __distSquare__(zcoor_com[1,:], zcoor_sol[1,:]) ) ; #lilo
+    Lc22 = sqrt( __distSquare__(zcoor_com[0,:], zcoor_sol[1,:]) ) ; #lilo
     ratio = (Lc11+Lc12) / (Lc21+Lc22)
     del zcoor_com, zcoor_sol, Lc11, Lc21, Lc12, Lc22
         
@@ -300,18 +308,14 @@ def lQuadOK( pAngles, ratio ):
 
 
 
-def __lengthSquare__(X, Y):
-    xDiff = X[0] - Y[0]
-    yDiff = X[1] - Y[1]
-    return xDiff*xDiff + yDiff*yDiff
 
 def ThreeAngles(pCoorT):
     from math import sqrt, acos, pi
     ## pCoorT: `x,y` coordinates of the 3 points shape=(3,2)
     # Square of lengths be a2, b2, c2
-    a2 = __lengthSquare__(pCoorT[1,:], pCoorT[2,:])
-    b2 = __lengthSquare__(pCoorT[0,:], pCoorT[2,:])
-    c2 = __lengthSquare__(pCoorT[0,:], pCoorT[1,:])
+    a2 = __distSquare__(pCoorT[1,:], pCoorT[2,:])
+    b2 = __distSquare__(pCoorT[0,:], pCoorT[2,:])
+    c2 = __distSquare__(pCoorT[0,:], pCoorT[1,:])
 
     # length of sides be a, b, c
     a = sqrt(a2);
