@@ -13,39 +13,38 @@ import lbrgps   as lbr
 
 idebug=2
 
-l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+#l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+l_work_with_dist = False ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 
 #y_gre, x_gre = 45.184369, 5.734251
 
 
 xcities = [] ; ip = 0
 #
-xcities.append({"ID":ip,"city":"Paris"  , "lat":48.835334, "lon":2.353824 }); ip=ip+1
-xcities.append({"ID":ip,"city":"Rome"   , "lat":41.89,     "lon":12.49    }); ip=ip+1
-xcities.append({"ID":ip,"city":"Andorra", "lat":42.506939, "lon":1.521247 }); ip=ip+1
-xcities.append({"ID":ip,"city":"Athen"  , "lat":37.984149, "lon":23.727984}); ip=ip+1
-xcities.append({"ID":ip,"city":"Belgrad", "lat":44.817813, "lon":20.456897}); ip=ip+1
-xcities.append({"ID":ip,"city":"Berlin" , "lat":52.517037, "lon":13.388860}); ip=ip+1
-xcities.append({"ID":ip,"city":"Bern"   , "lat":46.948271, "lon":7.451451 }); ip=ip+1
-xcities.append({"ID":ip,"city":"London" , "lat":51.510433, "lon":-0.129711}); ip=ip+1
-xcities.append({"ID":ip,"city":"Esbjerg", "lat":55.477434, "lon":8.468160 }); ip=ip+1
-xcities.append({"ID":ip,"city":"Brest",   "lat":48.389657, "lon":-4.481700}); ip=ip+1
-xcities.append({"ID":ip,"city":"Tunis",   "lat":36.802481, "lon":10.168440}); ip=ip+1
-xcities.append({"ID":ip,"city":"Madrid",  "lat":40.414060, "lon":-3.699336}); ip=ip+1
-xcities.append({"ID":ip,"city":"Alger",   "lat":36.732591, "lon": 3.101878}); ip=ip+1
-xcities.append({"ID":ip,"city":"Dublin",  "lat":53.341825, "lon":-6.267302}); ip=ip+1
-xcities.append({"ID":ip,"city":"Porto",   "lat":41.144559, "lon":-8.622812}); ip=ip+1
-xcities.append({"ID":ip,"city":"Tanger",  "lat":35.771494, "lon":-5.836354}); ip=ip+1
-xcities.append({"ID":ip,"city":"Bergen",  "lat":60.378183, "lon": 5.333694}); ip=ip+1
-xcities.append({"ID":ip,"city":"Stockholm","lat":59.310631,"lon":18.067388}); ip=ip+1
-xcities.append({"ID":ip,"city":"Ghardaia","lat":32.483352,"lon":3.681163}); ip=ip+1
+xcities.append({"ID":ip,"city":"Paris"  ,  "lat":48.835334, "lon":2.353824 }); ip=ip+1
+xcities.append({"ID":ip,"city":"Rome"   ,  "lat":41.89,     "lon":12.49    }); ip=ip+1
+xcities.append({"ID":ip,"city":"Andorra",  "lat":42.506939, "lon":1.521247 }); ip=ip+1
+xcities.append({"ID":ip,"city":"Athen"  ,  "lat":37.984149, "lon":23.727984}); ip=ip+1
+xcities.append({"ID":ip,"city":"Belgrad",  "lat":44.817813, "lon":20.456897}); ip=ip+1
+xcities.append({"ID":ip,"city":"Berlin" ,  "lat":52.517037, "lon":13.388860}); ip=ip+1
+xcities.append({"ID":ip,"city":"Bern"   ,  "lat":46.948271, "lon":7.451451 }); ip=ip+1
+xcities.append({"ID":ip,"city":"London" ,  "lat":51.510433, "lon":-0.129711}); ip=ip+1
+xcities.append({"ID":ip,"city":"Esbjerg",  "lat":55.477434, "lon":8.468160 }); ip=ip+1
+xcities.append({"ID":ip,"city":"Brest",    "lat":48.389657, "lon":-4.481700}); ip=ip+1
+xcities.append({"ID":ip,"city":"Tunis",    "lat":36.802481, "lon":10.168440}); ip=ip+1
+xcities.append({"ID":ip,"city":"Madrid",   "lat":40.414060, "lon":-3.699336}); ip=ip+1
+xcities.append({"ID":ip,"city":"Alger",    "lat":36.732591, "lon": 3.101878}); ip=ip+1
+xcities.append({"ID":ip,"city":"Dublin",   "lat":53.341825, "lon":-6.267302}); ip=ip+1
+xcities.append({"ID":ip,"city":"Porto",    "lat":41.144559, "lon":-8.622812}); ip=ip+1
+xcities.append({"ID":ip,"city":"Tanger",   "lat":35.771494, "lon":-5.836354}); ip=ip+1
+xcities.append({"ID":ip,"city":"Bergen",   "lat":60.378183, "lon": 5.333694}); ip=ip+1
+xcities.append({"ID":ip,"city":"Stockholm","lat":59.310631, "lon":18.067388}); ip=ip+1
+xcities.append({"ID":ip,"city":"Ghardaia", "lat":32.483352, "lon": 3.681163}); ip=ip+1
 
 NbP = len(xcities) ; # number of points
-
 print('\n *** We have '+str(NbP)+' cities!')
 
-
-# Conversion of dictionary to Numpy arrays:
+# Conversion from dictionary to Numpy arrays:
 vIDs  = nmp.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
 Xcoor = nmp.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
 vnam  = nmp.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
@@ -57,23 +56,17 @@ if idebug>0:
 
 
 if l_work_with_dist:
-    
+    # Distance, not degrees...
     import pyproj as proj
     crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
     crs_trg = proj.Proj(init='epsg:3035') # Europe ?
     
     zx, zy = proj.transform(crs_src, crs_trg, Xcoor[:,0], Xcoor[:,1])
-    zx, zy = zx/1000., zy/1000. ; # to km...
-
-    Xcoor[:,0] = zx[:]
-    Xcoor[:,1] = zy[:]
+    Xcoor[:,0], Xcoor[:,1] = zx/1000., zy/1000. ; # to km...
 
     del zx, zy
 
 
-
-
-    
 # Generating triangular meshes out of the cloud of points:
 TRI = Delaunay(Xcoor)
 
@@ -107,21 +100,23 @@ if idebug>1:
         print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
         print('    => neighbor triangles are:',TRIAS.neighbors[jT,:],'\n')
 
+cc = '_gc'
+if l_work_with_dist: cc = '_cc'
+        
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="01_Mesh_Map_TRIangles_Europe.png",
+kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))
 
 
 # Merge triangles into quadrangles:
 xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, Xcoor, vnam,  iverbose=idebug )
-
 if len(xQpnts) <= 0: exit(0)
 
 (NbQ,_) = nmp.shape(xQpnts)
 print('\n *** We have '+str(NbQ)+' quadrangles!')
 
 
-
+# Conversion to the `Quadrangle` class:
 QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
 #print('class QUADS:')
 #print(QUADS.length,'\n')
@@ -129,14 +124,11 @@ QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
 #print(QUADS.pointIDs,'\n')
 #print(QUADS.pointCoor,'\n')
 #exit(0)
-
 del xQpnts, xQcoor
 
 
 # Show quadrangles on a map:
-kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig="02_Mesh_Map_Quadrangles_Europe.png",
+kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig='02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRIAS.pointIDs, QuadMesh=QUADS.pointIDs, lProj=(not l_work_with_dist) )
-
-
 
 

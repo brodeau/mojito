@@ -270,7 +270,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
         for jT in range(nbT):
             vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
             rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal')
+            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -280,15 +280,15 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
             vx, vy  = pX[vids], pY[vids]
             vX, vY = nmp.concatenate([vx[:], vx[0:1]]), nmp.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
             plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
-            plt.fill_between(vX, vY, fc=col_blu, zorder=95, alpha=0.3)
+            plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
             # Indicate quadrangle # in its center:
             rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=110)
+            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=160)
 
     if len(pnames)>0:
         i=0
         for city in pnames:
-            ax.annotate(city, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=220)
+            ax.annotate(city, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=500)
             i=i+1
 
     plt.savefig(cfig)
