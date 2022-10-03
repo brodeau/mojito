@@ -9,7 +9,7 @@
 #SBATCH -e err_RGPS_selection_%J.err
 #SBATCH --time=02:55:00
 #SBATCH --account=python
-#SBATCH --mem=8000                                                                                                                                                              
+#SBATCH --mem=8000
 ##################################################################
 #
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
 
     if not path.exists('./npz'): mkdir('./npz')
-    
+
     narg = len(argv)
     if not narg in [3]:
         print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR>')
@@ -196,8 +196,8 @@ if __name__ == '__main__':
     ID_in_use = []  ; # keeps memory of buoys that are already been considered!
     xstreams  = []  ; # array of dictionnary with informations to store...
 
-    
-    
+
+
     rt_prev_stream = 1e12
     istream        = -1
     for jt in range(Nts):
@@ -332,19 +332,19 @@ if __name__ == '__main__':
             #if idebug>1: print("ID = "+str(jid)+" => points =>",idx_id)
             nr = len(idx_id)
             if jb==jb_max: vt[:] = vtime0[idx_id] ; #lolo
-            
+
             xlon[:nr,jb] = vlon0[idx_id]
             xlat[:nr,jb] = vlat0[idx_id]
 
         # Saving 1 file per stream and per date:
         for jt in range(len(vt)):
-            ct = split('_',epoch2clock(vt[jt]))[0] ; # just the day !            
+            ct = split('_',epoch2clock(vt[jt]))[0] ; # just the day !
             cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
             nmp.savez( cf_out, itime=vt[jt], vlon=xlon[jt,:], vlat=xlat[jt,:], vids=vids[:] )
-            
+
         if idebug>0:
             #kf = lbr.ShowBuoysMap( VTi[js], vlon[:], vlat[:], pvIDs=vids, cnmfig='SELECTION_buoys_RGPS' )
             kf = lbr.ShowBuoysMap_Trec( vt, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js), clock_res='d' )
 
-            
-            
+
+
