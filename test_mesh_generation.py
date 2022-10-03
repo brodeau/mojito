@@ -49,101 +49,106 @@ print('\n *** We have '+str(NbP)+' cities!')
 
 # Conversion from dictionary to Numpy arrays:
 vIDs  = nmp.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
-Xcoor = nmp.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
+xCoor = nmp.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
 vnam  = nmp.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
 
 if idebug>0:
     for jc in range(NbP):
-        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(Xcoor[jc,1],2))+', lon='+str(round(Xcoor[jc,0],2)))
+        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(xCoor[jc,1],2))+', lon='+str(round(xCoor[jc,0],2)))
     print('')
 
 
-if l_work_with_dist:
-    # Distance, aka cartesian coordinates, not degrees... => [km]
-    x0, y0 = Xcoor[:,0], Xcoor[:,1]
-    if l_cartopy:
-        from cartopy.crs import PlateCarree, NorthPolarStereo, epsg    
-        crs_src = PlateCarree() 
-        #crs_trg = NorthPolarStereo(central_longitude=nmp.min(Xcoor[:,0]), true_scale_latitude=45) ; # Europe!, x-axis starts at westernmost city!
-        # Alternative:
-        #crs_trg = epsg(4326) ; # LatLon with WGS84 datum used by GPS units and Google Earth
-        crs_trg = epsg(3035)  ; # Europe!
-        zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T ; # to km!
-        
-    else:
-        import pyproj as proj
-        crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
-        crs_trg = proj.Proj(init='epsg:3035') # Europe ?    
-        zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)  # to km...
-        
 
-    Xcoor[:,0],Xcoor[:,1] = zx/1000., zy/1000.
-
-    del x0, y0, zx, zy
+if 1==1:
 
 
-# Generating triangular meshes out of the cloud of points:
-TRI = Delaunay(Xcoor)
+    if l_work_with_dist:
+        # Distance, aka cartesian coordinates, not degrees... => [km]
+        x0, y0 = xCoor[:,0], xCoor[:,1]
+        if l_cartopy:
+            from cartopy.crs import PlateCarree, NorthPolarStereo, epsg
+            crs_src = PlateCarree()
+            #crs_trg = NorthPolarStereo(central_longitude=nmp.min(xCoor[:,0]), true_scale_latitude=45) ; # Europe!, x-axis starts at westernmost city!
+            # Alternative:
+            #crs_trg = epsg(4326) ; # LatLon with WGS84 datum used by GPS units and Google Earth
+            crs_trg = epsg(3035)  ; # Europe!
+            zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T ; # to km!
 
-xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-
-(NbT,_) = nmp.shape(xTpnts) ; # NbT => number of triangles
-
-xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
-print('\n *** We have '+str(NbT)+' triangles!')
-
-zTcoor = nmp.array([ [ Xcoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
-
-# Conversion to the `Triangle` class:
-TRIAS = lbr.Triangle( NbT, xTpnts, zTcoor, xNeighbors )
-
-del xTpnts, zTcoor, xNeighbors, TRI
-
-#print('class TRIAS:')
-#print(TRIAS.length,'\n')
-#print(TRIAS.ID,'\n')
-#print(TRIAS.pointIDs,'\n')
-#print(TRIAS.pointCoor,'\n')
-#print(TRIAS.neighbors,'\n')
+        else:
+            import pyproj as proj
+            crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth
+            crs_trg = proj.Proj(init='epsg:3035') # Europe ?
+            zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)  # to km...
 
 
+        xCoor[:,0],xCoor[:,1] = zx/1000., zy/1000.
 
-if idebug>1:
-    for jT in range(NbT):
-        vpl = TRIAS.pointIDs[jT,:] ;
-        print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-        print('    => neighbor triangles are:',TRIAS.neighbors[jT,:],'\n')
+        del x0, y0, zx, zy
 
-cc = '_gc'
-if l_work_with_dist: cc = '_cc'
-        
+
+    #AAAAAAA
+
+    # Generating triangular meshes out of the cloud of points:
+    TRI = Delaunay(xCoor)
+
+    xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+
+    (NbT,_) = nmp.shape(xTpnts) ; # NbT => number of triangles
+
+    xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+
+    print('\n *** We have '+str(NbT)+' triangles!')
+
+    zTcoor = nmp.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
+
+    # Conversion to the `Triangle` class:
+    TRIAS = lbr.Triangle( NbT, xTpnts, zTcoor, xNeighbors )
+
+    del xTpnts, zTcoor, xNeighbors, TRI
+
+    #print('class TRIAS:')
+    #print(TRIAS.length,'\n')
+    #print(TRIAS.ID,'\n')
+    #print(TRIAS.pointIDs,'\n')
+    #print(TRIAS.pointCoor,'\n')
+    #print(TRIAS.neighbors,'\n')
+
+
+
+    if idebug>1:
+        for jT in range(NbT):
+            vpl = TRIAS.pointIDs[jT,:] ;
+            print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
+            print('    => neighbor triangles are:',TRIAS.neighbors[jT,:],'\n')
+
+    cc = '_gc'
+    if l_work_with_dist: cc = '_cc'
+
+
+
+    # Merge triangles into quadrangles:
+    xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
+    if len(xQpnts) <= 0: exit(0)
+
+    (NbQ,_) = nmp.shape(xQpnts)
+    print('\n *** We have '+str(NbQ)+' quadrangles!')
+
+    # Conversion to the `Quadrangle` class:
+    QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
+    #print('class QUADS:')
+    #print(QUADS.length,'\n')
+    #print(QUADS.ID,'\n')
+    #print(QUADS.pointIDs,'\n')
+    #print(QUADS.pointCoor,'\n')
+    #exit(0)
+    del xQpnts, xQcoor
+
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
+kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))
 
-
-# Merge triangles into quadrangles:
-xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, Xcoor, vnam,  iverbose=idebug )
-if len(xQpnts) <= 0: exit(0)
-
-(NbQ,_) = nmp.shape(xQpnts)
-print('\n *** We have '+str(NbQ)+' quadrangles!')
-
-
-# Conversion to the `Quadrangle` class:
-QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
-#print('class QUADS:')
-#print(QUADS.length,'\n')
-#print(QUADS.ID,'\n')
-#print(QUADS.pointIDs,'\n')
-#print(QUADS.pointCoor,'\n')
-#exit(0)
-del xQpnts, xQcoor
-
-
 # Show quadrangles on a map:
-kk = lbr.ShowTQMesh( Xcoor[:,0], Xcoor[:,1], cfig='02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
+kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRIAS.pointIDs, QuadMesh=QUADS.pointIDs, lProj=(not l_work_with_dist) )
 
 
