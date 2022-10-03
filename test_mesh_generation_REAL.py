@@ -16,6 +16,7 @@ import lbrgps   as lbr
 idebug=2
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+l_cartopy = True
 
 
 if not len(argv) in [2]:
@@ -67,15 +68,23 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     
     
     if l_work_with_dist:
-        from cartopy import crs
-        srs_src = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; #rgps
-        srs_trg = crs.NorthPolarStereo(central_longitude=-45, true_scale_latitude=60) ; # nextsim?
-    
-        zx,zy,_ = srs_trg.transform_points(srs_src, xCoor[:,0], xCoor[:,1]).T ; # km
-        xCoor[:,0] = zx[:]
-        xCoor[:,1] = zy[:]
-    
-        del zx, zy
+        # Distance, aka cartesian coordinates, not degrees... => [km]
+        x0, y0 = Xcoor[:,0], Xcoor[:,1]
+        if l_cartopy:
+            from cartopy.crs import PlateCarree, NorthPolarStereo ;#, epsg    
+            crs_src = PlateCarree()
+            srs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
+            zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T
+        else:
+            print('FIX ME `pyproj`!'); exit(0)
+            import pyproj as proj
+            crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth 
+            crs_trg = proj.Proj(init='epsg:3035') # Europe ?    
+            zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)  
+
+    Xcoor[:,0],Xcoor[:,1] = zx/1000., zy/1000. ; # to km...
+    del x0, y0, zx, zy
+
     
                     
     # Generating triangular meshes out of the cloud of points:
