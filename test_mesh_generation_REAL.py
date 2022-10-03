@@ -105,18 +105,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     del xTpnts, zTcoor, xNeighbors, TRI
 
-    #print('class TRIAS:')
-    #print(TRIAS.length,'\n')
-    #print(TRIAS.ID,'\n')
-    #print(TRIAS.pointIDs,'\n')
-    #print(TRIAS.pointCoor,'\n')
-    #print(TRIAS.neighbors,'\n')
-
-    # Save the triangular mesh info:
-    nmp.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.pointIDs, names=vnam )
-    print('\n *** "'+cf_npzT+'" written!')
-
-
     if idebug>1:
         for jT in range(NbT):
             vpl = TRIAS.pointIDs[jT,:] ;
@@ -143,6 +131,10 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     #exit(0)
     del xQpnts, xQcoor
 
+    # Save the triangular mesh info:
+    nmp.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.pointIDs, names=vnam )
+    print('\n *** "'+cf_npzT+'" written!')
+    
     # Save the quadrangular mesh info:
     nmp.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.pointIDs, names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
@@ -167,8 +159,6 @@ else:
     print('')
 
 
-
-
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
                      TriMesh=Triangles, lProj=(not l_work_with_dist), zoom=3)
@@ -176,6 +166,4 @@ kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+cfroot+'.png',
                      TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist), zoom=3 )
-
-
 
