@@ -305,3 +305,137 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
     return zQpoints, zQcoor
 
 
+
+
+
+
+
+
+
+
+
+
+
+def T2Q( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
+    '''
+    ### Attempt to merge triangles into quadrangles:
+    ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
+    ###  (provided the 3 neighbors are not already merged with someone!)
+    '''
+    (NbT,_) = np.shape(pTrgl)
+    ivb     = iverbose
+
+    NbQ      = 0
+    idxTdead = []   ; # IDs of canceled triangles
+    idxTused = []   ; # IDs of triangles already in use in a quadrangle
+    Quads    = []
+
+    # Loop along triangles:
+    for jT in range(NbT):
+
+        v3pnts = pTrgl[jT,:] ; # the 3 point IDs composing triangle # jT
+
+        if ivb>0:
+            print('\n **************************************************************')
+            print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
+            print(' **************************************************************')
+
+        if not lTriangleOK(jT, pTrgl, pCoor):
+            if ivb>0: print('       => disregarding this triangle!!! (an angle >'+str(rTang_max)+' or <'+str(rTang_min)+' degrees!)')
+            idxTdead.append(jT) ; # Cancel this triangle
+
+        elif jT in idxTused:
+            if ivb>0: print('       => this triangle is in use in an already defined Quad !')
+
+
+        else:
+            # DEBUG: interested what are the angles:
+            if ivb>1: print('  ==> its 3 angles are:',__triangle_angles__(pCoor, v3pnts))
+            # DEBUG.
+
+            # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
+            # -----------------------------------------------------------------------------
+            #
+            vtmp   = pNghb[jT,:]
+            vnghbs = vtmp[vtmp >= 0] ; # shrink it, only retain non `-1`-flagged values...
+            NbN    = len(vnghbs)     ; # number of neighbors
+            if ivb>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
+
+            NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use, and decent shape!
+            for jN in vnghbs:
+                lTok = (not jN in idxTdead)and(not jN in idxTused)and(lTriangleOK(jN, pTrgl, pCoor))
+                if lTok:
+                    NgbrTvalid.append(jN)
+                    if ivb>1: print('          ==> triangle '+str(jN)+' is valid!')
+                else:
+                    if ivb>1: print('          ==> triangle '+str(jN)+' is NOT valid!')
+
+            if len(NgbrTvalid)>0:
+                # `jT` is a valid+available triangle with at least one valid neighbor in `NgbrTvalid`
+                #   => need to check which of the neighbors in `NgbrTvalid` gives the best quadrangle!
+                if ivb>0: print('       => valid neighbors for triangle #'+str(jT)+':',NgbrTvalid)
+
+                #NNTok  = 0  ; # number of neighbor triangles are ok for forming a "decent" quad
+                vjNok  = [] ; # stores the neighbor triangles that are ok for forming a "decent" quad
+                vscore = [] ; #   => store their score of "OK-ness" !
+                xidx   = []
+                for jN in NgbrTvalid:
+                    if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
+                    vidx, vang, rat  = QuadSpecsFrom2Tri( pTrgl, pNghb, jT, jN, pCoor) #, pnam=pnam )
+                    lQok, score = lQuadOK( vang[:], rat )
+                    cc = 'does NOT'
+                    if lQok:
+                        vjNok.append(jN)
+                        vscore.append(score)
+                        xidx.append(vidx)
+                        cc = 'does'
+                    if ivb>1:
+                        print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
+                        if not lQok: print('              ====> the 4 angles + ratio:',vang[:],rat)
+
+                # Now we have to chose the best neighbor triangle to use (based on the score):
+                if len(vjNok)>0:
+                    if ivb>0: print('       => We have '+str(len(vjNok))+' Quad candidates!')
+                    xidx = np.array(xidx)
+                    iwin = np.argmax(vscore)
+                    jN   = vjNok[iwin] ; # our winner neighbor triangle
+                    Quads.append(xidx[iwin,:]) ; # saving the winner Quad!
+                    idxTused.append(jT)
+                    idxTused.append(jN)
+                    NbQ = NbQ+1
+                    if ivb>0: print('         ==> Selected Quad: "triangles '+str(jT)+'+'+str(jN)+'" give Quad',[pnam[i] for i in xidx[iwin,:]])
+
+            else:
+                if ivb>0: print('       => No valid neighbors for this triangle...')
+    ## -- for jT in range(NbT) --
+
+    zQpoints = np.array(Quads)
+    zQcoor   = []
+    del Quads
+
+    if NbQ>0:
+
+        # Coordinates of the points:
+        zQcoor = np.array([ [ pCoor[i,:] for i in zQpoints[jQ,:] ] for jQ in range(NbQ) ]) ; # Shape is (NbQ,4,2) !!!
+
+        # Some sanity checks:
+        if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
+            print('ERROR [T2Q]: agreement between number of merged triangles and created quads!')
+            exit(0)
+
+        if ivb>0: print('\n *** SUMMARY ***')
+        if ivb>1:
+            print('       => Triangles sucessfully merged into "acceptable" Quads:')
+            print('       ==>',idxTused,)
+        if ivb>0:
+            print('       => Summary about the '+str(NbQ)+' Quads generated:')
+            for jQ in range(NbQ):
+                print('        * Quad #'+str(jQ)+' => ', zQpoints[jQ,:], '(', [ pnam[i] for i in zQpoints[jQ,:] ],')')
+
+    else:
+        print('\n WARNING => No Quads could be generated! :(')
+    print('')
+
+    return zQpoints, zQcoor
+
+

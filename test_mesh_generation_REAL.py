@@ -107,7 +107,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     if idebug>1:
         for jT in range(NbT):
-            vpl = TRIAS.pointIDs[jT,:] ;
+            vpl = TRIAS.TriPointIDs[jT,:] ;
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.neighbors[jT,:],'\n')
 
@@ -115,7 +115,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     if l_work_with_dist: cc = '_cc'
 
     # Merge triangles into quadrangles:
-    xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
+    xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.TriPointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = nmp.shape(xQpnts)
@@ -126,22 +126,22 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     #print('class QUADS:')
     #print(QUADS.length,'\n')
     #print(QUADS.ID,'\n')
-    #print(QUADS.pointIDs,'\n')
+    #print(QUADS.QuaPointIDs,'\n')
     #print(QUADS.pointCoor,'\n')
     #exit(0)
     del xQpnts, xQcoor
 
     # Save the triangular mesh info:
-    nmp.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.pointIDs, names=vnam )
+    nmp.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.TriPointIDs, names=vnam )
     print('\n *** "'+cf_npzT+'" written!')
     
     # Save the quadrangular mesh info:
-    nmp.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.pointIDs, names=vnam )
+    nmp.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.QuaPointIDs, names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
 
     # For plot to come:
-    Triangles   = TRIAS.pointIDs
-    Quadrangles = QUADS.pointIDs
+    Triangles   = TRIAS.TriPointIDs
+    Quadrangles = QUADS.QuaPointIDs
 
     
 else:

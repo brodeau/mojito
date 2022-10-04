@@ -111,7 +111,7 @@ if 1==1:
         zangles = TRIAS.angles()
 
         for jT in range(TRIAS.nT):
-            vpl = TRIAS.pointIDs[jT,:] ; # IDs of the 3 points composing triangle
+            vpl = TRIAS.TriPointIDs[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.neighbors[jT,:])
             print('    =>  angles =',zangles[jT,:])
@@ -129,7 +129,7 @@ if 1==1:
 
 
     # Merge triangles into quadrangles:
-    xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
+    xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.TriPointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
@@ -146,7 +146,7 @@ if 1==1:
         zangles = QUADS.angles()
 
         for jQ in range(QUADS.nQ):
-            vpl = QUADS.pointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
+            vpl = QUADS.QuaPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
             print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+' - '+vnam[vpl[3]]+'"')
             print('    =>  angles =',zangles[jQ,:])
 
@@ -158,10 +158,10 @@ if 1==1:
     
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))
+                     pnames=vnam, TriMesh=TRIAS.TriPointIDs, lProj=(not l_work_with_dist))
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRIAS.pointIDs, QuadMesh=QUADS.pointIDs, lProj=(not l_work_with_dist) )
+                     pnames=vnam, TriMesh=TRIAS.TriPointIDs, QuadMesh=QUADS.QuaPointIDs, lProj=(not l_work_with_dist) )
 
 
