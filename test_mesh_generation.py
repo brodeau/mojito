@@ -14,10 +14,8 @@ import lbrgps   as lbr
 idebug=3
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
-l_cartopy = True
-#l_cartopy = False
-
-#l_work_with_dist = False ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+#l_cartopy = True
+l_cartopy = False
 
 #y_gre, x_gre = 45.184369, 5.734251
 
@@ -126,11 +124,8 @@ if 1==1:
     cc = '_gc'
     if l_work_with_dist: cc = '_cc'
 
-
-
     # Merge triangles into quadrangles:
-    #xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.TriPointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
-    xQpnts, xQcoor = lbr.T2Q( TRIAS, xCoor, vnam,  iverbose=idebug )
+    xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug )
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
