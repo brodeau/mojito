@@ -129,7 +129,8 @@ if 1==1:
 
 
     # Merge triangles into quadrangles:
-    xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.TriPointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
+    #xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.TriPointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
+    xQpnts, xQcoor = lbr.T2Q( TRIAS, xCoor, vnam,  iverbose=idebug )
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)

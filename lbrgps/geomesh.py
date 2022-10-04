@@ -313,16 +313,17 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
 
 
+### NEW, taking advantage of classes:
 
 
-
-def T2Q( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
+def T2Q( pTRIAs, pCoor, pnam,  iverbose=0 ):
+    ### will replace `Triangles2Quads`
     '''
     ### Attempt to merge triangles into quadrangles:
     ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
     ###  (provided the 3 neighbors are not already merged with someone!)
     '''
-    (NbT,_) = np.shape(pTrgl)
+    NbT     = pTRIAs.nT
     ivb     = iverbose
 
     NbQ      = 0
@@ -333,14 +334,15 @@ def T2Q( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
     # Loop along triangles:
     for jT in range(NbT):
 
-        v3pnts = pTrgl[jT,:] ; # the 3 point IDs composing triangle # jT
-
+        v3pnts  = pTRIAs.TriPointIDs[jT,:] ; # the 3 point IDs composing triangle # jT
+        vangles = pTRIAs.angles()[jT]      ; # the 3 angles...
+        
         if ivb>0:
             print('\n **************************************************************')
             print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if not lTriangleOK(jT, pTrgl, pCoor):
+        if not lTisOK(vangles):
             if ivb>0: print('       => disregarding this triangle!!! (an angle >'+str(rTang_max)+' or <'+str(rTang_min)+' degrees!)')
             idxTdead.append(jT) ; # Cancel this triangle
 
@@ -350,20 +352,20 @@ def T2Q( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
         else:
             # DEBUG: interested what are the angles:
-            if ivb>1: print('  ==> its 3 angles are:',__triangle_angles__(pCoor, v3pnts))
+            if ivb>1: print('  ==> its 3 angles are:',vangles[:])
             # DEBUG.
 
             # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
             # -----------------------------------------------------------------------------
             #
-            vtmp   = pNghb[jT,:]
+            vtmp   = pTRIAs.neighbors[jT,:]
             vnghbs = vtmp[vtmp >= 0] ; # shrink it, only retain non `-1`-flagged values...
             NbN    = len(vnghbs)     ; # number of neighbors
             if ivb>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
 
             NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use, and decent shape!
             for jN in vnghbs:
-                lTok = (not jN in idxTdead)and(not jN in idxTused)and(lTriangleOK(jN, pTrgl, pCoor))
+                lTok = (not jN in idxTdead)and(not jN in idxTused)and(lTisOK(vangles))
                 if lTok:
                     NgbrTvalid.append(jN)
                     if ivb>1: print('          ==> triangle '+str(jN)+' is valid!')
@@ -381,7 +383,7 @@ def T2Q( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
                 xidx   = []
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                    vidx, vang, rat  = QuadSpecsFrom2Tri( pTrgl, pNghb, jT, jN, pCoor) #, pnam=pnam )
+                    vidx, vang, rat  = QuadSpecsFrom2Tri( pTRIAs.TriPointIDs, pTRIAs.neighbors, jT, jN, pCoor) #, pnam=pnam )
                     lQok, score = lQuadOK( vang[:], rat )
                     cc = 'does NOT'
                     if lQok:
@@ -437,5 +439,16 @@ def T2Q( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
     print('')
 
     return zQpoints, zQcoor
+
+
+##############
+def lTisOK( pAngles ):
+    ### will replace `lTriangleOK`
+    '''
+    ###  => returns Boolean: True if the triangle has a "decent" shape!
+    ###
+    ###  * pAngles: the 3 angles of the triangle in degrees 
+    '''
+    return ( not( np.any(  pAngles   >rTang_max) or np.any( pAngles < rTang_min) ) )
 
 
