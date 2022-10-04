@@ -78,11 +78,9 @@ if 1==1:
             import pyproj as proj
             crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth
             crs_trg = proj.Proj(init='epsg:3035') # Europe ?
-            zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)  # to km...
+            zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)
 
-
-        xCoor[:,0],xCoor[:,1] = zx/1000., zy/1000.
-
+        xCoor[:,0],xCoor[:,1] = zx/1000., zy/1000. ; # to km...
         del x0, y0, zx, zy
 
 
