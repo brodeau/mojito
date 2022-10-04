@@ -315,6 +315,16 @@ def Triangles2Quads( pTrgl, pNghb, pCoor, pnam,  iverbose=0 ):
 
 ### NEW, taking advantage of classes:
 
+##############
+def lTisOK( pAngles ):
+    ### will replace `lTriangleOK`
+    '''
+    ###  => returns Boolean: True if the triangle has a "decent" shape!
+    ###
+    ###  * pAngles: the 3 angles of the triangle in degrees 
+    '''
+    return ( not( np.any(  pAngles   >rTang_max) or np.any( pAngles < rTang_min) ) )
+
 
 def T2Q( pTRIAs, pCoor, pnam,  iverbose=0 ):
     ### will replace `Triangles2Quads`
@@ -410,7 +420,8 @@ def T2Q( pTRIAs, pCoor, pnam,  iverbose=0 ):
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
     ## -- for jT in range(NbT) --
-
+    del v3pnts, vangles
+    
     zQpoints = np.array(Quads)
     zQcoor   = []
     del Quads
@@ -441,14 +452,5 @@ def T2Q( pTRIAs, pCoor, pnam,  iverbose=0 ):
     return zQpoints, zQcoor
 
 
-##############
-def lTisOK( pAngles ):
-    ### will replace `lTriangleOK`
-    '''
-    ###  => returns Boolean: True if the triangle has a "decent" shape!
-    ###
-    ###  * pAngles: the 3 angles of the triangle in degrees 
-    '''
-    return ( not( np.any(  pAngles   >rTang_max) or np.any( pAngles < rTang_min) ) )
 
 
