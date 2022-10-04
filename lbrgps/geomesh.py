@@ -13,6 +13,7 @@ rTang_max = 115. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  65. ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 120. ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
+rQarea_max = 5000. ; # max area allowed for Quadrangle [km^2]
 
 # Strict:
 #rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
@@ -145,7 +146,7 @@ def QuadSpecsFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):
     return vIquad, vAquad, ratio
 
 
-def lQuadOK( pAngles, ratio ):
+def lQuadOK( pAngles, ratio, pArea=None ):
     '''
     ###     Tells if a quadrangle should be kept or rejected (outrageously unrectangular shape)
     ###       + gives a score [0-1] (for now based on
@@ -154,13 +155,14 @@ def lQuadOK( pAngles, ratio ):
     ### Input:
     ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
     ###         * ratio:   ratio between apparent length and height of the quadrangle (a square would give 1)
-    ###
+    ###         
     '''
     rscore = -1.
     lOK = ( not( np.any(pAngles>rQang_max) or np.any(pAngles<rQang_min) or abs(1.-ratio)>rdRatio_max ) )
+    if pArea:
+        lOK = (lOK) and (pArea<=rQarea_max)
     if lOK:
         rscore = 1. - np.sum( np.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
-
     return lOK, rscore
 
 
