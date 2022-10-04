@@ -1,6 +1,6 @@
 import numpy as np
 
-from .geomesh import AnglesOfTriangle
+from .geomesh import AnglesOfTriangle, AreaOfTriangle
 
 
 
@@ -31,8 +31,13 @@ class Triangle:
 
         
     def angles( self ):
-        ''' Returns the (nT,3) array of the 3 angles (from 1st point to 3rd point, so counter-clockwize) '''
+        ''' Returns the shape(nT,3) array of the 3 angles (from 1st point to 3rd point, so counter-clockwize) '''
         return np.array( [ AnglesOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )
+
+    def area( self ):
+        ''' Returns the shape(nT) array of the area of the triangles '''
+        return np.array( [ AreaOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )
+    
 
 
 
@@ -60,7 +65,7 @@ class Quadrangle:
 
         
     def angles( self ):
-        ''' Returns the (nT,4) array of the 4 angles (from 1st point to 4th point, so counter-clockwize) 
+        ''' Returns the shape(nT,4) array of the 4 angles (from 1st point to 4th point, so counter-clockwize) 
         
             IMPORTANT: we expect the 1st and 3rd (indices 0 & 2) elements of the 4 points to be the 
                        the two points of the quadrangle facing the diagonal that was the common segment 
@@ -78,11 +83,25 @@ class Quadrangle:
                  A            B
 
         '''
-        xA = np.zeros((self.nQ,4)) - 999.
+        za = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
             va1 = AnglesOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [0,1,3] ]) ); # angles of triangle [ABD]
             va2 = AnglesOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [2,3,1] ]) ); # angles of triangle [CDB]
-            xA[i,:] = [ va1[0], va1[1]+va2[2], va2[0], va1[2]+va2[1] ]
+            za[i,:] = [ va1[0], va1[1]+va2[2], va2[0], va1[2]+va2[1] ]
             #
-        return xA
+        return za
 
+    def area( self ):
+        ''' Returns the shape(nQ) array of the area of the quadrangles '''
+        zA = np.zeros(self.nQ) - 999.
+        for i in range(self.nQ):
+            ra1 = AreaOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [0,1,3] ]) ); # area of triangle [ABD]
+            ra2 = AreaOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [2,3,1] ]) ); # area of triangle [CDB]
+            zA[i] = ra1 + ra2
+            #
+        return zA
+
+
+
+        
+        return np.array( [ AreaOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )

@@ -30,13 +30,12 @@ def __distAB2__(pC1, pC2):
 
 
 def AnglesOfTriangle(pCoorT):
+    ''' The 3 angles of a triangle given the coordinates of the 3 points '''
     from math import sqrt, acos, pi
-    ## pCoorT: `x,y` coordinates of the 3 points shape=(3,2)
-
+    #
     nv = len(pCoorT[:,0]) ; # number of vertices...
-    if not nv in [3,4]:
-        print('ERROR [AnglesOfTriangle]: I am designed for triangles or quadrangles...')
-        exit(0)
+    if nv != 3:
+        print('ERROR [AnglesOfTriangle]: I am only designed for triangles...', nv); exit(0)
 
     va = [ __distAB2__(pCoorT[i,:], pCoorT[(i+1)%3,:]) for i in range(nv) ]; # Square of the length of each side
 
@@ -47,6 +46,18 @@ def AnglesOfTriangle(pCoorT):
 
     return vabc * 180./pi
 
+
+def AreaOfTriangle(pCoorT):
+    ''' Area of a triangle given the coordinates of the 3 points '''
+    #
+    nv = len(pCoorT[:,0]) ; # number of vertices...
+    if nv != 3:
+        print('ERROR [AreaOfTriangle]: I am only designed for triangles...') ; exit(0)
+
+    rA = 0.5*(   (pCoorT[0,0]*(pCoorT[1,1] - pCoorT[2,1]))
+               + (pCoorT[1,0]*(pCoorT[2,1] - pCoorT[0,1]))
+               + (pCoorT[2,0]*(pCoorT[0,1] - pCoorT[1,1])) )
+    return rA
 
 
 def QuadSpecsFrom2Tri( pTrgl, pNghb, it1, it2, pCoor, pnam=[] ):

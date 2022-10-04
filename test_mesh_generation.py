@@ -61,8 +61,9 @@ if idebug>0:
 
 if 1==1:
 
-
+    cAu = 'degrees^2'
     if l_work_with_dist:
+        cAu = 'km^2'
         # Distance, aka cartesian coordinates, not degrees... => [km]
         x0, y0 = xCoor[:,0], xCoor[:,1]
         if l_cartopy:
@@ -107,15 +108,16 @@ if 1==1:
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE TRIANGLE CLASS:
         zangles = TRIAS.angles()
+        zarea   = TRIAS.area()
 
         for jT in range(TRIAS.nT):
             vpl = TRIAS.TriPointIDs[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.neighbors[jT,:])
             print('    =>  angles =',zangles[jT,:])
-
+            print('    =>  area   =',round(zarea[jT],1),cAu)
             print('')
-        del zangles
+        del zangles, zarea
 
 
     #exit(0)
@@ -143,13 +145,14 @@ if 1==1:
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE QUADRANGLE CLASS:
         zangles = QUADS.angles()
-
+        zarea   = QUADS.area()
         for jQ in range(QUADS.nQ):
-            vpl = QUADS.QuaPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
+            vpl     = QUADS.QuaPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
             print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+' - '+vnam[vpl[3]]+'"')
             print('    =>  angles =',zangles[jQ,:])
-
+            print('    =>  area   =',round(zarea[jQ],1),cAu)
             print('')
+        del zangles, zarea
 
 
 
