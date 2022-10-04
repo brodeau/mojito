@@ -8,8 +8,8 @@ from sys import exit
 import numpy as np
 
 # Sloppy:
-rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
+rTang_min =  15. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 115. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  65. ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 120. ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!

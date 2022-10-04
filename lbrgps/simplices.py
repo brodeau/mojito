@@ -46,28 +46,23 @@ class Quadrangle:
                        the two points of the quadrangle facing the diagonal that was the common segment 
                        between the 2 triangles that formed this quarangle
 
-                       D          C
-                       o__________o
-                       / \        / 
-                      /   \      /     
-                     /     \    /     => here it would be A and C, the common segment being B-D
-                    /       \  /
-                   /_________\/
+                         D           C
+                         o___________o
+                        /\          /
+                       /  \        / 
+                      /    \      /     
+                     /      \    /     => here it would be A and C, the common segment being B-D
+                    /        \  /
+                   /__________\/
                   o           o
                  A            B
 
         '''
-        print('LOLO: shape(self.pointCoor) = ', np.shape(self.pointCoor))
-        print(self.pointCoor)
-
-        xA = []
+        xA = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
             va1 = AnglesOfTriangle( np.array([ self.pointCoor[i,j]  for j in [0,1,3] ]) ); # angles of triangle [ABD]
             va2 = AnglesOfTriangle( np.array([ self.pointCoor[i,j]  for j in [2,3,1] ]) ); # angles of triangle [CDB]
-
-            xA.append( [ va1[0], va1[1]+va2[2], va2[0], va1[2]+va2[1] ] )
-
-        print('LOLO: shape(xA) = ', np.shape(xA))
-        #exit(0)
-        return np.array( xA )
+            xA[i,:] = [ va1[0], va1[1]+va2[2], va2[0], va1[2]+va2[1] ]
+            #
+        return xA
 
