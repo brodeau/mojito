@@ -5,13 +5,13 @@
 
 from sys import argv, exit
 #from os import path
-import numpy as nmp
+import numpy as np
 
 from scipy.spatial import Delaunay
 
 import lbrgps   as lbr
 
-idebug=2
+idebug=3
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 l_cartopy = True
@@ -48,9 +48,9 @@ NbP = len(xcities) ; # number of points
 print('\n *** We have '+str(NbP)+' cities!')
 
 # Conversion from dictionary to Numpy arrays:
-vIDs  = nmp.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
-xCoor = nmp.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
-vnam  = nmp.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
+vIDs  = np.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
+xCoor = np.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
+vnam  = np.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
 
 if idebug>0:
     for jc in range(NbP):
@@ -68,7 +68,7 @@ if 1==1:
         if l_cartopy:
             from cartopy.crs import PlateCarree, NorthPolarStereo, epsg
             crs_src = PlateCarree()
-            #crs_trg = NorthPolarStereo(central_longitude=nmp.min(xCoor[:,0]), true_scale_latitude=45) ; # Europe!, x-axis starts at westernmost city!
+            #crs_trg = NorthPolarStereo(central_longitude=np.min(xCoor[:,0]), true_scale_latitude=45) ; # Europe!, x-axis starts at westernmost city!
             # Alternative:
             #crs_trg = epsg(4326) ; # LatLon with WGS84 datum used by GPS units and Google Earth
             crs_trg = epsg(3035)  ; # Europe!
@@ -93,33 +93,35 @@ if 1==1:
 
     xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
-    (NbT,_) = nmp.shape(xTpnts) ; # NbT => number of triangles
+    (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
 
     xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
     print('\n *** We have '+str(NbT)+' triangles!')
 
-    zTcoor = nmp.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
+    zTcoor = np.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
 
     # Conversion to the `Triangle` class:
     TRIAS = lbr.Triangle( NbT, xTpnts, zTcoor, xNeighbors )
 
     del xTpnts, zTcoor, xNeighbors, TRI
 
-    #print('class TRIAS:')
-    #print(TRIAS.length,'\n')
-    #print(TRIAS.ID,'\n')
-    #print(TRIAS.pointIDs,'\n')
-    #print(TRIAS.pointCoor,'\n')
-    #print(TRIAS.neighbors,'\n')
+    if idebug>2:
+        # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE TRIANGLE CLASS:
+        zangles = TRIAS.angles()
 
-
-
-    if idebug>1:
-        for jT in range(NbT):
-            vpl = TRIAS.pointIDs[jT,:] ;
+        for jT in range(TRIAS.nT):
+            vpl = TRIAS.pointIDs[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-            print('    => neighbor triangles are:',TRIAS.neighbors[jT,:],'\n')
+            print('    => neighbor triangles are:',TRIAS.neighbors[jT,:])
+            print('    =>  angles =',zangles[jT,:])
+
+            print('')
+        del zangles
+
+
+    #exit(0)
+    
 
     cc = '_gc'
     if l_work_with_dist: cc = '_cc'
@@ -130,19 +132,30 @@ if 1==1:
     xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.pointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
     if len(xQpnts) <= 0: exit(0)
 
-    (NbQ,_) = nmp.shape(xQpnts)
+    (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class:
     QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
-    #print('class QUADS:')
-    #print(QUADS.length,'\n')
-    #print(QUADS.ID,'\n')
-    #print(QUADS.pointIDs,'\n')
-    #print(QUADS.pointCoor,'\n')
-    #exit(0)
+
     del xQpnts, xQcoor
 
+
+    if idebug>2:
+        # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE QUADRANGLE CLASS:
+        zangles = QUADS.angles()
+
+        for jQ in range(QUADS.nQ):
+            vpl = QUADS.pointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
+            print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+' - '+vnam[vpl[3]]+'"')
+            print('    =>  angles =',zangles[jQ,:])
+
+            print('')
+
+
+
+
+    
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRIAS.pointIDs, lProj=(not l_work_with_dist))

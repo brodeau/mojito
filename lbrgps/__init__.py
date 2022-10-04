@@ -3,6 +3,7 @@
 #
 ############################################################################
 
-from .util    import *
-from .plot    import *
-from .geomesh import *
+from .util      import *
+from .geomesh   import *
+from .simplices import *
+from .plot      import *
