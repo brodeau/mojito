@@ -12,7 +12,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock
 import lbrgps   as lbr
 
-idebug=0
+idebug=1
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 #l_cartopy = True
@@ -170,9 +170,9 @@ else:
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
-                     TriMesh=Triangles, lProj=(not l_work_with_dist), zoom=3)
+                     TriMesh=Triangles, lProj=(not l_work_with_dist), zoom=5)
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+cfroot+'.png',
-                     TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist), zoom=3 )
+                     TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist), zoom=5 )
 
