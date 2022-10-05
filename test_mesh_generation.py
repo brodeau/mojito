@@ -20,7 +20,7 @@ l_cartopy = False
 #y_gre, x_gre = 45.184369, 5.734251
 
 # Selection of appropriate quadrangles:
-rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
+rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]  # #fixme: should be linked to rdRatio_max somehow???
 rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 #
 rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
