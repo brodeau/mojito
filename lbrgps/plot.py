@@ -232,7 +232,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
     from math import log
     
     zrat = 1./zoom
-    zrat_log = 1./log(zoom)
+    zrat_log = 1./(1. + log(zoom))
     
     kk = __initStyle__(font_rat=zrat_log)    
     

@@ -4,7 +4,7 @@
 ##################################################################
 
 from sys import argv, exit
-#from os import path
+from os import path, mkdir
 import numpy as np
 
 from scipy.spatial import Delaunay
@@ -65,9 +65,17 @@ if idebug>0:
         print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(xCoor[jc,1],2))+', lon='+str(round(xCoor[jc,0],2)))
     print('')
 
+cc = '_gc'
+if l_work_with_dist: cc = '_cc'
 
+cf_npzT = './npz/T-mesh_Europe.npz'
+cf_npzQ = './npz/Q-mesh_Europe.npz'
 
-if 1==1:
+if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
+
+    if not path.exists('./npz'): mkdir('./npz')
+
+    # Have to build triangle and quadrangle mesh!
 
     cAu = 'degrees^2'
     if l_work_with_dist:
@@ -115,6 +123,7 @@ if 1==1:
 
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE TRIANGLE CLASS:
+        zlengths = TRIAS.lengths()
         zangles = TRIAS.angles()
         zarea   = TRIAS.area()
 
@@ -122,17 +131,13 @@ if 1==1:
             vpl = TRIAS.TriPointIDs[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.neighbors[jT,:])
+            print('    =>  lengths =',zlengths[jT,:])
             print('    =>  angles =',zangles[jT,:])
             print('    =>  area   =',round(zarea[jT],1),cAu)
             print('')
-        del zangles, zarea
-
-
+        del zlengths, zangles, zarea
     #exit(0)
 
-
-    cc = '_gc'
-    if l_work_with_dist: cc = '_cc'
 
     # Merge triangles into quadrangles:
     xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
@@ -147,29 +152,58 @@ if 1==1:
 
     del xQpnts, xQcoor
 
+    # Save the triangular mesh info:
+    np.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.TriPointIDs,  Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
+    print('\n *** "'+cf_npzT+'" written!')
+
+    # Save the quadrangular mesh info:
+    np.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.QuaPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
+    print('\n *** "'+cf_npzQ+'" written!')
 
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE QUADRANGLE CLASS:
-        zangles = QUADS.angles()
-        zarea   = QUADS.area()
+        zlengths = QUADS.lengths()
+        zangles  = QUADS.angles()
+        zarea    = QUADS.area()
         for jQ in range(QUADS.nQ):
             vpl     = QUADS.QuaPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
             print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+' - '+vnam[vpl[3]]+'"')
+            print('    =>  lengths =',zlengths[jQ,:])
             print('    =>  angles =',zangles[jQ,:])
             print('    =>  area   =',round(zarea[jQ],1),cAu)
             print('')
-        del zangles, zarea
+        del zlengths, zangles, zarea
+
+    # For plot to come:
+    Triangles   = TRIAS.TriPointIDs
+    Quadrangles = QUADS.QuaPointIDs
 
 
+else:
 
+    print('\n *** We are going to READ triangle and quad meshes in the npz files...')
 
+    dataT = np.load(cf_npzT, allow_pickle=True)
+    xCoor      = dataT['pointCoordinates']
+    #vnam       = dataT['names']
+    Triangles  = dataT['Triangles']
+
+    dataQ = np.load(cf_npzQ, allow_pickle=True)
+    Quadrangles = dataQ['Quadrangles']
+    # DEBUG:
+    #Q_lengths = dataQ['Lengths']
+    #2Q_angles  = dataQ['Angles']
+    #Q_areas  = dataQ['Areas']
+    #print('Q Lengths = ',Q_lengths)
+    #print('Q Angles = ',Q_angles)
+    #print('Q Areas = ',Q_areas)
+    print('')
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRIAS.TriPointIDs, lProj=(not l_work_with_dist))
+                     pnames=vnam, TriMesh=Triangles, lProj=(not l_work_with_dist))
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRIAS.TriPointIDs, QuadMesh=QUADS.QuaPointIDs, lProj=(not l_work_with_dist) )
-
+                     pnames=vnam, TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist) )
 

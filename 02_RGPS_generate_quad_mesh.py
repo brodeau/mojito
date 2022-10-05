@@ -34,11 +34,13 @@ if not len(argv) in [2]:
 cf_in = argv[1]
 
 
+cc = '_gc'
+if l_work_with_dist: cc = '_cc'
+
 cfroot = split('.npz',path.basename(cf_in))[0]
 
 cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
 cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
-
 
 if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
@@ -122,10 +124,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xTpnts, zTcoor, xNeighbors, TRI
 
 
-    cc = '_gc'
-    if l_work_with_dist: cc = '_cc'
-
-
 
     # Merge triangles into quadrangles:
     xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
@@ -141,32 +139,31 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xQpnts, xQcoor
 
     # Save the triangular mesh info:
-    np.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.TriPointIDs, names=vnam )
+    np.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.TriPointIDs,  Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
     print('\n *** "'+cf_npzT+'" written!')
-    
+
     # Save the quadrangular mesh info:
-    np.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.QuaPointIDs, names=vnam )
+    np.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.QuaPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
 
     # For plot to come:
     Triangles   = TRIAS.TriPointIDs
     Quadrangles = QUADS.QuaPointIDs
 
-    
+
 else:
 
     print('\n *** We are going to READ triangle and quad meshes in the npz files...')
-    
+
     dataT = np.load(cf_npzT, allow_pickle=True)
     xCoor      = dataT['pointCoordinates']
     #vnam       = dataT['names']
     Triangles  = dataT['Triangles']
-    
+
     dataQ = np.load(cf_npzQ, allow_pickle=True)
     Quadrangles = dataQ['Quadrangles']
 
     print('')
-
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',

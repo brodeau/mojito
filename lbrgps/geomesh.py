@@ -15,6 +15,18 @@ def __distAB2__(pC1, pC2):
     return xDiff*xDiff + yDiff*yDiff
 
 
+def LengthsOfTriangle(pCoorT):
+    ''' The length of the 3 segments defining a triangle given the coordinates of the 3 points '''
+    from math import sqrt, acos, pi
+    #
+    nv = len(pCoorT[:,0]) ; # number of vertices...
+    if nv != 3:
+        print('ERROR [LengthsOfTriangle]: I am only designed for triangles...', nv); exit(0)
+
+    va = [ __distAB2__(pCoorT[i,:], pCoorT[(i+1)%3,:]) for i in range(nv) ]; # Square of the length of each side
+    return np.sqrt(va) 
+
+
 def AnglesOfTriangle(pCoorT):
     ''' The 3 angles of a triangle given the coordinates of the 3 points '''
     from math import sqrt, acos, pi
