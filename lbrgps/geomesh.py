@@ -178,6 +178,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     Z3Pnts = pTRIAs.TriPointIDs
     Zangls = pTRIAs.angles()
     Zareas = pTRIAs.area()
+    Znghbs = pTRIAs.neighbors
     
     # Loop along triangles:
     for jT in range(NbT):
@@ -206,7 +207,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
             #
             if ivb>1: print('  ==> its 3 angles are:',vangles[:])
             #
-            vtmp   = pTRIAs.neighbors[jT,:]
+            vtmp   = Znghbs[jT,:]
             vnghbs = vtmp[vtmp >= 0] ; # shrink it, only retain non `-1`-flagged values...
             NbN    = len(vnghbs)     ; # number of neighbors
             if ivb>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
@@ -259,7 +260,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
     ## -- for jT in range(NbT) --
-    del Z3Pnts, Zangls, Zareas, v3pnts, vangles
+    del Z3Pnts, Zangls, Zareas, Znghbs, v3pnts, vangles
 
 
     zQpoints = np.array(Quads)
