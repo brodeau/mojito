@@ -7,21 +7,6 @@ from sys import exit
 #from os import path, mkdir
 import numpy as np
 
-# Sloppy:
-rTang_min =  15. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 115. ; # maximum angle tolerable in a triangle [degree]
-rQang_min =  65. ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 120. ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
-rQarea_max = 800000. ; # max area allowed for Quadrangle [km^2]
-
-# Strict:
-#rTang_min =  20. ; # minimum angle tolerable in a triangle [degree]
-#rTang_max = 100. ; # maximum angle tolerable in a triangle [degree]
-#rQang_min =  75. ; # minimum angle tolerable in a quadrangle [degree]
-#rQang_max = 105. ; # maximum angle tolerable in a quadrangle [degree]
-#rdRatio_max = 0.25 ; # value that `1 - abs(L/H)` should not overshoot!
-
 
 def __distAB2__(pC1, pC2):
     ''' Square of the distance between 2 points based on their [x,y] coordinates '''
@@ -60,16 +45,17 @@ def AreaOfTriangle(pCoorT):
                + (pCoorT[2,0]*(pCoorT[0,1] - pCoorT[1,1])) )
     return rA
 
-def lTisOK( pAngles ):
+
+def lTisOK( pAngles, anglR=(15.,115.) ):
     '''
     ###  => returns Boolean: True if the triangle has a "decent" shape!
     ###
-    ###  * pAngles: the 3 angles of the triangle in degrees 
+    ###  * pAngles: the 3 angles of the triangle in degrees
     '''
-    return ( not( np.any(  pAngles   >rTang_max) or np.any( pAngles < rTang_min) ) )
+    return ( not( np.any(  pAngles   >anglR[1]) or np.any( pAngles < anglR[0]) ) )
 
 
-def lQisOK( pAngles, ratio, pArea=None ):
+def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
     '''
     ###     Tells if a quadrangle should be kept or rejected (outrageously unrectangular shape)
     ###       + gives a score [0-1] (for now based on
@@ -78,12 +64,12 @@ def lQisOK( pAngles, ratio, pArea=None ):
     ### Input:
     ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
     ###         * ratio:   ratio between apparent length and height of the quadrangle (a square would give 1)
-    ###         
+    ###
     '''
     rscore = -1.
-    lOK = ( not( np.any(pAngles>rQang_max) or np.any(pAngles<rQang_min) or abs(1.-ratio)>rdRatio_max ) )
+    lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or abs(1.-ratio)>ratioD ) )
     if pArea:
-        lOK = (lOK) and (pArea<=rQarea_max)
+        lOK = ( lOK and ( (pArea>areaR[0])and(pArea<=areaR[1]) ) )
     if lOK:
         rscore = 1. - np.sum( np.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
     return lOK, rscore
@@ -120,7 +106,7 @@ def QSpecs2Tri( pTRIAs, it1, it2, pCoor, pnam=[] ):
     if ldebug:
         print('   [QSpecs2Tri()] 4 angles of quad when merge triangles #'+str(it1)+' and #'+str(it2)+':')
         print('   [QSpecs2Tri()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
-        print('   [QSpecs2Tri()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])        
+        print('   [QSpecs2Tri()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
         print('   [QSpecs2Tri()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
 
     # Ratio between apparent height and width of the quadrangle
@@ -158,7 +144,8 @@ def QSpecs2Tri( pTRIAs, it1, it2, pCoor, pnam=[] ):
     return vIquad, vAquad, ratio, pTRIAs.area()[it1]+pTRIAs.area()[it2]
 
 
-def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0 ):
+def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
+              ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
     '''
     ### Attempt to merge triangles into quadrangles:
     ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
@@ -177,14 +164,14 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0 ):
 
         v3pnts  = pTRIAs.TriPointIDs[jT,:] ; # the 3 point IDs composing triangle # jT
         vangles = pTRIAs.angles()[jT]      ; # the 3 angles...
-        
+
         if ivb>0:
             print('\n **************************************************************')
             print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if not lTisOK(vangles):
-            if ivb>0: print('       => disregarding this triangle!!! (an angle >'+str(rTang_max)+' or <'+str(rTang_min)+' degrees!)')
+        if not lTisOK(vangles, anglR=anglRtri):
+            if ivb>0: print('       => disregarding this triangle!!! (because of extreme angles)')
             idxTdead.append(jT) ; # Cancel this triangle
 
         elif jT in idxTused:
@@ -224,7 +211,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0 ):
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
                     vidx, vang, rat, area  = QSpecs2Tri( pTRIAs, jT, jN, pCoor) #, pnam=pnam )
-                    lQok, score = lQisOK( vang[:], rat, pArea=area ) ;#lilo
+                    lQok, score = lQisOK( vang[:], rat, pArea=area, ratioD=ratioD, anglR=anglR, areaR=areaR )
                     cc = 'does NOT'
                     if lQok:
                         vjNok.append(jN)
@@ -251,7 +238,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0 ):
                 if ivb>0: print('       => No valid neighbors for this triangle...')
     ## -- for jT in range(NbT) --
     del v3pnts, vangles
-    
+
     zQpoints = np.array(Quads)
     zQcoor   = []
     del Quads

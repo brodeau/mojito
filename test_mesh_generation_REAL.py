@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
-#
 ##################################################################
 
 from sys import argv, exit
@@ -13,10 +12,20 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock
 import lbrgps   as lbr
 
-idebug=2
+idebug=0
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 #l_cartopy = True
+
+# Selection of appropriate quadrangles:
+rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
+#
+rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
+rQarea_min = 0.      ; # min area allowed for Quadrangle [km^2]
+rQarea_max = 800000. ; # max area allowed for Quadrangle [km^2]
 
 
 if not len(argv) in [2]:
@@ -119,8 +128,8 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    #xQpnts, xQcoor = lbr.Triangles2Quads( TRIAS.TriPointIDs, TRIAS.neighbors, xCoor, vnam,  iverbose=idebug )
-    xQpnts, xQcoor = lbr.T2Q( TRIAS, xCoor, vnam,  iverbose=idebug )
+    xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                   ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)

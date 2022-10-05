@@ -19,6 +19,16 @@ l_cartopy = False
 
 #y_gre, x_gre = 45.184369, 5.734251
 
+# Selection of appropriate quadrangles:
+rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
+#
+rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
+rQarea_min = 0.      ; # min area allowed for Quadrangle [km^2]
+rQarea_max = 800000. ; # max area allowed for Quadrangle [km^2]
+
 
 xcities = [] ; ip = 0
 #
@@ -119,13 +129,14 @@ if 1==1:
 
 
     #exit(0)
-    
+
 
     cc = '_gc'
     if l_work_with_dist: cc = '_cc'
 
     # Merge triangles into quadrangles:
-    xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug )
+    xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                   ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
@@ -152,7 +163,7 @@ if 1==1:
 
 
 
-    
+
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRIAS.TriPointIDs, lProj=(not l_work_with_dist))
