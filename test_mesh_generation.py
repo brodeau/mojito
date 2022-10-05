@@ -26,8 +26,8 @@ rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
-rQarea_min = 0.      ; # min area allowed for Quadrangle [km^2]
-rQarea_max = 800000. ; # max area allowed for Quadrangle [km^2]
+rQarea_min = 0.   ; # min area allowed for Quadrangle [km^2]
+rQarea_max = 8.e5 ; # max area allowed for Quadrangle [km^2]
 
 
 xcities = [] ; ip = 0

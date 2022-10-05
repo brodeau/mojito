@@ -73,6 +73,7 @@ def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,
     lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or abs(1.-ratio)>ratioD ) )
     if lOK and pArea:
         lOK = ( pArea>areaR[0] and pArea<=areaR[1] )
+        print('LOLOarea1: OK based on area??? =>', lOK)
     if lOK:
         rscore = 1. - np.sum( np.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
     return lOK, rscore
@@ -174,12 +175,14 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
         vangles = Zangls[jT,:] ; # the 3 angles...
         rarea   = Zareas[jT]
 
+        print('LOLO area of triangle is:', rarea, 'km^2')
+        
         if ivb>0:
             print('\n **************************************************************')
             print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/3.,areaR[1]/1.5)):
+        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/2.5,areaR[1]/1.5)):
             if ivb>0: print('       => disregarding this triangle!!! (because of extreme angles)')
             idxTdead.append(jT) ; # Cancel this triangle
 
@@ -220,7 +223,9 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
                     vidx, vang, rat, area  = QSpecs2Tri( pTRIAs, jT, jN, pCoor) #, pnam=pnam )
-                    lQok, score = lQisOK( vang[:], rat, pArea=area, ratioD=ratioD, anglR=anglR, areaR=areaR )
+                    print('LOLOarea0: area of quadrangle:', area)
+                    lQok, score = lQisOK( vang[:], rat, pArea=area, ratioD=ratioD, anglR=anglR, areaR=areaR )                    
+                    
                     cc = 'does NOT'
                     if lQok:
                         vjNok.append(jN)
