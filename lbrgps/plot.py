@@ -37,7 +37,7 @@ col_red = '#873520'
 col_blu = '#3475a3'
 
 
-msPoints = 15  ; # size  of markers for points aka vertices...
+msPoints = 20  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = '0.4' ; # color for city/point annotations
 
@@ -53,11 +53,11 @@ def __initStyle__( font_rat=1., color_top='k' ):
     #
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
-               'font.size':       int(12.*font_rat),
+               'font.size':       int(15.*font_rat),
                'legend.fontsize': int(22.*font_rat),
-               'xtick.labelsize': int(12.*font_rat),
-               'ytick.labelsize': int(12.*font_rat),
-               'axes.labelsize':  int(15.*font_rat) }
+               'xtick.labelsize': int(15.*font_rat),
+               'ytick.labelsize': int(15.*font_rat),
+               'axes.labelsize':  int(17.*font_rat) }
     #
     mpl.rcParams.update(params)
     #
@@ -229,10 +229,12 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
     ###  * lProj: True   => we expect degrees for `pX,pY` and use a projection
     ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
     '''
-
-    zrat = 1./zoom
+    from math import log
     
-    kk = __initStyle__(font_rat=zrat)    
+    zrat = 1./zoom
+    zrat_log = 1./log(zoom)
+    
+    kk = __initStyle__(font_rat=zrat_log)    
     
     if lProj:
         # Geograhic coordinates (lon,lat)
