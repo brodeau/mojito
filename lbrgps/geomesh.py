@@ -46,13 +46,16 @@ def AreaOfTriangle(pCoorT):
     return rA
 
 
-def lTisOK( pAngles, anglR=(15.,115.) ):
+def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e5) ):
     '''
     ###  => returns Boolean: True if the triangle has a "decent" shape!
     ###
     ###  * pAngles: the 3 angles of the triangle in degrees
     '''
-    return ( not( np.any(  pAngles   >anglR[1]) or np.any( pAngles < anglR[0]) ) )
+    lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) ) )
+    if lOK and pArea:
+        lOK = ( (pArea>areaR[0]) and (pArea<=areaR[1]) )
+    return lOK
 
 
 def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
@@ -68,8 +71,8 @@ def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,
     '''
     rscore = -1.
     lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or abs(1.-ratio)>ratioD ) )
-    if pArea:
-        lOK = ( lOK and ( (pArea>areaR[0])and(pArea<=areaR[1]) ) )
+    if lOK and pArea:
+        lOK = ( pArea>areaR[0] and pArea<=areaR[1] )
     if lOK:
         rscore = 1. - np.sum( np.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
     return lOK, rscore
@@ -159,18 +162,24 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     idxTused = []   ; # IDs of triangles already in use in a quadrangle
     Quads    = []
 
+
+    Z3Pnts = pTRIAs.TriPointIDs
+    Zangls = pTRIAs.angles()
+    Zareas = pTRIAs.area()
+    
     # Loop along triangles:
     for jT in range(NbT):
 
-        v3pnts  = pTRIAs.TriPointIDs[jT,:] ; # the 3 point IDs composing triangle # jT
-        vangles = pTRIAs.angles()[jT]      ; # the 3 angles...
+        v3pnts  = Z3Pnts[jT,:] ; # the 3 point IDs composing triangle # jT
+        vangles = Zangls[jT,:] ; # the 3 angles...
+        rarea   = Zareas[jT]
 
         if ivb>0:
             print('\n **************************************************************')
             print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if not lTisOK(vangles, anglR=anglRtri):
+        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/3.,areaR[1]/1.5)):
             if ivb>0: print('       => disregarding this triangle!!! (because of extreme angles)')
             idxTdead.append(jT) ; # Cancel this triangle
 
@@ -237,7 +246,8 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
     ## -- for jT in range(NbT) --
-    del v3pnts, vangles
+    del Z3Pnts, Zangls, Zareas, v3pnts, vangles
+
 
     zQpoints = np.array(Quads)
     zQcoor   = []
