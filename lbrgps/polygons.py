@@ -92,12 +92,12 @@ class Quadrangle:
         # NumPy Arrays:
         self.PointIDs    = vpoints                                    ; # IDs of all the points making the quadrangles => shape = (nP)
         self.QuaIDs      = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
-        self.QuaPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nT,3)
-        self.QuaCoor     = np.array(xCoor)              ; # Coordinates of the 3 points composing the quadrangle => shape = (nT,3,2)
+        self.QuaPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nT,4)
+        self.QuaCoor     = np.array(xCoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nT,4,2)
 
 
     def lengths( self ):
-        ''' Returns the shape(nT,3) array of the length of the 3 segments defining the triangle (counter-clockwize from 1st point) '''
+        ''' Returns the shape(nT,4) array of the length of the 4 segments defining the triangle (counter-clockwize from 1st point) '''
         zL = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
             vL1 = LengthsOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [0,1,3] ]) ); # length of sides of triangle [ABD]
