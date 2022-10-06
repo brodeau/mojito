@@ -24,7 +24,7 @@ def LengthsOfTriangle(pCoorT):
         print('ERROR [LengthsOfTriangle]: I am only designed for triangles...', nv); exit(0)
 
     va = [ __distAB2__(pCoorT[i,:], pCoorT[(i+1)%3,:]) for i in range(nv) ]; # Square of the length of each side
-    return np.sqrt(va) 
+    return np.sqrt(va)
 
 
 def AnglesOfTriangle(pCoorT):
@@ -90,17 +90,20 @@ def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,
     return lOK, rscore
 
 
-def QSpecs2Tri( pTRIAs, it1, it2, pCoor, pnam=[] ):
+
+def QSpecsFrom2T( p3Pnt, pAngl, it1, it2, pCoor, pnam=[] ):
     '''
-    ###  Quadrangle specs from 2 triangles (it1 and it2)
-    ###          There are `Np` points that define `Nt` triangles !
-    ### Input:
+    ###  Quadrangle specs obtained from "would-merge" the 2 triangles with IDs `it1` and `it2`
     ###
-    ###         * pTrgl:    the 3 point IDs    forming the triangles, shape: (Nt,3) | origin: `scipy.Delaunay().simplices`
-    ###         * pNghb:    the 3 triangle IDs being the neighbors,   shape: (Nt,3) | origin: `scipy.Delaunay().neighbors`
+    ###       Note: about the shape pf pCoor and pnam:
+    ###             a cloud of `nP` points defines `nT` triangles ! => #fixme? (is it bad to pass the entire `pCoor` ?)
+    ###
+    ### Input:
+    ###         * p3Pnt:   the 3 point IDs forming the triangles, shape: (2,3) | origin: `scipy.Delaunay().simplices`
+    ###         * pAngl:   the 3 angles of the triangle,          shape: (2,3)
     ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
-    ###         * pCoor:    (lon,lat) coordinates of each point,      shape: (Np,2)
-    ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (Np)
+    ###         * pCoor:    (lon,lat) coordinates of each point,      shape: (nP,2)
+    ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (nP)
     ###
     '''
     from math  import sqrt
@@ -108,33 +111,30 @@ def QSpecs2Tri( pTRIAs, it1, it2, pCoor, pnam=[] ):
 
     ldebug = ( len(pnam)>0 )
 
-    if not it2 in pTRIAs.neighbors[it1,:]:
-        print('ERROR: [QSpecs2Tri()] => triangle #'+str(it2)+' is not neighbor with triangle #'+str(it1)+'!'); exit(0)
-
-    [vp1,vp2] = pTRIAs.TriPointIDs[[it1,it2],:] ; # 3 point IDs forming the vertices of triangle #1 and #2
+    [vp1, vp2] = p3Pnt[:,:] ; # 3 point IDs forming the vertices of triangle #1 and #2
+    [va1, va2] = pAngl[:,:] ; # The 3 angles of each of the 2 triangles:
 
     v2com     = np.intersect1d( vp1, vp2 )
     IDsingle2 = np.setdiff1d(vp2, vp1) ; # Return the ID of the only point of triangle #2 that does not belong to triangle #1
-    v2sol     = np.concatenate([np.setdiff1d(vp1, vp2),IDsingle2]) ; # the 2 points  not part of the "common" segment! (1st one belongs to triangle #1)
+    v2sol     = np.concatenate([np.setdiff1d(vp1, vp2),IDsingle2]) ; # the 2 points  not part of the "common" segment!
+    #                                                                   => 1st one belongs to triangle #1
 
     jid = IDsingle2[0]
     if ldebug:
-        print('   [QSpecs2Tri()] 4 angles of quad when merge triangles #'+str(it1)+' and #'+str(it2)+':')
-        print('   [QSpecs2Tri()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
-        print('   [QSpecs2Tri()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
-        print('   [QSpecs2Tri()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
+        print('   [QSpecsFrom2T()] 4 angles of quad when merge triangles #'+str(it1)+' and #'+str(it2)+':')
+        print('   [QSpecsFrom2T()] ==> the 2 vertices in common: ', v2com, '=', [ pnam[i] for i in v2com ])
+        print('   [QSpecsFrom2T()] ==> the 2 solitary vertices : ', v2sol, '=', [ pnam[i] for i in v2sol ])
+        print('   [QSpecsFrom2T()] ==> point to add to triangle '+str(it1)+' to form a quadrangle is #'+str(jid)+' aka "'+pnam[jid]+'"')
 
     # Ratio between apparent height and width of the quadrangle
     zcoor_com = np.array([ pCoor[i,:] for i in v2com ])
     zcoor_sol = np.array([ pCoor[i,:] for i in v2sol ])
-    Lc11 = sqrt( __distAB2__(zcoor_com[0,:], zcoor_sol[0,:]) ) ; #lilo
-    Lc21 = sqrt( __distAB2__(zcoor_com[1,:], zcoor_sol[0,:]) ) ; #lilo
-    Lc12 = sqrt( __distAB2__(zcoor_com[1,:], zcoor_sol[1,:]) ) ; #lilo
-    Lc22 = sqrt( __distAB2__(zcoor_com[0,:], zcoor_sol[1,:]) ) ; #lilo
+    Lc11 = sqrt( __distAB2__(zcoor_com[0,:], zcoor_sol[0,:]) )
+    Lc21 = sqrt( __distAB2__(zcoor_com[1,:], zcoor_sol[0,:]) )
+    Lc12 = sqrt( __distAB2__(zcoor_com[1,:], zcoor_sol[1,:]) )
+    Lc22 = sqrt( __distAB2__(zcoor_com[0,:], zcoor_sol[1,:]) )
     ratio = (Lc11+Lc12) / (Lc21+Lc22)
     del zcoor_com, zcoor_sol, Lc11, Lc21, Lc12, Lc22
-
-    [va1, va2] = pTRIAs.angles()[[it1,it2],:] ; # The 3 angles of each of the 2 triangles:
 
     # 2 angles associated to the 2 "solitary points":
     va_sol = np.concatenate([ va1[np.where(vp1==v2sol[0])],va2[np.where(vp2==v2sol[1])] ])
@@ -152,11 +152,13 @@ def QSpecs2Tri( pTRIAs, it1, it2, pCoor, pnam=[] ):
     vIquad, vAquad = vIquad[vsidx], vAquad[vsidx]
 
     if ldebug:
-        print('   [QSpecs2Tri()] ==> the 4 angles of the CCW-sorted quadrangle =',vAquad)
-        print('   [QSpecs2Tri()]       ===> for ',[ pnam[i] for i in vIquad ])
+        print('   [QSpecsFrom2T()] ==> the 4 angles of the CCW-sorted quadrangle =',vAquad)
+        print('   [QSpecsFrom2T()]       ===> for ',[ pnam[i] for i in vIquad ])
 
-    # Return the CCW-sorted points and angles for the 4 vertices of the quadrangle:
-    return vIquad, vAquad, ratio, pTRIAs.area()[it1]+pTRIAs.area()[it2]
+    # Return the CCW-sorted points and angles for the 4 vertices of the quadrangle, as well as ratio
+    return vIquad, vAquad, ratio
+
+
 
 
 def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
@@ -172,14 +174,13 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     NbQ      = 0
     idxTdead = []   ; # IDs of canceled triangles
     idxTused = []   ; # IDs of triangles already in use in a quadrangle
-    Quads    = []
+    Quads    = []   ; # Valid quads identified...
 
+    Z3Pnts = pTRIAs.TriPointIDs.copy() ; # shape: (nT,3)
+    Znghbs = pTRIAs.neighbors.copy()   ; # shape: (nT,3)
+    Zangls = pTRIAs.angles().copy()    ; # shape: (nT,3)
+    Zareas = pTRIAs.area().copy()      ; # shape: (nT)
 
-    Z3Pnts = pTRIAs.TriPointIDs
-    Zangls = pTRIAs.angles()
-    Zareas = pTRIAs.area()
-    Znghbs = pTRIAs.neighbors
-    
     # Loop along triangles:
     for jT in range(NbT):
 
@@ -204,15 +205,14 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
             #
             # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
             # -----------------------------------------------------------------------------
-            #
+
             if ivb>1: print('  ==> its 3 angles are:',vangles[:])
-            #
+
             vtmp   = Znghbs[jT,:]
             vnghbs = vtmp[vtmp >= 0] ; # shrink it, only retain non `-1`-flagged values...
-            NbN    = len(vnghbs)     ; # number of neighbors
-            if ivb>0: print('       => its '+str(NbN)+' neighbor triangles are:', vnghbs)
+            if ivb>0: print('       => its '+str(len(vnghbs))+' neighbor triangles are:', vnghbs)
 
-            NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use, and decent shape!
+            NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use [REMOVED:, and decent shape]!
             for jN in vnghbs:
                 lTok = ( (not jN in idxTdead) and (not jN in idxTused) )
                 if lTok:
@@ -226,20 +226,19 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
                 #   => need to check which of the neighbors in `NgbrTvalid` gives the best quadrangle!
                 if ivb>0: print('       => valid neighbors for triangle #'+str(jT)+':',NgbrTvalid)
 
-                #NNTok  = 0  ; # number of neighbor triangles are ok for forming a "decent" quad
                 vjNok  = [] ; # stores the neighbor triangles that are ok for forming a "decent" quad
                 vscore = [] ; #   => store their score of "OK-ness" !
-                xidx   = []
+                xPids  = []
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                    vidx, vang, rat, area  = QSpecs2Tri( pTRIAs, jT, jN, pCoor) #, pnam=pnam )
-                    lQok, score = lQisOK( vang[:], rat, pArea=area, ratioD=ratioD, anglR=anglR, areaR=areaR )                    
-                    
+                    v4Pnt, vang, rat  = QSpecsFrom2T( Z3Pnts[[jT,jN],:], Zangls[[jT,jN],:], jT, jN, pCoor, pnam=[] )
+                    lQok, score = lQisOK( vang, rat, pArea=Zareas[jT]+Zareas[jN], ratioD=ratioD, anglR=anglR, areaR=areaR )
+
                     cc = 'does NOT'
                     if lQok:
                         vjNok.append(jN)
                         vscore.append(score)
-                        xidx.append(vidx)
+                        xPids.append(v4Pnt)
                         cc = 'does'
                     if ivb>1:
                         print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
@@ -248,24 +247,27 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
                 # Now we have to chose the best neighbor triangle to use (based on the score):
                 if len(vjNok)>0:
                     if ivb>0: print('       => We have '+str(len(vjNok))+' Quad candidates!')
-                    xidx = np.array(xidx)
+                    xPids = np.array(xPids)
                     iwin = np.argmax(vscore)
                     jN   = vjNok[iwin] ; # our winner neighbor triangle
-                    Quads.append(xidx[iwin,:]) ; # saving the winner Quad!
+                    Quads.append(xPids[iwin,:]) ; # saving the winner Quad!
                     idxTused.append(jT)
                     idxTused.append(jN)
                     NbQ = NbQ+1
-                    if ivb>0: print('         ==> Selected Quad: "triangles '+str(jT)+'+'+str(jN)+'" give Quad',[pnam[i] for i in xidx[iwin,:]])
+                    if ivb>0: print('   ==> New Quad: "triangles '+str(jT)+'+'+str(jN)+'" => ',[pnam[i] for i in xPids[iwin,:]])
 
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
+
+        print('**************************************************************')
     ## -- for jT in range(NbT) --
+
     del Z3Pnts, Zangls, Zareas, Znghbs, v3pnts, vangles
 
-
     zQpoints = np.array(Quads)
-    zQcoor   = []
     del Quads
+
+    zQcoor   = []
 
     if NbQ>0:
 
