@@ -258,7 +258,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
         ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
     else:
         ddx = dx*Ly/Lx
-        ax   = plt.axes([ddx/Lx, dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
+        ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
         plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
 
     # Showing points:
