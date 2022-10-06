@@ -14,10 +14,11 @@ import lbrgps   as lbr
 
 idebug=1
 
-if not len(argv) in [2]:
-    print('Usage: '+argv[0]+' <file_Q_mesh.npz>')
+if not len(argv) in [3]:
+    print('Usage: '+argv[0]+' <file_Q_mesh.npz> <zoom>')
     exit(0)
 cf_npzQ = argv[1]
+izoom   = int(argv[2])
 
 #cfroot = split('.npz',path.basename(cf_in))[0]
 
@@ -38,5 +39,5 @@ cf_fig = str.replace( path.basename(cf_npzQ), '.npz', '.png' )
 
 # Show quadrangles on a map:
 kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig=cf_fig,
-                     QuadMesh=Quadrangles, lProj=False, zoom=5 )
+                     QuadMesh=Quadrangles, lProj=False, zoom=izoom )
 
