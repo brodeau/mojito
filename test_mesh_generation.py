@@ -138,6 +138,11 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         del zlengths, zangles, zarea
     #exit(0)
 
+    # Save the triangular mesh info:
+    np.savez( cf_npzT, Txy=TRIAS.PointXY, Tmesh=TRIAS.TriPointIDs,
+              Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
+    print('\n *** "'+cf_npzT+'" written!')
+
 
     # Merge triangles into quadrangles:
     xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
@@ -152,58 +157,80 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     del xQpnts, xQcoor
 
-    # Save the triangular mesh info:
-    np.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.TriPointIDs,  Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
-    print('\n *** "'+cf_npzT+'" written!')
-
-    # Save the quadrangular mesh info:
-    np.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.QuaPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    print('\n *** "'+cf_npzQ+'" written!')
-
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE QUADRANGLE CLASS:
         zlengths = QUADS.lengths()
         zangles  = QUADS.angles()
         zarea    = QUADS.area()
+        zXYcloud = QUADS.PointXY
+        print('\n  *** DEBUG summary for Quadrangle class:')
+        print('  ***************************************')
+        print('    => number of Quadrangles: '+str(QUADS.nQ))
+        print('    ==> number of points involved: '+str(QUADS.nP))
+        #print('    => Cloud of points (size ='+str(len(zXYcloud[:,0]))+') =')
+        #print( zXYcloud[:,0] )
+        #print( zXYcloud[:,1],'\n' )
+        print('')
         for jQ in range(QUADS.nQ):
             vpl     = QUADS.QuaPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
-            print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+' - '+vnam[vpl[3]]+'"')
+            i1=vpl[0]; i2=vpl[1]; i3=vpl[2]; i4=vpl[3]
+            vpr     = QUADS.QuaPointIdx[jQ,:] ; # IDs of the 4 points composing the quadrangle BUT in the reduced cloud of points
+            print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[i1]+' - '+vnam[i2]+' - '+vnam[i3]+' - '+vnam[i4]+'"')
+            print('    =>  Pt. IDs =',vpl,' (with IDs from initial triangle points)')
+            print('    =>  Pt. IDs =',vpr,' (with IDs from remaining points of quads)')
+            print('    =>  coord.  =', round(xCoor[i1,0],0),round(xCoor[i1,1],0),round(xCoor[i2,0],0),round(xCoor[i2,1],0),
+                                       round(xCoor[i3,0],0),round(xCoor[i3,1],0),round(xCoor[i4,0],0),round(xCoor[i4,1],0)  )
             print('    =>  lengths =',zlengths[jQ,:])
             print('    =>  angles =',zangles[jQ,:])
             print('    =>  area   =',round(zarea[jQ],1),cAu)
             print('')
+
         del zlengths, zangles, zarea
+        #exit(0);#lolo
+
+    del xCoor
+
+    # Save the quadrangular mesh info:
+    np.savez( cf_npzQ, Qxy=QUADS.PointXY, Qmesh=QUADS.QuaPointIDs, Qmeix=QUADS.QuaPointIdx,
+              Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
+    print('\n *** "'+cf_npzQ+'" written!')
 
     # For plot to come:
     Triangles   = TRIAS.TriPointIDs
-    Quadrangles = QUADS.QuaPointIDs
+    xyT         = TRIAS.PointXY
 
+    Quadrangles = QUADS.QuaPointIDs
+    xyQ         = QUADS.PointXY
+    QuadsRstrct = QUADS.QuaPointIdx
 
 else:
 
-    print('\n *** We are going to READ triangle and quad meshes in the npz files...')
+    print('\n *** Reading the triangle and quad meshes in the npz files...')
 
     dataT = np.load(cf_npzT, allow_pickle=True)
-    xCoor      = dataT['pointCoordinates']
+    xyT      = dataT['Txy']
     #vnam       = dataT['names']
-    Triangles  = dataT['Triangles']
+    Triangles  = dataT['Tmesh']
 
     dataQ = np.load(cf_npzQ, allow_pickle=True)
-    Quadrangles = dataQ['Quadrangles']
-    # DEBUG:
-    #Q_lengths = dataQ['Lengths']
-    #2Q_angles  = dataQ['Angles']
-    #Q_areas  = dataQ['Areas']
-    #print('Q Lengths = ',Q_lengths)
-    #print('Q Angles = ',Q_angles)
-    #print('Q Areas = ',Q_areas)
+    xyQ         = dataQ['Qxy']
+    Quadrangles = dataQ['Qmesh']
+    QuadsRstrct = dataQ['Qmeix']
     print('')
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_Mesh_Map_TRIangles_Europe'+cc+'.png',
+kk = lbr.ShowTQMesh( xyT[:,0], xyT[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=Triangles, lProj=(not l_work_with_dist))
 
-# Show quadrangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
+# Show triangles together with the quadrangles on a map:
+kk = lbr.ShowTQMesh( xyT[:,0], xyT[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist) )
+
+## Show only points composing the quadrangles:
+#kk = lbr.ShowTQMesh( xyQ[:,0], xyQ[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+#                     lProj=(not l_work_with_dist) )
+
+# Show only the quads with only the points that define them:
+kk = lbr.ShowTQMesh( xyQ[:,0], xyQ[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+                     QuadMesh=QuadsRstrct, lProj=(not l_work_with_dist) )
 

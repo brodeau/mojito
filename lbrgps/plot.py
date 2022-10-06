@@ -6,7 +6,7 @@
 
 from sys import exit
 from os import path, mkdir
-import numpy as nmp
+import numpy as np
 from re import split
 
 import matplotlib as mpl
@@ -105,8 +105,8 @@ def __figMap__( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.p
     BMProj.fillcontinents(color='grey') #, alpha=0)
     #BMProj.drawlsmask(land_color='coral',ocean_color='aqua',lakes=True)
     #BMProj.drawmapboundary()
-    BMProj.drawmeridians(nmp.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-    BMProj.drawparallels(nmp.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
+    BMProj.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
+    BMProj.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
 
     if cdate != '':
         ax.annotate('Date: '+cdate, xy=(0.6, 0.93), xycoords='figure fraction', **cp.fig_style.cfont_clck)
@@ -157,7 +157,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
             * pvIDs => (OPTIONAL) vector of length Nb of buoys IDs (integer)
     '''
 
-    (Nt,Nb) = nmp.shape(pvlon)
+    (Nt,Nb) = np.shape(pvlon)
     if Nt != len(pvt):
         print('\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!')
         exit(0)
@@ -207,7 +207,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
     ax  = plt.axes([0.05, 0.13, 0.9, 0.8])
     #plt.axis([ min(vTt)-rdt, max(vTt)+rdt, min(xlat[:,ic])-0.01, max(xlat[:,ic])+0.01])
     #
-    func = nmp.vectorize(dt.utcfromtimestamp)
+    func = np.vectorize(dt.utcfromtimestamp)
     pl1 = plt.plot( mdates.date2num(func(vTs)), vFs, 'o-', color='#041a4d', linewidth=4., ms=10.)
     pl2 = plt.plot( mdates.date2num(func(vTt)), vFt, '*-', color='r'      , linewidth=1., ms=3)
     date_fmt = '%Y/%m/%d'
@@ -244,8 +244,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
     else:
         # Cartesian coordinates (x,y)
         #  => we want to preserve aspect ratio!
-        xA, yA = nmp.min(pX), nmp.min(pY)
-        xB, yB = nmp.max(pX), nmp.max(pY)
+        xA, yA = np.min(pX), np.min(pY)
+        xB, yB = np.max(pX), np.max(pY)
         Lx, Ly = xB-xA, yB-yA
         dx, dy = 0.05*(Lx), 0.05*(Ly)
         vfig = (10*zoom,10*Ly/Lx*zoom)
@@ -266,25 +266,27 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
 
     # Adding triangles:
     if len(TriMesh)>0:
-        (nbT,_) = nmp.shape(TriMesh); # Number of triangles
+        (nbT,_) = np.shape(TriMesh); # Number of triangles
         plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)    
         # Indicate triangle # in its center:
         for jT in range(nbT):
             vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
-            rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+            rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
             ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
-        (nbQ,_) = nmp.shape(QuadMesh)
+        (nbQ,_) = np.shape(QuadMesh)
+        (nbP,)  = np.shape(pX)
+        
         for jQ in range(nbQ):
-            vids = QuadMesh[jQ,:]
-            vx, vy  = pX[vids], pY[vids]
-            vX, vY = nmp.concatenate([vx[:], vx[0:1]]), nmp.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
+            vids = QuadMesh[jQ,:] ; # the 4 IDs of the 4 points defining this Quad
+            vx, vy = pX[vids], pY[vids]
+            vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
             plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
             # Indicate quadrangle # in its center:
-            rmLon, rmLat = nmp.mean( pX[vids] ), nmp.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+            rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
             ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=160)
 
     if len(pnames)>0:

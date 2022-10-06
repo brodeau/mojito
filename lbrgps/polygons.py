@@ -25,34 +25,40 @@ class Triangle:
                  A             B
 
         '''
-        vpoints = np.unique( xPntID.flatten() )
+        vpIDs, vunqixd = np.unique( xPntID.flatten(), return_index=True )
+        vpx   = xCoor[:,:,0].flatten()
+        vpy   = xCoor[:,:,1].flatten()
+        XY = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
+        del vpx, vpy, vunqixd
 
         # Integers:
-        self.nP        = len(vpoints) ; # number of points making the triangles
+        self.nP        = len(vpIDs) ; # number of points making the triangles
         self.nT        = nT ; # number of triangles (nT > nP)
         self.length    = nT ; #    "        "
         #
         # NumPy Arrays:
-        self.PointIDs    = vpoints                                    ; # IDs of all the points making the triangles => shape = (nP)
+        self.PointIDs    = vpIDs                          ; # IDs of all the points making the triangles => shape = (nP)
+        self.PointXY     = XY                             ; # Coordinates of all the points making the triangles => shape = (nP,2)
+        #
         self.TriIDs      = np.array([i for i in range(nT)], dtype=int); # IDs of the triangles => shape = (nT)
         self.TriPointIDs = np.array(xPntID, dtype=int)                ; # 3 point IDs composing the triangles, CCW => shape = (nT,3)
-        self.TriCoor     = np.array(xCoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
+        self.TriPointXY  = np.array(xCoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
         self.neighbors   = np.array(xNbgh, dtype=int)
         #
-        del vpoints
+        del vpIDs, XY
 
         
     def lengths( self ):
         ''' Returns the shape(nT,3) array of the length of the 3 segments defining the triangle (counter-clockwize from 1st point) '''
-        return np.array( [ LengthsOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )
+        return np.array( [ LengthsOfTriangle( self.TriPointXY[i] )  for i in range(self.nT) ] )
 
     def angles( self ):
         ''' Returns the shape(nT,3) array of the 3 angles (counter-clockwize from 1st point) '''
-        return np.array( [ AnglesOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )
+        return np.array( [ AnglesOfTriangle( self.TriPointXY[i] )  for i in range(self.nT) ] )
 
     def area( self ):
         ''' Returns the shape(nT) array of the area of the triangles '''
-        return np.array( [ AreaOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )
+        return np.array( [ AreaOfTriangle( self.TriPointXY[i] )  for i in range(self.nT) ] )
     
 
 
@@ -82,37 +88,58 @@ class Quadrangle:
                   A            B
 
         '''
-        vpoints = np.unique( xPntID.flatten() )
+        vpIDs, vunqixd = np.unique( xPntID.flatten(), return_index=True )
+        nP = len(vpIDs) ; # number of points that defines the nQ quadrangles
+        
+        vpx   = xCoor[:,:,0].flatten()
+        vpy   = xCoor[:,:,1].flatten()
+        XY = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
+        del vpx, vpy, vunqixd
+
+        #print('LOLO: xPntID =', xPntID)
+        #print('LOLO:  vpIDs =', vpIDs, nP)
+
+        zPntIdx = xPntID.copy(); # La dedans, je veux foutre les nouvelles IDs (allant de 0 a nP==len(vpIDs), qui est plus petit que le nombres de points initial!!!)
+        zPntIdx[:,:] = -1
+        for jP in range(nP):
+            ii = vpIDs[jP]
+            idx = np.where(xPntID==ii)
+            zPntIdx[idx] = jP
+        #print('LOLO: zPntIdx =', zPntIdx) ; exit(0)
         
         # Integers:
-        self.nP        = len(vpoints) ; # number of points making the quadrangles
+        self.nP        = nP ; # number of points making the quadrangles
         self.nQ        = nQ ; # number of quadrangles (nT > nP)        
         self.length    = nQ ; #    "        "
 
         # NumPy Arrays:
-        self.PointIDs    = vpoints                                    ; # IDs of all the points making the quadrangles => shape = (nP)
+        self.PointIDs    = vpIDs                          ; # IDs of all the points making the quadrangles => shape = (nP)
+        self.PointXY     = XY                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
+        #
         self.QuaIDs      = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
-        self.QuaPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nT,4)
-        self.QuaCoor     = np.array(xCoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nT,4,2)
+        self.QuaPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nQ,4)
+        self.QuaPointIdx = zPntIdx                                    ; # 4 point IDs composing the quadrangles BUT with vpIDs !!!!
+        self.QuaPointXY  = np.array(xCoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
 
+        del vpIDs, XY, zPntIdx
 
     def lengths( self ):
-        ''' Returns the shape(nT,4) array of the length of the 4 segments defining the triangle (counter-clockwize from 1st point) '''
+        ''' Returns the shape(nQ,4) array of the length of the 4 segments defining the triangle (counter-clockwize from 1st point) '''
         zL = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
-            vL1 = LengthsOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [0,1,3] ]) ); # length of sides of triangle [ABD]
-            vL2 = LengthsOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [2,3,1] ]) ); # length of sides of triangle [CDB]
+            vL1 = LengthsOfTriangle( np.array([ self.QuaPointXY[i,j]  for j in [0,1,3] ]) ); # length of sides of triangle [ABD]
+            vL2 = LengthsOfTriangle( np.array([ self.QuaPointXY[i,j]  for j in [2,3,1] ]) ); # length of sides of triangle [CDB]
             zL[i,:] = [ vL1[0], vL2[2], vL2[0], vL1[2] ] ; # lengths of [AB], [BC], [CD], [DA]
             #
         return zL
         
     def angles( self ):
-        ''' Returns the shape(nT,4) array of the 4 angles (from 1st point to 4th point, so counter-clockwize)         
+        ''' Returns the shape(nQ,4) array of the 4 angles (from 1st point to 4th point, so counter-clockwize)         
         '''
         za = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
-            va1 = AnglesOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [0,1,3] ]) ); # angles of triangle [ABD]
-            va2 = AnglesOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [2,3,1] ]) ); # angles of triangle [CDB]
+            va1 = AnglesOfTriangle( np.array([ self.QuaPointXY[i,j]  for j in [0,1,3] ]) ); # angles of triangle [ABD]
+            va2 = AnglesOfTriangle( np.array([ self.QuaPointXY[i,j]  for j in [2,3,1] ]) ); # angles of triangle [CDB]
             za[i,:] = [ va1[0], va1[1]+va2[2], va2[0], va1[2]+va2[1] ] ; # angles at A, B, C, D
             #
         return za
@@ -121,11 +148,11 @@ class Quadrangle:
         ''' Returns the shape(nQ) array of the area of the quadrangles '''
         zA = np.zeros(self.nQ) - 999.
         for i in range(self.nQ):
-            ra1 = AreaOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [0,1,3] ]) ); # area of triangle [ABD]
-            ra2 = AreaOfTriangle( np.array([ self.QuaCoor[i,j]  for j in [2,3,1] ]) ); # area of triangle [CDB]
+            ra1 = AreaOfTriangle( np.array([ self.QuaPointXY[i,j]  for j in [0,1,3] ]) ); # area of triangle [ABD]
+            ra2 = AreaOfTriangle( np.array([ self.QuaPointXY[i,j]  for j in [2,3,1] ]) ); # area of triangle [CDB]
             zA[i] = ra1 + ra2
             #
         return zA
 
         
-        return np.array( [ AreaOfTriangle( self.TriCoor[i] )  for i in range(self.nT) ] )
+    #return np.array( [ AreaOfTriangle( self.TriPointXY[i] )  for i in range(self.nT) ] )

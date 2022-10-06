@@ -139,11 +139,14 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xQpnts, xQcoor
 
     # Save the triangular mesh info:
-    np.savez( cf_npzT, pointCoordinates=xCoor, Triangles=TRIAS.TriPointIDs,  Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
+    np.savez( cf_npzT, Txy=TRIAS.TriPointXY, Tmesh=TRIAS.TriPointIDs,
+              Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
     print('\n *** "'+cf_npzT+'" written!')
 
     # Save the quadrangular mesh info:
-    np.savez( cf_npzQ, pointCoordinates=xCoor, Quadrangles=QUADS.QuaPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
+    #np.savez( cf_npzQ, Qxy=xCoor, Qmesh=QUADS.QuaPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
+    np.savez( cf_npzQ, Qxy=QUADS.QuaPointXY, Qmesh=QUADS.QuaPointIDs,
+              Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
 
     # For plot to come:
@@ -156,20 +159,20 @@ else:
     print('\n *** We are going to READ triangle and quad meshes in the npz files...')
 
     dataT = np.load(cf_npzT, allow_pickle=True)
-    xCoor      = dataT['pointCoordinates']
+    xCoor      = dataT['Txy']
     #vnam       = dataT['names']
-    Triangles  = dataT['Triangles']
+    Triangles  = dataT['Tmesh']
 
     dataQ = np.load(cf_npzQ, allow_pickle=True)
-    Quadrangles = dataQ['Quadrangles']
+    Quadrangles = dataQ['Qmesh']
 
     print('')
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='01_'+cfroot+'.png',
+kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='fig01_'+cfroot+'.png',
                      TriMesh=Triangles, lProj=(not l_work_with_dist), zoom=5)
 
 # Show quadrangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='02_'+cfroot+'.png',
+kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='fig02_'+cfroot+'.png',
                      TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist), zoom=5 )
 

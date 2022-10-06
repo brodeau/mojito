@@ -287,6 +287,9 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
             print('       => Summary about the '+str(NbQ)+' Quads generated:')
             for jQ in range(NbQ):
                 print('        * Quad #'+str(jQ)+' => ', zQpoints[jQ,:], '(', [ pnam[i] for i in zQpoints[jQ,:] ],')')
+                if ivb>1:
+                    print('     X-coor:', zQcoor[jQ,:,0])
+                    print('     Y-coor:', zQcoor[jQ,:,1])
 
     else:
         print('\n WARNING => No Quads could be generated! :(')
