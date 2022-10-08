@@ -139,13 +139,13 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xQpnts, xQcoor
 
     # Save the triangular mesh info:
-    np.savez( cf_npzT, PointXY=TRIAS.TriPointXY, Mesh=TRIAS.MeshPointIDs,
+    np.savez( cf_npzT, PointXY=TRIAS.MeshPointXY, Mesh=TRIAS.MeshPointIDs,
               Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
     print('\n *** "'+cf_npzT+'" written!')
 
     # Save the quadrangular mesh info:
     #np.savez( cf_npzQ, PointXY=xCoor, Mesh=QUADS.MeshPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    np.savez( cf_npzQ, PointXY=QUADS.QuaPointXY, Mesh=QUADS.MeshPointIDs,
+    np.savez( cf_npzQ, PointXY=QUADS.MeshPointXY, Mesh=QUADS.MeshPointIDs,
               Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
 

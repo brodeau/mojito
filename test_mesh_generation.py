@@ -110,16 +110,16 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
 
-    xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+    xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
     print('\n *** We have '+str(NbT)+' triangles!')
 
     zTcoor = np.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
 
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( NbT, xTpnts, zTcoor, xNeighbors )
+    TRIAS = lbr.Triangle( xTpnts, zTcoor, xNeighborIDs )
 
-    del xTpnts, zTcoor, xNeighbors, TRI
+    del xTpnts, zTcoor, xNeighborIDs, TRI
 
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE TRIANGLE CLASS:
@@ -130,14 +130,12 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         for jT in range(TRIAS.nT):
             vpl = TRIAS.MeshPointIDs[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
-            print('    => neighbor triangles are:',TRIAS.neighbors[jT,:])
+            print('    => neighbor triangles are:',TRIAS.NeighborIDs[jT,:])
             print('    =>  lengths =',zlengths[jT,:])
             print('    =>  angles =',zangles[jT,:])
             print('    =>  area   =',round(zarea[jT],1),cAu)
             print('')
         del zlengths, zangles, zarea
-
-    lbr.SavePolygon( cf_npzT, TRIAS, ctype='T' )
 
 
     # Merge triangles into quadrangles:
@@ -149,7 +147,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class:
-    QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
+    QUADS = lbr.Quadrangle( xQpnts, xQcoor )
 
     del xQpnts, xQcoor
 
@@ -186,52 +184,35 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     del xCoor
 
-    # Save the quadrangular mesh info:
-    lbr.SavePolygon( cf_npzQ, QUADS, ctype='Q' )    
-    #np.savez( cf_npzQ, PointXY=QUADS.PointXY, Mesh=QUADS.MeshPointIDs, MeshTriPntIDs=QUADS.MeshPointTriIDs,
-    #          Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    #print('\n *** "'+cf_npzQ+'" written!')
-
-    # For plot to come:
-    #Triangles   = TRIAS.MeshPointIDs
-    #xyT         = TRIAS.PointXY
-
-    #Quadrangles = QUADS.MeshPointIDs
-    #xyQ         = QUADS.PointXY
-    #QuadsRstrct = QUADS.MeshPointTriIDs
+    # Save the triangular mesh info:
+    lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
     
-########################################################
+    # Save the quadrangular mesh info:
+    lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
+
+#if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
+############################################################
 
 
-
-print('\n\n *** Reading the triangle and quad meshes in the npz files...')
-
-dataT = np.load(cf_npzT, allow_pickle=True)
-xyT      = dataT['PointXY']
-#vnam       = dataT['names']
-Triangles  = dataT['Mesh']
-
-dataQ = np.load(cf_npzQ, allow_pickle=True)
-xyQ         = dataQ['PointXY']
-Quadrangles = dataQ['Mesh']
-QuadsRstrct = dataQ['MeshTriPntIDs']
-print('')
-
+# Reading the triangle and quad meshes in the npz files:
+TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
+QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( xyT[:,0], xyT[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=Triangles, lProj=(not l_work_with_dist))
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
+                     pnames=vnam, TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist))
 
 # Show triangles together with the quadrangles on a map:
-kk = lbr.ShowTQMesh( xyT[:,0], xyT[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist) )
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
+                     pnames=vnam, TriMesh=TRI.MeshPointIDs, QuadMesh=QUA.MeshPointTriIDs, lProj=(not l_work_with_dist) ) ; # note:`QUA.MeshPointTriIDs`
 
 ## Show only points composing the quadrangles:
-#kk = lbr.ShowTQMesh( xyQ[:,0], xyQ[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
 #                     lProj=(not l_work_with_dist) )
 
 # Show only the quads with only the points that define them:
-kk = lbr.ShowTQMesh( xyQ[:,0], xyQ[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
-                     QuadMesh=QuadsRstrct, lProj=(not l_work_with_dist) )
+kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+                     QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist) )
+
 

@@ -177,7 +177,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     Quads    = []   ; # Valid quads identified...
 
     Z3Pnts = pTRIAs.MeshPointIDs.copy() ; # shape: (nT,3)
-    Znghbs = pTRIAs.neighbors.copy()   ; # shape: (nT,3)
+    Znghbs = pTRIAs.NeighborIDs.copy()   ; # shape: (nT,3)
     Zangls = pTRIAs.angles().copy()    ; # shape: (nT,3)
     Zareas = pTRIAs.area().copy()      ; # shape: (nT)
 
