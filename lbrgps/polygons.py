@@ -4,6 +4,13 @@ from .geomesh import LengthsOfTriangle, AnglesOfTriangle, AreaOfTriangle
 from sys import exit
 
 
+### TO DO:
+###
+### It's bad to provide a `xCoor` whith shape (nPoly,nVrtc,2)
+###   ===> instead just provide coordinates for each point ID => (nPoints,2)
+###
+
+
 class Triangle:
 
     def __init__( self, xPntID, xCoor, xNbgh ):
@@ -36,19 +43,19 @@ class Triangle:
             print('ERROR: [polygons.Triangle] => problem in the shape of neighbor array!'); exit(0)
         
         vpIDs, vunqixd = np.unique( xPntID.flatten(), return_index=True )
-        vpx   = xCoor[:,:,0].flatten()
-        vpy   = xCoor[:,:,1].flatten()
-        XY = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
+        nP  = len(vpIDs) ; # number of points that defines the nT triangles
+        vpx = xCoor[:,:,0].flatten()
+        vpy = xCoor[:,:,1].flatten()
+        XY  = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
         del vpx, vpy, vunqixd
 
         # Integers:
-        self.nP        = len(vpIDs) ; # number of points making the triangles
+        self.nP        = nP ; # number of points making the triangles
         self.nT        = nT ; # number of triangles (nT > nP)
         self.length    = nT ; #    "        "
         # NumPy Arrays:
         self.PointIDs    = vpIDs                          ; # IDs of all the points making the triangles => shape = (nP)
         self.PointXY     = XY                             ; # Coordinates of all the points making the triangles => shape = (nP,2)
-        #
         self.TriIDs       = np.array([i for i in range(nT)], dtype=int); # IDs of the triangles => shape = (nT)
         self.MeshPointIDs = np.array(xPntID, dtype=int)                ; # 3 point IDs composing the triangles, CCW => shape = (nT,3)
         self.MeshPointXY  = np.array(xCoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
@@ -77,8 +84,10 @@ class Quadrangle:
         '''
                => `nQ` Quadrangles!
 
-            * xPntID:  [(nQ,4)   array of integers] the 4 point IDs composing the quad, in counter-clockwize
+            * xPntID:  [(nQ,4) array of integers] the 4 point IDs composing the quad, in counter-clockwize
             * xCoor: [(nQ,4,2) array of floats] the 4 [lon,lat] geographic coordinates "      " [degrees]
+            ###* xPntTriID : same as xPntID but point IDs are those based on only the nT points defining the
+            ###              nT triangles from which the nQ Quads were built (nQ << nT)
             
 
             IMPORTANT: we expect the 1st and 3rd (indices 0 & 2) elements of the 4 points to be the 
@@ -105,20 +114,12 @@ class Quadrangle:
             print('ERROR: [polygons.Quadrangle] => problem in the shape of coordinate array!'); exit(0)
         
         vpIDs, vunqixd = np.unique( xPntID.flatten(), return_index=True )
-        nP = len(vpIDs) ; # number of points that defines the nQ quadrangles
-        
-        vpx   = xCoor[:,:,0].flatten()
-        vpy   = xCoor[:,:,1].flatten()
-        XY = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
+        nP  = len(vpIDs) ; # number of points that defines the nQ quadrangles
+        vpx = xCoor[:,:,0].flatten()
+        vpy = xCoor[:,:,1].flatten()
+        XY  = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
         del vpx, vpy, vunqixd
 
-        zPntIdx = xPntID.copy(); # La dedans, je veux foutre les nouvelles IDs (allant de 0 a nP==len(vpIDs), qui est plus petit que le nombres de points initial!!!)
-        zPntIdx[:,:] = -1
-        for jP in range(nP):
-            ii = vpIDs[jP]
-            idx = np.where(xPntID==ii)
-            zPntIdx[idx] = jP
-        
         # Integers:
         self.nP        = nP ; # number of points making the quadrangles
         self.nQ        = nQ ; # number of quadrangles (nT > nP)        
@@ -127,20 +128,10 @@ class Quadrangle:
         # NumPy Arrays:
         self.PointIDs    = vpIDs                          ; # IDs of all the points making the quadrangles => shape = (nP)
         self.PointXY     = XY                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
-        #
         self.QuaIDs      = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
-        #
-        #lilo: #fixme
-        #fixme: here is the problem, the class feeds on the IDs based on that of the triangle cloud, which becomes `MeshPointTriIDs`: #lilo
-        ##      ==> the input of the class should actually be directly `zPntIdx` !!!
-        #self.MeshPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nQ,4)
-        #self.MeshPointTriIDs = zPntIdx                                    ; # 4 point IDs composing the quadrangles BUT with vpIDs !!!!
-        self.MeshPointIDs    = zPntIdx                     ; # 4 point IDs composing the quadrangles (IDs in the frame of "only Quadrangles")
-        self.MeshPointTriIDs = np.array(xPntID, dtype=int) ; # 4 point IDs composing the quadrangles (IDs in the frame of the Triangle points!)
-        
+        self.MeshPointIDs = np.array(xPntID, dtype=int)        ; # 4 point IDs composing the quadrangles (IDs in the frame of "only Quadrangles")                
         self.MeshPointXY  = np.array(xCoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
-
-        del vpIDs, XY, zPntIdx
+        del vpIDs, XY
 
     def lengths( self ):
         ''' Returns the shape(nQ,4) array of the length of the 4 segments defining the triangle (counter-clockwize from 1st point) '''
@@ -174,12 +165,6 @@ class Quadrangle:
         return zA
 
 
-
-
-
-
-
-
 def SaveClassPolygon( cfile, Poly, ctype='Q' ):
     '''
         Save all arrays necessary to rebuild the Polygon object later !
@@ -193,7 +178,7 @@ def SaveClassPolygon( cfile, Poly, ctype='Q' ):
         print('ERROR: [polygons.SavePolygon()] => wrong polygon type'); exit(0)
 
     if ctype=='Q':
-        np.savez_compressed( cfile, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs, MeshPointTriIDs=Poly.MeshPointTriIDs,
+        np.savez_compressed( cfile, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs,
                              MeshPointXY=Poly.MeshPointXY )
         #                     Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() )
         print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
@@ -240,8 +225,6 @@ def LoadClassPolygon( cfile, ctype='Q' ):
     if ctype=='Q':                        
         if nVrtc!=4:
             print('ERROR: [polygons.LoadPolygon()] => wrong number of vertices for a triangle:',nVrtc); exit(0)
-        #fixme: here is the problem, the class feeds on the IDs based on that of the triangle cloud: #lilo
-        MeshPointTriIDs = data['MeshPointTriIDs']        ; # the `nVrtc` point IDs for each polygon => shape: (nPoly,nVrtc)
-        POLY = Quadrangle( MeshPointTriIDs, MeshPointXY )
+        POLY = Quadrangle( MeshPointIDs, MeshPointXY )
 
     return POLY

@@ -222,12 +222,16 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMesh=[], lProj=True, zoom=1 ):
+def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
+                pX_Q=[], pY_Q=[], QuadMesh=[], lProj=True, zoom=1        ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
     ###  * lProj: True   => we expect degrees for `pX,pY` and use a projection
     ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
+    ###
+    ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
+    ###     traingle world!
     '''
     from math import log
     
@@ -281,7 +285,10 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[], QuadMes
         
         for jQ in range(nbQ):
             vids = QuadMesh[jQ,:] ; # the 4 IDs of the 4 points defining this Quad
-            vx, vy = pX[vids], pY[vids]
+            if len(pX_Q)>0 and len(pY_Q)>0:
+                vx, vy = pX_Q[vids], pY_Q[vids]
+            else:
+                vx, vy = pX[vids], pY[vids]
             vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
             plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)

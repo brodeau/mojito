@@ -146,8 +146,8 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
-    # Conversion to the `Quadrangle` class:
-    QUADS = lbr.Quadrangle( xQpnts, xQcoor )
+    # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
+    QUADS = lbr.Quadrangle( lbr.TriPntIDs2QuaPntIDs(xQpnts), xQcoor )
 
     del xQpnts, xQcoor
 
@@ -168,10 +168,8 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         for jQ in range(QUADS.nQ):
             vpl     = QUADS.MeshPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
             i1=vpl[0]; i2=vpl[1]; i3=vpl[2]; i4=vpl[3]
-            vpr     = QUADS.MeshPointTriIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle BUT in the reduced cloud of points
             print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[i1]+' - '+vnam[i2]+' - '+vnam[i3]+' - '+vnam[i4]+'"')
-            print('    =>  Pt. IDs =',vpl,' (with IDs from initial triangle points)')
-            print('    =>  Pt. IDs =',vpr,' (with IDs from remaining points of quads)')
+            print('    =>  Pt. IDs =',vpl)
             print('    =>  coord.  =', round(xCoor[i1,0],0),round(xCoor[i1,1],0),round(xCoor[i2,0],0),round(xCoor[i2,1],0),
                                        round(xCoor[i3,0],0),round(xCoor[i3,1],0),round(xCoor[i4,0],0),round(xCoor[i4,1],0)  )
             print('    =>  lengths =',zlengths[jQ,:])
@@ -205,7 +203,8 @@ kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TR
 
 # Show triangles together with the quadrangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRI.MeshPointIDs, QuadMesh=QUA.MeshPointTriIDs, lProj=(not l_work_with_dist) ) ; # note:`QUA.MeshPointTriIDs`
+                     pnames=vnam, TriMesh=TRI.MeshPointIDs,
+                     pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist) )
 
 ## Show only points composing the quadrangles:
 #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',

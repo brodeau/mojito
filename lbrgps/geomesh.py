@@ -297,3 +297,26 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
 
     return zQpoints, zQcoor
 
+
+
+def TriPntIDs2QuaPntIDs( xPntID ):
+    '''
+        * xPntID: [ (nQ,4) array of integers] the 4 point IDs composing the Quad, 
+                  point IDs are those based on the nT points defining the initial triangles
+                  from which Quads were built (nQ << nT)
+
+     => RETURNS:
+        * 
+        * zPntID: same as xPntID but point IDs are those based on only the nQ points defining the Quads
+    '''
+    #zPntIDs1D, vunqixd = np.unique( xPntID.flatten(), return_index=True )
+    zPntIDs1D = np.unique( xPntID.flatten() )
+    nP = len(zPntIDs1D) ; # number of points that defines the nQ quadrangles
+    zPntID = xPntID.copy()
+    zPntID[:,:] = -1
+    for jP in range(nP):
+        ii = zPntIDs1D[jP]
+        idx = np.where(xPntID==ii)
+        zPntID[idx] = jP
+    
+    return zPntID
