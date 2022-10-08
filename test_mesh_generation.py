@@ -128,7 +128,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         zarea   = TRIAS.area()
 
         for jT in range(TRIAS.nT):
-            vpl = TRIAS.TriPointIDs[jT,:] ; # IDs of the 3 points composing triangle
+            vpl = TRIAS.MeshPointIDs[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.neighbors[jT,:])
             print('    =>  lengths =',zlengths[jT,:])
@@ -136,12 +136,8 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
             print('    =>  area   =',round(zarea[jT],1),cAu)
             print('')
         del zlengths, zangles, zarea
-    #exit(0)
 
-    # Save the triangular mesh info:
-    np.savez( cf_npzT, Txy=TRIAS.PointXY, Tmesh=TRIAS.TriPointIDs,
-              Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
-    print('\n *** "'+cf_npzT+'" written!')
+    lbr.SavePolygon( cf_npzT, TRIAS, ctype='T' )
 
 
     # Merge triangles into quadrangles:
@@ -172,9 +168,9 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         #print( zXYcloud[:,1],'\n' )
         print('')
         for jQ in range(QUADS.nQ):
-            vpl     = QUADS.QuaPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
+            vpl     = QUADS.MeshPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
             i1=vpl[0]; i2=vpl[1]; i3=vpl[2]; i4=vpl[3]
-            vpr     = QUADS.QuaPointIdx[jQ,:] ; # IDs of the 4 points composing the quadrangle BUT in the reduced cloud of points
+            vpr     = QUADS.MeshPointTriIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle BUT in the reduced cloud of points
             print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[i1]+' - '+vnam[i2]+' - '+vnam[i3]+' - '+vnam[i4]+'"')
             print('    =>  Pt. IDs =',vpl,' (with IDs from initial triangle points)')
             print('    =>  Pt. IDs =',vpr,' (with IDs from remaining points of quads)')
@@ -191,32 +187,37 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xCoor
 
     # Save the quadrangular mesh info:
-    np.savez( cf_npzQ, Qxy=QUADS.PointXY, Qmesh=QUADS.QuaPointIDs, Qmeix=QUADS.QuaPointIdx,
-              Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    print('\n *** "'+cf_npzQ+'" written!')
+    lbr.SavePolygon( cf_npzQ, QUADS, ctype='Q' )    
+    #np.savez( cf_npzQ, PointXY=QUADS.PointXY, Mesh=QUADS.MeshPointIDs, MeshTriPntIDs=QUADS.MeshPointTriIDs,
+    #          Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
+    #print('\n *** "'+cf_npzQ+'" written!')
 
     # For plot to come:
-    Triangles   = TRIAS.TriPointIDs
-    xyT         = TRIAS.PointXY
+    #Triangles   = TRIAS.MeshPointIDs
+    #xyT         = TRIAS.PointXY
 
-    Quadrangles = QUADS.QuaPointIDs
-    xyQ         = QUADS.PointXY
-    QuadsRstrct = QUADS.QuaPointIdx
+    #Quadrangles = QUADS.MeshPointIDs
+    #xyQ         = QUADS.PointXY
+    #QuadsRstrct = QUADS.MeshPointTriIDs
+    
+########################################################
 
-else:
 
-    print('\n *** Reading the triangle and quad meshes in the npz files...')
 
-    dataT = np.load(cf_npzT, allow_pickle=True)
-    xyT      = dataT['Txy']
-    #vnam       = dataT['names']
-    Triangles  = dataT['Tmesh']
+print('\n\n *** Reading the triangle and quad meshes in the npz files...')
 
-    dataQ = np.load(cf_npzQ, allow_pickle=True)
-    xyQ         = dataQ['Qxy']
-    Quadrangles = dataQ['Qmesh']
-    QuadsRstrct = dataQ['Qmeix']
-    print('')
+dataT = np.load(cf_npzT, allow_pickle=True)
+xyT      = dataT['PointXY']
+#vnam       = dataT['names']
+Triangles  = dataT['Mesh']
+
+dataQ = np.load(cf_npzQ, allow_pickle=True)
+xyQ         = dataQ['PointXY']
+Quadrangles = dataQ['Mesh']
+QuadsRstrct = dataQ['MeshTriPntIDs']
+print('')
+
+
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( xyT[:,0], xyT[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',

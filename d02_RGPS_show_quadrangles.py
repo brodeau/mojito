@@ -30,11 +30,11 @@ izoom   = int(argv[2])
 print('\n *** Getting quad meshes in file '+cf_npzQ+' !')
     
 dataQ = np.load(cf_npzQ)  ; #, allow_pickle=True)
-XY    = dataQ['Qxy']
-Qmesh = dataQ['Qmesh']
+XY    = dataQ['PointXY']
+Mesh = dataQ['Mesh']
 
 print('Shape pf `XY` =', np.shape(XY))
-print('Shape pf `Qmesh` =', np.shape(Qmesh))
+print('Shape pf `Mesh` =', np.shape(Mesh))
 
 
 print('')
@@ -42,5 +42,5 @@ print('')
 cf_fig = str.replace( path.basename(cf_npzQ), '.npz', '.png' )
 
 # Show quadrangles on a map:
-kk = lbr.ShowTQMesh( XY[:,0], XY[:,1], cfig=cf_fig, QuadMesh=Qmesh, lProj=False, zoom=izoom )
+kk = lbr.ShowTQMesh( XY[:,0], XY[:,1], cfig=cf_fig, QuadMesh=Mesh, lProj=False, zoom=izoom )
 

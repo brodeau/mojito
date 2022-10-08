@@ -41,7 +41,7 @@ class Triangle:
         self.PointXY     = XY                             ; # Coordinates of all the points making the triangles => shape = (nP,2)
         #
         self.TriIDs      = np.array([i for i in range(nT)], dtype=int); # IDs of the triangles => shape = (nT)
-        self.TriPointIDs = np.array(xPntID, dtype=int)                ; # 3 point IDs composing the triangles, CCW => shape = (nT,3)
+        self.MeshPointIDs = np.array(xPntID, dtype=int)                ; # 3 point IDs composing the triangles, CCW => shape = (nT,3)
         self.TriPointXY  = np.array(xCoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
         self.neighbors   = np.array(xNbgh, dtype=int)
         #
@@ -117,8 +117,8 @@ class Quadrangle:
         self.PointXY     = XY                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
         #
         self.QuaIDs      = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
-        self.QuaPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nQ,4)
-        self.QuaPointIdx = zPntIdx                                    ; # 4 point IDs composing the quadrangles BUT with vpIDs !!!!
+        self.MeshPointIDs = np.array(xPntID, dtype=int)                ; # 4 point IDs composing the quadrangles, CCW => shape = (nQ,4)
+        self.MeshPointTriIDs = zPntIdx                                    ; # 4 point IDs composing the quadrangles BUT with vpIDs !!!!
         self.QuaPointXY  = np.array(xCoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
 
         del vpIDs, XY, zPntIdx
@@ -156,3 +156,43 @@ class Quadrangle:
 
         
     #return np.array( [ AreaOfTriangle( self.TriPointXY[i] )  for i in range(self.nT) ] )
+
+
+
+
+
+
+def SavePolygon( cfile, Poly, ctype='Q' ):
+    '''
+        cfile: file to save into
+        Poly:  polygon object to save (`polygon.Triangle` or `polygon.Quadrangle`)
+        ctype: type of polygon object: 'Q' => Quadrangle, 'T' => Triangle
+
+    '''
+    if not ctype in ['Q','T']:
+        print('ERROR: [polygons.SavePolygon()] => wrong polygon type'); exit(0)
+
+    if ctype=='Q':
+        np.savez_compressed( cfile, PointXY=Poly.PointXY, Mesh=Poly.MeshPointIDs, MeshTriPntIDs=Poly.MeshPointTriIDs,
+                             Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() )
+        print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
+
+    if ctype=='T':
+        np.savez_compressed( cfile, PointXY=Poly.PointXY, Mesh=Poly.MeshPointIDs,
+                             Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() ) ; #, names=vnam )
+        print('\n *** Triangle mesh saved into "'+cfile+'" !')
+
+
+# Loading:
+# Qxy    => PointXY
+# Qmesh  => Mesh
+# Qmeix  => MeshTriPntIDs
+#
+# Txy    => PointXY
+# Tmesh  => Mesh
+
+# Class:
+# QuaPointIDs => MeshPointIDs
+# QuaPointIdx => MeshPointTriIDs
+#
+# TriPointIDs => MeshPointIDs

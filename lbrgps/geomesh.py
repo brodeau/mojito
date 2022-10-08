@@ -176,7 +176,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     idxTused = []   ; # IDs of triangles already in use in a quadrangle
     Quads    = []   ; # Valid quads identified...
 
-    Z3Pnts = pTRIAs.TriPointIDs.copy() ; # shape: (nT,3)
+    Z3Pnts = pTRIAs.MeshPointIDs.copy() ; # shape: (nT,3)
     Znghbs = pTRIAs.neighbors.copy()   ; # shape: (nT,3)
     Zangls = pTRIAs.angles().copy()    ; # shape: (nT,3)
     Zareas = pTRIAs.area().copy()      ; # shape: (nT)

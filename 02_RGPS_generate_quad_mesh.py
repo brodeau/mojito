@@ -139,19 +139,19 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xQpnts, xQcoor
 
     # Save the triangular mesh info:
-    np.savez( cf_npzT, Txy=TRIAS.TriPointXY, Tmesh=TRIAS.TriPointIDs,
+    np.savez( cf_npzT, PointXY=TRIAS.TriPointXY, Mesh=TRIAS.MeshPointIDs,
               Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
     print('\n *** "'+cf_npzT+'" written!')
 
     # Save the quadrangular mesh info:
-    #np.savez( cf_npzQ, Qxy=xCoor, Qmesh=QUADS.QuaPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    np.savez( cf_npzQ, Qxy=QUADS.QuaPointXY, Qmesh=QUADS.QuaPointIDs,
+    #np.savez( cf_npzQ, PointXY=xCoor, Mesh=QUADS.MeshPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
+    np.savez( cf_npzQ, PointXY=QUADS.QuaPointXY, Mesh=QUADS.MeshPointIDs,
               Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
     print('\n *** "'+cf_npzQ+'" written!')
 
     # For plot to come:
-    Triangles   = TRIAS.TriPointIDs
-    Quadrangles = QUADS.QuaPointIDs
+    Triangles   = TRIAS.MeshPointIDs
+    Quadrangles = QUADS.MeshPointIDs
 
 
 else:
@@ -159,12 +159,12 @@ else:
     print('\n *** We are going to READ triangle and quad meshes in the npz files...')
 
     dataT = np.load(cf_npzT, allow_pickle=True)
-    xCoor      = dataT['Txy']
+    xCoor      = dataT['PointXY']
     #vnam       = dataT['names']
-    Triangles  = dataT['Tmesh']
+    Triangles  = dataT['Mesh']
 
     dataQ = np.load(cf_npzQ, allow_pickle=True)
-    Quadrangles = dataQ['Qmesh']
+    Quadrangles = dataQ['Mesh']
 
     print('')
 
