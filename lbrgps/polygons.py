@@ -29,11 +29,9 @@ class Triangle:
         (nT,nd3) = np.shape(xPntID)
         if nd3!=3:
             print('ERROR: [polygons.Triangle] => we expected 2nd axis to have length 3, not:',nd3,' in the Triangle array!'); exit(0)
-        
         (nd,nd3,nd2) = np.shape(xCoor)
         if nd!=nT or nd3!=3 or nd2!=2:
             print('ERROR: [polygons.Triangle] => problem in the shape of coordinate array!'); exit(0)
-
         if np.shape(xNbgh) != (nT,3):
             print('ERROR: [polygons.Triangle] => problem in the shape of neighbor array!'); exit(0)
         
@@ -47,18 +45,16 @@ class Triangle:
         self.nP        = len(vpIDs) ; # number of points making the triangles
         self.nT        = nT ; # number of triangles (nT > nP)
         self.length    = nT ; #    "        "
-        #
         # NumPy Arrays:
         self.PointIDs    = vpIDs                          ; # IDs of all the points making the triangles => shape = (nP)
         self.PointXY     = XY                             ; # Coordinates of all the points making the triangles => shape = (nP,2)
         #
-        self.TriIDs      = np.array([i for i in range(nT)], dtype=int); # IDs of the triangles => shape = (nT)
+        self.TriIDs       = np.array([i for i in range(nT)], dtype=int); # IDs of the triangles => shape = (nT)
         self.MeshPointIDs = np.array(xPntID, dtype=int)                ; # 3 point IDs composing the triangles, CCW => shape = (nT,3)
         self.MeshPointXY  = np.array(xCoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
         self.NeighborIDs  = np.array(xNbgh, dtype=int)
         #
         del vpIDs, XY
-
         
     def lengths( self ):
         ''' Returns the shape(nT,3) array of the length of the 3 segments defining the triangle (counter-clockwize from 1st point) '''
@@ -104,7 +100,6 @@ class Quadrangle:
         (nQ,nd4) = np.shape(xPntID)
         if nd4!=4:
             print('ERROR: [polygons.Quadrangle] => we expected 2nd axis to have length 4, not:',nd4,' in the Quad array!'); exit(0)
-        
         (nd,nd4,nd2) = np.shape(xCoor)
         if nd!=nQ or nd4!=4 or nd2!=2:
             print('ERROR: [polygons.Quadrangle] => problem in the shape of coordinate array!'); exit(0)
@@ -117,16 +112,12 @@ class Quadrangle:
         XY = np.array( [ vpx[vunqixd], vpy[vunqixd] ] ).T
         del vpx, vpy, vunqixd
 
-        #print('LOLO: xPntID =', xPntID)
-        #print('LOLO:  vpIDs =', vpIDs, nP)
-
         zPntIdx = xPntID.copy(); # La dedans, je veux foutre les nouvelles IDs (allant de 0 a nP==len(vpIDs), qui est plus petit que le nombres de points initial!!!)
         zPntIdx[:,:] = -1
         for jP in range(nP):
             ii = vpIDs[jP]
             idx = np.where(xPntID==ii)
             zPntIdx[idx] = jP
-        #print('LOLO: zPntIdx =', zPntIdx) ; exit(0)
         
         # Integers:
         self.nP        = nP ; # number of points making the quadrangles
@@ -182,13 +173,17 @@ class Quadrangle:
             #
         return zA
 
-        
-    #return np.array( [ AreaOfTriangle( self.MeshPointXY[i] )  for i in range(self.nT) ] )
+
+
+
+
 
 
 
 def SaveClassPolygon( cfile, Poly, ctype='Q' ):
     '''
+        Save all arrays necessary to rebuild the Polygon object later !
+
         cfile: file to save into
         Poly:  polygon object to save (`polygon.Triangle` or `polygon.Quadrangle`)
         ctype: type of polygon object: 'Q' => Quadrangle, 'T' => Triangle
@@ -199,14 +194,14 @@ def SaveClassPolygon( cfile, Poly, ctype='Q' ):
 
     if ctype=='Q':
         np.savez_compressed( cfile, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs, MeshPointTriIDs=Poly.MeshPointTriIDs,
-                             MeshPointXY=Poly.MeshPointXY,
-                             Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() )
+                             MeshPointXY=Poly.MeshPointXY )
+        #                     Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() )
         print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
 
     if ctype=='T':
         np.savez_compressed( cfile, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs,
-                             MeshPointXY=Poly.MeshPointXY, NeighborIDs=Poly.NeighborIDs,
-                             Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() ) ; #, names=vnam )
+                             MeshPointXY=Poly.MeshPointXY, NeighborIDs=Poly.NeighborIDs )
+        #                     Lengths=Poly.lengths(), Angles=Poly.angles(), Areas=Poly.area() ) ; #, names=vnam )
         print('\n *** Triangle mesh saved into "'+cfile+'" !')
 
 
