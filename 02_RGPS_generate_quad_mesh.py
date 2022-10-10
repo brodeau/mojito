@@ -112,16 +112,16 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
 
-    xNeighbors = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+    xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
     print('\n *** We have '+str(NbT)+' triangles!')
 
     zTcoor = np.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
 
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( NbT, xTpnts, zTcoor, xNeighbors )
+    TRIAS = lbr.Triangle( xTpnts, zTcoor, xNeighborIDs )
 
-    del xTpnts, zTcoor, xNeighbors, TRI
+    del xTpnts, zTcoor, xNeighborIDs, TRI
 
 
 
@@ -133,46 +133,43 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
-    # Conversion to the `Quadrangle` class:
-    QUADS = lbr.Quadrangle( NbQ, xQpnts, xQcoor )
+    # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
+    QUADS = lbr.Quadrangle( lbr.TriPntIDs2QuaPntIDs(xQpnts), xQcoor )
 
     del xQpnts, xQcoor
 
+    del xCoor
+
     # Save the triangular mesh info:
-    np.savez( cf_npzT, PointXY=TRIAS.MeshPointXY, Mesh=TRIAS.MeshPointIDs,
-              Lengths=TRIAS.lengths(), Angles=TRIAS.angles(), Areas=TRIAS.area(), names=vnam )
-    print('\n *** "'+cf_npzT+'" written!')
-
+    lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+    
     # Save the quadrangular mesh info:
-    #np.savez( cf_npzQ, PointXY=xCoor, Mesh=QUADS.MeshPointIDs, Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    np.savez( cf_npzQ, PointXY=QUADS.MeshPointXY, Mesh=QUADS.MeshPointIDs,
-              Lengths=QUADS.lengths(), Angles=QUADS.angles(), Areas=QUADS.area(), names=vnam )
-    print('\n *** "'+cf_npzQ+'" written!')
+    lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
 
-    # For plot to come:
-    Triangles   = TRIAS.MeshPointIDs
-    Quadrangles = QUADS.MeshPointIDs
+#if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
+############################################################
 
 
-else:
+# Reading the triangle and quad meshes in the npz files:
+TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
+QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
-    print('\n *** We are going to READ triangle and quad meshes in the npz files...')
-
-    dataT = np.load(cf_npzT, allow_pickle=True)
-    xCoor      = dataT['PointXY']
-    #vnam       = dataT['names']
-    Triangles  = dataT['Mesh']
-
-    dataQ = np.load(cf_npzQ, allow_pickle=True)
-    Quadrangles = dataQ['Mesh']
-
-    print('')
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='fig01_'+cfroot+'.png',
-                     TriMesh=Triangles, lProj=(not l_work_with_dist), zoom=5)
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
+                     TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
 
-# Show quadrangles on a map:
-kk = lbr.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='fig02_'+cfroot+'.png',
-                     TriMesh=Triangles, QuadMesh=Quadrangles, lProj=(not l_work_with_dist), zoom=5 )
+# Show triangles together with the quadrangles on a map:
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
+                     TriMesh=TRI.MeshPointIDs,
+                     pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
+                     lProj=(not l_work_with_dist), zoom=5)
+
+## Show only points composing the quadrangles:
+#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+#                     lProj=(not l_work_with_dist) )
+
+# Show only the quads with only the points that define them:
+kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+                     QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
 
