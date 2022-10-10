@@ -141,8 +141,15 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
+    # lilo: ce que l'on doit retourner c'est:
+    # `xPcoor, xQuads==xQpnts`
+    # xPcoor: [nP,2] et non xQcoor: [nP,4,2] (float)
+    # xQuads: same as before (xQpnts): [nQ,4] (integer), indices of the 4 points in use...
+    #
     xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                    ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
+
+    print('LOLO: FIX `Tri2Quad` first!!!'); exit(0)
     if len(xQpnts) <= 0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
