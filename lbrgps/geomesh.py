@@ -159,6 +159,27 @@ def QSpecsFrom2T( p3Pnt, pAngl, it1, it2, pCoor, pnam=[] ):
     return vIquad, vAquad, ratio
 
 
+def TriPntIDs2QuaPntIDs( xPntID ):
+    '''
+        * xPntID: [ (nQ,4) array of integers] the 4 point IDs composing the Quad,
+                  point IDs are those based on the nT points defining the initial triangles
+                  from which Quads were built (nQ << nT)
+
+     => RETURNS:
+        *
+        * zPntID: same as xPntID but point IDs are those based on only the nQ points defining the Quads
+    '''
+    zPntIDs1D = np.unique( xPntID.flatten() )
+    nP = len(zPntIDs1D) ; # number of points that defines the nQ quadrangles
+    zPntID = xPntID.copy()
+    zPntID[:,:] = -1
+    for jP in range(nP):
+        ii = zPntIDs1D[jP]
+        idx = np.where(xPntID==ii)
+        zPntID[idx] = jP
+
+    return zPntID
+
 
 
 def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
@@ -199,7 +220,6 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
 
         elif jT in idxTused:
             if ivb>0: print('       => this triangle is in use in an already defined Quad !')
-
 
         else:
             #
@@ -261,18 +281,24 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
 
         print('**************************************************************')
     ## -- for jT in range(NbT) --
-
     del Z3Pnts, Zangls, Zareas, Znghbs, v3pnts, vangles
 
-    zQpoints = np.array(Quads)
+    zQpointsT = np.array(Quads)
     del Quads
 
-    zQcoor   = []
+    zvCoor    = [] ; # these 2 might be returned void if no valid Quad is identified!
+    zQpointsQ = [] ; # "                "                    "                 "
 
     if NbQ>0:
+        # Coordinates of the points in use by Quads!
+        zvIDs = np.unique( zQpointsT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
+        zvCoor = np.array([ pCoor[i,:] for i in zvIDs  ]) ;
 
-        # Coordinates of the points:
-        zQcoor = np.array([ [ pCoor[i,:] for i in zQpoints[jQ,:] ] for jQ in range(NbQ) ]) ; # Shape is (NbQ,4,2) !!!
+        # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
+        zQpointsQ = TriPntIDs2QuaPntIDs(zQpointsT)
+        #print('remaining IDs for Quads =',len(zvIDs),' initially ',NbT)
+        #print('zQpointsT =',zQpointsT,'\n')
+        #print('zQpointsQ =',zQpointsQ) ; exit(0)
 
         # Some sanity checks:
         if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
@@ -286,37 +312,20 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
         if ivb>0:
             print('       => Summary about the '+str(NbQ)+' Quads generated:')
             for jQ in range(NbQ):
-                print('        * Quad #'+str(jQ)+' => ', zQpoints[jQ,:], '(', [ pnam[i] for i in zQpoints[jQ,:] ],')')
+                print('        * Quad #'+str(jQ)+' => ', zQpointsT[jQ,:], '(', [ pnam[i] for i in zQpointsT[jQ,:] ],')')
                 if ivb>1:
-                    print('     X-coor:', zQcoor[jQ,:,0])
-                    print('     Y-coor:', zQcoor[jQ,:,1])
+                    vx = np.array([ zvCoor[i,0] for i in zQpointsQ[jQ,:] ])
+                    vy = np.array([ zvCoor[i,1] for i in zQpointsQ[jQ,:] ])
+                    print('     X-coor:', vx[:])
+                    print('     Y-coor:', vy[:])
+
+        del zQpointsT
 
     else:
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
-    return zQpoints, zQcoor
+    return zvCoor, zQpointsQ
 
 
 
-def TriPntIDs2QuaPntIDs( xPntID ):
-    '''
-        * xPntID: [ (nQ,4) array of integers] the 4 point IDs composing the Quad, 
-                  point IDs are those based on the nT points defining the initial triangles
-                  from which Quads were built (nQ << nT)
-
-     => RETURNS:
-        * 
-        * zPntID: same as xPntID but point IDs are those based on only the nQ points defining the Quads
-    '''
-    #zPntIDs1D, vunqixd = np.unique( xPntID.flatten(), return_index=True )
-    zPntIDs1D = np.unique( xPntID.flatten() )
-    nP = len(zPntIDs1D) ; # number of points that defines the nQ quadrangles
-    zPntID = xPntID.copy()
-    zPntID[:,:] = -1
-    for jP in range(nP):
-        ii = zPntIDs1D[jP]
-        idx = np.where(xPntID==ii)
-        zPntID[idx] = jP
-    
-    return zPntID

@@ -141,22 +141,16 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    # lilo: ce que l'on doit retourner c'est:
-    # `xPcoor, xQuads==xQpnts`
-    # xPcoor: [nP,2] et non xQcoor: [nP,4,2] (float)
-    # xQuads: same as before (xQpnts): [nQ,4] (integer), indices of the 4 points in use...
-    #
-    xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+    xQcoor, xQpnts = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                    ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
 
-    print('LOLO: FIX `Tri2Quad` first!!!'); exit(0)
-    if len(xQpnts) <= 0: exit(0)
+    if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( lbr.TriPntIDs2QuaPntIDs(xQpnts), xQcoor )
+    QUADS = lbr.Quadrangle( xQcoor, xQpnts )
 
     del xQpnts, xQcoor
 
@@ -170,9 +164,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         print('  ***************************************')
         print('    => number of Quadrangles: '+str(QUADS.nQ))
         print('    ==> number of points involved: '+str(QUADS.nP))
-        #print('    => Cloud of points (size ='+str(len(zXYcloud[:,0]))+') =')
-        #print( zXYcloud[:,0] )
-        #print( zXYcloud[:,1],'\n' )
         print('')
         for jQ in range(QUADS.nQ):
             vpl     = QUADS.MeshPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
@@ -187,13 +178,12 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
             print('')
 
         del zlengths, zangles, zarea
-        #exit(0);#lolo
 
     del xCoor
 
     # Save the triangular mesh info:
     lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
-    
+
     # Save the quadrangular mesh info:
     lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
 
@@ -201,16 +191,15 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 ############################################################
 
 
-# Reading the triangle and quad meshes in the npz files:
+# Reading the triangle and quad class objects in the npz files:
 TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
-#QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
+QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist))
 
-exit(0)
 # Show triangles together with the quadrangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRI.MeshPointIDs,
@@ -223,5 +212,4 @@ kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Qu
 # Show only the quads with only the points that define them:
 kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
                      QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist) )
-
 
