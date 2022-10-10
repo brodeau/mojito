@@ -141,7 +141,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    xQcoor, xQpnts = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+    xQcoor, xQpnts = lbr.Tri2Quad( TRIAS, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                    ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
 
     if len(xQpnts)<=0: exit(0)

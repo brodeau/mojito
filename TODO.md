@@ -1,3 +1,15 @@
+In `Tri2Quad()` remove the `pnam` argument and instead use the names of points defined in the class!!! (that might be strings of the point indices if explicit names given) !!!
+=> so in the classes add the possibility to provide the vector of names: shape = (nP) of string
+
+
+
+
+
+
+
+
+
+
 ### Polygon
 
 #### Class `Quadrangle`

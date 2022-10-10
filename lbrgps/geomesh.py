@@ -182,7 +182,7 @@ def TriPntIDs2QuaPntIDs( xPntID ):
 
 
 
-def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
+def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
               ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
     '''
     ### Attempt to merge triangles into quadrangles:
@@ -201,7 +201,8 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     Znghbs = pTRIAs.NeighborIDs.copy()   ; # shape: (nT,3)
     Zangls = pTRIAs.angles().copy()    ; # shape: (nT,3)
     Zareas = pTRIAs.area().copy()      ; # shape: (nT)
-
+    zCoor  = pTRIAs.PointXY.copy()
+    
     # Loop along triangles:
     for jT in range(NbT):
 
@@ -251,7 +252,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
                 xPids  = []
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                    v4Pnt, vang, rat  = QSpecsFrom2T( Z3Pnts[[jT,jN],:], Zangls[[jT,jN],:], jT, jN, pCoor, pnam=[] )
+                    v4Pnt, vang, rat  = QSpecsFrom2T( Z3Pnts[[jT,jN],:], Zangls[[jT,jN],:], jT, jN, zCoor, pnam=[] )
                     lQok, score = lQisOK( vang, rat, pArea=Zareas[jT]+Zareas[jN], ratioD=ratioD, anglR=anglR, areaR=areaR )
 
                     cc = 'does NOT'
@@ -292,7 +293,7 @@ def Tri2Quad( pTRIAs, pCoor, pnam,  iverbose=0, anglRtri=(15.,115.),
     if NbQ>0:
         # Coordinates of the points in use by Quads!
         zvIDs = np.unique( zQpointsT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
-        zvCoor = np.array([ pCoor[i,:] for i in zvIDs  ]) ;
+        zvCoor = np.array([ zCoor[i,:] for i in zvIDs  ]) ;
 
         # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
         zQpointsQ = TriPntIDs2QuaPntIDs(zQpointsT)
