@@ -117,9 +117,11 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     zTcoor = np.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
 
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xTpnts, zTcoor, xNeighborIDs )
+    #TRIAS = lbr.Triangle( xTpnts, zTcoor, xNeighborIDs )
+    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs )
 
-    del xTpnts, zTcoor, xNeighborIDs, TRI
+    #del xTpnts, zTcoor, xNeighborIDs, TRI
+    del xTpnts, xNeighborIDs, TRI
 
     if idebug>2:
         # SOME DEBUG TESTS TO SEE IF EVERYTHING WORKS FINE IN THE TRIANGLE CLASS:
@@ -194,13 +196,14 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 # Reading the triangle and quad meshes in the npz files:
 TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
-QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
+#QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist))
 
+exit(0)
 # Show triangles together with the quadrangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
                      pnames=vnam, TriMesh=TRI.MeshPointIDs,
