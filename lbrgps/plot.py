@@ -71,6 +71,17 @@ def __initStyle__( font_rat=1., font_rat_in=1., color_top='k' ):
     #
     return 0
 
+def __set_fig_axis__( pX, pY, zoom=1):
+    from math import floor,ceil
+    #  => we want to preserve aspect ratio!
+    # Rounding axis boundaries at 100 km:    
+    xA, xB = floor(np.min(pX)/rndaxiskm)*rndaxiskm , ceil(np.max(pX)/rndaxiskm)*rndaxiskm
+    yA, yB = floor(np.min(pY)/rndaxiskm)*rndaxiskm , ceil(np.max(pY)/rndaxiskm)*rndaxiskm
+    Lx, Ly = xB-xA, yB-yA
+    dx, dy = 0.05*(Lx), 0.05*(Ly)
+    vfig = (10*zoom,10*Ly/Lx*zoom)
+    #
+    return (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), (10*zoom,10*Ly/Lx*zoom)
 
 
 
@@ -235,7 +246,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
-    from math import log,floor,ceil
+    from math import log
     
     zrat = 1./zoom
     zrat_log = 1./(1. + log(zoom))
@@ -249,14 +260,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
         vfig = (12*zoom,9*zoom)
     else:
         # Cartesian coordinates (x,y)
-        #  => we want to preserve aspect ratio!        
-        xA, yA = np.min(pX), np.min(pY)
-        xB, yB = np.max(pX), np.max(pY)
-        # Rounding at 100 km:
-        xA, xB = floor(xA/rndaxiskm)*rndaxiskm , ceil(xB/rndaxiskm)*rndaxiskm
-        Lx, Ly = xB-xA, yB-yA
-        dx, dy = 0.05*(Lx), 0.05*(Ly)
-        vfig = (10*zoom,10*Ly/Lx*zoom)
+        (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = __set_fig_axis__( pX, pY, zoom=zoom)
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
     
@@ -324,7 +328,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
-    from math import log,floor,ceil
+    from math import log
     
     zrat = 1./zoom
     zrat_log = 1./(1. + log(zoom))
@@ -345,14 +349,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #    vfig = (12*zoom,9*zoom)
     #else:
     # Cartesian coordinates (x,y)
-    #  => we want to preserve aspect ratio!
-    xA, yA = np.min(pX), np.min(pY)
-    xB, yB = np.max(pX), np.max(pY)
-    # Rounding at 100 km:
-    xA , xB = floor(xA/rndaxiskm)*rndaxiskm , ceil(xB/rndaxiskm)*rndaxiskm
-    Lx, Ly = xB-xA, yB-yA
-    dx, dy = 0.05*(Lx), 0.05*(Ly)
-    vfig = (10*zoom,10*Ly/Lx*zoom)
+    (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = __set_fig_axis__( pX, pY, zoom=zoom)
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
     
