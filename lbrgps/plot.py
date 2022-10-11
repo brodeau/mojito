@@ -12,7 +12,8 @@ from re import split
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-
+import matplotlib.colors as colors
+#
 from mpl_toolkits.basemap import Basemap
 #from mpl_toolkits.basemap import shiftgrid
 
@@ -20,6 +21,7 @@ import climporn as cp
 
 #idebug = 0
 
+rndaxiskm = 100 ; 
 
 # Figure stuff:
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
@@ -47,14 +49,14 @@ vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # No
 
 
 
-def __initStyle__( font_rat=1., color_top='k' ):
+def __initStyle__( font_rat=1., font_rat_in=1., color_top='k' ):
     #
     global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mail
     #
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
-               'font.size':       int(15.*font_rat),
-               'legend.fontsize': int(22.*font_rat),
+               'font.size':       int(15.*font_rat_in),
+               'legend.fontsize': int(22.*font_rat_in),
                'xtick.labelsize': int(15.*font_rat),
                'ytick.labelsize': int(15.*font_rat),
                'axes.labelsize':  int(17.*font_rat) }
@@ -62,7 +64,7 @@ def __initStyle__( font_rat=1., color_top='k' ):
     mpl.rcParams.update(params)
     #
     cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*font_rat), 'color':color_top }
-    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(18.*font_rat), 'color':color_top }
+    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(18.*font_rat_in), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*font_rat), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(25.*font_rat), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*font_rat), 'color':'0.8'}
@@ -233,12 +235,12 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
-    from math import log
+    from math import log,floor,ceil
     
     zrat = 1./zoom
     zrat_log = 1./(1. + log(zoom))
     
-    kk = __initStyle__(font_rat=zrat_log)    
+    kk = __initStyle__(font_rat=zoom, font_rat_in=zrat_log)    
     
     if lProj:
         # Geograhic coordinates (lon,lat)
@@ -247,9 +249,11 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
         vfig = (12*zoom,9*zoom)
     else:
         # Cartesian coordinates (x,y)
-        #  => we want to preserve aspect ratio!
+        #  => we want to preserve aspect ratio!        
         xA, yA = np.min(pX), np.min(pY)
         xB, yB = np.max(pX), np.max(pY)
+        # Rounding at 100 km:
+        xA, xB = floor(xA/rndaxiskm)*rndaxiskm , ceil(xB/rndaxiskm)*rndaxiskm
         Lx, Ly = xB-xA, yB-yA
         dx, dy = 0.05*(Lx), 0.05*(Ly)
         vfig = (10*zoom,10*Ly/Lx*zoom)
@@ -305,3 +309,92 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     plt.savefig(cfig)
     plt.close(1)
 
+
+
+
+
+
+def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1, pFmin=-1., pFmax=1. ):
+    '''
+    ### Show points, triangle, and quad meshes on the map!
+    ###
+    ###  * lProj: True   => we expect degrees for `pX,pY` and use a projection
+    ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
+    ###
+    ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
+    ###     traingle world!
+    '''
+    from math import log,floor,ceil
+    
+    zrat = 1./zoom
+    zrat_log = 1./(1. + log(zoom))
+    
+    kk = __initStyle__(font_rat=zoom, font_rat_in=zrat_log)    
+
+    # Colormap:
+    if cwhat=='shr':
+        cm = plt.cm.get_cmap('viridis')
+    else:
+        cm = plt.cm.get_cmap('RdBu')
+    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
+    
+    #if lProj:
+    #    # Geograhic coordinates (lon,lat)
+    #    import cartopy.crs as ccrs
+    #    Proj = ccrs.PlateCarree()
+    #    vfig = (12*zoom,9*zoom)
+    #else:
+    # Cartesian coordinates (x,y)
+    #  => we want to preserve aspect ratio!
+    xA, yA = np.min(pX), np.min(pY)
+    xB, yB = np.max(pX), np.max(pY)
+    # Rounding at 100 km:
+    xA , xB = floor(xA/rndaxiskm)*rndaxiskm , ceil(xB/rndaxiskm)*rndaxiskm
+    Lx, Ly = xB-xA, yB-yA
+    dx, dy = 0.05*(Lx), 0.05*(Ly)
+    vfig = (10*zoom,10*Ly/Lx*zoom)
+    
+    fig = plt.figure(num=1, figsize=vfig, facecolor='white')
+    
+    #if lProj:         
+    #    ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
+    #    ax.stock_img()
+    #    ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
+    #else:
+    ddx = dx*Ly/Lx
+    ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
+    plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
+
+    # Showing points:
+    #plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200) ; #, alpha=0.5)
+    plt.scatter( pX, pY, c=pF, s=msPoints*4*zoom, marker='s', cmap=cm, norm=cn )
+
+    
+    # Adding quadrangles:
+    #if len(QuadMesh)>0:
+    #    (nbQ,_) = np.shape(QuadMesh)
+    #    (nbP,)  = np.shape(pX)
+    #    
+    #    for jQ in range(nbQ):
+    #        vids = QuadMesh[jQ,:] ; # the 4 IDs of the 4 points defining this Quad
+    #        if len(pX_Q)>0 and len(pY_Q)>0:
+    #            vx, vy = pX_Q[vids], pY_Q[vids]
+    #        else:
+    #            vx, vy = pX[vids], pY[vids]
+    #        vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
+    #        plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
+    #        plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
+    #        # Indicate quadrangle # in its center:
+    #        rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
+    #        ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=160)
+    #
+    #if len(pnames)>0:
+    #    i=0
+    #    for city in pnames:
+    #        ax.annotate(city, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=500)
+    #        i=i+1
+    #
+    plt.savefig(cfig)
+    plt.close(1)
+
+    

@@ -124,7 +124,8 @@ del ztp1, ztp2
 
 
 # Some plots:
-
+lbr.ShowDeformation( zXp, zYp, zdiv, cfig='zdiv_map.png',   cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
+lbr.ShowDeformation( zXp, zYp, zshr, cfig='zshear_map.png', cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
 
 
 
