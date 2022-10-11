@@ -103,6 +103,36 @@ if idebug>0:
 
 
 
+ztp1 = np.zeros(nQ)
+ztp2 = np.zeros(nQ)
+
+# Coordinates of barycenter of Quads at center of time interval:
+zXp = np.mean( zX[:,:], axis=1 )
+zYp = np.mean( zY[:,:], axis=1 )
+
+# Divergence:
+zdiv = np.zeros(nQ)
+zdiv[:] = zdUdx[:] + zdVdy[:]
+
+# Shear:
+zshr = np.zeros(nQ)
+ztp1[:] = zdUdx[:] - zdVdy[:]
+ztp2[:] = zdUdy[:] + zdVdx[:]
+zshr[:] = np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
+
+del ztp1, ztp2
+
+
+# Some plots:
+
+
+
+
+
+
+
+
+
 
         
 # Show the quads with only the points that define them:
