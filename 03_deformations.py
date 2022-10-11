@@ -53,8 +53,8 @@ print('\n *** There are '+str(nQ)+' Quads common to the 2 records!')
 
 # Coordinates of the 4 points of quadrangles:
 #zXY1 , zXY2 = np.zeros((nQ,4,2)) - 999. , np.zeros((nQ,4,2)) - 999.
-zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy()
-zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy()
+zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #* 1000.  ; # 1000 => from km to m
+zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #* 1000.
 # Same, but at center of time interval:
 zX , zY = np.zeros((nQ,4)) , np.zeros((nQ,4))
 zX = 0.5*( zXY1[:,:,0] + zXY2[:,:,0] )
@@ -66,11 +66,11 @@ zY = 0.5*( zXY1[:,:,1] + zXY2[:,:,1] )
 #zA2[:] = QUA2.area()[vidx2]
 # Area of quadrangles at center of time interval:
 zA = np.zeros(nQ) - 999.
-zA[:] = 0.5*( QUA1.area()[vidx1] + QUA2.area()[vidx2] )
+zA[:] = 0.5*( QUA1.area()[vidx1] + QUA2.area()[vidx2] ) ; #* 1.e6 ; # 1.e6 => from km^2 to m^2
 
 # Velocities at center of time interval:
-zU = 1000. * np.array( [ zXY2[:,k,0] - zXY1[:,k,0] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
-zV = 1000. * np.array( [ zXY2[:,k,1] - zXY1[:,k,1] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
+zU = np.array( [ zXY2[:,k,0] - zXY1[:,k,0] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
+zV = np.array( [ zXY2[:,k,1] - zXY1[:,k,1] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
 #zuu , zvv = np.zeros((nQ,4)) - 999. , np.zeros((nQ,4)) - 999.
 #for jQ in range(nQ):
 #    zuu[jQ,:] = 1000. * np.array( [ zXY2[jQ,k,0] - zXY1[jQ,k,0] for k in range(4) ] ) / dt
@@ -84,9 +84,10 @@ if idebug>0:
 
 
 # Partial derivatives:
+#  --- the fact that units for coordinates was km and for area km^2 has no importance because it cancels,
+#      we are looking to something in [s-1]
 zdUdx , zdUdy = np.zeros(nQ) , np.zeros(nQ)
 zdVdx , zdVdy = np.zeros(nQ) , np.zeros(nQ)
-
 for jQ in range(nQ):
     zdUdx[jQ] =  np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k])*(zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) / (2*zA[jQ])
     zdUdy[jQ] = -np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k])*(zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) / (2*zA[jQ])
