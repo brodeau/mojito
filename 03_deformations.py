@@ -84,15 +84,16 @@ if idebug>0:
 
 
 # Partial derivatives:
-#  --- the fact that units for coordinates was km and for area km^2 has no importance because it cancels,
+#  --- the fact that units for coordinates was km and for area km^2 has no importance because it cancels out,
 #      we are looking to something in [s-1]
 zdUdx , zdUdy = np.zeros(nQ) , np.zeros(nQ)
 zdVdx , zdVdy = np.zeros(nQ) , np.zeros(nQ)
 for jQ in range(nQ):
-    zdUdx[jQ] =  np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k])*(zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) / (2*zA[jQ])
-    zdUdy[jQ] = -np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k])*(zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) / (2*zA[jQ])
-    zdVdx[jQ] =  np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k])*(zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) / (2*zA[jQ])
-    zdVdy[jQ] = -np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k])*(zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) / (2*zA[jQ])
+    zd = 1./(2*zA[jQ])
+    zdUdx[jQ] =  np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
+    zdUdy[jQ] = -np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k]) * (zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) * zd
+    zdVdx[jQ] =  np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
+    zdVdy[jQ] = -np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) * zd
 
 if idebug>0:
     for jQ in range(0,nQ,100):
