@@ -116,25 +116,24 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     print('\n *** We have '+str(NbT)+' triangles!')
 
-    zTcoor = np.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
-
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xTpnts, zTcoor, xNeighborIDs )
+    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs )
 
-    del xTpnts, zTcoor, xNeighborIDs, TRI
+    del xTpnts, xNeighborIDs, TRI
 
 
 
     # Merge triangles into quadrangles:
-    xQpnts, xQcoor = lbr.Tri2Quad( TRIAS, xCoor, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+    xQcoor, xQpnts = lbr.Tri2Quad( TRIAS, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                    ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
-    if len(xQpnts) <= 0: exit(0)
+
+    if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( lbr.TriPntIDs2QuaPntIDs(xQpnts), xQcoor )
+    QUADS = lbr.Quadrangle( xQcoor, xQpnts )
 
     del xQpnts, xQcoor
 
@@ -142,7 +141,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     # Save the triangular mesh info:
     lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
-    
+
     # Save the quadrangular mesh info:
     lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
 
@@ -150,7 +149,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 ############################################################
 
 
-# Reading the triangle and quad meshes in the npz files:
+# Reading the triangle and quad class objects in the npz files:
 TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
 QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 

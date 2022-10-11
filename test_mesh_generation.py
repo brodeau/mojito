@@ -114,13 +114,9 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     print('\n *** We have '+str(NbT)+' triangles!')
 
-    zTcoor = np.array([ [ xCoor[i,:] for i in xTpnts[jT,:] ] for jT in range(NbT) ])
-
     # Conversion to the `Triangle` class:
-    #TRIAS = lbr.Triangle( xTpnts, zTcoor, xNeighborIDs )
     TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs )
 
-    #del xTpnts, zTcoor, xNeighborIDs, TRI
     del xTpnts, xNeighborIDs, TRI
 
     if idebug>2:
