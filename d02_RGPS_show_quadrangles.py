@@ -24,8 +24,7 @@ print('')
 
 cf_fig = str.replace( path.basename(cf_npzQ), '.npz', '.png' )
 
-# Reading the triangle and quad meshes in the npz files:
-TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
+# Reading the quad meshes in the npz files:
 QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 # Show the quads with only the points that define them:
