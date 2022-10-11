@@ -131,7 +131,7 @@ class Quadrangle:
         self.PointXY      = np.array(xPcoor)                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
         self.QuaIDs       = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
         self.MeshPointIDs = np.array(xQpntID, dtype=int)   ; # 4 point IDs composing the quadrangles (IDs in the frame of "only Quadrangles")
-        self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 3 points composing the quadrangle => shape = (nQ,3,2)
+        self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
         #
         del zvIDs, zTcoor
 
