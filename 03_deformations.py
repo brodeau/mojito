@@ -14,6 +14,10 @@ import lbrgps   as lbr
 
 idebug=1
 
+dt =  3600. * 3.   ;  # time interval between 2 records #fixme: use the real time !!!!
+
+
+
 if not len(argv) in [3]:
     print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz>')
     exit(0)
@@ -41,11 +45,6 @@ if nP0>QUA1.nP or nQ0>QUA1.nQ:
     print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
 
 
-# Areas of quadrangles:
-zA1 = QUA1.area()
-zA2 = QUA2.area()
-
-
 # The Quads we retain, i.e. those who exist in the 2 snapshots:
 vnm, vidx1, vidx2 = np.intersect1d( QUA1.PointNames, QUA2.PointNames, assume_unique=True, return_indices=True )
 #print(len(vidx1),len(vidx2))
@@ -62,11 +61,13 @@ zA1 , zA2 = np.zeros(nQ) - 999. , np.zeros(nQ) - 999.
 zA1[:] = QUA1.area()[vidx1]
 zA2[:] = QUA2.area()[vidx2]
 
+
+# Velocities at center of time interval:
+zU = 1000. * np.array( [ zXY2[:,k,0] - zXY1[:,k,0] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
+zV = 1000. * np.array( [ zXY2[:,k,1] - zXY1[:,k,1] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
+
 for jQ in range(nQ):
-    print('  areas = ',zA1[jQ],zA2[jQ])
-
-
-
+    print('  areas =',np.round(zA1[jQ],3),np.round(zA2[jQ],3),' U =',np.round(zU[jQ,:],5),' V =',np.round(zV[jQ,:],5))
 
 
 exit(0)
