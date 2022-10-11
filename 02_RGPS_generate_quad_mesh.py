@@ -71,12 +71,14 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     vIDs  = np.array( vids )
+    del vids
+    
     if l_work_with_dist:
         xCoor = np.array( [ [vx[i]  ,vy[i]  ] for i in range(NbP) ] ) ; # original x,y cartesian cordinates of the RGPS data!
         #                                                               # => which is in Polar Stereographic projection, lon_0=-45, lat_ts=70
     else:
         xCoor = np.array( [ [vlon[i],vlat[i]] for i in range(NbP) ] ) ; # lon,lat projection used by Anton => applying reverse projection " "
-    vnam  = np.array([ str(i) for i in vids ], dtype='U32')
+    vnam  = np.array([ str(i) for i in vIDs ], dtype='U32')
 
     if idebug>0:
         for jc in range(NbP):
@@ -116,24 +118,26 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     print('\n *** We have '+str(NbT)+' triangles!')
 
+    vPnam = np.array( [ str(i) for i in vIDs ], dtype='U32' )
+
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs )
+    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
 
     del xTpnts, xNeighborIDs, TRI
 
 
 
     # Merge triangles into quadrangles:
-    xQcoor, xQpnts = lbr.Tri2Quad( TRIAS, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                   ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
-
+    xQcoor, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                          ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                          areaR=(rQarea_min,rQarea_max) )
     if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( xQcoor, xQpnts )
+    QUADS = lbr.Quadrangle( xQcoor, xQpnts, vQnam )    
 
     del xQpnts, xQcoor
 

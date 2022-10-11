@@ -182,8 +182,7 @@ def TriPntIDs2QuaPntIDs( xPntID ):
 
 
 
-def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
-              ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
+def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
     '''
     ### Attempt to merge triangles into quadrangles:
     ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
@@ -197,11 +196,12 @@ def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
     idxTused = []   ; # IDs of triangles already in use in a quadrangle
     Quads    = []   ; # Valid quads identified...
 
+    zCoor  = pTRIAs.PointXY.copy()      ; # shape: (nP)
+    zcN    = pTRIAs.PointNames.copy()   ; # shape: (nP)    
     Z3Pnts = pTRIAs.MeshPointIDs.copy() ; # shape: (nT,3)
-    Znghbs = pTRIAs.NeighborIDs.copy()   ; # shape: (nT,3)
-    Zangls = pTRIAs.angles().copy()    ; # shape: (nT,3)
-    Zareas = pTRIAs.area().copy()      ; # shape: (nT)
-    zCoor  = pTRIAs.PointXY.copy()
+    Znghbs = pTRIAs.NeighborIDs.copy()  ; # shape: (nT,3)
+    Zangls = pTRIAs.angles().copy()     ; # shape: (nT,3)
+    Zareas = pTRIAs.area().copy()       ; # shape: (nT)
     
     # Loop along triangles:
     for jT in range(NbT):
@@ -212,7 +212,7 @@ def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
 
         if ivb>0:
             print('\n **************************************************************')
-            print(' *** Focus on triangle #'+str(jT)+' =>',[ pnam[i] for i in v3pnts ],'***')
+            print(' *** Focus on triangle #'+str(jT)+' =>',[ zcN[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
         if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/2.5,areaR[1]/1.5)):
@@ -275,7 +275,7 @@ def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
                     idxTused.append(jT)
                     idxTused.append(jN)
                     NbQ = NbQ+1
-                    if ivb>0: print('   ==> New Quad: "triangles '+str(jT)+'+'+str(jN)+'" => ',[pnam[i] for i in xPids[iwin,:]])
+                    if ivb>0: print('   ==> New Quad: "triangles '+str(jT)+'+'+str(jN)+'" => ',[zcN[i] for i in xPids[iwin,:]])
 
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
@@ -284,22 +284,26 @@ def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
     ## -- for jT in range(NbT) --
     del Z3Pnts, Zangls, Zareas, Znghbs, v3pnts, vangles
 
-    zQpointsT = np.array(Quads)
+    zQPT = np.array(Quads)
     del Quads
 
     zvCoor    = [] ; # these 2 might be returned void if no valid Quad is identified!
-    zQpointsQ = [] ; # "                "                    "                 "
+    zQPQ = [] ; # "                "                    "                 "
+    zQnames   = []
 
     if NbQ>0:
         # Coordinates of the points in use by Quads!
-        zvIDs = np.unique( zQpointsT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
+        zvIDs = np.unique( zQPT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
         zvCoor = np.array([ zCoor[i,:] for i in zvIDs  ]) ;
 
+        zQnames = np.array( [ zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]+'-'+zcN[zQPT[jQ,3]] for jQ in range(NbQ) ],
+                            dtype='U32' )
+        
         # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
-        zQpointsQ = TriPntIDs2QuaPntIDs(zQpointsT)
+        zQPQ = TriPntIDs2QuaPntIDs(zQPT)
         #print('remaining IDs for Quads =',len(zvIDs),' initially ',NbT)
-        #print('zQpointsT =',zQpointsT,'\n')
-        #print('zQpointsQ =',zQpointsQ) ; exit(0)
+        #print('zQPT =',zQPT,'\n')
+        #print('zQPQ =',zQPQ) ; exit(0)
 
         # Some sanity checks:
         if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
@@ -313,20 +317,22 @@ def Tri2Quad( pTRIAs, pnam,  iverbose=0, anglRtri=(15.,115.),
         if ivb>0:
             print('       => Summary about the '+str(NbQ)+' Quads generated:')
             for jQ in range(NbQ):
-                print('        * Quad #'+str(jQ)+' => ', zQpointsT[jQ,:], '(', [ pnam[i] for i in zQpointsT[jQ,:] ],')')
+                print('        * Quad #'+str(jQ)+' => ', zQPT[jQ,:], '('+zQnames[jQ]+')')
                 if ivb>1:
-                    vx = np.array([ zvCoor[i,0] for i in zQpointsQ[jQ,:] ])
-                    vy = np.array([ zvCoor[i,1] for i in zQpointsQ[jQ,:] ])
+                    vx = np.array([ zvCoor[i,0] for i in zQPQ[jQ,:] ])
+                    vy = np.array([ zvCoor[i,1] for i in zQPQ[jQ,:] ])
                     print('     X-coor:', vx[:])
                     print('     Y-coor:', vy[:])
 
-        del zQpointsT
+        del zQPT
 
     else:
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
-    return zvCoor, zQpointsQ
+    del zCoor, zcN
+    
+    return zvCoor, zQPQ, zQnames
 
 
 

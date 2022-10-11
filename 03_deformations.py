@@ -31,11 +31,20 @@ QUA1 = lbr.LoadClassPolygon( cf_Q1, ctype='Q' )
 QUA2 = lbr.LoadClassPolygon( cf_Q2, ctype='Q' )
 
 
-nP = QUA1.nP
-nQ = QUA1.nQ
-
 print('\n nP:',QUA1.nP,QUA2.nP)
 print('\n nQ:',QUA1.nQ,QUA2.nQ)
+
+nP = QUA2.nP
+nQ = QUA2.nQ
+
+if nP>QUA1.nP or nQ>QUA1.nQ:
+    print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
+
+
+# We need indices (in QUA1 arrays) of points and quads that make it to second record/file
+for jP in range(nP):
+    print(QUA1.PointIDs[jP], QUA2.PointIDs[jP])
+
 exit(0)
 
 # Getting the angles:

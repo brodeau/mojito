@@ -58,11 +58,11 @@ print('\n *** We have '+str(NbP)+' cities!')
 # Conversion from dictionary to Numpy arrays:
 vIDs  = np.array([ xcities[jc]["ID"]                      for jc in range(NbP) ], dtype=int  )
 xCoor = np.array([[xcities[jc]["lon"],xcities[jc]["lat"]] for jc in range(NbP) ]             )
-vnam  = np.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
+vPnam  = np.array([ xcities[jc]["city"]                    for jc in range(NbP) ], dtype='U32')
 
 if idebug>0:
     for jc in range(NbP):
-        print(' * '+vnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(xCoor[jc,1],2))+', lon='+str(round(xCoor[jc,0],2)))
+        print(' * '+vPnam[jc]+': ID='+str(vIDs[jc])+', lat='+str(round(xCoor[jc,1],2))+', lon='+str(round(xCoor[jc,0],2)))
     print('')
 
 cc = '_gc'
@@ -115,7 +115,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We have '+str(NbT)+' triangles!')
 
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs )
+    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
 
     del xTpnts, xNeighborIDs, TRI
 
@@ -127,7 +127,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
         for jT in range(TRIAS.nT):
             vpl = TRIAS.MeshPointIDs[jT,:] ; # IDs of the 3 points composing triangle
-            print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vnam[vpl[0]]+' - '+vnam[vpl[1]]+' - '+vnam[vpl[2]]+'"')
+            print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vPnam[vpl[0]]+' - '+vPnam[vpl[1]]+' - '+vPnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.NeighborIDs[jT,:])
             print('    =>  lengths =',zlengths[jT,:])
             print('    =>  angles =',zangles[jT,:])
@@ -137,16 +137,16 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    xQcoor, xQpnts = lbr.Tri2Quad( TRIAS, vnam,  iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                   ratioD=rdRatio_max, anglR=(rQang_min,rQang_max), areaR=(rQarea_min,rQarea_max) )
-
+    xQcoor, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                          ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                          areaR=(rQarea_min,rQarea_max) )
     if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( xQcoor, xQpnts )
+    QUADS = lbr.Quadrangle( xQcoor, xQpnts, vQnam )    
 
     del xQpnts, xQcoor
 
@@ -157,14 +157,14 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         zarea    = QUADS.area()
         zXYcloud = QUADS.PointXY
         print('\n  *** DEBUG summary for Quadrangle class:')
-        print('  ***************************************')
+        print('  ***************************************') # 
         print('    => number of Quadrangles: '+str(QUADS.nQ))
         print('    ==> number of points involved: '+str(QUADS.nP))
         print('')
         for jQ in range(QUADS.nQ):
             vpl     = QUADS.MeshPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
             i1=vpl[0]; i2=vpl[1]; i3=vpl[2]; i4=vpl[3]
-            print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vnam[i1]+' - '+vnam[i2]+' - '+vnam[i3]+' - '+vnam[i4]+'"')
+            print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vQnam[jQ]+'"')
             print('    =>  Pt. IDs =',vpl)
             print('    =>  coord.  =', round(xCoor[i1,0],0),round(xCoor[i1,1],0),round(xCoor[i2,0],0),round(xCoor[i2,1],0),
                                        round(xCoor[i3,0],0),round(xCoor[i3,1],0),round(xCoor[i4,0],0),round(xCoor[i4,1],0)  )
@@ -194,11 +194,11 @@ QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist))
+                     pnames=vPnam, TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist))
 
 # Show triangles together with the quadrangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
-                     pnames=vnam, TriMesh=TRI.MeshPointIDs,
+                     pnames=vPnam, TriMesh=TRI.MeshPointIDs,
                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist) )
 
 ## Show only points composing the quadrangles:
