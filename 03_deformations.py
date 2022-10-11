@@ -41,26 +41,34 @@ if nP0>QUA1.nP or nQ0>QUA1.nQ:
     print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
 
 
-# We need indices (in QUA1 arrays) of points and quads that make it to second record/file
-#for jQ in range(nQ0):
-#    print(QUA1.PointNames[jQ], ' | ', QUA2.PointNames[jQ])
-
-vnm1, vnm2 = QUA1.PointNames.copy(), QUA2.PointNames.copy()
-
 # The Quads we retain, i.e. those who exist in the 2 snapshots:
-vnm, vidx1, vidx2 = np.intersect1d( vnm1, vnm2, assume_unique=True, return_indices=True )
+vnm, vidx1, vidx2 = np.intersect1d( QUA1.PointNames, QUA2.PointNames, assume_unique=True, return_indices=True )
+#print(len(vidx1),len(vidx2))
 nQ = len(vnm) ; # also = len(vidx*) 
 
-Q1coor, Q2coor = np.zeros((nQ,4,2)), np.zeros((nQ,4,2))
+Q1coor , Q2coor = np.zeros((nQ,4,2)) - 999. , np.zeros((nQ,4,2)) - 999.
 Q1coor[:,:,:] = QUA1.MeshPointXY[vidx1,:,:]
 Q2coor[:,:,:] = QUA2.MeshPointXY[vidx2,:,:]
 
 
-#print(xx)
 
-print(len(vidx1),len(vidx2))
+
+
+
+
 
 exit(0)
+
+
+
+
+
+
+
+
+
+
+
 
 # Getting the angles:
 zAngles  = QUA1.angles()
