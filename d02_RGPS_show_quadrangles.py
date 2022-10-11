@@ -20,27 +20,13 @@ if not len(argv) in [3]:
 cf_npzQ = argv[1]
 izoom   = int(argv[2])
 
-#cfroot = split('.npz',path.basename(cf_in))[0]
-
-#cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
-
-
-
-
-print('\n *** Getting quad meshes in file '+cf_npzQ+' !')
-    
-dataQ = np.load(cf_npzQ)  ; #, allow_pickle=True)
-XY    = dataQ['PointXY']
-Mesh = dataQ['Mesh']
-
-print('Shape pf `XY` =', np.shape(XY))
-print('Shape pf `Mesh` =', np.shape(Mesh))
-
-
 print('')
 
 cf_fig = str.replace( path.basename(cf_npzQ), '.npz', '.png' )
 
-# Show quadrangles on a map:
-kk = lbr.ShowTQMesh( XY[:,0], XY[:,1], cfig=cf_fig, QuadMesh=Mesh, lProj=False, zoom=izoom )
+# Reading the triangle and quad meshes in the npz files:
+TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
+QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
+# Show the quads with only the points that define them:
+kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cf_fig, QuadMesh=QUA.MeshPointIDs, lProj=False, zoom=izoom )
