@@ -31,8 +31,8 @@ QUA1 = lbr.LoadClassPolygon( cf_Q1, ctype='Q' )
 QUA2 = lbr.LoadClassPolygon( cf_Q2, ctype='Q' )
 
 
-print('\n nP:',QUA1.nP,QUA2.nP)
-print('\n nQ:',QUA1.nQ,QUA2.nQ)
+print('\n *** nP:',QUA1.nP,QUA2.nP)
+#print('\n nQ:',QUA1.nQ,QUA2.nQ)
 
 nP0 = QUA2.nP
 nQ0 = QUA2.nQ
@@ -41,17 +41,29 @@ if nP0>QUA1.nP or nQ0>QUA1.nQ:
     print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
 
 
+# Areas of quadrangles:
+zA1 = QUA1.area()
+zA2 = QUA2.area()
+
+
 # The Quads we retain, i.e. those who exist in the 2 snapshots:
 vnm, vidx1, vidx2 = np.intersect1d( QUA1.PointNames, QUA2.PointNames, assume_unique=True, return_indices=True )
 #print(len(vidx1),len(vidx2))
 nQ = len(vnm) ; # also = len(vidx*) 
+print('\n *** There are '+str(nQ)+' Quads common to the 2 records!')
 
-Q1coor , Q2coor = np.zeros((nQ,4,2)) - 999. , np.zeros((nQ,4,2)) - 999.
-Q1coor[:,:,:] = QUA1.MeshPointXY[vidx1,:,:]
-Q2coor[:,:,:] = QUA2.MeshPointXY[vidx2,:,:]
+# Coordinates of the 4 points of quadrangles:
+zXY1 , zXY2 = np.zeros((nQ,4,2)) - 999. , np.zeros((nQ,4,2)) - 999.
+zXY1[:,:,:] = QUA1.MeshPointXY[vidx1,:,:]
+zXY2[:,:,:] = QUA2.MeshPointXY[vidx2,:,:]
 
+# Area of quadrangles:
+zA1 , zA2 = np.zeros(nQ) - 999. , np.zeros(nQ) - 999.
+zA1[:] = QUA1.area()[vidx1]
+zA2[:] = QUA2.area()[vidx2]
 
-
+for jQ in range(nQ):
+    print('  areas = ',zA1[jQ],zA2[jQ])
 
 
 

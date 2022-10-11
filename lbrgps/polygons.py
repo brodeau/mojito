@@ -15,9 +15,9 @@ class Triangle:
         '''
                `nP` points => `nT` Triangles!
 
-            * xPcoor:  [(nP,2) array of floats]  the coordinates of all points that define the Quads
-            * xTpntID: [(nT,3) array of integers] the 3 point IDs composing the triangle, in counter-clockwize
-            * xTnbgh:  [(nT,3) array of integers] the 3 IDs of the 3 neighbor triangles
+            * xPcoor:  [(nP,2] array of floats]  the coordinates of all points that define the Quads
+            * xTpntID: [(nT,3] array of integers] the 3 point IDs composing the triangle, in counter-clockwize
+            * xTnbgh:  [(nT,3] array of integers] the 3 IDs of the 3 neighbor triangles
             * vPnames: [(nP)  vector of strings]  a string to identify each point
 
                          C
@@ -65,15 +65,15 @@ class Triangle:
         del zvIDs, zTcoor
 
     def lengths( self ):
-        ''' Returns the shape(nT,3) array of the length of the 3 segments defining the triangle (counter-clockwize from 1st point) '''
+        ''' Returns [nT,3] array of the length of the 3 segments defining the triangle (counter-clockwize from 1st point) '''
         return np.array( [ LengthsOfTriangle( self.MeshPointXY[i] )  for i in range(self.nT) ] )
 
     def angles( self ):
-        ''' Returns the shape(nT,3) array of the 3 angles (counter-clockwize from 1st point) '''
+        ''' Returns [nT,3] array of the 3 angles (counter-clockwize from 1st point) '''
         return np.array( [ AnglesOfTriangle( self.MeshPointXY[i] )  for i in range(self.nT) ] )
 
     def area( self ):
-        ''' Returns the shape(nT) array of the area of the triangles '''
+        ''' Returns [nT] array of the area of the triangles '''
         return np.array( [ AreaOfTriangle( self.MeshPointXY[i] )  for i in range(self.nT) ] )
 
 
@@ -85,8 +85,8 @@ class Quadrangle:
         '''
                => `nQ` Quadrangles!
 
-            * xPcoor:  [(nP,2) array of floats] the coordinates of all points that define the Quads
-            * xQpntID: [(nQ,4) array of integers] the 4 point IDs composing the quad, in counter-clockwize
+            * xPcoor:  [(nP,2] array of floats] the coordinates of all points that define the Quads
+            * xQpntID: [(nQ,4] array of integers] the 4 point IDs composing the quad, in counter-clockwize
             * vQnames: [(nQ)  vector of strings]  a string to identify each quadrangle
 
             IMPORTANT: we expect the 1st and 3rd (indices 0 & 2) elements of the 4 points to be the
@@ -137,7 +137,7 @@ class Quadrangle:
 
 
     def lengths( self ):
-        ''' Returns the shape(nQ,4) array of the length of the 4 segments defining the quadrangle (counter-clockwize from 1st point) '''
+        ''' Returns [nQ,4] array of the length of the 4 segments defining the quadrangle (counter-clockwize from 1st point) '''
         zL = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
             vL1 = LengthsOfTriangle( np.array([ self.MeshPointXY[i,j]  for j in [0,1,3] ]) ); # length of sides of triangle [ABD]
@@ -147,7 +147,7 @@ class Quadrangle:
         return zL
 
     def angles( self ):
-        ''' Returns the shape(nQ,4) array of the 4 angles (from 1st point to 4th point, so counter-clockwize)
+        ''' Returns [nQ,4] array of the 4 angles (from 1st point to 4th point, so counter-clockwize)
         '''
         za = np.zeros((self.nQ,4)) - 999.
         for i in range(self.nQ):
@@ -158,14 +158,15 @@ class Quadrangle:
         return za
 
     def area( self ):
-        ''' Returns the shape(nQ) array of the area of the quadrangles '''
-        zA = np.zeros(self.nQ) - 999.
+        ''' Returns [nQ] array of the area of the quadrangles, see for example Bouchat et al. 2022 (Eq.5)'''
+        zX , zY = self.MeshPointXY[:,:,0].copy() , self.MeshPointXY[:,:,1].copy()
+        zA      = np.zeros(self.nQ) - 9999.
+        #
         for i in range(self.nQ):
-            ra1 = AreaOfTriangle( np.array([ self.MeshPointXY[i,j]  for j in [0,1,3] ]) ); # area of triangle [ABD]
-            ra2 = AreaOfTriangle( np.array([ self.MeshPointXY[i,j]  for j in [2,3,1] ]) ); # area of triangle [CDB]
-            zA[i] = ra1 + ra2
-            #
-        return zA
+            zA[i] = np.sum( np.array([  zX[i,      k]*zY[i,(k+1)%4]
+                                      - zX[i,(k+1)%4]*zY[i,      k] for k in range(4) ]) )
+        del zX,zY
+        return 0.5*zA
 
 
 
