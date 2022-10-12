@@ -172,3 +172,10 @@ def SortIndicesCCW(xcoor):
 
     return np.array([i1l, i1r, i2r, i2l])
 
+
+def mergeNPZ( list_npz_files, cf_out='merged_file.npz' ):
+    '''
+       Merge several npz files of the same date into a single one!
+    '''
+
+    

@@ -33,8 +33,8 @@ import lbrgps as lbr
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-cdt2 = 'YYYY-01-10_00:00:00'
-#cdt2 = 'YYYY-01-31_00:00:00'
+#cdt2 = 'YYYY-01-10_00:00:00'
+cdt2 = 'YYYY-01-31_00:00:00'
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -46,16 +46,13 @@ dt_tolr = dt_scan/2. ; # time interval aka tolerance `+-dt_tolr` to consider two
 
 Ns_max = 200  # Max number of Streams, guess!!! #fixme...
 
-Nb_min_stream = 100 ; # minimum number of buoys for considering a stream a stream!
+Nb_min_stream = 200 ; # minimum number of buoys for considering a stream a stream!
 
 Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
 DistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
 idebug = 2 ;
-
-#idbg_subsmpl = 0 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805 ] ; l_show_IDs_fig = True ; # Debug: pick a tiny
-
 
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
@@ -70,8 +67,6 @@ if __name__ == '__main__':
     if cdata_dir==None:
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
-    #print( ' cdata_dir = ',cdata_dir)
-
 
     if not path.exists('./npz'): mkdir('./npz')
 
@@ -81,7 +76,6 @@ if __name__ == '__main__':
         exit(0)
     cf_in = argv[1]
     cyear = argv[2]
-
 
     cdt1 = str.replace(cdt1, 'YYYY',cyear)
     cdt2 = str.replace(cdt2, 'YYYY',cyear)
