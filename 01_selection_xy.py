@@ -33,8 +33,8 @@ import lbrgps as lbr
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-#cdt2 = 'YYYY-01-10_00:00:00'
-cdt2 = 'YYYY-01-31_00:00:00'
+cdt2 = 'YYYY-01-10_00:00:00'
+#cdt2 = 'YYYY-01-31_00:00:00'
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -99,14 +99,14 @@ if __name__ == '__main__':
     vlon_dist, vlat_dist, xdist = lbr.LoadDist2CoastNC( fdist2coast_nc )
 
     # Build scan time axis willingly at relative high frequency (dt_scan << dt_buoy)
-    Nts = int(round((rdt2 - rdt1) / dt_scan)) + 1
+    NTscan = int(round((rdt2 - rdt1) / dt_scan)) + 1
     print("\n *** New fixed time axis to use to scan data:")
-    print( "   ===> Nts = "+str(Nts)+" days!")
-    vTscan = np.zeros((Nts,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
-    cTscan = np.zeros( Nts   , dtype='U19')
+    print( "   ===> NTscan = "+str(NTscan)+" days!")
+    vTscan = np.zeros((NTscan,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
+    cTscan = np.zeros( NTscan   , dtype='U19')
     vTscan[0,0] =             rdt1
     cTscan[0]   = epoch2clock(rdt1)
-    for jt in range(1,Nts):
+    for jt in range(1,NTscan):
         tt = vTscan[jt-1,0] + dt_scan
         vTscan[jt,0] = tt
         cTscan[jt]   = epoch2clock(tt)
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
 
     if idebug>0:
-        for jt in range(Nts):
+        for jt in range(NTscan):
             print("   --- jt: "+str(jt)+" => ",vTscan[jt,0]," => ",cTscan[jt])
             print("          => bounds: "+epoch2clock(vTscan[jt,1])+" - "+epoch2clock(vTscan[jt,2])+"\n")
     #exit(0)
@@ -181,46 +181,39 @@ if __name__ == '__main__':
 
     # Vectors along streams:
     VNB = [] ;  # Number of valid buoys in each stream
-    VTi = [] ;  # Nominal initial time we retain for each stream
 
     # In the following, both Ns_max & Nb are excessive upper bound values #fixme
     XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
     XNrc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    XT1  = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    XT2  = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    XTi  = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the actual initial time for the buoy
+    XTe  = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the actual final time  "    "
     Xmsk = np.zeros((Ns_max, Nb), dtype=int)
 
     ID_in_use = []  ; # keeps memory of buoys that are already been considered!
-    xstreams  = []  ; # array of dictionnary with informations to store...
 
-    rt_prev_stream = 1e12
+    rT_prev_stream = 1e12
     istream        = -1
-    for jt in range(Nts):
+    for jt in range(NTscan):
         #
-        rt = vTscan[jt,0] ; # current scan time
+        rT = vTscan[jt,0] ; # current scan time
         #
         print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
-        idx_ok, = np.where( np.abs( vtime0[:] - rt ) <= dt_tolr )
+        idx_ok, = np.where( np.abs( vtime0[:] - rT ) <= dt_tolr )
         Nok      = len(idx_ok)
         if idebug>1: print("    => "+str(Nok)+" buoys satisfy this!")
-        #
-        Nbuoys_stream = 0
 
-        #if Nok > Nb_min_stream and rt < rt_prev_stream+dt_buoy -dt_tolr:
-        if Nok > Nb_min_stream :
-            #
+        Nbuoys_stream = 0
+        if Nok > Nb_min_stream:
             # That's a new stream
             istream   = istream+1
-            #
+
             if idebug>0: print("    => this date will be the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
 
-            rt_prev_stream = rt
-
-            # Which are the buoys:
-            vidsT = vIDrgps0[idx_ok]
+            rT_prev_stream = rT
+            
+            vidsT = vIDrgps0[idx_ok] ; # IDs of the buoys that satisfy this
 
             ib = -1 ; # buoy counter...
-
             for jid in vidsT:
                 #
                 if not jid in ID_in_use:
@@ -229,64 +222,78 @@ if __name__ == '__main__':
                     idx_id, = np.where( vIDrgps0 == jid)
                     #
                     vt1b  = vtime0[idx_id] ; # time records for this particular buoy
-                    ntt = len(vt1b)
+                    nbRec = len(vt1b)
                     #
                     if idebug>2:
                         print("    => ID="+str(jid)+": current and following times:")
-                        for rt in vt1b: print(epoch2clock(rt))
-                    #
+                        for tt in vt1b: print(epoch2clock(tt))
+
+                    # * Analysis of the time records for this particular buoy...
+                    #    => Must cut off the series of the buoys as soon as its dt is too far
+                    #       from the nominal time step:                    
+                    #   => based on the initial time for this particular buoy:
+                    #      - construct the ideal expected `vt1b` (`vt1b_ideal`) based on nominal dt
+                    #      - dezing tout ce qui s'eloigne trop de ce vt1b_ideal !
+                    vt1b_ideal = np.array( [ vt1b[0]+float(i)*float(dt_buoy) for i in range(nbRec) ], dtype=float )
+                    print('LILO: vt1b =', vt1b)
+                    print('LILO: vt1b_ideal =', vt1b_ideal)
+                    lfu = np.any( np.abs(vt1b-vt1b_ideal)>dt_tolr)
+                    print('LILO: fuckup? =>',lfu)
+                    print('LILO')
+                    #exit(0)
+                    nbRecCut=nbRec
+                    for jt in range(1,nbRec):
+                        dt = vt1b[jt] - vt1b[jt-1]
+                        print('dt = ',int(dt/3600))
+                        terr = abs(dt - dt_buoy)
+                        if terr > 0.05*dt_buoy:
+                            print('LOLO CUTOFF!!! (buoy #'+str(jid)+') terr =',terr,'at jt = ',jt,'(nbRec=',nbRec,')')
+                            nbRecCut = jt-1
+                            break
+                    print('   ===> nbRec, nbRecCut =',nbRec,nbRecCut,'\n')
+
+                    #lilo!
                     #
                     # Initial position for the buoy:
-                    tlon = vlon0[idx_id[0]]
-                    tlat = vlat0[idx_id[0]]
-                    rd = lbr.Dist2Coast( tlon, tlat, vlon_dist, vlat_dist, xdist )
-                    #print('\nLOLO: ==> distance to land =', rd, 'km')
-                    #exit(0)
+                    it1, it2 = idx_id[0], idx_id[nbRec-1]
+                    rd_ini = lbr.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
+                    rd_fin = lbr.Dist2Coast( vlon0[it2], vlat0[it2], vlon_dist, vlat_dist, xdist )
+                    #print('\nLOLO: ==> initial distance to land =', rd_ini, 'km') ; exit(0)
 
                     # We want at least `Nb_min_cnsctv` consecutive records for the buoy
                     # and we want it to be located at least `DistFromLand` km off the coast
-                    if ntt >= Nb_min_cnsctv and rd > DistFromLand:
+                    if nbRec >= Nb_min_cnsctv and rd_ini > DistFromLand and rd_fin > DistFromLand:
 
                         ID_in_use.append(jid)
                         Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
                         Xmsk[istream,ib] = 1      ; # valid point
                         XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!
-                        XNrc[istream,ib] = ntt    ; # keeps memory of stream
-                        XT1[ istream,ib] = vt1b[0]  ; # keeps memory of
-                        XT2[ istream,ib] = vt1b[ntt-1] ; # keeps memory of
+                        XNrc[istream,ib] = nbRec    ; # keeps memory of stream
+                        #XTi[istream,ib] = vt1b[0]
+                        #XTe[istream,ib] = vt1b[nbRec-1]
                         #
-                        xstreams.append({
-                            'istream': istream,
-                            'id':      jid,
-                            'Nrec':    ntt,
-                            't0':      vt1b[0],
-                            'tN':      vt1b[ntt-1],
-                            'ct0':     epoch2clock(vt1b[0]),
-                            'ctN':     epoch2clock(vt1b[ntt-1]),
-                            })
-                        #
-                    ### if ntt >= Nb_min_cnsctv
+                    ### if nbRec >= Nb_min_cnsctv
                 ### if not jid in ID_in_use
             ### for jid in vidsT
 
             if Nbuoys_stream>1:
                 print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
                 VNB.append(Nbuoys_stream)
-                VTi.append(rt)
             else:
                 print("  * well, none of the buoys of this stream had a at least "+str(Nb_min_cnsctv)+" following records!")
                 istream = istream - 1
                 if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
 
+    ### with Dataset(cf_in) as id_in:
 
+    
     # Masking arrays:
     XIDs = np.ma.masked_where( Xmsk==0, XIDs )
-    XIDs = np.ma.masked_where( Xmsk==0, XIDs )
+    XNrc = np.ma.masked_where( Xmsk==0, XNrc )
 
     Nstreams = istream+1
     if len(VNB) != Nstreams: print('ERROR: number of streams?'); exit(0)
     print('\n *** Number of identified streams: '+str(Nstreams))
-
 
 
     for js in range(Nstreams):
@@ -300,7 +307,6 @@ if __name__ == '__main__':
             print('        => with following IDs:')
             for jii in vids: print(jii,' ', end="")
             print('')
-        #
 
         # Some scanning
         # 1- longest record of all the buoys
@@ -317,14 +323,12 @@ if __name__ == '__main__':
         if Nt_lngst != Nt_max: print('ERROR: YY!'); exit(0)
 
 
-        #lilo
-        
         xx   = np.zeros((Nt_lngst,NvB))
         xy   = np.zeros((Nt_lngst,NvB))
         xlon = np.zeros((Nt_lngst,NvB))
         xlat = np.zeros((Nt_lngst,NvB))
-
         xtim = np.zeros((Nt_lngst,NvB) , dtype=int) -999 ; # the exact time for each buoy!
+        xmsk = np.zeros((Nt_lngst,NvB) , dtype=int) + 1  ; # the mask for exluding buoys that stick out in time...
 
 
         
@@ -340,11 +344,11 @@ if __name__ == '__main__':
             xlat[:nr,jb] =  vlat0[idx_id]
             xtim[:nr,jb] = vtime0[idx_id]
 
-            
-        xtim = np.ma.masked_where( xtim<=0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
+        xmsk[np.where(xtim<=0)] = 0 ; # where time is zero, means that buoys does not exist anymore...
+        xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
-        del xtim
-        
+
+                
         # Nearest interpolation of vtim on the VTscan calendar !!!
         VT = vtim.copy()
         i=0
@@ -354,6 +358,25 @@ if __name__ == '__main__':
             VT[i] = vTscan[idx,0]
             i=i+1            
         del vtim
+        
+        # Are there buoys which are too far from this reference time ? lilo
+        for jb in range(NvB):
+            idt = np.abs(xtim[:,jb] - VT[:])
+            if np.any(idt>dt_tolr):
+                print('WOW, buoy #'+str(vids[jb])+' is more than '+str(int(dt_tolr/3600))
+                      +' hours away from reference time...')
+                (idw,) = np.where(idt>dt_tolr)
+                print(idw)
+                print(' ==> supressing '+str(len(idw))+' values!')
+                xmsk[idw,jb] = 0
+        #lilo
+
+                        
+        del xtim
+        exit(0)
+
+
+
         
         # Saving 1 file per stream and per date:
         for jt in range(Nt_lngst):
