@@ -188,8 +188,8 @@ def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
     vit, vNbP = [], []
     for cf in list_npz_files:
         with np.load(cf) as data:
-            it = data['itime']
-            vit.append(int(it))
+            it = int( data['itime'] ) ; # because otherwize it's an array of size 1 ?
+            vit.append(it)
             npf = len(data['vids'])
             vNbP.append(npf)
         if iverbose>0: print('  '+cf+' => time ='+epoch2clock(it)+' | '+str(npf)+' points!')

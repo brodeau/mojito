@@ -36,13 +36,14 @@ print('\n *** Dates available:',vdates[:],'\n')
 # Now, for each date, going to merge the data from several files to one:
 for cdate in vdates:
     print('    +++ date = ', cdate)
-    listnpz = glob(cd_in+'/SELECTION_buoys_RGPS*_'+cdate+'.npz')
+    listnpz = np.sort( glob(cd_in+'/SELECTION_buoys_RGPS*_'+cdate+'.npz') )
     nbf = len(listnpz)
     print('       '+str(nbf)+' files =>',listnpz)
 
     if nbf>1:
         cf_out = cd_in+'/merged_selection_'+cdate+'.npz'
         print('         => will merge these '+str(nbf)+'!')
+        
         kk = lbr.mergeNPZ( listnpz, cf_out, iverbose=idebug )
 
         if idebug>0:
