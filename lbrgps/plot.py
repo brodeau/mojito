@@ -131,7 +131,7 @@ def __figMap__( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.p
     return 0
 
 
-def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5 ):
+def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None, ms=5, ralpha=0.5 ):
     '''
         IN:
             * pt    => the date as epoch/unix time (integer)
@@ -156,7 +156,8 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=
     ct = cp.epoch2clock(pt)
 
     print('\n *** [ShowBuoysMap] plotting for time = '+ct)
-    cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
+    if cnmfig:
+        cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
     return __figMap__( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha, caller='ShowBuoysMap' )
 

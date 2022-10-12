@@ -2,8 +2,6 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
-
-
 from sys import argv, exit
 from os import path
 from glob import glob
@@ -27,10 +25,10 @@ cd_in = argv[1]
 # Gathering all dates available from the files found:
 vdates = []
 listnpz = glob(cd_in+'/SELECTION_buoys_RGPS*.npz')
-for ff in listnpz:        
+for ff in listnpz:
     cdate = split( '_', split('.npz',path.basename(ff))[0] )[-1]
     print(' file, date =',ff,cdate)
-    vdates.append(cdate)    
+    vdates.append(cdate)
 
 vdates = np.unique(vdates)
 print('\n *** Dates available:',vdates[:],'\n')
@@ -43,5 +41,18 @@ for cdate in vdates:
     print('       '+str(nbf)+' files =>',listnpz)
 
     if nbf>1:
+        cf_out = cd_in+'/merged_selection_'+cdate+'.npz'
         print('         => will merge these '+str(nbf)+'!')
-        kk = lbr.mergeNPZ( listnpz, cd_in+'/merged_selection_'+cdate+'.npz', iverbose=idebug )
+        kk = lbr.mergeNPZ( listnpz, cf_out, iverbose=idebug )
+
+        if idebug>0:
+            # Plotting the results:
+            with np.load(cf_out) as data:
+                itime = data['itime']
+                vlon  = data['vlon']
+                vlat  = data['vlat']
+                #vids  = data['vids']
+            #
+            cfig =  str.replace( cf_out, '.npz', '.png' )
+            lbr.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cfig, ms=5, ralpha=0.5 )
+

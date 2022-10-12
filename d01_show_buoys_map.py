@@ -27,4 +27,4 @@ with np.load(cf_npz) as data:
     
 
 # Show
-lbr.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cnmfig=cf_fig, ms=5, ralpha=0.5 )
+lbr.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cf_fig, ms=5, ralpha=0.5 )
