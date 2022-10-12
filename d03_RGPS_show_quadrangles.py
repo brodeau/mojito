@@ -4,12 +4,6 @@
 
 from sys import argv, exit
 from os import path
-import numpy as np
-from re import split
-
-from scipy.spatial import Delaunay
-
-from climporn import epoch2clock
 import lbrgps   as lbr
 
 idebug=1

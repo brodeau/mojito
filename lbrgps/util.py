@@ -8,6 +8,7 @@ from sys import exit
 import numpy as np
 
 
+
 def LoadDist2CoastNC( cNCfile ):
     from climporn import chck4f
     from netCDF4  import Dataset
@@ -173,9 +174,53 @@ def SortIndicesCCW(xcoor):
     return np.array([i1l, i1r, i2r, i2l])
 
 
-def mergeNPZ( list_npz_files, cf_out='merged_file.npz' ):
+
+
+def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
     '''
        Merge several npz files of the same date into a single one!
     '''
-
+    from climporn import epoch2clock
     
+    nbf = len(list_npz_files)
+    
+    # First round to check the number of points in each file
+    vit, vNbP = [], []
+    for cf in list_npz_files:
+        with np.load(cf) as data:
+            it = data['itime']
+            vit.append(int(it))
+            npf = len(data['vids'])
+            vNbP.append(npf)
+        if iverbose>0: print('  '+cf+' => time ='+epoch2clock(it)+' | '+str(npf)+' points!')
+    #
+    # For merged file:
+    it = int( round(np.mean(vit),0) )
+    nP = np.sum(vNbP)
+    if iverbose>0: print(' vNbP =', vNbP,'=>',nP,'points in total!, time =',epoch2clock(it))
+
+    vx, vy = np.zeros(nP), np.zeros(nP)
+    vlon, vlat = np.zeros(nP), np.zeros(nP)
+    vids   = np.zeros(nP, dtype=int)
+
+    jf=0
+    i1, i2 = 0, 0
+    for cf in list_npz_files:
+        npf = vNbP[jf]
+        i2=i2+npf
+        with np.load(cf) as data:
+            vx[i1:i2], vy[i1:i2] = data['vx'], data['vy']
+            vlon[i1:i2], vlat[i1:i2] = data['vlon'], data['vlat']
+            vids[i1:i2]          = data['vids']
+        #
+        i1=i1+npf
+        jf=jf+1
+        
+    if len(np.unique(vids)) < nP:
+        print(' ERROR: [util.mergeNPZ] => some IDs are identical :('); exit(0)
+
+    # Time to save in the new npz file:
+    if iverbose>0: print('  [util.mergeNPZ] ==> saving merged files into '+cf_out+' !')
+    np.savez_compressed( cf_out, itime=it, vx=vx, vy=vy, vlon=vlon, vlat=vlat, vids=vids )
+
+    return 0

@@ -15,7 +15,7 @@
 
 from sys import argv, exit
 from os import path, environ, mkdir
-import numpy as nmp
+import numpy as np
 
 from re import split
 
@@ -99,8 +99,8 @@ if __name__ == '__main__':
     Nts = int(round((rdt2 - rdt1) / dt_scan)) + 1
     print("\n *** New fixed time axis to use to scan data:")
     print( "   ===> Nts = "+str(Nts)+" days!")
-    vTscan = nmp.zeros((Nts,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
-    cTscan = nmp.zeros( Nts   , dtype='U19')
+    vTscan = np.zeros((Nts,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
+    cTscan = np.zeros( Nts   , dtype='U19')
     vTscan[0,0] =             rdt1
     cTscan[0]   = epoch2clock(rdt1)
     for jt in range(1,Nts):
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         if not ctunits == ctunits_expected:
             print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
             exit(0)
-        vtime0 = nmp.zeros(Np0, dtype=int)
+        vtime0 = np.zeros(Np0, dtype=int)
         vtime0 = id_in.variables['time'][:]
 
         # Coordinates:
@@ -151,27 +151,27 @@ if __name__ == '__main__':
         vlat0  = id_in.variables['lat'][:]
 
         # Buoys' IDs:
-        vIDrgps0    = nmp.zeros(Np0, dtype=int)
+        vIDrgps0    = np.zeros(Np0, dtype=int)
         vIDrgps0[:] = id_in.variables['index'][:]
 
 
-    vlon0[:] = nmp.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
+    vlon0[:] = np.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
 
 
     # Masking all point that are before and beyond our period of interest:
-    vmsk_time = nmp.zeros(Np0, dtype=int) + 1
-    vmsk_time[nmp.where(vtime0 < rdt1-dt_tolr)] = 0
-    vmsk_time[nmp.where(vtime0 > rdt2-dt_tolr)] = 0
+    vmsk_time = np.zeros(Np0, dtype=int) + 1
+    vmsk_time[np.where(vtime0 < rdt1-dt_tolr)] = 0
+    vmsk_time[np.where(vtime0 > rdt2-dt_tolr)] = 0
 
-    vIDrgps0 =  nmp.ma.masked_where( vmsk_time==0, vIDrgps0 )
-    vtime0   =  nmp.ma.masked_where( vmsk_time==0, vtime0   )
-    vx0      =  nmp.ma.masked_where( vmsk_time==0, vx0   )
-    vy0      =  nmp.ma.masked_where( vmsk_time==0, vy0   )    
-    vlon0    =  nmp.ma.masked_where( vmsk_time==0, vlon0   )
-    vlat0    =  nmp.ma.masked_where( vmsk_time==0, vlat0   )
+    vIDrgps0 =  np.ma.masked_where( vmsk_time==0, vIDrgps0 )
+    vtime0   =  np.ma.masked_where( vmsk_time==0, vtime0   )
+    vx0      =  np.ma.masked_where( vmsk_time==0, vx0   )
+    vy0      =  np.ma.masked_where( vmsk_time==0, vy0   )    
+    vlon0    =  np.ma.masked_where( vmsk_time==0, vlon0   )
+    vlat0    =  np.ma.masked_where( vmsk_time==0, vlat0   )
 
     # Remaining buoys (IDs)
-    vIDs = nmp.sort( nmp.unique( vIDrgps0 ) )
+    vIDs = np.sort( np.unique( vIDrgps0 ) )
     Nb   = len(vIDs)
     print("\n *** There are "+str(Nb)+" buoys to follow...")
 
@@ -181,11 +181,11 @@ if __name__ == '__main__':
     VTi = [] ;  # Nominal initial time we retain for each stream
 
     # In the following, both Ns_max & Nb are excessive upper bound values #fixme
-    XIDs = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
-    XNrc = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    XT1  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    XT2  = nmp.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    Xmsk = nmp.zeros((Ns_max, Nb), dtype=int)
+    XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
+    XNrc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    XT1  = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    XT2  = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    Xmsk = np.zeros((Ns_max, Nb), dtype=int)
 
     ID_in_use = []  ; # keeps memory of buoys that are already been considered!
     xstreams  = []  ; # array of dictionnary with informations to store...
@@ -199,7 +199,7 @@ if __name__ == '__main__':
         rt = vTscan[jt,0] ; # current scan time
         #
         print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
-        idx_ok, = nmp.where( nmp.abs( vtime0[:] - rt ) <= dt_tolr )
+        idx_ok, = np.where( np.abs( vtime0[:] - rt ) <= dt_tolr )
         Nok      = len(idx_ok)
         if idebug>1: print("    => "+str(Nok)+" buoys satisfy this!")
         #
@@ -225,7 +225,7 @@ if __name__ == '__main__':
                 if not jid in ID_in_use:
                     #
                     ib = ib + 1
-                    idx_id, = nmp.where( vIDrgps0 == jid)
+                    idx_id, = np.where( vIDrgps0 == jid)
                     #
                     vt  = vtime0[idx_id] ; # time records for this particular buoy
                     ntt = len(vt)
@@ -279,8 +279,8 @@ if __name__ == '__main__':
 
 
     # Masking arrays:
-    XIDs = nmp.ma.masked_where( Xmsk==0, XIDs )
-    XIDs = nmp.ma.masked_where( Xmsk==0, XIDs )
+    XIDs = np.ma.masked_where( Xmsk==0, XIDs )
+    XIDs = np.ma.masked_where( Xmsk==0, XIDs )
 
     Nstreams = istream+1
     if len(VNB) != Nstreams: print('ERROR: number of streams?'); exit(0)
@@ -289,7 +289,7 @@ if __name__ == '__main__':
 
 
     for js in range(Nstreams):
-        vids = nmp.ma.MaskedArray.compressed( XIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
+        vids = np.ma.MaskedArray.compressed( XIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
         Nvb  = VNB[js]
         if Nvb != len(vids): print('ERROR Z1!'); exit(0)
         #
@@ -307,24 +307,24 @@ if __name__ == '__main__':
         jb_max = -1
         for jb in range(Nvb):
             jid  = vids[jb]
-            idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+            idx_id, = np.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
             nr = len(idx_id)
             if nr>Nt_max:
                 Nt_max = nr
                 jb_max = jb
-        Nt_lngst = nmp.max(XNrc[js,:]) ; # Max number of record from the buoy that has the most
+        Nt_lngst = np.max(XNrc[js,:]) ; # Max number of record from the buoy that has the most
         if Nt_lngst != Nt_max: print('ERROR: YY!'); exit(0)
 
-        vt   = nmp.zeros( Nt_lngst , dtype=int)
-        xx   = nmp.zeros((Nt_lngst,Nvb))
-        xy   = nmp.zeros((Nt_lngst,Nvb))
-        xlon = nmp.zeros((Nt_lngst,Nvb))
-        xlat = nmp.zeros((Nt_lngst,Nvb))
+        vt   = np.zeros( Nt_lngst , dtype=int)
+        xx   = np.zeros((Nt_lngst,Nvb))
+        xy   = np.zeros((Nt_lngst,Nvb))
+        xlon = np.zeros((Nt_lngst,Nvb))
+        xlat = np.zeros((Nt_lngst,Nvb))
 
         # Show them on a map:
         for jb in range(Nvb):
             jid  = vids[jb]
-            idx_id, = nmp.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
+            idx_id, = np.where( vIDrgps0 == jid) ; # => there can be only 2 (consecutive) points !!! See above!!!
             #if idebug>1: print("ID = "+str(jid)+" => points =>",idx_id)
             nr = len(idx_id)
             if jb==jb_max: vt[:] = vtime0[idx_id] ; #lolo
@@ -338,7 +338,7 @@ if __name__ == '__main__':
         for jt in range(len(vt)):
             ct = split('_',epoch2clock(vt[jt]))[0] ; # just the day !
             cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
-            nmp.savez( cf_out, itime=vt[jt], vx=xx[jt,:], vy=xy[jt,:], vlon=xlon[jt,:], vlat=xlat[jt,:], vids=vids[:] )
+            np.savez_compressed( cf_out, itime=vt[jt], vx=xx[jt,:], vy=xy[jt,:], vlon=xlon[jt,:], vlat=xlat[jt,:], vids=vids[:] )
 
         if idebug>0:
             kf = lbr.ShowBuoysMap_Trec( vt, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js), clock_res='d' )
