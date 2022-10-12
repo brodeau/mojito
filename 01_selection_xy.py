@@ -41,8 +41,10 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
-#dt_scan =    6*3600 ; # time increment while scanning for valid time intervals
-dt_scan =    24*3600 ; # time increment while scanning for valid time intervals
+dt_scan =    6*3600 ; # time increment while scanning for valid time intervals
+#dt_scan =    12*3600 ; # time increment while scanning for valid time intervals
+#dt_scan =    24*3600 ; # time increment while scanning for valid time intervals
+#dt_scan =    36*3600 ; # time increment while scanning for valid time intervals
 dt_tolr = dt_scan/2. ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
 Ns_max = 200  # Max number of Streams, guess!!! #fixme...
