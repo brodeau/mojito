@@ -228,7 +228,7 @@ if __name__ == '__main__':
     
             Nbuoys_stream = 0
             ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
-            if Nok > Nb_min_stream:
+            if Nok >= Nb_min_stream:
                 # That's a new stream
                 istream   = istream+1
     
@@ -303,7 +303,7 @@ if __name__ == '__main__':
                     ### if (not jid in ID_in_use_G) and (not jid in ID_in_use_l)
                 ### for jid in vidsT
     
-                if Nbuoys_stream>1:
+                if Nbuoys_stream >= Nb_min_stream:
                     print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
                     VNB.append(Nbuoys_stream)
                     # Only now can we register the buoys in `ID_in_use_G`
