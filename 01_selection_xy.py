@@ -324,9 +324,9 @@ if __name__ == '__main__':
                     # Only now can we register the buoys in `ID_in_use_G`:
                     for jid in ID_in_use_l: ID_in_use_G.append(jid)
                 else:
-                    print("  * Well, none of the buoys of this stream made it through the selection process...")
+                    print("  * Well, this stream did not make it through the selection process... :(")
                     Xmsk[istream,:] = 0
-                    istream = istream - 1
+                    istream = istream - 1 ; # REWIND!
                     if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
             
             ### if Nok > Nb_min_stream
