@@ -231,6 +231,9 @@ if __name__ == '__main__':
             #
             print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
             idx_ok, = np.where( np.abs( vtime0[:] - rT ) <= dt_tolr )
+            
+            # lolo: TODO: idx_ok is too optimist! should remove all buoys that are already taken !!!
+            
             Nok      = len(idx_ok)
             if idebug>1: print("    => "+str(Nok)+" buoys satisfy this!")
     
