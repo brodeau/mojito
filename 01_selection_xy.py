@@ -231,11 +231,20 @@ if __name__ == '__main__':
             #
             print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
             idx_ok, = np.where( np.abs( vtime0[:] - rT ) <= dt_tolr )
+
+            Nok0 = len(idx_ok)
+                        
+            # Remove all buoys that are already taken:
+            vids = vIDrgps0[idx_ok]            
+            vIDsT = np.setdiff1d( vids, np.array(ID_in_use_G) ) ; # keep the values of `vids` that are not in `ID_in_use_G`
+            del vids
             
-            # lolo: TODO: idx_ok is too optimist! should remove all buoys that are already taken !!!
-            
-            Nok      = len(idx_ok)
-            if idebug>1: print("    => "+str(Nok)+" buoys satisfy this!")
+            Nok      = len(vIDsT)
+            if idebug>1:
+                print("    => "+str(Nok)+" buoys satisfy this!")
+                if Nok<Nok0:
+                    print("       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
+
     
             Nbuoys_stream = 0
             ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
@@ -244,11 +253,9 @@ if __name__ == '__main__':
                 istream   = istream+1
     
                 if idebug>0: print("    => this date is potentially the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
-    
-                vidsT = vIDrgps0[idx_ok] ; # IDs of the buoys that satisfy this
-    
+        
                 jb = -1 ; # buoy counter...
-                for jid in vidsT:
+                for jid in vIDsT:
                     #
                     if (not jid in ID_in_use_G) and (not jid in ID_in_use_l):
                         #
@@ -270,20 +277,17 @@ if __name__ == '__main__':
                         #      - dezing tout ce qui s'eloigne trop de ce vt1b_ideal !
                         nbRecOK = nbRec0
                         vt1b_ideal = np.array( [ vt1b[0]+float(i)*float(dt_buoy) for i in range(nbRec0) ], dtype=float )
-                        #print('LILO: vt1b =', vt1b)
                         vtdev = np.abs(vt1b - vt1b_ideal)
-                        #print('LILO: deviation in hours from ideal time calendar =', vtdev[:]/3600.)
-                        lfu = np.any(vtdev > dt_tolr)
-                        #print('LILO: fuckup? =>',lfu)
-                        if lfu:
-                            (indfu,) = np.where(vtdev > dt_tolr)
-                            nbRecOK = np.min(indfu) - 1
-                            #print('LILO: vtdev > indfu =',indfu,' nbRecOK=',nbRecOK)
-                        #print('LILO')
-                        #lilo!
-    
+                        lFU = np.any(vtdev > dt_tolr)
+                        if lFU:
+                            (indFU,) = np.where(vtdev > dt_tolr)
+                            nbRecOK = np.min(indFU) ; # yes! no -1 !!!
+
+                        # We want at least `Nb_min_cnsctv` consecutive records for the buoy
+                        #******************************************************************
                         if nbRecOK >= Nb_min_cnsctv:
-                                                    
+                            
+                            
                             if nbRecOK < nbRec0:
                                 # Update with only keeping acceptable time records (#fixme: for now only those until first fuckup)
                                 idx_id = idx_id[0:nbRecOK]
@@ -297,29 +301,30 @@ if __name__ == '__main__':
                             #rd_fin = lbr.Dist2Coast( vlon0[it2], vlat0[it2], vlon_dist, vlat_dist, xdist )
                             #print('\nLOLO: ==> initial distance to land =', rd_ini, 'km') ; exit(0)
     
-                            # We want at least `Nb_min_cnsctv` consecutive records for the buoy
-                            # and we want it to be located at least `MinDistFromLand` km off the coast
+
+                            # We want the buoy to be located at least `MinDistFromLand` km off the coast
+                            #***************************************************************************
                             if rd_ini > MinDistFromLand:
     
                                 ID_in_use_l.append(jid)
                                 Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
-                                Xmsk[istream,jb] = 1      ; # valid point
-                                XIDs[istream,jb] = jid    ; # keeps memory of buoys that have been used!
-                                XNRc[istream,jb] = nbRecOK    ; # keeps memory of stream
+                                Xmsk[istream,jb] = 1              ; # flag for valid point
+                                XIDs[istream,jb] = jid            ; # keeps memory of select buoy
+                                XNRc[istream,jb] = nbRecOK        ; # keeps memory of n. of valid consec. records
     
                             ### if rd_ini > MinDistFromLand 
                         ### if nbRecOK >= Nb_min_cnsctv
                     ### if (not jid in ID_in_use_G) and (not jid in ID_in_use_l)
-                ### for jid in vidsT
+                ### for jid in vIDsT
     
                 if Nbuoys_stream >= Nb_min_stream:
                     print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
                     VNB.append(Nbuoys_stream)
                     VT0.append(rT)
-                    # Only now can we register the buoys in `ID_in_use_G`
+                    # Only now can we register the buoys in `ID_in_use_G`:
                     for jid in ID_in_use_l: ID_in_use_G.append(jid)
                 else:
-                    print("  * well, none of the buoys of this stream had at least "+str(Nb_min_cnsctv)+" following records!")
+                    print("  * Well, none of the buoys of this stream had at least "+str(Nb_min_cnsctv)+" following records!")
                     istream = istream - 1
                     if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
             
