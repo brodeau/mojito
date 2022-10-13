@@ -240,7 +240,7 @@ if __name__ == '__main__':
                 # That's a new stream
                 istream   = istream+1
     
-                if idebug>0: print("    => this date will be the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
+                if idebug>0: print("    => this date is potentially the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
     
                 vidsT = vIDrgps0[idx_ok] ; # IDs of the buoys that satisfy this
     
