@@ -369,7 +369,7 @@ if __name__ == '__main__':
             VNB      = data['VNB']
             ZIDs     = data['IDs']
             ZNRc     = data['NRc']            
-
+        # For some reason, masked shit not preserved via savez/load...
         ZIDs = np.ma.masked_where( ZIDs==-999, ZIDs )
         ZNRc = np.ma.masked_where( ZNRc==-999, ZNRc )
 
@@ -384,26 +384,32 @@ if __name__ == '__main__':
         NvB  = VNB[js]
         if NvB != len(vids): print('ERROR Z1!'); exit(0)
         #
-        print('\n\n *** Having a look at stream #'+str(js)+' !')
+        print('\n *** Having a look at stream #'+str(js)+' !')
         print('     ===> has '+str(VNB[js])+' valid buoys!')
         if idebug>2:
             print('        => with following IDs:')
             for jii in vids: print(jii,' ', end="")
             print('')
 
-        # Some scanning
-        # 1- find the longest possible consecutive valid record of all the buoys (minimum was `Nb_min_cnsctv`)
-        Nt_max =  0
-        jb_max = -1
-        for jb in range(NvB):
-            idx_id, = np.where( vIDrgps0 == vids[jb]) ; # => there can be only 2 (consecutive) points !!! See above!!!
-            nr = len(idx_id)
-            if nr>Nt_max:
-                Nt_max = nr
-                jb_max = jb
         NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
-        if NCRmax != Nt_max:
-            print('ERROR: YY!',NCRmax,Nt_max); exit(0)
+        
+        # Some scanning        
+        # 1- find the longest possible consecutive valid record of all the buoys (minimum was `Nb_min_cnsctv`)
+        #vjbNotOk = []
+        #Nt_max =  0
+        #for jb in range(NvB):
+        #    print('LOLO: ',vids[jb])
+        #    idx_id, = np.where( vIDrgps0 == vids[jb]) ; # => there can be more than at least 2 (consecutive) points !!! See above!!!
+        #    cvt = [ epoch2clock(rt) for rt in vtime0[idx_id] ];#lolo
+        #    print('LOLO: time =',cvt)
+        #    nr = len(idx_id)
+        #    if nr>NCRmax:
+        #        print('LOLO: WARNING: bouy with ID',vids[jb],'as nr =',nr,'>',NCRmax,' => will be canceled!')            
+        #    if nr>Nt_max:
+        #        Nt_max = nr
+        #    print('')
+        #if NCRmax != Nt_max:
+        #    print('ERROR: YY!',NCRmax,Nt_max); exit(0)
         
         xx   = np.zeros((NCRmax,NvB))
         xy   = np.zeros((NCRmax,NvB))
@@ -415,13 +421,17 @@ if __name__ == '__main__':
         # Show them on a map:
         for jb in range(NvB):
             idx_id, = np.where( vIDrgps0 == vids[jb]) ; # => there can be only 2 (consecutive) points !!! See above!!!
-            nr = len(idx_id)
             #
-            xx[:nr,jb]   =    vx0[idx_id]
-            xy[:nr,jb]   =    vy0[idx_id]
-            xlon[:nr,jb] =  vlon0[idx_id]
-            xlat[:nr,jb] =  vlat0[idx_id]
-            xtim[:nr,jb] = vtime0[idx_id]
+            #nr = len(idx_id)
+            nr = min(len(idx_id),NCRmax) ; # #fixme: because scanning block above removed! "nr can be > NCRmax" because, suppressed
+            #                              #         bad calendar records of the buoys still present when doing "vIDrgps0 == vids[jb]" ??!!
+            #                              #         hopefully this fix is okay because fucked up values only at the end of the array????
+            #
+            xx[:nr,jb]   =    vx0[idx_id[:nr]]
+            xy[:nr,jb]   =    vy0[idx_id[:nr]]
+            xlon[:nr,jb] =  vlon0[idx_id[:nr]]
+            xlat[:nr,jb] =  vlat0[idx_id[:nr]]
+            xtim[:nr,jb] = vtime0[idx_id[:nr]]
 
         xmsk[np.where(xtim<=0)] = 0 ; # where time is zero, means that buoys does not exist anymore...
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
