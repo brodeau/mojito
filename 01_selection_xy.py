@@ -12,6 +12,11 @@
 #SBATCH --mem=8000
 ##################################################################
 #
+# TO DO:
+# find the reason why the stream willing to start at `1997-01-04_18h00` will:
+# - work for short selection (1st to 10th of January)
+# - be cancelled for longer selection (1st to 31st of January)
+
 
 from sys import argv, exit
 from os import path, environ, mkdir
