@@ -64,6 +64,25 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 
 
 
+def __summary__( pVNB, pIDs, pNRc ):
+    #
+    (Nstrm,NbMax) = np.shape(pIDs)
+    if Nstrm != len(pVNB):
+        print('ERROR: [__summary__()] => error #1')
+    if not NbMax == np.max(pVNB):
+        print('ERROR: [__summary__()] => error #2')
+    print('\n ==========   SUMMARY   ==========')
+    print(' *** Number of identified streams: '+str(Nstrm))
+    print(' *** Number of buoys selected in each stream:')
+    for js in range(Nstrm): print('        * Stream #'+str(js)+' => '+str(pVNB[js]))
+    print(' *** Max number of buoys possibly found in a stream = ',NbMax)
+    print('     * shape of ZIDs =', np.shape(pIDs))
+    print('     * shape of ZNRc =', np.shape(pNRc))
+    print(' ===================================\n')
+
+
+
+
 if __name__ == '__main__':
 
     cdata_dir = environ.get('DATA_DIR')
@@ -194,7 +213,7 @@ if __name__ == '__main__':
         XNRc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
         Xmsk = np.zeros((Ns_max, Nb), dtype=int)
     
-        ID_in_use = []  ; # keeps memory of buoys that are already been considered!
+        ID_in_use_G = []  ; # keeps memory of buoys that are already been included in a valid stream!
     
         rT_prev_stream = 1e12
         istream        = -1
@@ -208,6 +227,7 @@ if __name__ == '__main__':
             if idebug>1: print("    => "+str(Nok)+" buoys satisfy this!")
     
             Nbuoys_stream = 0
+            ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
             if Nok > Nb_min_stream:
                 # That's a new stream
                 istream   = istream+1
@@ -221,7 +241,7 @@ if __name__ == '__main__':
                 ib = -1 ; # buoy counter...
                 for jid in vidsT:
                     #
-                    if not jid in ID_in_use:
+                    if (not jid in ID_in_use_G) and (not jid in ID_in_use_l):
                         #
                         ib = ib + 1
                         idx_id, = np.where( vIDrgps0 == jid)
@@ -272,7 +292,7 @@ if __name__ == '__main__':
                             # and we want it to be located at least `MinDistFromLand` km off the coast
                             if rd_ini > MinDistFromLand:
     
-                                ID_in_use.append(jid)
+                                ID_in_use_l.append(jid)
                                 Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
                                 Xmsk[istream,ib] = 1      ; # valid point
                                 XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!
@@ -280,12 +300,14 @@ if __name__ == '__main__':
     
                             ### if rd_ini > MinDistFromLand 
                         ### if nbRecOK >= Nb_min_cnsctv
-                    ### if not jid in ID_in_use
+                    ### if (not jid in ID_in_use_G) and (not jid in ID_in_use_l)
                 ### for jid in vidsT
     
                 if Nbuoys_stream>1:
                     print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
                     VNB.append(Nbuoys_stream)
+                    # Only now can we register the buoys in `ID_in_use_G`
+                    for jid in ID_in_use_l: ID_in_use_G.append(jid)
                 else:
                     print("  * well, none of the buoys of this stream had at least "+str(Nb_min_cnsctv)+" following records!")
                     istream = istream - 1
@@ -293,7 +315,7 @@ if __name__ == '__main__':
             
             ### if Nok > Nb_min_stream
     
-        ### with Dataset(cf_in) as id_in:
+        ### for jt in range(NTscan)
     
         VNB = np.array(VNB)
         
@@ -330,16 +352,9 @@ if __name__ == '__main__':
         #    for ib in range(Nbuoys_max): print( ZIDs[js,ib],' ',end='')
         #    print('')
         #exit(0)
-        
-        print('\n ======   SUMMARY   ======')
-        print(' *** Number of identified streams: '+str(Nstreams))
-        print(' *** Number of buoys selected in each stream:')
-        for js in range(Nstreams): print('        * Stream #'+str(js)+' => '+str(VNB[js]))
-        print(' *** Max number of buoys possibly found in a stream = ',Nbuoys_max)
-        print('     * shape of ZIDs =', np.shape(ZIDs))
-        print('     * shape of ZNRc =', np.shape(ZNRc))
-        print('\n')
 
+        __summary__(VNB, ZIDs, ZNRc)
+        
         print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
         np.savez_compressed( cf_npz_intrmdt, Nstreams=Nstreams, VNB=VNB, IDs=ZIDs, NRc=ZNRc )
 
@@ -358,7 +373,8 @@ if __name__ == '__main__':
         ZIDs = np.ma.masked_where( ZIDs==-999, ZIDs )
         ZNRc = np.ma.masked_where( ZNRc==-999, ZNRc )
 
-
+        __summary__(VNB, ZIDs, ZNRc)
+        
     ### if not path.exists(cf_npz_intrmdt)
         
 
@@ -386,8 +402,8 @@ if __name__ == '__main__':
                 Nt_max = nr
                 jb_max = jb
         NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
-        if NCRmax != Nt_max: print('ERROR: YY!'); exit(0)
-
+        if NCRmax != Nt_max:
+            print('ERROR: YY!',NCRmax,Nt_max); exit(0)
         
         xx   = np.zeros((NCRmax,NvB))
         xy   = np.zeros((NCRmax,NvB))
