@@ -345,12 +345,20 @@ if __name__ == '__main__':
         for js in range(Nstreams):
             indOK = np.where(Xmsk[js,:]==1)
             NvB=VNB[js]
-            Zmsk[js,:NvB] = Xmsk[js,indOK]
+            Zmsk[js,:NvB] = Xmsk[js,indOK] ; # #fixme: crash in big run with message below:
             ZIDs[js,:NvB] = XIDs[js,indOK]
             ZNRc[js,:NvB] = XNRc[js,indOK]
     
         del Xmsk, XIDs, XNRc
-            
+
+        # MESSAGE:
+        # *** Selection of buoys that exist at 1997-01-31_00:00:00 +-3h!
+        # => 0 buoys satisfy this!
+        # Traceback (most recent call last):
+        # File "/home/laurent/DEV/rgps/./01_selection_xy.py", line 339, in <module>
+        # Zmsk[js,:NvB] = Xmsk[js,indOK]
+        # ValueError: could not broadcast input array from shape (3119,) into shape (3095,)
+        
         # Masking arrays:
         ZIDs = np.ma.masked_where( Zmsk==0, ZIDs )
         ZNRc = np.ma.masked_where( Zmsk==0, ZNRc )
