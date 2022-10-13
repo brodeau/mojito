@@ -64,7 +64,7 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 
 
 
-def __summary__( pVNB, pIDs, pNRc ):
+def __summary__( pVNB, pVT0, pIDs, pNRc ):
     #
     (Nstrm,NbMax) = np.shape(pIDs)
     if Nstrm != len(pVNB):
@@ -74,7 +74,9 @@ def __summary__( pVNB, pIDs, pNRc ):
     print('\n ==========   SUMMARY   ==========')
     print(' *** Number of identified streams: '+str(Nstrm))
     print(' *** Number of buoys selected in each stream:')
-    for js in range(Nstrm): print('        * Stream #'+str(js)+' => '+str(pVNB[js]))
+    for js in range(Nstrm):
+        cT0  = epoch2clock(pVT0[js])
+        print('        * Stream #'+str(js)+' initiated at time bin centered around '+cT0+' => has '+str(pVNB[js])+' buoys')
     print(' *** Max number of buoys possibly found in a stream = ',NbMax)
     print('     * shape of ZIDs =', np.shape(pIDs))
     print('     * shape of ZNRc =', np.shape(pNRc))
@@ -207,6 +209,7 @@ if __name__ == '__main__':
         
         # Vectors along streams:
         VNB = [] ;  # Number of valid buoys in each stream
+        VT0 = [] ;  # initial time for stream
     
         # In the following, both Ns_max & Nb are excessive upper bound values #fixme
         XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
@@ -215,7 +218,6 @@ if __name__ == '__main__':
     
         ID_in_use_G = []  ; # keeps memory of buoys that are already been included in a valid stream!
     
-        rT_prev_stream = 1e12
         istream        = -1
         for jt in range(NTscan):
             #
@@ -234,8 +236,6 @@ if __name__ == '__main__':
     
                 if idebug>0: print("    => this date will be the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
     
-                rT_prev_stream = rT
-                
                 vidsT = vIDrgps0[idx_ok] ; # IDs of the buoys that satisfy this
     
                 jb = -1 ; # buoy counter...
@@ -306,6 +306,7 @@ if __name__ == '__main__':
                 if Nbuoys_stream >= Nb_min_stream:
                     print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
                     VNB.append(Nbuoys_stream)
+                    VT0.append(rT)
                     # Only now can we register the buoys in `ID_in_use_G`
                     for jid in ID_in_use_l: ID_in_use_G.append(jid)
                 else:
@@ -318,6 +319,7 @@ if __name__ == '__main__':
         ### for jt in range(NTscan)
     
         VNB = np.array(VNB)
+        VT0 = np.array(VT0)
         
         Nstreams = istream+1
         if len(VNB) != Nstreams:
@@ -353,10 +355,10 @@ if __name__ == '__main__':
         #    print('')
         #exit(0)
 
-        __summary__(VNB, ZIDs, ZNRc)
+        __summary__(VNB, VT0, ZIDs, ZNRc)
         
         print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
-        np.savez_compressed( cf_npz_intrmdt, Nstreams=Nstreams, VNB=VNB, IDs=ZIDs, NRc=ZNRc )
+        np.savez_compressed( cf_npz_intrmdt, Nstreams=Nstreams, VNB=VNB, VT0=VT0, IDs=ZIDs, NRc=ZNRc )
 
 
     
@@ -367,13 +369,14 @@ if __name__ == '__main__':
         with np.load(cf_npz_intrmdt) as data:
             Nstreams = data['Nstreams']
             VNB      = data['VNB']
+            VT0      = data['VT0']
             ZIDs     = data['IDs']
             ZNRc     = data['NRc']            
         # For some reason, masked shit not preserved via savez/load...
         ZIDs = np.ma.masked_where( ZIDs==-999, ZIDs )
         ZNRc = np.ma.masked_where( ZNRc==-999, ZNRc )
 
-        __summary__(VNB, ZIDs, ZNRc)
+        __summary__(VNB, VT0, ZIDs, ZNRc)
         
     ### if not path.exists(cf_npz_intrmdt)
         
@@ -382,9 +385,13 @@ if __name__ == '__main__':
     for js in range(Nstreams):
         vids = np.ma.MaskedArray.compressed( ZIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
         NvB  = VNB[js]
+
+        rT0  = VT0[js]
+        cT0  = epoch2clock(rT0)
+        
         if NvB != len(vids): print('ERROR Z1!'); exit(0)
         #
-        print('\n *** Having a look at stream #'+str(js)+' !')
+        print('\n *** Having a look at stream #'+str(js)+' initiated for time bien centered around '+cT0+' !')
         print('     ===> has '+str(VNB[js])+' valid buoys!')
         if idebug>2:
             print('        => with following IDs:')
@@ -441,17 +448,16 @@ if __name__ == '__main__':
         #        #xmsk[idw,jb] = 0
                         
         del xtim
-        #exit(0)
-    
-                
+
+        ct = str.replace(cT0[0:16],':','h') ; # date with precision to the minute without ':'
+        
         # Saving 1 file per stream and per date:
         for jt in range(NCRmax):
-            ct = split('_',epoch2clock(VT[jt]))[0] ; # just the day !
             cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
             np.savez_compressed( cf_out, itime=VT[jt], vx=xx[jt,:], vy=xy[jt,:], vlon=xlon[jt,:], vlat=xlat[jt,:], vids=vids[:] )
     
         if idebug>0:
-            kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js), clock_res='d' )
+            kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct, clock_res='d' )
 
 
-
+    ### for js in range(Nstreams)
