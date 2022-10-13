@@ -33,8 +33,8 @@ import lbrgps as lbr
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
-cdt2 = 'YYYY-01-10_00:00:00'
-#cdt2 = 'YYYY-01-31_00:00:00'
+#cdt2 = 'YYYY-01-10_00:00:00'
+cdt2 = 'YYYY-01-31_00:00:00'
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -238,12 +238,12 @@ if __name__ == '__main__':
                 
                 vidsT = vIDrgps0[idx_ok] ; # IDs of the buoys that satisfy this
     
-                ib = -1 ; # buoy counter...
+                jb = -1 ; # buoy counter...
                 for jid in vidsT:
                     #
                     if (not jid in ID_in_use_G) and (not jid in ID_in_use_l):
                         #
-                        ib = ib + 1
+                        jb = jb + 1
                         idx_id, = np.where( vIDrgps0 == jid)
                         #
                         vt1b  = vtime0[idx_id] ; # all time records for this particular buoy
@@ -294,9 +294,9 @@ if __name__ == '__main__':
     
                                 ID_in_use_l.append(jid)
                                 Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
-                                Xmsk[istream,ib] = 1      ; # valid point
-                                XIDs[istream,ib] = jid    ; # keeps memory of buoys that have been used!
-                                XNRc[istream,ib] = nbRecOK    ; # keeps memory of stream
+                                Xmsk[istream,jb] = 1      ; # valid point
+                                XIDs[istream,jb] = jid    ; # keeps memory of buoys that have been used!
+                                XNRc[istream,jb] = nbRecOK    ; # keeps memory of stream
     
                             ### if rd_ini > MinDistFromLand 
                         ### if nbRecOK >= Nb_min_cnsctv
@@ -349,7 +349,7 @@ if __name__ == '__main__':
         # Visualize buoy IDs in each stream:
         #for js in range(Nstreams):
         #    print('Stream #'+str(js)+' => ZIDs[js,:] =')
-        #    for ib in range(Nbuoys_max): print( ZIDs[js,ib],' ',end='')
+        #    for jb in range(Nbuoys_max): print( ZIDs[js,jb],' ',end='')
         #    print('')
         #exit(0)
 
@@ -393,24 +393,6 @@ if __name__ == '__main__':
 
         NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
         
-        # Some scanning        
-        # 1- find the longest possible consecutive valid record of all the buoys (minimum was `Nb_min_cnsctv`)
-        #vjbNotOk = []
-        #Nt_max =  0
-        #for jb in range(NvB):
-        #    print('LOLO: ',vids[jb])
-        #    idx_id, = np.where( vIDrgps0 == vids[jb]) ; # => there can be more than at least 2 (consecutive) points !!! See above!!!
-        #    cvt = [ epoch2clock(rt) for rt in vtime0[idx_id] ];#lolo
-        #    print('LOLO: time =',cvt)
-        #    nr = len(idx_id)
-        #    if nr>NCRmax:
-        #        print('LOLO: WARNING: bouy with ID',vids[jb],'as nr =',nr,'>',NCRmax,' => will be canceled!')            
-        #    if nr>Nt_max:
-        #        Nt_max = nr
-        #    print('')
-        #if NCRmax != Nt_max:
-        #    print('ERROR: YY!',NCRmax,Nt_max); exit(0)
-        
         xx   = np.zeros((NCRmax,NvB))
         xy   = np.zeros((NCRmax,NvB))
         xlon = np.zeros((NCRmax,NvB))
@@ -422,18 +404,17 @@ if __name__ == '__main__':
         for jb in range(NvB):
             idx_id, = np.where( vIDrgps0 == vids[jb]) ; # => there can be only 2 (consecutive) points !!! See above!!!
             #
-            #nr = len(idx_id)
-            nr = min(len(idx_id),NCRmax) ; # #fixme: because scanning block above removed! "nr can be > NCRmax" because, suppressed
-            #                              #         bad calendar records of the buoys still present when doing "vIDrgps0 == vids[jb]" ??!!
-            #                              #         hopefully this fix is okay because fucked up values only at the end of the array????
+            nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy
             #
-            xx[:nr,jb]   =    vx0[idx_id[:nr]]
-            xy[:nr,jb]   =    vy0[idx_id[:nr]]
-            xlon[:nr,jb] =  vlon0[idx_id[:nr]]
-            xlat[:nr,jb] =  vlat0[idx_id[:nr]]
-            xtim[:nr,jb] = vtime0[idx_id[:nr]]
+            indv = idx_id[0:nvr]
+            #
+            xx[0:nvr,jb]   =    vx0[indv]
+            xy[0:nvr,jb]   =    vy0[indv]
+            xlon[0:nvr,jb] =  vlon0[indv]
+            xlat[0:nvr,jb] =  vlat0[indv]
+            xtim[0:nvr,jb] = vtime0[indv]
 
-        xmsk[np.where(xtim<=0)] = 0 ; # where time is zero, means that buoys does not exist anymore...
+        xmsk[np.where(xtim<=0)] = 0 ; # where time is zero or , means that buoys does not exist anymore...
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
 
