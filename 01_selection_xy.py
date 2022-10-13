@@ -318,13 +318,13 @@ if __name__ == '__main__':
                 ### for jid in vIDsT
     
                 if Nbuoys_stream >= Nb_min_stream:
-                    print("  * for now, we retained "+str(Nbuoys_stream)+" buoys in this stream...")
+                    print("   +++ CONFIRMED VALID STREAM +++ => we retained "+str(Nbuoys_stream)+" buoys in it!")
                     VNB.append(Nbuoys_stream)
                     VT0.append(rT)
                     # Only now can we register the buoys in `ID_in_use_G`:
                     for jid in ID_in_use_l: ID_in_use_G.append(jid)
                 else:
-                    print("  * Well, none of the buoys of this stream had at least "+str(Nb_min_cnsctv)+" following records!")
+                    print("  * Well, none of the buoys of this stream made it through the selection process...")
                     istream = istream - 1
                     if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
             
