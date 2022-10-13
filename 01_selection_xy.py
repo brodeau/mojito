@@ -318,7 +318,7 @@ if __name__ == '__main__':
                 ### for jid in vIDsT
     
                 if Nbuoys_stream >= Nb_min_stream:
-                    print("   +++ CONFIRMED VALID STREAM +++ => we retained "+str(Nbuoys_stream)+" buoys in it!")
+                    print("   +++ CONFIRMED VALID STREAM #"+str(istream)+" +++ => retained "+str(Nbuoys_stream)+" buoys!")
                     VNB.append(Nbuoys_stream)
                     VT0.append(rT)
                     # Only now can we register the buoys in `ID_in_use_G`:
