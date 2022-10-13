@@ -230,7 +230,7 @@ if __name__ == '__main__':
             rT = vTscan[jt,0] ; # current scan time
             #
             print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
-            idx_ok, = np.where( np.abs( vtime0[:] - rT ) <= dt_tolr )
+            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) <= dt_tolr )
 
             Nok0 = len(idx_ok)
                         
@@ -260,7 +260,7 @@ if __name__ == '__main__':
                     if (not jid in ID_in_use_G) and (not jid in ID_in_use_l):
                         #
                         jb = jb + 1
-                        idx_id, = np.where( vIDrgps0 == jid)
+                        (idx_id,) = np.where( vIDrgps0 == jid)
                         #
                         vt1b  = vtime0[idx_id] ; # all time records for this particular buoy
                         nbRec0 = len(vt1b)      ; # n. of time records for this particulat buoy
@@ -325,6 +325,7 @@ if __name__ == '__main__':
                     for jid in ID_in_use_l: ID_in_use_G.append(jid)
                 else:
                     print("  * Well, none of the buoys of this stream made it through the selection process...")
+                    Xmsk[istream,:] = 0
                     istream = istream - 1
                     if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
             
@@ -348,8 +349,11 @@ if __name__ == '__main__':
         Zmsk = np.zeros((Nstreams, Nbuoys_max), dtype=int)
     
         for js in range(Nstreams):
-            indOK = np.where(Xmsk[js,:]==1)
+            (indOK,) = np.where(Xmsk[js,:]==1)
             NvB=VNB[js]
+            if len(indOK) != NvB:
+                print('ERROR: len(indOK) != NvB !!!'); exit(0)
+            #
             Zmsk[js,:NvB] = Xmsk[js,indOK] ; # #fixme: crash in big run with message below:
             ZIDs[js,:NvB] = XIDs[js,indOK]
             ZNRc[js,:NvB] = XNRc[js,indOK]
@@ -362,7 +366,8 @@ if __name__ == '__main__':
         # Traceback (most recent call last):
         # File "/home/laurent/DEV/rgps/./01_selection_xy.py", line 339, in <module>
         # Zmsk[js,:NvB] = Xmsk[js,indOK]
-        # ValueError: could not broadcast input array from shape (3119,) into shape (3095,)
+        # ValueError: could not broadcast input array from shape (5143,) into shape (5120,)
+
         
         # Masking arrays:
         ZIDs = np.ma.masked_where( Zmsk==0, ZIDs )
@@ -431,7 +436,7 @@ if __name__ == '__main__':
         
         # Show them on a map:
         for jb in range(NvB):
-            idx_id, = np.where( vIDrgps0 == vids[jb]) ; # => there can be only 2 (consecutive) points !!! See above!!!
+            (idx_id,) = np.where( vIDrgps0 == vids[jb]) ; # => there can be only 2 (consecutive) points !!! See above!!!
             #
             nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy
             #
