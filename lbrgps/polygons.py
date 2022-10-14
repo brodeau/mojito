@@ -45,7 +45,7 @@ class Triangle:
             
         zvIDs = np.unique( xTpntID.flatten() )
         if len(zvIDs) != nP:
-            print('ERROR: [polygons.Triangle] => problem with the number of points at play deduced from `xTpntID`'); exit(0)
+            print('ERROR: [polygons.Triangle] => problem with the number of points at play deduced from `xTpntID`', len(zvIDs), nP); exit(0)
 
         zTcoor = np.array([ [ xPcoor[i,:] for i in xTpntID[jT,:] ] for jT in range(nT) ]) ; # for each Triangle the 3 coordinates of 3 points [nQ,3,2]
 
