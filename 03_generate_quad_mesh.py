@@ -29,7 +29,7 @@ rQarea_max = 120. ; # max area allowed for Quadrangle [km^2]
 
 
 if not len(argv) in [2]:
-    print('Usage: '+argv[0]+' <file_RGPS.npz>')
+    print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz>')
     exit(0)
 cf_in = argv[1]
 
@@ -48,27 +48,24 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
     print('\n *** We are going to build triangle and quad meshes!')
 
-    data = np.load(cf_in)
-
-    it   = data['itime']
-    vids = data['vids']
-    if l_work_with_dist:
-        vx = data['vx']
-        vy = data['vy']
-        if len(vids) != len(vx) or len(vids) != len(vy): print('ERROR Y11!') ; exit(0)
-    else:
-        vlon = data['vlon']
-        vlat = data['vlat']
-        if len(vids) != len(vlon) or len(vids) != len(vlat): print('ERROR Y12!') ; exit(0)
-
-    ct = epoch2clock(it)
-
-    print('\n *** Stream at '+ct)
+    with np.load(cf_in) as data:
+        it   = data['itime']
+        vids = data['vids']
+        if l_work_with_dist:
+            vx = data['vx']
+            vy = data['vy']
+            if len(vids) != len(vx) or len(vids) != len(vy): print('ERROR Y11!') ; exit(0)
+        else:
+            vlon = data['vlon']
+            vlat = data['vlat']
+            if len(vids) != len(vlon) or len(vids) != len(vlat): print('ERROR Y12!') ; exit(0)
 
     NbP = len(vids) ; # number of points
-
-    print('\n *** We have '+str(NbP)+' points!')
-
+    
+    print('\n *** Stream at '+epoch2clock(it)+' => '+str(NbP)+' points!')
+    for jP in range(NbP):
+        print(' * jP=',jP,'=>',vx[jP],vy[jP])
+    exit(0); #lilo
 
     vIDs  = np.array( vids )
     del vids

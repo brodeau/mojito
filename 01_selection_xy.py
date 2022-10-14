@@ -33,9 +33,7 @@ from climporn import chck4f, epoch2clock, clock2epoch
 
 import lbrgps as lbr
 
-
-#l_drop_doublons = True
-#rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
+idebug = 2
 
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
@@ -61,7 +59,7 @@ Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
-idebug = 2 ;
+Nb_min_buoys = 50 ; # minimum number of buoys necessary for considering the record of a stream a record!
 
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
@@ -410,23 +408,31 @@ if __name__ == '__main__':
 
         
     for js in range(Nstreams):
+        cs   = str(js)
         vids = np.ma.MaskedArray.compressed( ZIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
-        NvB  = VNB[js]
-
+        NvB  = VNB[js]        
         rT0  = VT0[js]
         cT0  = epoch2clock(rT0)
         
         if NvB != len(vids): print('ERROR Z1!'); exit(0)
-        #
-        print('\n *** Having a look at stream #'+str(js)+' initiated for time bien centered around '+cT0+' !')
-        print('     ===> has '+str(VNB[js])+' valid buoys!')
+        print('\n *** Having a look at stream #'+cs+' initiated for time bin centered around '+cT0+' !')
+
+        NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
+
+        print('     ===> has '+str(NvB)+' valid buoys at start!')
+        print('     ===> the buoy with most records has '+str(NCRmax)+' of them!')
+                
         if idebug>2:
             print('        => with following IDs:')
             for jii in vids: print(jii,' ', end="")
             print('')
 
-        NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
+
+        # Creating arrays to save (and plot from)
+        #########################################
         
+
+        nBpR = np.zeros( NCRmax      , dtype=int)      ; # number of remaining buoys at given record
         xx   = np.zeros((NCRmax,NvB))
         xy   = np.zeros((NCRmax,NvB))
         xlon = np.zeros((NCRmax,NvB))
@@ -436,11 +442,12 @@ if __name__ == '__main__':
         
         # Show them on a map:
         for jb in range(NvB):
-            (idx_id,) = np.where( vIDrgps0 == vids[jb]) ; # => there can be only 2 (consecutive) points !!! See above!!!
+            (idx_id,) = np.where( vIDrgps0 == vids[jb])
             #
-            nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy
+            nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
+            if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
-            indv = idx_id[0:nvr]
+            indv = idx_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
             #
             xx[0:nvr,jb]   =    vx0[indv]
             xy[0:nvr,jb]   =    vy0[indv]
@@ -448,17 +455,21 @@ if __name__ == '__main__':
             xlat[0:nvr,jb] =  vlat0[indv]
             xtim[0:nvr,jb] = vtime0[indv]
 
-        xmsk[np.where(xtim<=0)] = 0 ; # where time is zero or , means that buoys does not exist anymore...
+        xmsk[np.where(xtim<=0)] = 0 ; # where time is zero or less => buoys does not exist anymore...
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
+        xx = np.ma.masked_where( xmsk==0, xx ) ; # otherwize the `mean` in next line would use zeros!!!!
 
-                
+        # How many buoys still present at each record?
+        nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ]
+        if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
+       
         # Nearest interpolation of vtim on the VTscan calendar !!!
         VT = vtim.copy()
         i=0
         for it in vtim:
             idx = np.argmin( np.abs(vTscan[:,0]-it) )
-            if idebug>1: print('    it =',it,' => ',epoch2clock(it),' => nearest of VTscan =',epoch2clock(vTscan[idx,0]))
+            if idebug>2: print('      it =',it,' => ',epoch2clock(it),' => nearest of VTscan =',epoch2clock(vTscan[idx,0]))
             VT[i] = vTscan[idx,0]
             i=i+1            
         del vtim
@@ -478,10 +489,15 @@ if __name__ == '__main__':
 
         ct = str.replace(cT0[0:16],':','h') ; # date with precision to the minute without ':'
         
-        # Saving 1 file per stream and per date:
-        for jt in range(NCRmax):
-            cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
-            np.savez_compressed( cf_out, itime=int(VT[jt]), vx=xx[jt,:], vy=xy[jt,:], vlon=xlon[jt,:], vlat=xlat[jt,:], vids=vids[:] )
+        # Saving 1 file per stream and per record:
+        for jr in range(NCRmax):
+            if nBpR[jr] >= Nb_min_buoys:
+                cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
+                np.savez_compressed( cf_out, itime=int(VT[jr]), vx=xx[jr,:], vy=xy[jr,:], vlon=xlon[jr,:], vlat=xlat[jr,:], vids=vids[:] )
+            else:
+                if idebug>0:
+                    print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
+                          ' (unsufficient n. of buoys alive:',nBpR[jr],')')
     
         if idebug>0:
             kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct, clock_res='d' )
