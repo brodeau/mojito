@@ -406,6 +406,10 @@ if __name__ == '__main__':
     ### if not path.exists(cf_npz_intrmdt)
         
 
+
+    ############################################################################################################
+
+    
         
     for js in range(Nstreams):
         cs   = str(js)
@@ -431,17 +435,14 @@ if __name__ == '__main__':
         # Creating arrays to save (and plot from)
         #########################################
         
-
         nBpR = np.zeros( NCRmax      , dtype=int)      ; # number of remaining buoys at given record
         xx   = np.zeros((NCRmax,NvB)) - 9999.
         xy   = np.zeros((NCRmax,NvB)) - 9999.
         xlon = np.zeros((NCRmax,NvB)) - 9999.
         xlat = np.zeros((NCRmax,NvB)) - 9999.
         xtim = np.zeros((NCRmax,NvB) , dtype=int) -999 ; # the exact time for each buoy!
-        #xmsk = np.zeros((NCRmax,NvB) , dtype=int) + 1  ; # the mask for exluding buoys that stick out in time...
         xmsk = np.zeros((NCRmax,NvB) , dtype=int)  ; # the mask for exluding buoys that stick out in time...
         
-        # Show them on a map:
         for jb in range(NvB):
             (idx_id,) = np.where( vIDrgps0 == vids[jb])
             #
@@ -450,9 +451,6 @@ if __name__ == '__main__':
             #
             indv = idx_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
             #
-            #if js==1:
-            #    print('LOLO: feeding vx0[indv] into xx =',vx0[indv])
-            #
             xx[0:nvr,jb]   =    vx0[indv]
             xy[0:nvr,jb]   =    vy0[indv]
             xmsk[0:nvr,jb] =  1
@@ -460,19 +458,39 @@ if __name__ == '__main__':
             xlat[0:nvr,jb] =  vlat0[indv]
             xtim[0:nvr,jb] = vtime0[indv]
 
-        #xmsk[np.where(xtim<=0)] = 0 ; # where time is zero or less => buoys does not exist anymore...
+
+        nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
+        if np.max(nBpR) != NvB: print('ERROR: max(nBpR) != NvB !'); exit(0)
+        
+        # There might be doublons in coordinates!
+        ### TODO / #fixme: problem is that we are also treating again masked point here since they ahave identical value of -9999. !!!
+        #              => hence the annoying `Nrm = len(vrm) - (NvB - nBpR[jr])` ...
+        ifd = 0
+        for jr in range(NCRmax):
+            xcoor = np.array([ xx[jr,:], xy[jr,:] ]).T
+            xcoor_u, vindu = np.unique(xcoor,axis=0, return_index=True)
+            #print('LOLO [01_selection_xy.py]: shape(xcoor), shape(unique(xcoor))=', np.shape(xcoor), np.shape(xcoor_u) )
+            if np.shape(xcoor_u) < np.shape(xcoor):
+                # There are doublons!
+                if jr==0: ifd = ifd+1 ; # it's only when at the first record that identification of an actual doublon occurs!
+                (npB,_) = np.shape(xcoor)
+                vrm = np.setdiff1d( np.arange(npB), np.sort(vindu) ) ; # indices to cancel !!!
+                xmsk[jr,vrm] = 0
+                del vrm
+            del xcoor, xcoor_u, vindu
+
+        # Again with new mask:
+        nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
+        if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
+        if ifd>0:
+            NvB_o = NvB
+            NvB = np.max(nBpR)
+            if idebug>1: print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates!')
+
+        
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
-        #xx   = np.ma.masked_where( xmsk==0, xx )
-        #xy   = np.ma.masked_where( xmsk==0, xy )
-        #xlon = np.ma.masked_where( xmsk==0, xlon )
-        #xlat = np.ma.masked_where( xmsk==0, xlat )
-
-
-        # How many buoys still present at each record?
-        nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ]
-        if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
-       
+        
         # Nearest interpolation of vtim on the VTscan calendar !!!
         VT = vtim.copy()
         i=0
