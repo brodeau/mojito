@@ -433,12 +433,13 @@ if __name__ == '__main__':
         
 
         nBpR = np.zeros( NCRmax      , dtype=int)      ; # number of remaining buoys at given record
-        xx   = np.zeros((NCRmax,NvB))
-        xy   = np.zeros((NCRmax,NvB))
-        xlon = np.zeros((NCRmax,NvB))
-        xlat = np.zeros((NCRmax,NvB))
+        xx   = np.zeros((NCRmax,NvB)) - 9999.
+        xy   = np.zeros((NCRmax,NvB)) - 9999.
+        xlon = np.zeros((NCRmax,NvB)) - 9999.
+        xlat = np.zeros((NCRmax,NvB)) - 9999.
         xtim = np.zeros((NCRmax,NvB) , dtype=int) -999 ; # the exact time for each buoy!
-        xmsk = np.zeros((NCRmax,NvB) , dtype=int) + 1  ; # the mask for exluding buoys that stick out in time...
+        #xmsk = np.zeros((NCRmax,NvB) , dtype=int) + 1  ; # the mask for exluding buoys that stick out in time...
+        xmsk = np.zeros((NCRmax,NvB) , dtype=int)  ; # the mask for exluding buoys that stick out in time...
         
         # Show them on a map:
         for jb in range(NvB):
@@ -449,16 +450,24 @@ if __name__ == '__main__':
             #
             indv = idx_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
             #
+            #if js==1:
+            #    print('LOLO: feeding vx0[indv] into xx =',vx0[indv])
+            #
             xx[0:nvr,jb]   =    vx0[indv]
             xy[0:nvr,jb]   =    vy0[indv]
+            xmsk[0:nvr,jb] =  1
             xlon[0:nvr,jb] =  vlon0[indv]
             xlat[0:nvr,jb] =  vlat0[indv]
             xtim[0:nvr,jb] = vtime0[indv]
 
-        xmsk[np.where(xtim<=0)] = 0 ; # where time is zero or less => buoys does not exist anymore...
+        #xmsk[np.where(xtim<=0)] = 0 ; # where time is zero or less => buoys does not exist anymore...
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
-        xx = np.ma.masked_where( xmsk==0, xx ) ; # otherwize the `mean` in next line would use zeros!!!!
+        #xx   = np.ma.masked_where( xmsk==0, xx )
+        #xy   = np.ma.masked_where( xmsk==0, xy )
+        #xlon = np.ma.masked_where( xmsk==0, xlon )
+        #xlat = np.ma.masked_where( xmsk==0, xlat )
+
 
         # How many buoys still present at each record?
         nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ]
@@ -491,14 +500,24 @@ if __name__ == '__main__':
         
         # Saving 1 file per stream and per record:
         for jr in range(NCRmax):
-            if nBpR[jr] >= Nb_min_buoys:
+
+            Nbuoys = nBpR[jr] ; # number of buoys alive in current record of this stream
+            
+            if Nbuoys >= Nb_min_buoys:
                 ctr = str.replace( str.replace(epoch2clock(VT[jr])[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
                 cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti+'_'+ctr+'.npz'
-                np.savez_compressed( cf_out, itime=int(VT[jr]), vx=xx[jr,:], vy=xy[jr,:], vlon=xlon[jr,:], vlat=xlat[jr,:], vids=vids[:] )
+
+
+                vmsk = xmsk[jr,:]
+                (indV,) = np.where(vmsk==1) ; # index of valid points
+                if len(indV)!= Nbuoys: print('ERROR: len(indV)!= Nbuoys) !'); exit(0)
+                
+                np.savez_compressed( cf_out, itime=int(VT[jr]), Npoints=Nbuoys, vids=vids[indV],
+                                     vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
             else:
                 if idebug>0:
                     print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
-                          ' (unsufficient n. of buoys alive:',nBpR[jr],')')
+                          ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
             kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )

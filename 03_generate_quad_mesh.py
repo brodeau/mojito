@@ -49,8 +49,9 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We are going to build triangle and quad meshes!')
 
     with np.load(cf_in) as data:
-        it   = data['itime']
-        vids = data['vids']
+        it     = data['itime']
+        Nbuoys = data['Npoints']
+        vids   = data['vids']
         if l_work_with_dist:
             vx = data['vx']
             vy = data['vy']
@@ -61,6 +62,13 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
             if len(vids) != len(vlon) or len(vids) != len(vlat): print('ERROR Y12!') ; exit(0)
 
     NbP = len(vids) ; # number of points
+    if NbP != Nbuoys: print('ERROR: NbP != Nbuoys !'); exit(0)
+    
+    if len(vx)!=NbP or len(vy)!=NbP:      print('ERROR Y13!') ; exit(0)
+    if len(vids) != len(np.unique(vids)): print('ERROR Y14!') ; exit(0)
+    
+    #print(vx)
+    #print('LOLO[03_generate_quad_mesh.py]!'); exit(0)
     
     print('\n *** Stream at '+epoch2clock(it)+' => '+str(NbP)+' points!')
 
