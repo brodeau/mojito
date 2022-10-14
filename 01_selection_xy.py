@@ -228,7 +228,7 @@ if __name__ == '__main__':
             rT = vTscan[jt,0] ; # current scan time
             #
             print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
-            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) <= dt_tolr )
+            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_tolr-1. ) ; # yes, removing 1 second to `dt_tolr`
 
             Nok0 = len(idx_ok)
                         
@@ -487,12 +487,13 @@ if __name__ == '__main__':
                         
         del xtim
 
-        ct = str.replace(cT0[0:16],':','h') ; # date with precision to the minute without ':'
+        cti = str.replace( str.replace(cT0[0:16],':','h') ,'-','' ) ; # date of stream initialization with precision to the minute without ':'
         
         # Saving 1 file per stream and per record:
         for jr in range(NCRmax):
             if nBpR[jr] >= Nb_min_buoys:
-                cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct+'.npz'
+                ctr = str.replace( str.replace(epoch2clock(VT[jr])[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
+                cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti+'_'+ctr+'.npz'
                 np.savez_compressed( cf_out, itime=int(VT[jr]), vx=xx[jr,:], vy=xy[jr,:], vlon=xlon[jr,:], vlat=xlat[jr,:], vids=vids[:] )
             else:
                 if idebug>0:
@@ -500,7 +501,7 @@ if __name__ == '__main__':
                           ' (unsufficient n. of buoys alive:',nBpR[jr],')')
     
         if idebug>0:
-            kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ct, clock_res='d' )
+            kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
 
 
     ### for js in range(Nstreams)

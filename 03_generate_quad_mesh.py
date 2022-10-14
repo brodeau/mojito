@@ -37,7 +37,7 @@ cf_in = argv[1]
 cc = '_gc'
 if l_work_with_dist: cc = '_cc'
 
-cfroot = split('.npz',path.basename(cf_in))[0]
+cfroot = str.replace( split('.npz',path.basename(cf_in))[0] , 'SELECTION_buoys_RGPS_','' )
 
 cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
 cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
@@ -63,9 +63,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     NbP = len(vids) ; # number of points
     
     print('\n *** Stream at '+epoch2clock(it)+' => '+str(NbP)+' points!')
-    for jP in range(NbP):
-        print(' * jP=',jP,'=>',vx[jP],vy[jP])
-    exit(0); #lilo
 
     vIDs  = np.array( vids )
     del vids
@@ -156,20 +153,20 @@ QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Triangles_'+cfroot+cc+'.png',
                      TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
 
 # Show triangles together with the quadrangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
                      TriMesh=TRI.MeshPointIDs,
                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
                      lProj=(not l_work_with_dist), zoom=5)
 
 ## Show only points composing the quadrangles:
-#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
 #                     lProj=(not l_work_with_dist) )
 
 # Show only the quads with only the points that define them:
-kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
                      QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
 
