@@ -461,6 +461,7 @@ if __name__ == '__main__':
 
         nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
         if np.max(nBpR) != NvB: print('ERROR: max(nBpR) != NvB !'); exit(0)
+        if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
         
         # There might be doublons in coordinates!
         ### TODO / #fixme: problem is that we are also treating again masked point here since they ahave identical value of -9999. !!!
@@ -486,7 +487,6 @@ if __name__ == '__main__':
             NvB_o = NvB
             NvB = np.max(nBpR)
             if idebug>1: print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates!')
-
         
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)

@@ -41,8 +41,8 @@ print('\n *** nP:',QUA1.nP,QUA2.nP)
 nP0 = QUA2.nP
 nQ0 = QUA2.nQ
 
-if nP0>QUA1.nP or nQ0>QUA1.nQ:
-    print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
+#if nP0>QUA1.nP or nQ0>QUA1.nQ:
+#    print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
 
 
 # The Quads we retain, i.e. those who exist in the 2 snapshots:
