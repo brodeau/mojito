@@ -471,7 +471,7 @@ if __name__ == '__main__':
             if len(idx_clones) > 0:
                 # There are doublons!
                 ifd = ifd+1 ; # another hit
-                print('LOLO doublon idx_clones =', idx_clones)
+                print('LOLO doublon idx_clones =', idx_clones, 'xx, xy=',xx[jr,idx_clones], xy[jr,idx_clones])
                 xmsk[jr,idx_clones] = 0
             del xcoor, idx_clones
 
@@ -481,7 +481,7 @@ if __name__ == '__main__':
             NvB_o = NvB
             NvB = np.max(nBpR)
             if idebug>1:
-                print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates!')
+                print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates! (ifd =',ifd')')
                 print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
         
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
