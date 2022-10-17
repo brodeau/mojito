@@ -464,21 +464,16 @@ if __name__ == '__main__':
         if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
         
         # There might be doublons in coordinates!
-        ### TODO / #fixme: problem is that we are also treating again masked point here since they ahave identical value of -9999. !!!
-        #              => hence the annoying `Nrm = len(vrm) - (NvB - nBpR[jr])` ...
         ifd = 0
         for jr in range(NCRmax):
             xcoor = np.array([ xx[jr,:], xy[jr,:] ]).T
-            xcoor_u, vindu = np.unique(xcoor,axis=0, return_index=True)
-            #print('LOLO [01_selection_xy.py]: shape(xcoor), shape(unique(xcoor))=', np.shape(xcoor), np.shape(xcoor_u) )
-            if np.shape(xcoor_u) < np.shape(xcoor):
+            idx_clones = lbr.idx_suppress_xy_copies( xcoor, rmask_val=-9999. )            
+            if len(idx_clones) > 0:
                 # There are doublons!
                 if jr==0: ifd = ifd+1 ; # it's only when at the first record that identification of an actual doublon occurs!
-                (npB,_) = np.shape(xcoor)
-                vrm = np.setdiff1d( np.arange(npB), np.sort(vindu) ) ; # indices to cancel !!!
-                xmsk[jr,vrm] = 0
-                del vrm
-            del xcoor, xcoor_u, vindu
+                print('LOLO doublon idx_clones =', idx_clones)
+                xmsk[jr,idx_clones] = 0
+            del xcoor, idx_clones
 
         # Again with new mask:
         nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?

@@ -224,3 +224,33 @@ def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
     np.savez_compressed( cf_out, itime=it, vx=vx, vy=vy, vlon=vlon, vlat=vlat, vids=vids )
 
     return 0
+
+
+def idx_suppress_xy_copies( X, rmask_val=-999. ):
+    '''  
+         Input: `X` is a 2D array of float containing x,y coordinates for Np points => shape=(Np,2)
+             
+             ==> will return the 1D integer vector containing row (points) indices (along Np)
+                 corresponding to the location of points that already exist once, so the can be
+                 suppresses or masked later on... (only a single occurence of a point coord. is
+                 kept). While ignoring masked values flagged with `rmask_val`            
+    '''
+    _,nc = np.shape(X)
+    if (nc !=2 ):
+        print('ERROR [idx_suppress_xy_copies]: second dimmension of X must be 2! (coordinates)')
+
+    # Row indices that exclude masked points:
+    (Ix,_) = np.where( X != [rmask_val,rmask_val] )
+    Ix = Ix[::2]
+    
+    # Row indices that select masked points:
+    (Iz,_) = np.where( X == [rmask_val,rmask_val] )
+    Iz = Iz[::2]
+
+    _,Iu = np.unique( X, axis=0, return_index=True )
+    
+    # keep the values of `Iu` that are not in `Iz`:
+    Ic = np.setdiff1d( Iu, Iz ) ; 
+
+    # keep the values of `Ix` that are not in `Ic`:
+    return np.setdiff1d( Ix, Ic )
