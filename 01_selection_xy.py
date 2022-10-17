@@ -475,13 +475,14 @@ if __name__ == '__main__':
                 xmsk[jr,idx_clones] = 0
             del xcoor, idx_clones
 
-        # Again with new mask:
-        nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
-        if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
+        # Again with the new mask if we found doublon coordinates:
         if ifd>0:
+            nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
             NvB_o = NvB
             NvB = np.max(nBpR)
-            if idebug>1: print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates!')
+            if idebug>1:
+                print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates!')
+                print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
         
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
