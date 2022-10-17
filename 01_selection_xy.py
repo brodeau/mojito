@@ -481,7 +481,7 @@ if __name__ == '__main__':
             NvB_o = NvB
             NvB = np.max(nBpR)
             if idebug>1:
-                print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates! (ifd =',ifd')')
+                print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates! (ifd =',ifd,')')
                 print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
         
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
