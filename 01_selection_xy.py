@@ -471,12 +471,10 @@ if __name__ == '__main__':
             if len(idx_clones) > 0:
                 # There are doublons!
                 ifd = ifd + len(idx_clones) ; # another hit
-                print('LOLO doublon idx_clones =', idx_clones, 'xx, xy=',xx[jr,idx_clones], xy[jr,idx_clones])
                 xmsk[jr,idx_clones] = 0
-            del xcoor, idx_clones
-
-        # Again with the nlen(idx_clones)ew mask if we found doublon coordinates:
+            del xcoor, idx_clones        
         if ifd>0:
+            # Again with the nlen(idx_clones)ew mask if we found doublon coordinates:
             nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
             NvB = np.max(nBpR)
             if idebug>1:
