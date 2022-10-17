@@ -167,21 +167,23 @@ TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
 QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
+if not path.exists('./figs'): mkdir('./figs')
+
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Triangles_'+cfroot+cc+'.png',
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
                      TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
 
 # Show triangles together with the quadrangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
+kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
                      TriMesh=TRI.MeshPointIDs,
                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
                      lProj=(not l_work_with_dist), zoom=5)
 
 ## Show only points composing the quadrangles:
-#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
 #                     lProj=(not l_work_with_dist) )
 
 # Show only the quads with only the points that define them:
-kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
                      QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
 

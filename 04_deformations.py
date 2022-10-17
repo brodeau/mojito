@@ -25,10 +25,13 @@ if not len(argv) in [3]:
 cf_Q1 = argv[1]
 cf_Q2 = argv[2]
 
+cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
+croot_fig = split('_',cf1)[1]
+cdt1 = split('_',cf1)[4]
+cdt2 = split('_',cf2)[4]
 
-print('')
+croot_fig = croot_fig+'_'+cdt1+'-'+cdt2
 
-#cf_fig = str.replace( path.basename(cf_Q1), '.npz', '.png' )
 
 # Reading the quad meshes in the npz files:
 QUA1 = lbr.LoadClassPolygon( cf_Q1, ctype='Q' )
@@ -124,8 +127,10 @@ del ztp1, ztp2
 
 
 # Some plots:
-lbr.ShowDeformation( zXp, zYp, zdiv, cfig='zdiv_map.png',   cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
-lbr.ShowDeformation( zXp, zYp, zshr, cfig='zshear_map.png', cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
+if not path.exists('./figs'): mkdir('./figs')
+
+lbr.ShowDeformation( zXp, zYp, zdiv, cfig='./figs/'+croot_fig+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
+lbr.ShowDeformation( zXp, zYp, zshr, cfig='./figs/'+croot_fig+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
 
 
 
