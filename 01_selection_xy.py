@@ -470,19 +470,19 @@ if __name__ == '__main__':
             idx_clones = lbr.idx_suppress_xy_copies( xcoor, rmask_val=-9999. )            
             if len(idx_clones) > 0:
                 # There are doublons!
-                ifd = ifd+1 ; # another hit
+                ifd = ifd + len(idx_clones) ; # another hit
                 print('LOLO doublon idx_clones =', idx_clones, 'xx, xy=',xx[jr,idx_clones], xy[jr,idx_clones])
                 xmsk[jr,idx_clones] = 0
             del xcoor, idx_clones
 
-        # Again with the new mask if we found doublon coordinates:
+        # Again with the nlen(idx_clones)ew mask if we found doublon coordinates:
         if ifd>0:
             nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
-            NvB_o = NvB
             NvB = np.max(nBpR)
             if idebug>1:
-                print('     +++ we removed '+str(NvB_o-NvB)+' buoys due to doublon coordinates! (ifd =',ifd,')')
-                print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
+                print('     +++ we removed '+str(ifd)+' buoy records due to doublon of coordinates!')
+                print('     +++ UPDATE: num. of boys still present at each record of stream #'+cs+':',nBpR[:])
+
         
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
