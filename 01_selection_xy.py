@@ -470,7 +470,7 @@ if __name__ == '__main__':
             idx_clones = lbr.idx_suppress_xy_copies( xcoor, rmask_val=-9999. )            
             if len(idx_clones) > 0:
                 # There are doublons!
-                if jr==0: ifd = ifd+1 ; # it's only when at the first record that identification of an actual doublon occurs!
+                ifd = ifd+1 ; # another hit
                 print('LOLO doublon idx_clones =', idx_clones)
                 xmsk[jr,idx_clones] = 0
             del xcoor, idx_clones
