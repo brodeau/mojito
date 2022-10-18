@@ -15,6 +15,9 @@ figs
 *.png
 *.npz
 *.bak
+*.old
+*.new
+*.bak
 
 # Distribution / packaging
 .Python
