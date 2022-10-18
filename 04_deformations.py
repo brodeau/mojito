@@ -69,7 +69,7 @@ ztp1[:] = zdUdxy[:,0] - zdVdxy[:,1]
 ztp2[:] = zdUdxy[:,1] + zdVdxy[:,0]
 zshr[:] = np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
 
-del ztp1, ztp2, zdUdxy, zdVdxy
+del ztp1, ztp2, zX, zY, zdUdxy, zdVdxy
 
 
 # Saving data:
