@@ -394,3 +394,13 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
 
     return zX, zY, zdUdxy, zdVdxy
 
+
+def DivPDV( pdUdxy, pdVdxy ):
+    return pdUdxy[:,0] + pdVdxy[:,1]
+    
+def ShearPDV( pdUdxy, pdVdxy ):
+    ztp1 = pdUdxy[:,0] - pdVdxy[:,1]
+    ztp2 = pdUdxy[:,1] + pdVdxy[:,0]
+    return np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
+    
+

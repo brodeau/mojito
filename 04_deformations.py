@@ -53,23 +53,17 @@ zX, zY, zdUdxy, zdVdxy = lbr.PDVfromPos( dt, zXY1, zXY2, QUA1.area()[vidx1], QUA
 
 # zX, zY => positions at center of time interval!
 
-ztp1, ztp2 = np.zeros(nQ), np.zeros(nQ)
-
 # Coordinates of barycenter of Quads at center of time interval:
 zXc = np.mean( zX[:,:], axis=1 )
 zYc = np.mean( zY[:,:], axis=1 )
 
 # Divergence:
-zdiv = np.zeros(nQ)
-zdiv[:] = zdUdxy[:,0] + zdVdxy[:,1]
+zdiv = lbr.DivPDV(zdUdxy, zdVdxy)
 
 # Shear:
-zshr = np.zeros(nQ)
-ztp1[:] = zdUdxy[:,0] - zdVdxy[:,1]
-ztp2[:] = zdUdxy[:,1] + zdVdxy[:,0]
-zshr[:] = np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
+zshr = lbr.ShearPDV(zdUdxy, zdVdxy )
 
-del ztp1, ztp2, zX, zY, zdUdxy, zdVdxy
+del zdUdxy, zdVdxy
 
 
 # Saving data:
@@ -81,5 +75,3 @@ if not path.exists('./figs'): mkdir('./figs')
 
 lbr.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
 lbr.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
-
-
