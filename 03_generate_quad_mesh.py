@@ -67,9 +67,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     if len(vx)!=NbP or len(vy)!=NbP:      print('ERROR Y13!') ; exit(0)
     if len(vids) != len(np.unique(vids)): print('ERROR Y14!') ; exit(0)
     
-    #print(vx)
-    #print('LOLO[03_generate_quad_mesh.py]!'); exit(0)
-    
     print('\n *** Stream at '+epoch2clock(it)+' => '+str(NbP)+' points!')
 
     vIDs  = np.array( vids )
@@ -88,12 +85,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         for jc in range(NbP):
             print(' * '+vPnam[jc]+': ID='+str(vIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
         print('')
-
-    # Doublons in coordinates?
-    # => has to be fixed in `01_selection_xy.py` !!!
-    #print('LOLO: len(vx), len(np.unique(vx)) = ', len(vx), len(np.unique(vx)))
-    #print('LOLO: len(vy), len(np.unique(vy)) = ', len(vy), len(np.unique(vy)))
-    #exit(0)
 
     #if l_work_with_dist:
     #    # Distance, aka cartesian coordinates, not degrees... => [km]
@@ -114,8 +105,6 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     #    del x0, y0, zx, zy
 
 
-    #AAAAAAA
-
     # Generating triangular meshes out of the cloud of points:
     TRI = Delaunay(xCoor)
 
@@ -128,12 +117,10 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We have '+str(NbT)+' triangles!')
 
     
-
     # Conversion to the `Triangle` class:
     TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
 
     del xTpnts, xNeighborIDs, TRI
-
 
 
     # Merge triangles into quadrangles:

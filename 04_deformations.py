@@ -25,37 +25,26 @@ if not len(argv) in [3]:
 cf_Q1 = argv[1]
 cf_Q2 = argv[2]
 
+# Comprehensive name for npz and figs to save later on:
 cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
-croot_fig = split('_',cf1)[1]
-cdt1 = split('_',cf1)[4]
-cdt2 = split('_',cf2)[4]
-
-croot_fig = croot_fig+'_'+cdt1+'-'+cdt2
+cnm_pref = split('_',cf1)[1]
+cdt1, cdt2 = split('_',cf1)[4], split('_',cf2)[4]
+cnm_pref = cnm_pref+'_'+cdt1+'-'+cdt2
 
 
-# Reading the quad meshes in the npz files:
+# Reading the quad meshes in both npz files:
 QUA1 = lbr.LoadClassPolygon( cf_Q1, ctype='Q' )
 QUA2 = lbr.LoadClassPolygon( cf_Q2, ctype='Q' )
 
+print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
+print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
 
-print('\n *** nP:',QUA1.nP,QUA2.nP)
-#print('\n nQ:',QUA1.nQ,QUA2.nQ)
-
-nP0 = QUA2.nP
-nQ0 = QUA2.nQ
-
-#if nP0>QUA1.nP or nQ0>QUA1.nQ:
-#    print('ERROR: more points or quadrangles in second record/file!!! :()'); exit(0)
-
-
-# The Quads we retain, i.e. those who exist in the 2 snapshots:
+# The Quads we retain, i.e. those who exist in both snapshots:
 vnm, vidx1, vidx2 = np.intersect1d( QUA1.PointNames, QUA2.PointNames, assume_unique=True, return_indices=True )
-#print(len(vidx1),len(vidx2))
 nQ = len(vnm) ; # also = len(vidx*) 
-print('\n *** There are '+str(nQ)+' Quads common to the 2 records!')
+print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 # Coordinates of the 4 points of quadrangles:
-#zXY1 , zXY2 = np.zeros((nQ,4,2)) - 999. , np.zeros((nQ,4,2)) - 999.
 zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #* 1000.  ; # 1000 => from km to m
 zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #* 1000.
 # Same, but at center of time interval:
@@ -74,17 +63,13 @@ zA[:] = 0.5*( QUA1.area()[vidx1] + QUA2.area()[vidx2] ) ; #* 1.e6 ; # 1.e6 => fr
 # Velocities at center of time interval:
 zU = np.array( [ zXY2[:,k,0] - zXY1[:,k,0] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
 zV = np.array( [ zXY2[:,k,1] - zXY1[:,k,1] for k in range(4) ] ).T / dt ; # 1000 because X,Y in km !!!
-#zuu , zvv = np.zeros((nQ,4)) - 999. , np.zeros((nQ,4)) - 999.
-#for jQ in range(nQ):
-#    zuu[jQ,:] = 1000. * np.array( [ zXY2[jQ,k,0] - zXY1[jQ,k,0] for k in range(4) ] ) / dt
-#    zvv[jQ,:] = 1000. * np.array( [ zXY2[jQ,k,1] - zXY1[jQ,k,1] for k in range(4) ] ) / dt
+#
 del zXY1, zXY2
 
-
-if idebug>0:
+if idebug>1:
+    print('')
     for jQ in range(0,nQ,100):
         print('  areas =',np.round(zA[jQ],3),'km^2, U =',np.round(zU[jQ,:],5),'m/s, V =',np.round(zV[jQ,:],5),'m/s')
-
 
 # Partial derivatives:
 #  --- the fact that units for coordinates was km and for area km^2 has no importance because it cancels out,
@@ -98,20 +83,18 @@ for jQ in range(nQ):
     zdVdx[jQ] =  np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
     zdVdy[jQ] = -np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) * zd
 
-if idebug>0:
+if idebug>1:
     for jQ in range(0,nQ,100):
         print('  dU/dx =',zdUdx[jQ],'1/s, dU/dy =',zdUdy[jQ],'1/s')
         print('  dV/dx =',zdVdx[jQ],'1/s, dV/dy =',zdVdy[jQ],'1/s\n')
     
 
-
-
 ztp1 = np.zeros(nQ)
 ztp2 = np.zeros(nQ)
 
 # Coordinates of barycenter of Quads at center of time interval:
-zXp = np.mean( zX[:,:], axis=1 )
-zYp = np.mean( zY[:,:], axis=1 )
+zXc = np.mean( zX[:,:], axis=1 )
+zYc = np.mean( zY[:,:], axis=1 )
 
 # Divergence:
 zdiv = np.zeros(nQ)
@@ -126,11 +109,15 @@ zshr[:] = np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
 del ztp1, ztp2
 
 
+# Saving data:
+np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr )
+
+
 # Some plots:
 if not path.exists('./figs'): mkdir('./figs')
 
-lbr.ShowDeformation( zXp, zYp, zdiv, cfig='./figs/'+croot_fig+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
-lbr.ShowDeformation( zXp, zYp, zshr, cfig='./figs/'+croot_fig+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
+lbr.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
+lbr.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
 
 
 
