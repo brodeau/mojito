@@ -197,12 +197,12 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     Quads    = []   ; # Valid quads identified...
 
     zCoor  = pTRIAs.PointXY.copy()      ; # shape: (nP)
-    zcN    = pTRIAs.PointNames.copy()   ; # shape: (nP)    
+    zcN    = pTRIAs.PointNames.copy()   ; # shape: (nP)
     Z3Pnts = pTRIAs.MeshPointIDs.copy() ; # shape: (nT,3)
     Znghbs = pTRIAs.NeighborIDs.copy()  ; # shape: (nT,3)
     Zangls = pTRIAs.angles().copy()     ; # shape: (nT,3)
     Zareas = pTRIAs.area().copy()       ; # shape: (nT)
-    
+
     # Loop along triangles:
     for jT in range(NbT):
 
@@ -298,7 +298,7 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
 
         zQnames = np.array( [ zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]+'-'+zcN[zQPT[jQ,3]] for jQ in range(NbQ) ],
                             dtype='U32' )
-        
+
         # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
         zQPQ = TriPntIDs2QuaPntIDs(zQPT)
         #print('remaining IDs for Quads =',len(zvIDs),' initially ',NbT)
@@ -331,8 +331,66 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     print('')
 
     del zCoor, zcN
-    
+
     return zvCoor, zQPQ, zQnames
 
 
+
+
+
+
+def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
+    '''
+        Computes spatial (x,y) partial derivatives of the velocity vector.
+        The velocity vector is constructed from the two consecutive X,Y positions
+        given as `pXY1, pXY2`...
+          --- `nq` is the number of quadrangles provided ---
+        * pdt : time interval between the 2 consecutive position time [s] #fixme (do better than use the nominal time step???)
+        * pXY1, pXY2 : shape=(nq,4,2), the two consecutive X,Y positions of the 4 vertices of each quad [km]
+        *  pA1,  pA2 : shape=(nq),     the two consecutive areas of each quad [km^2]
+    '''
+    #
+    (nq,n4,n2) = np.shape(pXY1)
+    if n4!=4 or n2!=2: print('ERROR [PDVfromPos()]: wrong shape for `pXY1`!'); exit(0)
+    if np.shape(pXY2)!=(nq,n4,n2): print('ERROR [PDVfromPos()]: `pXY1` & `pXY2` do not agree in shape!'); exit(0)
+    if np.shape(pA1)!=(nq,) or np.shape(pA2)!=(nq,): print('ERROR [PDVfromPos()]: wrong shape for `pA1` or `pA2`!'); exit(0)
+
+    # Velocities at center of time interval:
+    zU = np.array( [ pXY2[:,k,0] - pXY1[:,k,0] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
+    zV = np.array( [ pXY2[:,k,1] - pXY1[:,k,1] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
+
+    if iverbose>1:
+        print('')
+        for jQ in range(0,nq,100):
+            print('  areas =',np.round(zA[jQ],3),'km^2, U =',np.round(zU[jQ,:],5),'m/s, V =',np.round(zV[jQ,:],5),'m/s')
+
+    # Positions of the 4 vertices of each quad at center of time interval:
+    zX , zY = np.zeros((nq,4)) , np.zeros((nq,4))
+    zX = 0.5*( pXY1[:,:,0] + pXY2[:,:,0] )
+    zY = 0.5*( pXY1[:,:,1] + pXY2[:,:,1] )
+
+    # Area of quadrangles at center of time interval:
+    zA = np.zeros(nq) - 999.
+    zA[:] = 0.5*( pA1 + pA2 ) ; #* 1.e6 ; # 1.e6 => from km^2 to m^2
+
+    # Partial derivatives:
+    #  --- the fact that units for coordinates was km and for area km^2 has no importance because it cancels out,
+    #      we are looking to something in [s-1]
+    zdUdxy = np.zeros((nq,2))
+    zdVdxy = np.zeros((nq,2))
+    for jQ in range(nq):
+        zd = 1./(2*zA[jQ])
+        zdUdxy[jQ,0] =  np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
+        zdUdxy[jQ,1] = -np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k]) * (zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) * zd
+        zdVdxy[jQ,0] =  np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
+        zdVdxy[jQ,1] = -np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) * zd
+
+    if iverbose>1:
+        for jQ in range(0,nq,100):
+            print('  dU/dx =',zdUdxy[jQ,0],'1/s, dU/dy =',zdUdy[jQ,1],'1/s')
+            print('  dV/dx =',zdVdxy[jQ,0],'1/s, dV/dy =',zdVdy[jQ,1],'1/s\n')
+
+    del zU, zV, zA
+
+    return zX, zY, zdUdxy, zdVdxy
 
