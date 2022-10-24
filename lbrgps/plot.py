@@ -27,7 +27,7 @@ rndaxiskm = 100 ;
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
 color_top = 'w'
 clr_yellow = '#ffed00'
-#pt_sz_track = 5
+
 fig_type='png'
 rDPI = 150
 rzoom = 1.
@@ -39,7 +39,7 @@ col_red = '#873520'
 col_blu = '#3475a3'
 
 
-msPoints = 5  ; # size  of markers for points aka vertices...
+msPoints = 8  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = '0.4' ; # color for city/point annotations
 
@@ -279,29 +279,28 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     if lProj:         
         ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj, facecolor=col_bg)
         ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
-        ax.add_feature(cftr.LAND, color='0.5')
+        ax.add_feature(cftr.LAND, color='0.5', zorder=70)
+        # Showing points:
+        plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
     else:
         ddx = dx*Ly/Lx
         ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
         plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
-
-    # Showing points:
-    plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
-    #print(pX[::5],'\n')
-    #print(pY[::5],'\n')
-    #exit(0)
-
+        # Showing points:
+        plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200 )
     
     # Adding triangles:
     if len(TriMesh)>0:
         (nbT,_) = np.shape(TriMesh); # Number of triangles
-        #print( pY ); exit(0)
-        plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)    
+        if lProj:
+            plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)
+        else:
+            plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)
         # Indicate triangle # in its center:
         for jT in range(nbT):
             vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
             rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', zorder=60)
+            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=5*zoom, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -319,7 +318,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
             # Indicate quadrangle # in its center:
             rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=160)
+            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=5*zoom, zorder=160)
 
     if len(pnames)>0:
         i=0

@@ -15,7 +15,6 @@ import lbrgps   as lbr
 idebug=1
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
-#l_cartopy = True
 
 # Selection of appropriate quadrangles:
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
@@ -27,150 +26,154 @@ rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 rQarea_min =  70. ; # min area allowed for Quadrangle [km^2]
 rQarea_max = 130. ; # max area allowed for Quadrangle [km^2]
 
-
-if not len(argv) in [2]:
-    print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz>')
-    exit(0)
-cf_in = argv[1]
+rzoom_fig = 5
 
 
-cc = '_gc'
-if l_work_with_dist: cc = '_cc'
 
-cfroot = str.replace( split('.npz',path.basename(cf_in))[0] , 'SELECTION_buoys_RGPS_','' )
+if __name__ == '__main__':
 
-cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
-cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
+    if not len(argv) in [2]:
+        print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz>')
+        exit(0)
+    cf_npz = argv[1]
 
-if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
-    # Have to build triangle and quadrangle mesh!
+    cc = '_gc'
+    if l_work_with_dist: cc = '_cc'
 
-    print('\n *** We are going to build triangle and quad meshes!')
+    cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
 
-    with np.load(cf_in) as data:
-        it     = data['itime']
-        Nbuoys = data['Npoints']
-        vids   = data['vids']
+    cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
+    cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
+
+    if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
+
+        # Have to build triangle and quadrangle mesh!
+
+        print('\n *** We are going to build triangle and quad meshes!')
+
+        print('\n *** Reading into '+cf_npz+' !!!')
+        with np.load(cf_npz) as data:
+            it     = data['itime']
+            Nbuoys = data['Npoints']
+            vids   = data['vids']
+            if l_work_with_dist:
+                vx = data['vx']
+                vy = data['vy']
+                if len(vids) != len(vx) or len(vids) != len(vy): print('ERROR Y11!') ; exit(0)
+            else:
+                vlon = data['vlon']
+                vlat = data['vlat']
+                if len(vids) != len(vlon) or len(vids) != len(vlat): print('ERROR Y12!') ; exit(0)
+
+        NbP = len(vids) ; # number of points
+        if NbP != Nbuoys: print('ERROR: NbP != Nbuoys !'); exit(0)
+
+        if len(vx)!=NbP or len(vy)!=NbP:      print('ERROR Y13!') ; exit(0)
+        if len(vids) != len(np.unique(vids)): print('ERROR Y14!') ; exit(0)
+
+        print('\n *** Stream at '+epoch2clock(it)+' => '+str(NbP)+' points!')
+
+        vIDs  = np.array( vids )
+        del vids
+
         if l_work_with_dist:
-            vx = data['vx']
-            vy = data['vy']
-            if len(vids) != len(vx) or len(vids) != len(vy): print('ERROR Y11!') ; exit(0)
+            xCoor = np.array( [ [vx[i],vy[i]] for i in range(NbP) ] ) ; # original x,y cartesian cordinates of the RGPS data!
+            #                                                               # => which is in Polar Stereographic projection, lon_0=-45, lat_ts=70
         else:
-            vlon = data['vlon']
-            vlat = data['vlat']
-            if len(vids) != len(vlon) or len(vids) != len(vlat): print('ERROR Y12!') ; exit(0)
+            xCoor = np.array( [ [vlon[i],vlat[i]] for i in range(NbP) ] ) ; # lon,lat projection used by Anton => applying reverse projection " "
 
-    NbP = len(vids) ; # number of points
-    if NbP != Nbuoys: print('ERROR: NbP != Nbuoys !'); exit(0)
-    
-    if len(vx)!=NbP or len(vy)!=NbP:      print('ERROR Y13!') ; exit(0)
-    if len(vids) != len(np.unique(vids)): print('ERROR Y14!') ; exit(0)
-    
-    print('\n *** Stream at '+epoch2clock(it)+' => '+str(NbP)+' points!')
+        # Name for each point:
+        vPnam = np.array( [ str(i) for i in vIDs ], dtype='U32' )
 
-    vIDs  = np.array( vids )
-    del vids
-    
-    if l_work_with_dist:
-        xCoor = np.array( [ [vx[i],vy[i]] for i in range(NbP) ] ) ; # original x,y cartesian cordinates of the RGPS data!
-        #                                                               # => which is in Polar Stereographic projection, lon_0=-45, lat_ts=70
-    else:
-        xCoor = np.array( [ [vlon[i],vlat[i]] for i in range(NbP) ] ) ; # lon,lat projection used by Anton => applying reverse projection " "
+        if idebug>0:
+            for jc in range(NbP):
+                print(' * Name: "'+vPnam[jc]+'": ID='+str(vIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
+            print('')
 
-    # Name for each point:
-    vPnam = np.array( [ str(i) for i in vIDs ], dtype='U32' )
-    
-    if idebug>0:
-        for jc in range(NbP):
-            print(' * Name: "'+vPnam[jc]+'": ID='+str(vIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
-        print('')
-
-    #if l_work_with_dist:
-    #    # Distance, aka cartesian coordinates, not degrees... => [km]
-    #    x0, y0 = xCoor[:,0], xCoor[:,1]
-    #    if l_cartopy:
-    #        from cartopy.crs import PlateCarree, NorthPolarStereo ;#, epsg
-    #        crs_src = PlateCarree()
-    #        crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
-    #        zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T
-    #    else:
-    #        print('FIX ME `pyproj`!'); exit(0)
-    #        import pyproj as proj
-    #        crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth
-    #        crs_trg = proj.Proj(init='epsg:3035') # Europe ?
-    #        zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)
-    #
-    #    xCoor[:,0],xCoor[:,1] = zx/1000., zy/1000. ; # to km...
-    #    del x0, y0, zx, zy
+        #if l_work_with_dist:
+        #    # Distance, aka cartesian coordinates, not degrees... => [km]
+        #    x0, y0 = xCoor[:,0], xCoor[:,1]
+        #    if l_cartopy:
+        #        from cartopy.crs import PlateCarree, NorthPolarStereo ;#, epsg
+        #        crs_src = PlateCarree()
+        #        crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
+        #        zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T
+        #    else:
+        #        print('FIX ME `pyproj`!'); exit(0)
+        #        import pyproj as proj
+        #        crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth
+        #        crs_trg = proj.Proj(init='epsg:3035') # Europe ?
+        #        zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)
+        #
+        #    xCoor[:,0],xCoor[:,1] = zx/1000., zy/1000. ; # to km...
+        #    del x0, y0, zx, zy
 
 
-    # Generating triangular meshes out of the cloud of points:
-    TRI = Delaunay(xCoor)
+        # Generating triangular meshes out of the cloud of points:
+        TRI = Delaunay(xCoor)
 
-    xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+        xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
-    (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
+        (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
 
-    xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+        xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
-    print('\n *** We have '+str(NbT)+' triangles!')
+        print('\n *** We have '+str(NbT)+' triangles!')
 
-    
-    # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
+        # Conversion to the `Triangle` class:
+        TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
 
-    del xTpnts, xNeighborIDs, TRI
+        del xTpnts, xNeighborIDs, TRI
 
+        # Merge triangles into quadrangles:
+        xQcoor, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                              ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                              areaR=(rQarea_min,rQarea_max) )
+        if len(xQpnts)<=0: exit(0)
 
-    # Merge triangles into quadrangles:
-    xQcoor, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                          ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                          areaR=(rQarea_min,rQarea_max) )
-    if len(xQpnts)<=0: exit(0)
+        (NbQ,_) = np.shape(xQpnts)
+        print('\n *** We have '+str(NbQ)+' quadrangles!')
 
-    (NbQ,_) = np.shape(xQpnts)
-    print('\n *** We have '+str(NbQ)+' quadrangles!')
+        # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
+        QUADS = lbr.Quadrangle( xQcoor, xQpnts, vQnam )
 
-    # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( xQcoor, xQpnts, vQnam )    
+        del xQpnts, xQcoor, xCoor
 
-    del xQpnts, xQcoor
+        # Save the triangular mesh info:
+        lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
 
-    del xCoor
+        # Save the quadrangular mesh info:
+        lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
 
-    # Save the triangular mesh info:
-    lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+        del TRIAS, QUADS
 
-    # Save the quadrangular mesh info:
-    lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
-
-#if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
-############################################################
+    #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
+    ############################################################
 
 
-# Reading the triangle and quad class objects in the npz files:
-TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
-QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
+    # Reading the triangle and quad class objects in the npz files:
+    TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
+    QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
-if not path.exists('./figs'): mkdir('./figs')
+    if not path.exists('./figs'): mkdir('./figs')
 
-# Show triangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
-                     TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
+    # Show triangles on a map:
+    kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
+                         TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
 
-# Show triangles together with the quadrangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
-                     TriMesh=TRI.MeshPointIDs,
-                     pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
-                     lProj=(not l_work_with_dist), zoom=5)
+    # Show triangles together with the quadrangles on a map:
+    kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
+                         TriMesh=TRI.MeshPointIDs,
+                         pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
+                         lProj=(not l_work_with_dist), zoom=rzoom_fig)
 
-## Show only points composing the quadrangles:
-#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
-#                     lProj=(not l_work_with_dist) )
+    ## Show only points composing the quadrangles:
+    #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+    #                     lProj=(not l_work_with_dist) )
 
-# Show only the quads with only the points that define them:
-kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
-                     QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
+    # Show only the quads with only the points that define them:
+    kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+                         QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
 
