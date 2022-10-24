@@ -32,8 +32,6 @@ idebug=1
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 
-irec0 = 0 ; # record to start from...
-
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
@@ -59,16 +57,13 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    if not len(argv) in [3,4]:
-        print('Usage: '+argv[0]+' <file_trj.npz> <LSM_file> (iTsubsampl)')
+    if len(argv) != 4:
+        print('Usage: '+argv[0]+' <file_trj.npz> <LSM_file> <record to use (C)>')
         exit(0)
 
     cf_npz = argv[1]
     cf_lsm = argv[2]
-    # Subsampling in time...
-    itsubs = 1
-    if len(argv) == 4 :
-        itsubs = int(argv[3])
+    irec   = int(argv[3])
 
     chck4f(cf_npz)
     chck4f(cf_lsm)
@@ -97,7 +92,7 @@ if __name__ == '__main__':
     cc = '_gc'
     if l_work_with_dist: cc = '_cc'
 
-    cfroot = 'NEMO_'+str.replace( path.basename(cf_npz), '.npz', '' )
+    cfroot = 'NEMO_'+str.replace( path.basename(cf_npz), '.npz', '' )+'_rec'+'%3.3i'%(irec)
 
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
@@ -111,17 +106,17 @@ if __name__ == '__main__':
         print('\n *** Reading into '+cf_npz+' !!!')
         with np.load(cf_npz) as data:
             NrTraj = data['NrTraj']
-            #xmask   = data['mask'][:,irec0]
-            xIDs    = data['IDs'][:,irec0]
-            xJIs    = data['JIs'][:,irec0]
-            xJJs    = data['JJs'][:,irec0]
+            #xmask   = data['mask'][:,irec]
+            xIDs    = data['IDs'][:,irec]
+            xJIs    = data['JIs'][:,irec]
+            xJJs    = data['JJs'][:,irec]
             #xFFs    = data['FFs'] ; # we do not care about the field...
 
         if NrTraj != NbRecs-1:
             print('ERROR: NrTraj != NbRecs-1 !!!',NrTraj,NbRecs-1); exit(0)
 
         print('\n *** Trajectories contain '+str(NrTraj)+' records...')
-        print('         => reading from record #'+str(irec0)+'!')
+        print('         => reading from record #'+str(irec)+'!')
 
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at the begining...')
@@ -243,6 +238,8 @@ if __name__ == '__main__':
 
         del xQpnts, xQcoor, xCoor
 
+        if not path.exists('./npz'): mkdir('./npz')
+        
         # Save the triangular mesh info:
         lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
 
