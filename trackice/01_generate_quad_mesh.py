@@ -192,7 +192,7 @@ if __name__ == '__main__':
         if l_work_with_dist:
             from cartopy.crs import PlateCarree, NorthPolarStereo
             crs_src = PlateCarree()
-            crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # #fixme what's closest to NEMO???
+            crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
             zx,zy,_ = crs_trg.transform_points(crs_src, zlon, zlat).T
             xCoor = np.array( [ zx, zy ] ).T / 1000. ; # to km
             del zx, zy
