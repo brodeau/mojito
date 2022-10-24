@@ -83,7 +83,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     
     if idebug>0:
         for jc in range(NbP):
-            print(' * '+vPnam[jc]+': ID='+str(vIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
+            print(' * Name: "'+vPnam[jc]+'": ID='+str(vIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
         print('')
 
     #if l_work_with_dist:

@@ -257,7 +257,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     if lProj:
         # Geograhic coordinates (lon,lat)
         import cartopy.crs as ccrs
-        Proj = ccrs.PlateCarree()
+        #Proj = ccrs.PlateCarree()
+        Proj = ccrs.NorthPolarStereo()
         vfig = (12*zoom,9*zoom)
     else:
         # Cartesian coordinates (x,y)
@@ -267,8 +268,11 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     
     if lProj:         
         ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
+        #polarCentral_set_latlim([60.,90.], ax)
+        #plot(ax=ax, cmap=plt.get_cmap('Reds'),transform=ccrs.PlateCarree())
+        #polarCentral_set_latlim(lat_lims, ax
         ax.stock_img()
-        ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
+        #ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
     else:
         ddx = dx*Ly/Lx
         ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        

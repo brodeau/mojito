@@ -36,6 +36,7 @@ idebug = 1
 
 irec0 = 0 ; # record to start from...
 
+l_work_with_dist = False
 
 
 narg = len(argv)
@@ -53,8 +54,9 @@ if narg == 4 :
 chck4f(cf_npz)
 chck4f(cf_lsm)
 
-
-#cnout  = str.replace( path.basename(cf_npz), '.npz', '.'+fig_type )
+cc = '_gc'
+if l_work_with_dist: cc = '_cc'
+cfroot = str.replace( path.basename(cf_npz), '.npz', '' )
 
 
 # Getting time info and time step from input npz file which is should look like NEMO output file:
@@ -116,14 +118,16 @@ if NrTraj != NbRecs-1:
 print('\n *** Trajectories contain '+str(NrTraj)+' records...')
 print('         => reading from record #'+str(irec0)+'!')
 
-(NbBuoys,) = np.shape(xIDs)
-print('\n *** There are '+str(NbBuoys)+' buoys at the begining...')
+(NbP,) = np.shape(xIDs)
+print('\n *** There are '+str(NbP)+' buoys at the begining...')
 
 
 print('\n JIs =', xJIs[::10])
 print('\n JIs =', xJJs[::10])
 
-zlon, zlat = np.zeros(NbBuoys), np.zeros(NbBuoys)
+#zlon, zlat = np.zeros(NbP), np.zeros(NbP)
+xCoor = np.zeros((NbP,2))
+
 
 # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
 print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
@@ -133,12 +137,13 @@ with Dataset(cf_lsm) as id_lsm:
     Ni = id_lsm.dimensions['x'].size
     Nj = id_lsm.dimensions['y'].size
     print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
-    xlon_t = id_lsm.variables['glamt'][0,:,:]
-    xlat_t = id_lsm.variables['gphit'][0,:,:]
-    xlon_u = id_lsm.variables['glamu'][0,:,:]
-    #xlat_u = id_lsm.variables['gphiu'][0,:,:]
-    #xlon_v = id_lsm.variables['glamv'][0,:,:]
-    xlat_v = id_lsm.variables['gphiv'][0,:,:]
+    if not l_work_with_dist:
+        xlon_t = id_lsm.variables['glamt'][0,:,:]
+        xlat_t = id_lsm.variables['gphit'][0,:,:]
+        xlon_u = id_lsm.variables['glamu'][0,:,:]
+        #xlat_u = id_lsm.variables['gphiu'][0,:,:]
+        #xlon_v = id_lsm.variables['glamv'][0,:,:]
+        xlat_v = id_lsm.variables['gphiv'][0,:,:]
     #if nb_dim == 4: XMSK  = id_lsm.variables[cnmsk][0,0,:,:] ; # t, y, x
     #if nb_dim == 3: XMSK  = id_lsm.variables[cnmsk][0,  :,:] ; # t, y, x
     #if nb_dim == 2: XMSK  = id_lsm.variables[cnmsk][    :,:] ; # t, y, x
@@ -149,9 +154,9 @@ with Dataset(cf_lsm) as id_lsm:
     print('      done.')
 
 
-for jb in range(NbBuoys):
+for jb in range(NbP):
     rjj, rji = xJJs[jb], xJIs[jb]
-    
+
     jj, rj = int(rjj)-1, rjj%1.   ; # F2C !
     ji, ri = int(rji)-1, rji%1.   ; # F2C !
     #print( ' jj, rj =', jj, rj)
@@ -161,18 +166,55 @@ for jb in range(NbBuoys):
 
     if not rj in [0.,0.5] or not ri in [0.,0.5]:
         print('ERROR: not rj in [0.,0.5] or not ri in [0.,0.5] !!!')
-        
-    zlat[jb] = 2.*(0.5-rj)*xlat_t[jj,ji] + 2.*rj*xlat_v[jj,ji]
-    zlon[jb] = 2.*(0.5-ri)*xlon_t[jj,ji] + 2.*ri*xlon_u[jj,ji]
+
+    #  -- frisrt working with geographic coordinates rather than cartesian coordinates...
+    xCoor[jb,0] = 2.*(0.5-ri)*xlon_t[jj,ji] + 2.*ri*xlon_u[jj,ji]
+    xCoor[jb,1] = 2.*(0.5-rj)*xlat_t[jj,ji] + 2.*rj*xlat_v[jj,ji]
+
 
     if idebug>0:
         print(' jb =',jb,': rjj, rji =',rjj, rji)
-        print('      => zlat =', zlat[jb])
-        print('      => zlon =', zlon[jb])
+        print('      => zlat =', xCoor[jb,1])
+        print('      => zlon =', xCoor[jb,0])
 
-        
+
         print('')
-#  -- frisrt working with geographic coordinates rather than cartesian coordinates...
+
+
+# Name for each point:
+vPnam = np.array( [ str(i) for i in xIDs ], dtype='U32' )
+
+print('vPnam =', vPnam)
+
+if idebug>0:
+    for jc in range(NbP):
+        print(' * Name: "'+vPnam[jc]+'": ID='+str(xIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
+    print('')
+
+# Generating triangular meshes out of the cloud of points:
+TRI = Delaunay(xCoor)
+
+xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+
+(NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
+
+xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+
+print('\n *** We have '+str(NbT)+' triangles!')
+
+
+# Conversion to the `Triangle` class:
+TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
+
+del xTpnts, xNeighborIDs, TRI
+
+
+# Show triangles on a map:
+print((not l_work_with_dist))
+if not path.exists('./figs'): mkdir('./figs')
+kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
+                     TriMesh=TRIAS.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
+
 
 
 
