@@ -39,7 +39,7 @@ col_red = '#873520'
 col_blu = '#3475a3'
 
 
-msPoints = 20  ; # size  of markers for points aka vertices...
+msPoints = 5  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = '0.4' ; # color for city/point annotations
 
@@ -237,7 +237,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
-                pX_Q=[], pY_Q=[], QuadMesh=[], lProj=True, zoom=1        ):
+                pX_Q=[], pY_Q=[], QuadMesh=[], lProj=True, zoom=1, cProj='NPS' ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -256,35 +256,47 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     
     if lProj:
         # Geograhic coordinates (lon,lat)
-        import cartopy.crs as ccrs
-        #Proj = ccrs.PlateCarree()
-        Proj = ccrs.NorthPolarStereo()
-        vfig = (12*zoom,9*zoom)
+        import cartopy.crs     as ccrs
+        import cartopy.feature as cftr
+        #
+        ProjPC = ccrs.PlateCarree()
+        #
+        vfig = (10*zoom,10*zoom)
+        if cProj=='NPS':
+            Proj = ccrs.NorthPolarStereo()
+        elif cProj=='PC':
+            Proj = ProjPC
+            vfig = (12*zoom,9*zoom)
+        else:
+            print('\n *** ERROR ['+caller+'.ShowTQMesh()]: Unknown projection "'+cProj+'"!'); exit(0)
+        #            
     else:
         # Cartesian coordinates (x,y)
         (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = __set_fig_axis__( pX, pY, zoom=zoom)
     
-    fig = plt.figure(num=1, figsize=vfig, facecolor='white')
+    fig = plt.figure(num=1, figsize=vfig, facecolor='0.6')
     
     if lProj:         
-        ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
-        #polarCentral_set_latlim([60.,90.], ax)
-        #plot(ax=ax, cmap=plt.get_cmap('Reds'),transform=ccrs.PlateCarree())
-        #polarCentral_set_latlim(lat_lims, ax
-        ax.stock_img()
-        #ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
+        ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj, facecolor=col_bg)
+        ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
+        ax.add_feature(cftr.LAND, color='0.5')
     else:
         ddx = dx*Ly/Lx
         ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
         plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
 
     # Showing points:
-    plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200) ; #, alpha=0.5)
+    plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
+    #print(pX[::5],'\n')
+    #print(pY[::5],'\n')
+    #exit(0)
 
+    
     # Adding triangles:
     if len(TriMesh)>0:
         (nbT,_) = np.shape(TriMesh); # Number of triangles
-        plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)    
+        #print( pY ); exit(0)
+        plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)    
         # Indicate triangle # in its center:
         for jT in range(nbT):
             vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        

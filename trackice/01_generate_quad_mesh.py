@@ -213,7 +213,7 @@ del xTpnts, xNeighborIDs, TRI
 print((not l_work_with_dist))
 if not path.exists('./figs'): mkdir('./figs')
 kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
-                     TriMesh=TRIAS.MeshPointIDs, lProj=(not l_work_with_dist), zoom=5)
+                     TriMesh=TRIAS.MeshPointIDs, lProj=(not l_work_with_dist), zoom=1)
 
 
 
