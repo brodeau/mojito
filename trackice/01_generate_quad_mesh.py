@@ -113,7 +113,8 @@ if __name__ == '__main__':
             #xFFs    = data['FFs'] ; # we do not care about the field...
 
         if NrTraj != NbRecs-1:
-            print('ERROR: NrTraj != NbRecs-1 !!!',NrTraj,NbRecs-1); exit(0)
+            #print('ERROR: NrTraj != NbRecs-1 !!!',NrTraj,NbRecs-1); exit(0)
+            print('WARNING: NrTraj != NbRecs-1 !!!',NrTraj,NbRecs-1)
 
         print('\n *** Trajectories contain '+str(NrTraj)+' records...')
         print('         => reading from record #'+str(irec)+'!')
