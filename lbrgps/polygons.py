@@ -175,7 +175,7 @@ class Quadrangle:
 
 
 
-def SaveClassPolygon( cfile, Poly, ctype='Q' ):
+def SaveClassPolygon( cfile, Poly, ctype='Q', date='unknown' ):
     '''
         Save all arrays necessary to rebuild the Polygon object later on.
 
@@ -188,12 +188,12 @@ def SaveClassPolygon( cfile, Poly, ctype='Q' ):
         print('ERROR: [polygons.SavePolygon()] => wrong polygon type'); exit(0)
 
     if ctype=='Q':
-        np.savez_compressed( cfile, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs,
+        np.savez_compressed( cfile, date=date, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs,
                              PointNames=Poly.PointNames )
         print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
 
     if ctype=='T':
-        np.savez_compressed( cfile, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs,
+        np.savez_compressed( cfile, date=date, PointXY=Poly.PointXY, MeshPointIDs=Poly.MeshPointIDs,
                              NeighborIDs=Poly.NeighborIDs, PointNames=Poly.PointNames )
         print('\n *** Triangle mesh saved into "'+cfile+'" !')
 

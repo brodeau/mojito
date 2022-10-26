@@ -77,11 +77,26 @@ if __name__ == '__main__':
     CCONF = vv[0]
     print('\n *** Original NEMO CONF = '+CCONF)
 
-    cc = '_gc'
-    if l_work_with_dist: cc = '_cc'
+    # Need some calendar info:
+    with np.load(cf_npz) as data:
+        NrTraj = data['NrTraj']
+        vtime  = data['time']
+    #
+    NbDays = int( (vtime[-1] - vtime[0]) / (3600.*24.) )
+    cdt1 = epoch2clock(vtime[0] )
+    cdt2 = epoch2clock(vtime[-1])
+    #
+    print('\n *** Trajectories contain '+str(NrTraj)+' records...')
+    print('    *  start and End dates => '+cdt1+' -- '+cdt2)
+    print('        ==> nb of days =', NbDays)
+    #
+    cdats = epoch2clock(vtime[irec])
+    cdate = str.replace( epoch2clock(vtime[irec], precision='D'), '-', '')
+    print('    *   will get data at record #'+str(irec)+'! => date =',cdats)
 
-    cfroot = 'NEMO_'+str.replace( path.basename(cf_npz), '.npz', '' )+'_rec'+'%3.3i'%(irec)
-
+    vf = split('_|\.', path.basename(cf_npz))
+    cfroot = vf[0]+'_'+vf[1]+'_'+vf[2]+'_'+vf[5]+'_'+vf[6]+'_'+cdate
+    
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
@@ -94,23 +109,9 @@ if __name__ == '__main__':
         #############################
         print('\n *** Reading into '+cf_npz+' !!!')
         with np.load(cf_npz) as data:
-            NrTraj = data['NrTraj']
-            vtime   = data['time']
-            #xmask   = data['mask'][:,irec]
             xIDs    = data['IDs'][:,irec]
             xJIs    = data['JIs'][:,irec]
             xJJs    = data['JJs'][:,irec]
-            #xFFs    = data['FFs'] ; # we do not care about the field...
-
-        NbDays = int( (vtime[-1] - vtime[0]) / (3600.*24.) )
-        cdt1 = epoch2clock(vtime[0] )
-        cdt2 = epoch2clock(vtime[-1])
-    
-        print('\n *** Trajectories contain '+str(NrTraj)+' records...')
-        print('    *  start and End dates => '+cdt1+' -- '+cdt2)
-        print('        ==> nb of days =', NbDays)
-        print('    *   will get data at record #'+str(irec)+'!')
-
         
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at the begining...')
@@ -242,10 +243,10 @@ if __name__ == '__main__':
         if not path.exists('./npz'): mkdir('./npz')
         
         # Save the triangular mesh info:
-        lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+        lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
 
         # Save the quadrangular mesh info:
-        lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
+        lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', date=cdats )
 
         del TRIAS, QUADS
 
@@ -260,31 +261,30 @@ if __name__ == '__main__':
         QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
-        zA = QUA.area()
-        for jQ in range(len(zA)):
-            print('Quad Area =', zA[jQ])
-
-        
+        #zA = QUA.area()
+        #for jQ in range(len(zA)):
+        #    print('Quad Area =', zA[jQ])
+        #del zA
 
         
     
         if not path.exists('./figs'): mkdir('./figs')
     
         # Show triangles on a map:
-        kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
+        kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
                              TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
     
         # Show triangles together with the quadrangles on a map:
-        kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
+        kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
                              TriMesh=TRI.MeshPointIDs,
                              pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
                              lProj=(not l_work_with_dist), zoom=rzoom_fig)
     
         ## Show only points composing the quadrangles:
-        #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+        #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
         #                     lProj=(not l_work_with_dist) )
     
         # Show only the quads with only the points that define them:
-        kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+        kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
                              QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
 
