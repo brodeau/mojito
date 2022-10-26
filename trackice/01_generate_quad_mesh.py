@@ -48,7 +48,7 @@ rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
-rQarea_max = 100000000. ; # max area allowed for Quadrangle [km^2]
+rQarea_max = 7000. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
 
 rzoom_fig = 5
 
@@ -141,13 +141,22 @@ if __name__ == '__main__':
             jj, rj = int(rjj)-1, rjj%1.   ; # F2C !
             ji, ri = int(rji)-1, rji%1.   ; # F2C !
             # #fixme: I'm still not sure whether 0.5 means T point or U,V point !!! => find out !!!
+            ####      => for now, assume T is at 0 and U is at 0.5 (that might be the opposite...)
 
-            if not rj in [0.,0.5] or not ri in [0.,0.5]:
-                print('ERROR: not rj in [0.,0.5] or not ri in [0.,0.5] !!!')
+            #  --  working with geographic coordinates rather than cartesian coordinates...
+            if ri <= 0.5:
+                # 0<=ri<=0.5 ==> then we must interpolate between T_i and U_i:
+                rlon = 2.*(0.5-ri)*xlon_t[jj,ji] + 2.*ri*xlon_u[jj,ji]
+            else:
+                # 0.5<ri<1 ==> then we must interpolate between U_i and T_i+1:
+                rlon = 2.*(1.-ri)*xlon_u[jj,ji] + 2*(ri-0.5)*xlon_t[jj,ji+1]
 
-            #  -- frisrt working with geographic coordinates rather than cartesian coordinates...
-            rlon = 2.*(0.5-ri)*xlon_t[jj,ji] + 2.*ri*xlon_u[jj,ji]
-            rlat = 2.*(0.5-rj)*xlat_t[jj,ji] + 2.*rj*xlat_v[jj,ji]
+            if rj <= 0.5:
+                # 0<=rj<=0.5 ==> then we must interpolate between T_j and V_j:
+                rlat = 2.*(0.5-rj)*xlat_t[jj,ji] + 2.*rj*xlat_v[jj,ji]
+            else:
+                # 0.5<rj<1 ==> then we must interpolate between V_j and T_j+1:
+                rlat = 2.*(1.-rj)*xlat_v[jj,ji] + 2*(rj-0.5)*xlat_t[jj+1,ji]
 
             rd_ini = lbr.Dist2Coast( rlon, rlat, vlon_dist, vlat_dist, xdist )
 
@@ -249,7 +258,15 @@ if __name__ == '__main__':
         # Reading the triangle and quad class objects in the npz files:
         TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
         QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
-    
+
+
+        zA = QUA.area()
+        for jQ in range(len(zA)):
+            print('Quad Area =', zA[jQ])
+
+        
+
+        
     
         if not path.exists('./figs'): mkdir('./figs')
     
