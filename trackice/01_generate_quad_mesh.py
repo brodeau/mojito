@@ -48,9 +48,11 @@ rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
-rQarea_max = 7000. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+rQarea_max = 1000. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
 
-rzoom_fig = 5
+#rQarea_max = 7000. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+
+rzoom_fig = 10
 
 
 
