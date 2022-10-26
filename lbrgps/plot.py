@@ -253,6 +253,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     zrat_log = 1./(1. + log(zoom))
     
     kk = __initStyle__(font_rat=zoom, font_rat_in=zrat_log)    
+
+    l_annotate = ( zoom < 7 ) ; # looks like shit for big stuff if we show IDs on triangles and quads...
     
     if lProj:
         # Geograhic coordinates (lon,lat)
@@ -296,11 +298,12 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)
         else:
             plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)
-        # Indicate triangle # in its center:
-        for jT in range(nbT):
-            vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
-            rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=2*zoom, zorder=60)
+        if l_annotate:
+            # Indicate triangle # in its center:
+            for jT in range(nbT):
+                vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
+                rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=2*zoom, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -316,9 +319,10 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
             plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
-            # Indicate quadrangle # in its center:
-            rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=2*zoom, zorder=160)
+            if l_annotate:
+                # Indicate quadrangle # in its center:
+                rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
+                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=2*zoom, zorder=160)
 
     if len(pnames)>0:
         i=0
