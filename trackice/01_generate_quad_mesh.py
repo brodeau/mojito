@@ -4,10 +4,15 @@
 ##################################################################
 #  INPUT DATA: a `npz` file created with `trackice/scripts/traj2npz.py` (conversion from CSV to NPZ)
 #
-#    L. Brodeau, August 2022
+#    L. Brodeau, 2022
 #
-# TO DO: use `nemo_box = cp.nemo_hbox(CNEMO,CBOX)` !!!
+# #TODO: in ri,rj part make sure that ji or jj must not be updated (for lat after lon has been done) when one of these 2 are > 0.5
+#                ex: ri = 0.9 ok keep ji,jj for lon stuff, but then should we not look at lat(ji+1,jj) for lat stuff ???
 #
+# #TODO: This script should be used for first record, but then, at time records later in time,
+#        this script or another should follow the same exact quads found with 1st record, and not
+#        start a Delaunay from scratch at this particular record !!!!
+#     
 #
 #  ABOUT input `npz` file:
 #   * Name: should be of the form `NANUK4_ICE-BBM00_6h_19960101_19961031(_xxx).npz`
