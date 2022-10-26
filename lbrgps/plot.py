@@ -300,7 +300,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
         for jT in range(nbT):
             vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
             rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=5*zoom, zorder=60)
+            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=2*zoom, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -318,7 +318,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
             # Indicate quadrangle # in its center:
             rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=5*zoom, zorder=160)
+            ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=2*zoom, zorder=160)
 
     if len(pnames)>0:
         i=0

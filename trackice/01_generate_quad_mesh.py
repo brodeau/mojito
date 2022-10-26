@@ -23,12 +23,16 @@ from scipy.spatial import Delaunay
 
 import lbrgps   as lbr
 
-from climporn import chck4f,Dates2NbDays
+from climporn import chck4f
 
 from netCDF4 import Dataset
 
+from climporn import epoch2clock
+
 
 idebug=1
+
+l_plot = True ; # Create figures to see what we are doing...
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
 
@@ -46,7 +50,7 @@ rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
 rQarea_max = 100000000. ; # max area allowed for Quadrangle [km^2]
 
-rzoom_fig = 2
+rzoom_fig = 5
 
 
 
@@ -71,23 +75,7 @@ if __name__ == '__main__':
     # Getting time info and time step from input npz file which is should look like NEMO output file:
     vv = split('-|_', path.basename(cf_npz))
     CCONF = vv[0]
-    print('\n *** CONF = '+CCONF)
-    cdt   = vv[3]
-    print('\n *** Time frequency = '+cdt)
-    cdt1, cdt2 = vv[4], vv[5]
-    print('\n *** Start and End dates => '+cdt1+' -- '+cdt2)
-    #cyear = cdt1[0:4]
-    #print('\n *** Year = '+cyear+'\n')
-
-    NbDays = Dates2NbDays(cdt1,cdt2)
-    print('     ==> number of days =', NbDays)
-
-    if cdt[-1]=='h':
-        NbRecs = int(24/int(cdt[0:-1])*NbDays)
-        if cdt=='1h': NbRecs = NbRecs+24 ; # fixme: why???? not fotr '6h' ???
-    else:
-        print('ERROR: please adapt unit frequency: "'+cdt[-1]+'" !!!'); exit(0)
-    print('     ==> expected number of records =', NbRecs,'\n')
+    print('\n *** Original NEMO CONF = '+CCONF)
 
     cc = '_gc'
     if l_work_with_dist: cc = '_cc'
@@ -103,22 +91,27 @@ if __name__ == '__main__':
 
         print('\n *** We are going to build triangle and quad meshes!')
 
+        #############################
         print('\n *** Reading into '+cf_npz+' !!!')
         with np.load(cf_npz) as data:
             NrTraj = data['NrTraj']
+            vtime   = data['time']
             #xmask   = data['mask'][:,irec]
             xIDs    = data['IDs'][:,irec]
             xJIs    = data['JIs'][:,irec]
             xJJs    = data['JJs'][:,irec]
             #xFFs    = data['FFs'] ; # we do not care about the field...
 
-        if NrTraj != NbRecs-1:
-            #print('ERROR: NrTraj != NbRecs-1 !!!',NrTraj,NbRecs-1); exit(0)
-            print('WARNING: NrTraj != NbRecs-1 !!!',NrTraj,NbRecs-1)
-
+        NbDays = int( (vtime[-1] - vtime[0]) / (3600.*24.) )
+        cdt1 = epoch2clock(vtime[0] )
+        cdt2 = epoch2clock(vtime[-1])
+    
         print('\n *** Trajectories contain '+str(NrTraj)+' records...')
-        print('         => reading from record #'+str(irec)+'!')
+        print('    *  start and End dates => '+cdt1+' -- '+cdt2)
+        print('        ==> nb of days =', NbDays)
+        print('    *   will get data at record #'+str(irec)+'!')
 
+        
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at the begining...')
 
@@ -135,8 +128,6 @@ if __name__ == '__main__':
             xlon_u = id_lsm.variables['glamu'][0,:,:]
             xlat_v = id_lsm.variables['gphiv'][0,:,:]
             print('      done.')
-
-
 
         # Load `distance to coast` data:
         vlon_dist, vlat_dist, xdist = lbr.LoadDist2CoastNC( fdist2coast_nc )
@@ -253,28 +244,30 @@ if __name__ == '__main__':
     ############################################################
 
 
-    # Reading the triangle and quad class objects in the npz files:
-    TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
-    QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
-
-
-    if not path.exists('./figs'): mkdir('./figs')
-
-    # Show triangles on a map:
-    kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
-                         TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
-
-    # Show triangles together with the quadrangles on a map:
-    kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
-                         TriMesh=TRI.MeshPointIDs,
-                         pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
-                         lProj=(not l_work_with_dist), zoom=rzoom_fig)
-
-    ## Show only points composing the quadrangles:
-    #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
-    #                     lProj=(not l_work_with_dist) )
-
-    # Show only the quads with only the points that define them:
-    kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
-                         QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
+    if l_plot:
+    
+        # Reading the triangle and quad class objects in the npz files:
+        TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
+        QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
+    
+    
+        if not path.exists('./figs'): mkdir('./figs')
+    
+        # Show triangles on a map:
+        kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
+                             TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
+    
+        # Show triangles together with the quadrangles on a map:
+        kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
+                             TriMesh=TRI.MeshPointIDs,
+                             pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
+                             lProj=(not l_work_with_dist), zoom=rzoom_fig)
+    
+        ## Show only points composing the quadrangles:
+        #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+        #                     lProj=(not l_work_with_dist) )
+    
+        # Show only the quads with only the points that define them:
+        kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
+                             QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
 
