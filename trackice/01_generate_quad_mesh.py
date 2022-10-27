@@ -53,11 +53,15 @@ rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
+#rQarea_max = 200. ; # max area allowed for Quadrangle [km^2]
+#
+#rzoom_fig = 10
 
-rQarea_max = 500. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
-#rQarea_max = 7000. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
 
-rzoom_fig = 10
+#rQarea_max = 500. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
+rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+
+
 
 
 
@@ -121,7 +125,7 @@ if __name__ == '__main__':
             xJJs    = data['JJs'][:,irec]
         
         (NbP,) = np.shape(xIDs)
-        print('\n *** There are '+str(NbP)+' buoys at the begining...')
+        print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
 
         # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
         print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
@@ -130,7 +134,6 @@ if __name__ == '__main__':
             Ni = id_lsm.dimensions['x'].size
             Nj = id_lsm.dimensions['y'].size
             print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
-            #if not l_work_with_dist:
             xlon_t = id_lsm.variables['glamt'][0,:,:]
             xlat_t = id_lsm.variables['gphit'][0,:,:]
             xlon_u = id_lsm.variables['glamu'][0,:,:]

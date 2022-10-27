@@ -15,7 +15,7 @@ class Triangle:
         '''
                `nP` points => `nT` Triangles!
 
-            * xPcoor:  [(nP,2] array of floats]  the coordinates of all points that define the Quads
+            * xPcoor:  [(nP,2] array of floats]  the coordinates of the nP points that define the Triangles
             * xTpntID: [(nT,3] array of integers] the 3 point IDs composing the triangle, in counter-clockwize
             * xTnbgh:  [(nT,3] array of integers] the 3 IDs of the 3 neighbor triangles
             * vPnames: [(nP)  vector of strings]  a string to identify each point
@@ -85,7 +85,7 @@ class Quadrangle:
         '''
                => `nQ` Quadrangles!
 
-            * xPcoor:  [(nP,2] array of floats] the coordinates of all points that define the Quads
+            * xPcoor:  [(nP,2] array of floats] the coordinates of the nP points that define the Quads
             * xQpntID: [(nQ,4] array of integers] the 4 point IDs composing the quad, in counter-clockwize
             * vQnames: [(nQ)  vector of strings]  a string to identify each quadrangle
 
