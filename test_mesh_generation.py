@@ -115,7 +115,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We have '+str(NbT)+' triangles!')
 
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
+    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam )
 
     del xTpnts, xNeighborIDs, TRI
 
@@ -126,7 +126,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         zarea   = TRIAS.area()
 
         for jT in range(TRIAS.nT):
-            vpl = TRIAS.MeshPointIDs[jT,:] ; # IDs of the 3 points composing triangle
+            vpl = TRIAS.MeshVrtcPntIdx[jT,:] ; # IDs of the 3 points composing triangle
             print(' Triangle #'+str(jT)+': ', vpl[:],'aka "'+vPnam[vpl[0]]+' - '+vPnam[vpl[1]]+' - '+vPnam[vpl[2]]+'"')
             print('    => neighbor triangles are:',TRIAS.NeighborIDs[jT,:])
             print('    =>  lengths =',zlengths[jT,:])
@@ -137,16 +137,16 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    xQcoor, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                          ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                          areaR=(rQarea_min,rQarea_max) )
+    xQcoor, vPids, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                                 ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                 areaR=(rQarea_min,rQarea_max) )
     if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( xQcoor, xQpnts, vQnam )    
+    QUADS = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )    
 
     del xQpnts, xQcoor
 
@@ -162,7 +162,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
         print('    ==> number of points involved: '+str(QUADS.nP))
         print('')
         for jQ in range(QUADS.nQ):
-            vpl     = QUADS.MeshPointIDs[jQ,:] ; # IDs of the 4 points composing the quadrangle
+            vpl     = QUADS.MeshVrtcPntIdx[jQ,:] ; # IDs of the 4 points composing the quadrangle
             i1=vpl[0]; i2=vpl[1]; i3=vpl[2]; i4=vpl[3]
             print(' Quadrangle #'+str(jQ)+': ', vpl[:],'aka "'+vQnam[jQ]+'"')
             print('    =>  Pt. IDs =',vpl)
@@ -194,18 +194,18 @@ QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 # Show triangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
-                     pnames=vPnam, TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist))
+                     pnames=vPnam, ppntIDs=TRI.PointIdx, TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist))
 
 # Show triangles together with the quadrangles on a map:
 kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
-                     pnames=vPnam, TriMesh=TRI.MeshPointIDs,
-                     pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist) )
+                     pnames=vPnam, ppntIDs=TRI.PointIdx, TriMesh=TRI.MeshVrtcPntIdx,
+                     pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist) )
 
 ## Show only points composing the quadrangles:
 #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
-#                     lProj=(not l_work_with_dist) )
+#                     lGeoCoor=(not l_work_with_dist) )
 
 # Show only the quads with only the points that define them:
 kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
-                     QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist) )
+                     ppntIDs=QUA.PointIDs, QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist) )
 

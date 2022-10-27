@@ -22,4 +22,4 @@ cf_fig = str.replace( path.basename(cf_npzQ), '.npz', '.png' )
 QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 # Show the quads with only the points that define them:
-kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cf_fig, QuadMesh=QUA.MeshPointIDs, lProj=False, zoom=izoom )
+kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cf_fig, QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=izoom )

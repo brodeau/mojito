@@ -40,7 +40,7 @@ print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
 print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
 
 # The Quads we retain, i.e. those who exist in both snapshots:
-vnm, vidx1, vidx2 = np.intersect1d( QUA1.PointNames, QUA2.PointNames, assume_unique=True, return_indices=True )
+vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
 nQ = len(vnm) ; # also = len(vidx*) 
 print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 

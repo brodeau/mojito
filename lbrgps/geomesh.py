@@ -180,13 +180,17 @@ def TriPntIDs2QuaPntIDs( xPntID ):
 
     return zPntID
 
-
-
 def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
     '''
     ### Attempt to merge triangles into quadrangles:
     ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
     ###  (provided the 3 neighbors are not already merged with someone!)
+    ###
+    ### RETURNS:
+    ## zPCoor : [nP,2] array of floats] the coordinates of the nP points that define the Quads
+    ## zPQIDs : [nP] vector of integers] the ID of the points of zPCoor (IDs left from the original cloud of points on which triangles where build)
+    ## zQPQ   : [nQ,4] array of integers] the 4 point indices composing the quad, in counter-clockwize
+    ## zQnames: [nQ]   vector of strings]  a string to identify each quadrangle
     '''
     NbT     = pTRIAs.nT
     ivb     = iverbose
@@ -197,8 +201,9 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     Quads    = []   ; # Valid quads identified...
 
     zCoor  = pTRIAs.PointXY.copy()      ; # shape: (nP)
+    zPIDs  = pTRIAs.PointIDs.copy()     ; # shape: (nP)
     zcN    = pTRIAs.PointNames.copy()   ; # shape: (nP)
-    Z3Pnts = pTRIAs.MeshPointIDs.copy() ; # shape: (nT,3)
+    Z3Pnts = pTRIAs.MeshVrtcPntIdx.copy() ; # shape: (nT,3)
     Znghbs = pTRIAs.NeighborIDs.copy()  ; # shape: (nT,3)
     Zangls = pTRIAs.angles().copy()     ; # shape: (nT,3)
     Zareas = pTRIAs.area().copy()       ; # shape: (nT)
@@ -287,15 +292,18 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     zQPT = np.array(Quads)
     del Quads
 
-    zvCoor    = [] ; # these 2 might be returned void if no valid Quad is identified!
-    zQPQ = [] ; # "                "                    "                 "
-    zQnames   = []
+    zPCoor  = [] ; # might be returned void if no valid Quad is identified!
+    zPQIDs  = [] ; # "                "                    "
+    zQPQ    = [] ; # "                "                    "
+    zQnames = [] ; # "                "                    "
 
     if NbQ>0:
         # Coordinates of the points in use by Quads!
-        zvIDs = np.unique( zQPT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
-        zvCoor = np.array([ zCoor[i,:] for i in zvIDs  ]) ;
-        del zvIDs
+        zvPntIdx = np.unique( zQPT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
+        zPCoor = np.array([ zCoor[i,:] for i in zvPntIdx ]) ;
+        zPQIDs = np.array([ zPIDs[i]   for i in zvPntIdx ], dtype=int )
+        del zvPntIdx
+
 
         zQnames = np.array( [ zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]+'-'+zcN[zQPT[jQ,3]] for jQ in range(NbQ) ],
                             dtype='U32' )
@@ -317,8 +325,8 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
             for jQ in range(NbQ):
                 print('        * Quad #'+str(jQ)+' => ', zQPT[jQ,:], '('+zQnames[jQ]+')')
                 if ivb>1:
-                    vx = np.array([ zvCoor[i,0] for i in zQPQ[jQ,:] ])
-                    vy = np.array([ zvCoor[i,1] for i in zQPQ[jQ,:] ])
+                    vx = np.array([ zPCoor[i,0] for i in zQPQ[jQ,:] ])
+                    vy = np.array([ zPCoor[i,1] for i in zQPQ[jQ,:] ])
                     print('     X-coor:', vx[:])
                     print('     Y-coor:', vy[:])
 
@@ -330,7 +338,7 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
 
     del zCoor, zcN
 
-    return zvCoor, zQPQ, zQnames
+    return zPCoor, zPQIDs, zQPQ, zQnames
 
 
 
@@ -395,10 +403,8 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
 
 def DivPDV( pdUdxy, pdVdxy ):
     return pdUdxy[:,0] + pdVdxy[:,1]
-    
+
 def ShearPDV( pdUdxy, pdVdxy ):
     ztp1 = pdUdxy[:,0] - pdVdxy[:,1]
     ztp2 = pdUdxy[:,1] + pdVdxy[:,0]
     return np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
-    
-

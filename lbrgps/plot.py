@@ -41,7 +41,7 @@ col_blu = '#3475a3'
 
 msPoints = 8  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
-clPNames = '0.4' ; # color for city/point annotations
+clPNames = 'w' ; # color for city/point annotations
 
 # Projection:
 #vp =  ['Arctic', 'stere', -60., 40., 122., 57.,    75.,  -12., 10., 'h' ]  # Big Arctic + Northern Atlantic
@@ -238,16 +238,19 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
-                pX_Q=[], pY_Q=[], QuadMesh=[], lProj=True, zoom=1, cProj='NPS' ):
+def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh=[],
+                pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS' ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
-    ###  * lProj: True   => we expect degrees for `pX,pY` and use a projection
+    ###  * lGeoCoor: True   => we expect degrees for `pX,pY` => geographic (lon,lat) coordinates !
     ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
     ###
     ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
+    ###
+    ###  * pnames:  (len=nP) name (string) for each point
+    ###  * ppntIDs: (len=nP) ID (integer)  for each point
     '''
     from math import log
     
@@ -255,8 +258,10 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     kk = __initStyle__(fntzoom=zoom)    
 
     l_annotate = ( zoom < 7 ) ; # looks like shit for big stuff if we show IDs on triangles and quads...
+
+    (nbP,) = np.shape(pX) ; # Number of points that defines all the triangles...
     
-    if lProj:
+    if lGeoCoor:
         # Geograhic coordinates (lon,lat)
         import cartopy.crs     as ccrs
         import cartopy.feature as cftr
@@ -278,7 +283,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='w')
     
-    if lProj:         
+    if lGeoCoor:         
         ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj, facecolor=col_bg)
         ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
         ax.add_feature(cftr.LAND, color='0.5', zorder=70)
@@ -294,7 +299,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     # Adding triangles:
     if len(TriMesh)>0:
         (nbT,_) = np.shape(TriMesh); # Number of triangles
-        if lProj:
+        if lGeoCoor:
             plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)
         else:
             plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)
@@ -308,7 +313,6 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     # Adding quadrangles:
     if len(QuadMesh)>0:
         (nbQ,_) = np.shape(QuadMesh)
-        (nbP,)  = np.shape(pX)
         
         for jQ in range(nbQ):
             vids = QuadMesh[jQ,:] ; # the 4 IDs of the 4 points defining this Quad
@@ -325,10 +329,11 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
                 ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zoom**0.5, zorder=160)
 
     if len(pnames)>0:
-        i=0
-        for city in pnames:
-            ax.annotate(city, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=500)
-            i=i+1
+        for jP in range(nbP):
+            ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=10*zoom**0.5, zorder=500)
+    if len(ppntIDs)>0:
+        for jP in range(nbP):
+            ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=10*zoom**0.5, zorder=520)
 
     plt.savefig(cfig)
     plt.close(1)
@@ -342,7 +347,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
-    ###  * lProj: True   => we expect degrees for `pX,pY` and use a projection
+    ###  * lGeoCoor: True   => we expect degrees for `pX,pY` => geographic (lon,lat) coordinates !
     ###           False  => we expect km or m for `pX,pY` => cartesian coordinates !
     ###
     ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
@@ -360,7 +365,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
         cm = plt.cm.get_cmap('RdBu')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
     
-    #if lProj:
+    #if lGeoCoor:
     #    # Geograhic coordinates (lon,lat)
     #    import cartopy.crs as ccrs
     #    Proj = ccrs.PlateCarree()
@@ -371,7 +376,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
     
-    #if lProj:         
+    #if lGeoCoor:         
     #    ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
     #    ax.stock_img()
     #    ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
@@ -405,8 +410,8 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #
     #if len(pnames)>0:
     #    i=0
-    #    for city in pnames:
-    #        ax.annotate(city, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=500)
+    #    for cnm in pnames:
+    #        ax.annotate(cnm, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=500)
     #        i=i+1
     #
     plt.savefig(cfig)

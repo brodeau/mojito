@@ -285,21 +285,21 @@ if __name__ == '__main__':
         # Show triangles on a map:
         print('\n *** Launching Triangle plot!')
         kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
-                             TriMesh=TRI.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
+                             TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
     
         # Show triangles together with the quadrangles on a map:
         print('\n *** Launching Triangle+Quad plot!')
         kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
-                             TriMesh=TRI.MeshPointIDs,
-                             pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshPointIDs,
-                             lProj=(not l_work_with_dist), zoom=rzoom_fig)
+                             TriMesh=TRI.MeshVrtcPntIdx,
+                             pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
+                             lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
     
         ## Show only points composing the quadrangles:
         #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-        #                     lProj=(not l_work_with_dist) )
+        #                     lGeoCoor=(not l_work_with_dist) )
     
         # Show only the quads with only the points that define them:
         print('\n *** Launching Quad-only plot!')
         kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-                             QuadMesh=QUA.MeshPointIDs, lProj=(not l_work_with_dist), zoom=rzoom_fig)
+                             QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
 
