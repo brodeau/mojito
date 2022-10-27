@@ -59,7 +59,9 @@ rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
 
 
 #rQarea_max = 500. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
-rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+#rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+rQarea_max = 70000. ; rzoom_fig = 1  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+
 
 
 

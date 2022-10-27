@@ -78,7 +78,7 @@ def __set_fig_axis__( pX, pY, zoom=1):
     xA, xB = floor(np.min(pX)/rndaxiskm)*rndaxiskm , ceil(np.max(pX)/rndaxiskm)*rndaxiskm
     yA, yB = floor(np.min(pY)/rndaxiskm)*rndaxiskm , ceil(np.max(pY)/rndaxiskm)*rndaxiskm
     Lx, Ly = xB-xA, yB-yA
-    dx, dy = 0.05*(Lx), 0.05*(Ly)
+    dx, dy = 0.05*(Lx)*1.5/zoom, 0.05*(Ly)
     vfig = (10*zoom,10*Ly/Lx*zoom)
     #
     return (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), (10*zoom,10*Ly/Lx*zoom)
@@ -276,7 +276,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
         # Cartesian coordinates (x,y)
         (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = __set_fig_axis__( pX, pY, zoom=zoom)
     
-    fig = plt.figure(num=1, figsize=vfig, facecolor='0.6')
+    fig = plt.figure(num=1, figsize=vfig, facecolor='w')
     
     if lProj:         
         ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj, facecolor=col_bg)
@@ -286,7 +286,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
         plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
     else:
         ddx = dx*Ly/Lx
-        ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
+        ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')
         plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
         # Showing points:
         plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200 )
@@ -303,7 +303,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             for jT in range(nbT):
                 vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
                 rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=2*zoom, zorder=60)
+                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=8*zrat, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -317,12 +317,12 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             else:
                 vx, vy = pX[vids], pY[vids]
             vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
-            plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
+            plt.plot(vX,vY, col_blu, lw=3*zrat, zorder=100)
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
             if l_annotate:
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=2*zoom, zorder=160)
+                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zrat, zorder=160)
 
     if len(pnames)>0:
         i=0
