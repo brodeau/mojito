@@ -371,6 +371,8 @@ if __name__ == '__main__':
     vPids = QUADS.PointIDs
     
     nQ = 0
+    lst_PntIDs   = []
+    lst_Qprev_ok = []
     
     for jQ in range(nQprev):
 
@@ -394,7 +396,35 @@ if __name__ == '__main__':
             # Ok here we now that this Quad still exist in this new record:
             nQ = nQ + 1
             print('  => still exists at current record :)!')
+            lst_Qprev_ok.append(jQ)
+            lst_PntIDs.append(vIDs)
             
+            
+    zids = np.unique(np.array(lst_PntIDs))
+    if idebug: print('  => IDs of points still involved:', zids)
+    nP = len(zids)
+    del vind, vIDs, lst_PntIDs, zids
+    
+    # We have now `nQ` surviving Quads with indices: `lst_Qprev_ok`
+    print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQprev)+' that survived!')
+    print('        and  '+str(nP)+' points involved...')
+
+
+    xQcoor = np.zeros((nP,2))
+    vPids  = np.zeros(nP)
+    xQpnts = np.zeros((nQ,4))
+    
+    iq = 0
+    for jQ in lst_Qprev_ok:
+        print('\n --- Quad #'+str(jQ)+':')
+
+        # Now use the lon,lat to km deduced from the new JIs and JJs !!!
+        #  ==> so need a function to do the whole process!!!
+        #xQcoor[iq,:] = 
+
+
+        exit(0)
+        
     exit(0)
 
 
