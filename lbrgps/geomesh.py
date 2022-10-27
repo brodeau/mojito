@@ -295,15 +295,13 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
         # Coordinates of the points in use by Quads!
         zvIDs = np.unique( zQPT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
         zvCoor = np.array([ zCoor[i,:] for i in zvIDs  ]) ;
+        del zvIDs
 
         zQnames = np.array( [ zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]+'-'+zcN[zQPT[jQ,3]] for jQ in range(NbQ) ],
                             dtype='U32' )
 
         # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
         zQPQ = TriPntIDs2QuaPntIDs(zQPT)
-        #print('remaining IDs for Quads =',len(zvIDs),' initially ',NbT)
-        #print('zQPT =',zQPT,'\n')
-        #print('zQPQ =',zQPQ) ; exit(0)
 
         # Some sanity checks:
         if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:

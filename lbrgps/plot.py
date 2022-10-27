@@ -49,25 +49,27 @@ vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # No
 
 
 
-def __initStyle__( font_rat=1., font_rat_in=1., color_top='k' ):
+def __initStyle__( fntzoom=1., color_top='k' ):
     #
     global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mail
     #
+    fntzoom_inv = 1.*fntzoom**0.5
+    #
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
-               'font.size':       int(15.*font_rat_in),
-               'legend.fontsize': int(22.*font_rat_in),
-               'xtick.labelsize': int(15.*font_rat),
-               'ytick.labelsize': int(15.*font_rat),
-               'axes.labelsize':  int(17.*font_rat) }
+               'font.size':       int(18.*fntzoom_inv),
+               'legend.fontsize': int(22.*fntzoom_inv),
+               'xtick.labelsize': int(15.*fntzoom_inv),
+               'ytick.labelsize': int(15.*fntzoom_inv),
+               'axes.labelsize':  int(17.*fntzoom) }
     #
     mpl.rcParams.update(params)
     #
-    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*font_rat), 'color':color_top }
-    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(18.*font_rat_in), 'color':color_top }
-    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*font_rat), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(25.*font_rat), 'color':color_top }
-    cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*font_rat), 'color':'0.8'}
+    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
+    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(18.*fntzoom_inv), 'color':color_top }
+    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(25.*fntzoom), 'color':color_top }
+    cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
     return 0
 
@@ -249,10 +251,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
     '''
     from math import log
     
-    zrat = 1./zoom
-    zrat_log = 1./(1. + log(zoom))
-    
-    kk = __initStyle__(font_rat=zoom, font_rat_in=zrat_log)    
+    zrat = 1./zoom    
+    kk = __initStyle__(fntzoom=zoom)    
 
     l_annotate = ( zoom < 7 ) ; # looks like shit for big stuff if we show IDs on triangles and quads...
     
@@ -303,7 +303,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             for jT in range(nbT):
                 vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
                 rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=8*zrat, zorder=60)
+                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=8*zoom**0.5, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -322,7 +322,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], TriMesh=[],
             if l_annotate:
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zrat, zorder=160)
+                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zoom**0.5, zorder=160)
 
     if len(pnames)>0:
         i=0
@@ -351,9 +351,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     from math import log
     
     zrat = 1./zoom
-    zrat_log = 1./(1. + log(zoom))
-    
-    kk = __initStyle__(font_rat=zoom, font_rat_in=zrat_log)    
+    kk = __initStyle__(fntzoom=zoom)    
 
     # Colormap:
     if cwhat=='shr':
