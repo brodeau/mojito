@@ -129,6 +129,11 @@ if __name__ == '__main__':
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
 
+        #LOLO
+        #for ii in xIDs[:]:
+        #    print(ii)
+        #exit(0)
+        
         # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
         print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
         with Dataset(cf_lsm) as id_lsm:
@@ -186,21 +191,21 @@ if __name__ == '__main__':
         # Okay not we have to get rid of points that are masked (only viscinity to land at play so far...)
         zlon = np.ma.masked_where( zmsk==0, zlon)
         zlat = np.ma.masked_where( zmsk==0, zlat)
-        zIDs = np.ma.masked_where( zmsk==0, xIDs)
+        zPid = np.ma.masked_where( zmsk==0, xIDs)
 
         # Delete masked elements:
         zlon = np.ma.MaskedArray.compressed(zlon)
         zlat = np.ma.MaskedArray.compressed(zlat)
-        zIDs = np.ma.MaskedArray.compressed(zIDs)
+        zPid = np.ma.MaskedArray.compressed(zPid)
 
         # Update number of valid points:
         NbP = len(zlon)
-        if len(zlat)!=NbP or len(zIDs)!=NbP:
-            print('ERROR: len(zlat)!=NbP or len(zIDs)!=NbP !'); exit(0)
+        if len(zlat)!=NbP or len(zPid)!=NbP:
+            print('ERROR: len(zlat)!=NbP or len(zPid)!=NbP !'); exit(0)
         print('\n *** We retain only '+str(NbP)+' buoys! (others were too close to land)')
-
+        
         # Name for each point:
-        vPnam = np.array( [ str(i) for i in zIDs ], dtype='U32' )
+        vPnam = np.array( [ str(i) for i in zPid ], dtype='U32' )
         print('vPnam =', vPnam)
 
         if l_work_with_dist:
@@ -217,10 +222,8 @@ if __name__ == '__main__':
 
         if idebug>0:
             for jc in range(NbP):
-                print(' * Name: "'+vPnam[jc]+'": ID='+str(zIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
+                print(' * #'+str(jc)+' => Name: "'+vPnam[jc]+'": ID='+str(zPid[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
             print('')
-
-
 
         # Generating triangular meshes out of the cloud of points:
         TRI = Delaunay(xCoor)
@@ -232,23 +235,23 @@ if __name__ == '__main__':
         xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
         print('\n *** We have '+str(NbT)+' triangles!')
-
+        # 
         # Conversion to the `Triangle` class:
-        TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
+        TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, zPid, vPnam )
 
         del xTpnts, xNeighborIDs, TRI
 
         # Merge triangles into quadrangles:
-        xQcoor, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                              ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                              areaR=(rQarea_min,rQarea_max) )
+        xQcoor, vPids, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                                     ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                     areaR=(rQarea_min,rQarea_max) )
         if len(xQpnts)<=0: exit(0)
 
         (NbQ,_) = np.shape(xQpnts)
         print('\n *** We have '+str(NbQ)+' quadrangles!')
 
         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-        QUADS = lbr.Quadrangle( xQcoor, xQpnts, vQnam )
+        QUADS = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
 
         del xQpnts, xQcoor, xCoor
 
@@ -285,12 +288,13 @@ if __name__ == '__main__':
         # Show triangles on a map:
         print('\n *** Launching Triangle plot!')
         kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
+                             ppntIDs=TRI.PointIDs,
                              TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
     
         # Show triangles together with the quadrangles on a map:
         print('\n *** Launching Triangle+Quad plot!')
         kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
-                             TriMesh=TRI.MeshVrtcPntIdx,
+                             ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
                              pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
                              lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
     
@@ -301,5 +305,6 @@ if __name__ == '__main__':
         # Show only the quads with only the points that define them:
         print('\n *** Launching Quad-only plot!')
         kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+                             ppntIDs=QUA.PointIDs,
                              QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
 
