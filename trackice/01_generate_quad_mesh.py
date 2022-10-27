@@ -37,6 +37,8 @@ from climporn import epoch2clock
 
 idebug=1
 
+l_debug_plot = True
+
 l_plot = True ; # Create figures to see what we are doing...
 
 l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
@@ -150,6 +152,9 @@ if __name__ == '__main__':
         # Load `distance to coast` data:
         vlon_dist, vlat_dist, xdist = lbr.LoadDist2CoastNC( fdist2coast_nc )
 
+        if l_debug_plot:
+            xCoor_dbg = np.zeros((NbP,2))
+            vPids_dbg = np.zeros(NbP, dtype=int)
         zlon, zlat = np.zeros(NbP), np.zeros(NbP)
         zmsk       = np.zeros(NbP, dtype=int)
 
@@ -176,6 +181,10 @@ if __name__ == '__main__':
                 # 0.5<rj<1 ==> then we must interpolate between V_j and T_j+1:
                 rlat = 2.*(1.-rj)*xlat_v[jj,ji] + 2*(rj-0.5)*xlat_t[jj+1,ji]
 
+            if l_debug_plot:
+                vPids_dbg[jb]   = xIDs[jb]
+                xCoor_dbg[jb,:] = [ rlon, rlat ]
+            
             rd_ini = lbr.Dist2Coast( rlon, rlat, vlon_dist, vlat_dist, xdist )
 
             if rd_ini > MinDistFromLand:
@@ -215,6 +224,11 @@ if __name__ == '__main__':
             zx,zy,_ = crs_trg.transform_points(crs_src, zlon, zlat).T
             xCoor = np.array( [ zx, zy ] ).T / 1000. ; # to km
             del zx, zy
+            #
+            if l_debug_plot:
+                zx,zy,_ = crs_trg.transform_points(crs_src, xCoor_dbg[:,0], xCoor_dbg[:,1]).T
+                xCoor_dbg = np.array( [ zx, zy ] ).T / 1000. ; # to km
+                del zx, zy            
         else:
             xCoor = np.array( [ zlon, zlat ] ).T
         #
@@ -285,6 +299,14 @@ if __name__ == '__main__':
     
         if not path.exists('./figs'): mkdir('./figs')
 
+        if l_debug_plot:
+            # Show all initial points (out of TrackIce):
+            print('\n *** Launching initial cloud point plot!')
+            kk = lbr.ShowTQMesh( xCoor_dbg[:,0], xCoor_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
+                                 ppntIDs=vPids_dbg, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig )
+        
+
+        
         # Show triangles on a map:
         print('\n *** Launching Triangle plot!')
         kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
@@ -299,8 +321,8 @@ if __name__ == '__main__':
                              lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
     
         ## Show only points composing the quadrangles:
-        #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-        #                     lGeoCoor=(not l_work_with_dist) )
+        #kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfroot+'.png',
+        #                     ppntIDs=QUA.PointIDs, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig )
     
         # Show only the quads with only the points that define them:
         print('\n *** Launching Quad-only plot!')
