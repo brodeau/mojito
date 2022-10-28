@@ -37,11 +37,9 @@ from climporn import epoch2clock
 
 idebug=1
 
-l_debug_plot = True
+l_debug_plot = False
 
-l_plot = False ; # Create figures to see what we are doing...
-
-l_work_with_dist = True ; # work with distance (x,y, Cartesian coordinates) rather than geographic coordinates (lon,lat)...
+l_plot = True ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -63,6 +61,7 @@ rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
 #rQarea_max = 500. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
 #rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
 rQarea_max = 70000. ; rzoom_fig = 1  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+
 
 
 
@@ -155,91 +154,13 @@ if __name__ == '__main__':
             xlat_v = id_lsm.variables['gphiv'][0,:,:]
             print('      done.')
 
-        # Load `distance to coast` data:
-        vlon_dist, vlat_dist, xdist = lbr.LoadDist2CoastNC( fdist2coast_nc )
-
         if l_debug_plot:
             xCoor_dbg = np.zeros((NbP,2))
             vPids_dbg = np.zeros(NbP, dtype=int)
-        zlon, zlat = np.zeros(NbP), np.zeros(NbP)
-        zmsk       = np.zeros(NbP, dtype=int)
-
-        for jb in range(NbP):
-            rjj, rji = xJJs[jb], xJIs[jb]
-
-            jj, rj = int(rjj)-1, rjj%1.   ; # F2C !
-            ji, ri = int(rji)-1, rji%1.   ; # F2C !
-            # #fixme: I'm still not sure whether 0.5 means T point or U,V point !!! => find out !!!
-            ####      => for now, assume T is at 0 and U is at 0.5 (that might be the opposite...)
-
-            #  --  working with geographic coordinates rather than cartesian coordinates...
-            if ri <= 0.5:
-                # 0<=ri<=0.5 ==> then we must interpolate between T_i and U_i:
-                rlon = 2.*(0.5-ri)*xlon_t[jj,ji] + 2.*ri*xlon_u[jj,ji]
-            else:
-                # 0.5<ri<1 ==> then we must interpolate between U_i and T_i+1:
-                rlon = 2.*(1.-ri)*xlon_u[jj,ji] + 2*(ri-0.5)*xlon_t[jj,ji+1]
-
-            if rj <= 0.5:
-                # 0<=rj<=0.5 ==> then we must interpolate between T_j and V_j:
-                rlat = 2.*(0.5-rj)*xlat_t[jj,ji] + 2.*rj*xlat_v[jj,ji]
-            else:
-                # 0.5<rj<1 ==> then we must interpolate between V_j and T_j+1:
-                rlat = 2.*(1.-rj)*xlat_v[jj,ji] + 2*(rj-0.5)*xlat_t[jj+1,ji]
-
-            if l_debug_plot:
-                vPids_dbg[jb]   = xIDs[jb]
-                xCoor_dbg[jb,:] = [ rlon, rlat ]
-            
-            rd_ini = lbr.Dist2Coast( rlon, rlat, vlon_dist, vlat_dist, xdist )
-
-            if rd_ini > MinDistFromLand:
-                zlon[jb] = rlon
-                zlat[jb] = rlat
-                zmsk[jb] = 1
-                if idebug>1:
-                    print(' jb =',jb,': rjj, rji =',rjj, rji)
-                    print('      => zlat =', zlon[jb])
-                    print('      => zlon =', zlat[jb])
-                    print('')
-
-        # Okay not we have to get rid of points that are masked (only viscinity to land at play so far...)
-        zlon = np.ma.masked_where( zmsk==0, zlon)
-        zlat = np.ma.masked_where( zmsk==0, zlat)
-        zPid = np.ma.masked_where( zmsk==0, xIDs)
-
-        # Delete masked elements:
-        zlon = np.ma.MaskedArray.compressed(zlon)
-        zlat = np.ma.MaskedArray.compressed(zlat)
-        zPid = np.ma.MaskedArray.compressed(zPid)
-
-        # Update number of valid points:
-        NbP = len(zlon)
-        if len(zlat)!=NbP or len(zPid)!=NbP:
-            print('ERROR: len(zlat)!=NbP or len(zPid)!=NbP !'); exit(0)
-        print('\n *** We retain only '+str(NbP)+' buoys! (others were too close to land)')
         
-        # Name for each point:
-        vPnam = np.array( [ str(i) for i in zPid ], dtype='U32' )
-        print('vPnam =', vPnam)
-
-        if l_work_with_dist:
-            from cartopy.crs import PlateCarree, NorthPolarStereo
-            crs_src = PlateCarree()
-            crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
-            zx,zy,_ = crs_trg.transform_points(crs_src, zlon, zlat).T
-            xCoor = np.array( [ zx, zy ] ).T / 1000. ; # to km
-            del zx, zy
-            #
-            if l_debug_plot:
-                zx,zy,_ = crs_trg.transform_points(crs_src, xCoor_dbg[:,0], xCoor_dbg[:,1]).T
-                xCoor_dbg = np.array( [ zx, zy ] ).T / 1000. ; # to km
-                del zx, zy            
-        else:
-            xCoor = np.array( [ zlon, zlat ] ).T
-        #
-        del zlon, zlat, xJIs, xJJs, xIDs
-
+        NbP, xCoor, zPid, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,
+                                                     rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        
         if idebug>0:
             for jc in range(NbP):
                 print(' * #'+str(jc)+' => Name: "'+vPnam[jc]+'": ID='+str(zPid[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
@@ -303,30 +224,30 @@ if __name__ == '__main__':
             # Show all initial points (out of TrackIce):
             print('\n *** Launching initial cloud point plot!')
             kk = lbr.ShowTQMesh( xCoor_dbg[:,0], xCoor_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
-                                 ppntIDs=vPids_dbg, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig )
+                                 ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig )
         
         # Show triangles on a map:
         print('\n *** Launching Triangle plot!')
         kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
                              ppntIDs=TRIAS.PointIDs,
-                             TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
+                             TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
     
         # Show triangles together with the quadrangles on a map:
         print('\n *** Launching Triangle+Quad plot!')
         kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
                              ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
                              pX_Q=QUADS.PointXY[:,0], pY_Q=QUADS.PointXY[:,1], QuadMesh=QUADS.MeshVrtcPntIdx,
-                             lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
+                             lGeoCoor=False, zoom=rzoom_fig)
     
         ## Show only points composing the quadrangles:
         #kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfroot+'.png',
-        #                     ppntIDs=QUADS.PointIDs, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig )
+        #                     ppntIDs=QUADS.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
     
         # Show only the quads with only the points that define them:
         print('\n *** Launching Quad-only plot!')
         kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
                              ppntIDs=QUADS.PointIDs,
-                             QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
+                             QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
     ##############################################################################################################################
 
