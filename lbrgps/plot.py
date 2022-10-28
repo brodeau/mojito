@@ -288,13 +288,13 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
         ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
         ax.add_feature(cftr.LAND, color='0.5', zorder=70)
         # Showing points:
-        plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
+        plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
     else:
         ddx = dx*Ly/Lx
         ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')
         plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
         # Showing points:
-        plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200 )
+        plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200 )
     
     # Adding triangles:
     if len(TriMesh)>0:
@@ -308,7 +308,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
             for jT in range(nbT):
                 vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
                 rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=8*zoom**0.5, zorder=60)
+                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=8*zoom**0.4, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -326,14 +326,14 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
             if l_annotate:
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zoom**0.5, zorder=160)
+                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zoom**0.4, zorder=160)
 
     if len(pnames)>0:
         for jP in range(nbP):
-            ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=10*zoom**0.5, zorder=500)
+            ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=8*zoom**0.4, zorder=500)
     if len(ppntIDs)>0:
         for jP in range(nbP):
-            ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=10*zoom**0.5, zorder=520)
+            ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=8*zoom**0.4, zorder=520)
 
     plt.savefig(cfig)
     plt.close(1)
