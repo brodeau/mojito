@@ -114,7 +114,7 @@ class Quadrangle:
 
         zvPntIdx = np.unique( xQPntIdx.flatten() )
         if len(zvPntIdx) != nP:
-            print('ERROR: [polygons.Quadrangle] => problem with the number of points at play deduced from `xQPntIdx`'); exit(0)
+            print('ERROR: [polygons.Quadrangle] => problem with the number of points at play deduced from `xQPntIdx`: found,expected(nP)=',len(zvPntIdx),nP); exit(0)
 
         zTcoor = np.array([ [ xPcoor[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
 
@@ -167,7 +167,14 @@ class Quadrangle:
         del zX,zY
         return 0.5*zA
 
-
+    def MeshVrtcPntIDs( self ):
+        ''' Returns the same as `MeshVrtcPntIdx` but with Point IDs rather than Point indices !'''
+        zVpIDs = np.zeros((self.nQ,4), dtype=int)
+        for i in range(self.nQ):
+            v4pidx = self.MeshVrtcPntIdx[i,:]
+            v4pids = self.PointIDs[v4pidx]
+            zVpIDs[i,:] = v4pids
+        return zVpIDs
 
 ###################################################################################################################
 

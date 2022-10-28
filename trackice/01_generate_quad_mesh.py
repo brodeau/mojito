@@ -60,7 +60,8 @@ rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
 
 #rQarea_max = 500. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
 #rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
-rQarea_max = 70000. ; rzoom_fig = 1  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+#rQarea_max = 70000. ; rzoom_fig = 1  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
 
 
 
@@ -352,16 +353,63 @@ if __name__ == '__main__':
         print('        and  '+str(nP)+' points  / '+str(nPprev)+' involved...')
 
         # We can now reduce xJJs, xJIs, xIDs accordingly:
-        xIDs,vPindKeep,_ = np.intersect1d(xIDs, zids, return_indices=True) ; # retain only values,indices of `xIDs` that exist in zPid
+        xIDs,vPindKeep,_ = np.intersect1d(xIDs, zids, return_indices=True) ; # retain only values,indices of `xIDs` that exist in `zids`
         xJIs        = xJIs[vPindKeep]
         xJJs        = xJJs[vPindKeep]
 
+        
         NbP, xQcoor, vPids, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
-        if np.sum(np.abs(vPids-zids)) != 0:
-            print('ERROR: vPids != zids')
-        del zids
 
+
+        #vi = QUADS.MeshVrtcPntIdx
+        #vx = QUADS.MeshVrtcPntIDs()
+        #print(vx[11,:],' name:',QUADS.QuadNames[11],vi[11,:])
+        #print(vx[56,:],' name:',QUADS.QuadNames[56],vi[56,:])
+        #exit(0)
+        
+        # We must update `vQindKeep` in case we suppressed points in `rJIrJJtoCoord()` (due to proximity to coast):
+        if NbP < nP:
+            vIDgone = np.setdiff1d( xIDs, vPids ) ; # keep the values of `xIDs` that are not in `vPids`
+            print('\n *** IDs of points that were supressed due to coast proximity:\n',vIDgone[:])
+            # We must suppress Quads that were relying on these points:
+            lQrm = []
+            for jid in vIDgone:
+                ([jind],) = np.where(QUADS.PointIDs==jid) ; # we want point INDEX that gives this point ID !!!
+                for jQ in vQindKeep:
+                    if jind in QUADS.MeshVrtcPntIdx[jQ,:]: lQrm.append(jQ)
+            if len(lQrm) != nP-NbP:
+                print('ERROR: len(lQrm)!=NbP-len(xIDs) !',len(lQrm),NbP-len(xIDs)); exit(0)
+            print('   ==> Quads to supress (ID, name):\n',[ (QUADS.QuaIDs[i], QUADS.QuadNames[i]) for i in lQrm ])
+
+            vQindKeep = np.setdiff1d( vQindKeep, np.array(lQrm) ) ; # rm lQrm from vQindKeep
+
+            # Now, the problem is that supression of a Quad can also lead to the vanishing of up to 3 other points!
+            #zvPIDs = QUADS.MeshVrtcPntIDs()
+            vPIDs_o = np.unique(zvPIDs[:        ,:])
+            vPIDs_n = np.unique(zvPIDs[vQindKeep,:])
+            #nP2s = len(vPIDs_o) - len(vPIDs_n)
+            vPIDsRM = np.setdiff1d( vPIDs_o, vPIDs_n )
+            vPIDsRM = np.setdiff1d( vPIDsRM, vIDgone)
+            #if nP2s > nP-NbP:
+            if len(vPIDsRM)>0:
+                #print('   ==> we also need to supress '+str(nP2s-(nP-NbP))+' extra points that are not in use anymore!')
+                print('   ==> we also need to supress '+str(len(vPIDsRM))+' extra points that are not in use anymore!')
+            print('   ==> IDs of these points to supress =',vPIDsRM)
+
+
+            _,vind,_ = np.intersect1d(vPIDs_o, vPIDs_n, return_indices=True) ; # retain only values,indices of `vPIDs_o` that exist in `vPIDs_n`
+            
+            print(vind,len(vind))
+            
+            #print( np.shape(vPidx_o),np.shape(vPidx_n) )
+
+            print('shape(xQcoor) =',np.shape(xQcoor))
+            xQcoor = xQcoor[vind,:]
+            vPids  = vPids[vind]
+            exit(0)
+            
+        
         QUADS_NEW = lbr.Quadrangle( xQcoor, QUADS.MeshVrtcPntIdx[vQindKeep], vPids, QUADS.QuadNames[vQindKeep] )
 
         # Save the quadrangular mesh info:
