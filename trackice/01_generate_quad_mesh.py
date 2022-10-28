@@ -154,9 +154,9 @@ if __name__ == '__main__':
             xlat_v = id_lsm.variables['gphiv'][0,:,:]
             print('      done.')
 
-        if l_debug_plot:
-            xCoor_dbg = np.zeros((NbP,2))
-            vPids_dbg = np.zeros(NbP, dtype=int)
+        #if l_debug_plot:
+        #    xCoor_dbg = np.zeros((NbP,2))
+        #    vPids_dbg = np.zeros(NbP, dtype=int)
         
         NbP, xCoor, zPid, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,
                                                      rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
@@ -252,6 +252,19 @@ if __name__ == '__main__':
     ##############################################################################################################################
 
 
+
+
+
+
+
+
+
+
+
+
+
+    
+
     print('\n\n#########################################################################')
     
     # 2nd record !!!
@@ -335,17 +348,24 @@ if __name__ == '__main__':
     vPids  = np.zeros(nP)
     xQpnts = np.zeros((nQ,4))
     
-    iq = 0
-    for jQ in lst_Qprev_ok:
-        print('\n --- Quad #'+str(jQ)+':')
+    #iq = 0
+    #for jQ in lst_Qprev_ok:
+    #    print('\n --- Quad #'+str(jQ)+':')
 
-        # Now use the lon,lat to km deduced from the new JIs and JJs !!!
-        #  ==> so need a function to do the whole process!!!
-        #xQcoor[iq,:] = 
+    # Now use the lon,lat to km deduced from the new JIs and JJs !!!
+    #  ==> so need a function to do the whole process!!!
+    #xQcoor[iq,:] = 
+    
+
+    #   exit(0)
 
 
-        exit(0)
-        
+    # REduce xJJs, xJIs, xIDs to only what was kept in former go before recalling this:
+    
+    NbP, xCoor, zPid, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+
+
+     
     exit(0)
 
 
