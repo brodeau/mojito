@@ -12,7 +12,7 @@
 # #TODO: This script should be used for first record, but then, at time records later in time,
 #        this script or another should follow the same exact quads found with 1st record, and not
 #        start a Delaunay from scratch at this particular record !!!!
-#     
+#
 #
 #  ABOUT input `npz` file:
 #   * Name: should be of the form `NANUK4_ICE-BBM00_6h_19960101_19961031(_xxx).npz`
@@ -87,16 +87,16 @@ if __name__ == '__main__':
     Nrec  = len(vcrec)
     vrec = [ int(vcrec[i]) for i in range(Nrec) ]
     del vcrec
-    
+
     chck4f(cf_npz)
     chck4f(cf_lsm)
 
 
     #########################################################################################################
-    
+
     # First record:
     irec = vrec[0]
-    
+
     # Getting time info and time step from input npz file which is should look like NEMO output file:
     vv = split('-|_', path.basename(cf_npz))
     CCONF = vv[0]
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
     vf = split('_|\.', path.basename(cf_npz))
     cfroot = vf[0]+'_'+vf[1]+'_'+vf[2]+'_'+vf[5]+'_'+vf[6]+'_'+cdate
-    
+
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
@@ -137,10 +137,10 @@ if __name__ == '__main__':
             xIDs    = data['IDs'][:,irec]
             xJIs    = data['JIs'][:,irec]
             xJJs    = data['JJs'][:,irec]
-        
+
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
-        
+
         # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
         print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
         with Dataset(cf_lsm) as id_lsm:
@@ -157,10 +157,10 @@ if __name__ == '__main__':
         #if l_debug_plot:
         #    xCoor_dbg = np.zeros((NbP,2))
         #    vPids_dbg = np.zeros(NbP, dtype=int)
-        
+
         NbP, xCoor, zPid, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,
                                                      rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
-        
+
         if idebug>0:
             for jc in range(NbP):
                 print(' * #'+str(jc)+' => Name: "'+vPnam[jc]+'": ID='+str(zPid[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
@@ -176,7 +176,7 @@ if __name__ == '__main__':
         xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
         print('\n *** We have '+str(NbT)+' triangles!')
-        # 
+        #
         # Conversion to the `Triangle` class:
         TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, zPid, vPnam )
 
@@ -197,7 +197,7 @@ if __name__ == '__main__':
         del xQpnts, xQcoor, xCoor
 
         if not path.exists('./npz'): mkdir('./npz')
-        
+
         # Save the triangular mesh info:
         lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
         QUADS = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
         l_debug_plot = False ; # we don't have xCoor_dbg and vPids_dbg !
-        
+
     #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
     ############################################################
 
@@ -225,24 +225,24 @@ if __name__ == '__main__':
             print('\n *** Launching initial cloud point plot!')
             kk = lbr.ShowTQMesh( xCoor_dbg[:,0], xCoor_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
                                  ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig )
-        
+
         # Show triangles on a map:
         print('\n *** Launching Triangle plot!')
         kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
                              ppntIDs=TRIAS.PointIDs,
                              TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
-    
+
         # Show triangles together with the quadrangles on a map:
         print('\n *** Launching Triangle+Quad plot!')
         kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
                              ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
                              pX_Q=QUADS.PointXY[:,0], pY_Q=QUADS.PointXY[:,1], QuadMesh=QUADS.MeshVrtcPntIdx,
                              lGeoCoor=False, zoom=rzoom_fig)
-    
+
         ## Show only points composing the quadrangles:
         #kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfroot+'.png',
         #                     ppntIDs=QUADS.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
-    
+
         # Show only the quads with only the points that define them:
         print('\n *** Launching Quad-only plot!')
         kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
@@ -263,111 +263,124 @@ if __name__ == '__main__':
 
 
 
-    
+
 
     print('\n\n#########################################################################')
-    
+
     # 2nd record !!!
     ################
     irec = vrec[1]
-    
+
     cdats = epoch2clock(vtime[irec])
     cdate = str.replace( epoch2clock(vtime[irec], precision='D'), '-', '')
     print('    *   will get data at record #'+str(irec)+'! => date =',cdats)
 
     vf = split('_|\.', path.basename(cf_npz))
     cfroot = vf[0]+'_'+vf[1]+'_'+vf[2]+'_'+vf[5]+'_'+vf[6]+'_'+cdate
-    
-    cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
+
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
-    
-    print('\n *** Reading for record # '+str(irec)+' into '+cf_npz+' !!!')
-    with np.load(cf_npz) as data:
-        xIDs    = data['IDs'][:,irec]
-        xJIs    = data['JIs'][:,irec]
-        xJJs    = data['JJs'][:,irec]
 
-    # Here it's simpler we do not have to go through all the "point cloud" => "Delaunay" => "Triangles" => "Quads" process
-    #  => we just rebuild the same quads out of the info we had from former records
+    if not path.exists(cf_npzQ):
 
-    #for jid in xIDs[:]:
-    #    if not jid in 
+        print('\n *** Reading for record # '+str(irec)+' into '+cf_npz+' !!!')
+        with np.load(cf_npz) as data:
+            xIDs    = data['IDs'][:,irec]
+            # We only want to read what was used at former record:
+            xIDs,vind,_ = np.intersect1d(xIDs, zPid, return_indices=True) ; # retain only values,indices of `xIDs` that exist in zPid
+            xJIs    = data['JIs'][vind,irec]
+            xJJs    = data['JJs'][vind,irec]
 
-
-    # Loop along the nQ quads found at former record
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    nPprev = QUADS.nP
-    nQprev = QUADS.nQ
-    
-    print(' *** At former record, we had '+str(nQprev)+' Quads relying on '+str(nPprev)+' points!')
-
-    vPids = QUADS.PointIDs
-    
-    nQ = 0
-    lst_PntIDs   = []
-    lst_Qprev_ok = []
-    
-    for jQ in range(nQprev):
-
-        l_mv_next = False
-        
-        print('\n --- Quad #'+str(jQ)+':')
-
-        # Indices of the 4 points:
-        vind = QUADS.MeshVrtcPntIdx[jQ,:]
-        vIDs = np.array( [ vPids[i] for i in vind ], dtype=int )        
-        if idebug>0: print(vIDs[:])
-
-        for jid in vIDs:
-            if not jid in xIDs:
-                print(' Nuhh! Point with ID '+str(jid)+' does not exist anymore in this record')
-                print('  => this Quad is not continued...')
-                l_mv_next = True
-                break
-
-        if not l_mv_next:
-            # Ok here we now that this Quad still exist in this new record:
-            nQ = nQ + 1
-            print('  => still exists at current record :)!')
-            lst_Qprev_ok.append(jQ)
-            lst_PntIDs.append(vIDs)
-            
-            
-    zids = np.unique(np.array(lst_PntIDs))
-    if idebug: print('  => IDs of points still involved:', zids)
-    nP = len(zids)
-    del vind, vIDs, lst_PntIDs, zids
-    
-    # We have now `nQ` surviving Quads with indices: `lst_Qprev_ok`
-    print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQprev)+' that survived!')
-    print('        and  '+str(nP)+' points involved...')
+        # Here it's simpler we do not have to go through all the "point cloud" => "Delaunay" => "Triangles" => "Quads" process
+        #  => we just rebuild the same quads out of the info we had from former records
 
 
-    xQcoor = np.zeros((nP,2))
-    vPids  = np.zeros(nP)
-    xQpnts = np.zeros((nQ,4))
-    
-    #iq = 0
-    #for jQ in lst_Qprev_ok:
-    #    print('\n --- Quad #'+str(jQ)+':')
+        # Loop along the nQ quads found at former record
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # Now use the lon,lat to km deduced from the new JIs and JJs !!!
-    #  ==> so need a function to do the whole process!!!
-    #xQcoor[iq,:] = 
-    
+        nPprev = QUADS.nP
+        nQprev = QUADS.nQ
 
-    #   exit(0)
+        print(' *** At former record, we had '+str(nQprev)+' Quads relying on '+str(nPprev)+' points!')
+
+        vPids = QUADS.PointIDs
+
+        nQ = 0
+        lst_PntIDs   = []
+        lst_Qprev_ok = []
+
+        for jQ in range(nQprev):
+
+            l_mv_next = False
+
+            print('\n --- Quad #'+str(jQ)+':')
+
+            # Indices of the 4 points:
+            v4p = QUADS.MeshVrtcPntIdx[jQ,:]
+            vIDs = np.array( [ vPids[i] for i in v4p ], dtype=int )
+            if idebug>0: print(vIDs[:])
+
+            for jid in vIDs:
+                if not jid in xIDs:
+                    print(' Nuhh! Point with ID '+str(jid)+' does not exist anymore in this record')
+                    print('  => this Quad is forgotten...')
+                    l_mv_next = True
+                    break
+
+            if not l_mv_next:
+                # Ok here we now that this Quad still exist in this new record:
+                nQ = nQ + 1
+                print('  => still exists at current record :)!')
+                lst_Qprev_ok.append(jQ)
+                lst_PntIDs.append(vIDs)
+
+        vQindKeep = np.array( lst_Qprev_ok )
+        del lst_Qprev_ok
+
+        if idebug>0:
+            pids_prev = QUADS.PointIDs
+
+        # At this stage if no point has disapeared between the 2 records we have:
+        #   => zids == QUADS.PointIDs
+
+        zids = np.unique(np.array(lst_PntIDs))
+        if idebug: print('  => IDs of points still involved:', zids)
+        nP = len(zids)
+        del vind, vIDs, lst_PntIDs
+
+        # We have now `nQ` surviving Quads with indices: `vQindKeep`
+        print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQprev)+' that survived!')
+        print('        and  '+str(nP)+' points  / '+str(nPprev)+' involved...')
+
+        # We can now reduce xJJs, xJIs, xIDs accordingly:
+        xIDs,vPindKeep,_ = np.intersect1d(xIDs, zids, return_indices=True) ; # retain only values,indices of `xIDs` that exist in zPid
+        xJIs        = xJIs[vPindKeep]
+        xJJs        = xJJs[vPindKeep]
+
+        NbP, xQcoor, vPids, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+
+        if np.sum(np.abs(vPids-zids)) != 0:
+            print('ERROR: vPids != zids')
+        del zids
+
+        QUADS_NEW = lbr.Quadrangle( xQcoor, QUADS.MeshVrtcPntIdx[vQindKeep], vPids, QUADS.QuadNames[vQindKeep] )
+
+        # Save the quadrangular mesh info:
+        lbr.SaveClassPolygon( cf_npzQ, QUADS_NEW, ctype='Q', date=cdats )
+
+    else:
+
+        QUADS_NEW = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
-    # REduce xJJs, xJIs, xIDs to only what was kept in former go before recalling this:
-    
-    NbP, xCoor, zPid, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+    #if not path.exists(cf_npzQ)
+    ############################
+
+    if l_plot:
+
+        print('\n *** Launching Quad-only plot!')
+        kk = lbr.ShowTQMesh( QUADS_NEW.PointXY[:,0], QUADS_NEW.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+                             ppntIDs=QUADS_NEW.PointIDs,
+                             QuadMesh=QUADS_NEW.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
 
-     
-    exit(0)
 
-
-
-    #QUADS_NEW = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
