@@ -92,7 +92,8 @@ if __name__ == '__main__':
     chck4f(cf_npz)
     chck4f(cf_lsm)
 
-
+    if not path.exists('./npz'): mkdir('./npz')
+    
     #########################################################################################################
 
     # First record:
@@ -116,190 +117,276 @@ if __name__ == '__main__':
     print('    *  start and End dates => '+cdt1+' -- '+cdt2)
     print('        ==> nb of days =', NbDays)
     #
-    cdats = epoch2clock(vtime[irec])
-    cdate = str.replace( epoch2clock(vtime[irec], precision='D'), '-', '')
-    print('    *   will get data at record #'+str(irec)+'! => date =',cdats)
-
-    vf = split('_|\.', path.basename(cf_npz))
-    cfroot = vf[0]+'_'+vf[1]+'_'+vf[2]+'_'+vf[5]+'_'+vf[6]+'_'+cdate
-
-    cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
-    cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
-
-    if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
-        # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
-        print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
-        with Dataset(cf_lsm) as id_lsm:
-            nb_dim = len(id_lsm.variables['tmask'].dimensions)
-            Ni = id_lsm.dimensions['x'].size
-            Nj = id_lsm.dimensions['y'].size
-            print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
-            xlon_t = id_lsm.variables['glamt'][0,:,:]
-            xlat_t = id_lsm.variables['gphit'][0,:,:]
-            xlon_u = id_lsm.variables['glamu'][0,:,:]
-            xlat_v = id_lsm.variables['gphiv'][0,:,:]
-            print('      done.')
+    # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
+    print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
+    with Dataset(cf_lsm) as id_lsm:
+        nb_dim = len(id_lsm.variables['tmask'].dimensions)
+        Ni = id_lsm.dimensions['x'].size
+        Nj = id_lsm.dimensions['y'].size
+        print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
+        xlon_t = id_lsm.variables['glamt'][0,:,:]
+        xlat_t = id_lsm.variables['gphit'][0,:,:]
+        xlon_u = id_lsm.variables['glamu'][0,:,:]
+        xlat_v = id_lsm.variables['gphiv'][0,:,:]
+        print('      done.')
 
 
+    
+    # Have to build triangle and quadrangle mesh!
+
+    print('\n *** We are going to build triangle and quad meshes!')
+
+    # First explore how many buoys and how many records we have based on point IDs:
+    with np.load(cf_npz) as data:
+        xIDs    = data['IDs'][:,:]
+
+    (NbP,Nrtot) = np.shape(xIDs)
+
+    if np.any(xIDs<1):
+        print('FixMe! any(xIDs<1) !!!'); exit(0)
+        # => il peut y en avoir des masques...
+    #for jt in range(Nrtot):
+    #    print('* rec #',jt, xIDs[::5,jt])
+    if Nrec > Nrtot:
+        print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
+    if np.max(vRec) > Nrtot-1:
+        print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)                    
+    del xIDs
         
-        # Have to build triangle and quadrangle mesh!
+    # Array with the shape coresponding to the # of records we want to read:
+    xIDs = np.zeros((NbP,Nrec), dtype=int)
+    xJIs = np.zeros((NbP,Nrec), dtype=int)
+    xJJs = np.zeros((NbP,Nrec), dtype=int)
+    mask = np.zeros( NbP      , dtype=int) + 1  ; # Mask to for "deleted" points (to cancel)
+    
+    #############################
+    with np.load(cf_npz) as data:
+        jr = 0
+        for jrec in vRec:
+            print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
+            xIDs[:,jr] = data['IDs'][:,jrec]
+            xJIs[:,jr] = data['JIs'][:,jrec]
+            xJJs[:,jr] = data['JJs'][:,jrec]
+            jr = jr+1
+    
 
-        print('\n *** We are going to build triangle and quad meshes!')
-
-        # First explore how many buoys and how many records we have based on point IDs:
-        with np.load(cf_npz) as data:
-            xIDs    = data['IDs'][:,:]
-
-        (NbP,Nrtot) = np.shape(xIDs)
-
-        if np.any(xIDs<1):
-            print('FixMe! any(xIDs<1) !!!'); exit(0)
-            # => il peut y en avoir des masques...
-        #for jt in range(Nrtot):
-        #    print('* rec #',jt, xIDs[::5,jt])
-        if Nrec > Nrtot:
-            print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
-        if np.max(vRec) > Nrtot-1:
-            print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)                    
-        del xIDs
+    zGC = np.zeros((NbP,2,Nrec))
+    zXY = np.zeros((NbP,2,Nrec))
             
-        # Array with the shape coresponding to the # of records we want to read:
-        xIDs = np.zeros((NbP,Nrec), dtype=int)
-        xJIs = np.zeros((NbP,Nrec), dtype=int)
-        xJJs = np.zeros((NbP,Nrec), dtype=int)
-        mask = np.zeros( NbP      , dtype=int) + 1  ; # Mask to for "deleted" points (to cancel)
+    # Loop along requested records:
+    
+    #print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
+    NbP0 = NbP ; # backup because this one is gonna shrink!
+
+    zPnm = np.array( [ str(i) for i in xIDs[:,vRec[0]] ], dtype='U32' ) ; # Name for each point, based on 1st record...
+    
+    for jr in range(Nrec):
+        print('\n   * Record #'+str(vRec[jr])+':')
+
+        # Translate rji,rjj from TracIce to lon,lat and x,y:
+        zGC[:,:,jr], zXY[:,:,jr] = lbr.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
         
-        #############################
-        with np.load(cf_npz) as data:
-            jr = 0
-            for jrec in vRec:
-                print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
-                xIDs[:,jr] = data['IDs'][:,jrec]
-                xJIs[:,jr] = data['JIs'][:,jrec]
-                xJJs[:,jr] = data['JJs'][:,jrec]
-                jr = jr+1
+        # Get rid of points to close to land (shrinks arrays!):
+        mask[:] = lbr.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+
+    # How many points left:
+    NbP = np.sum(mask)
+    print('\n *** '+str(NbP)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP)+' points to delete!')
+
+    zPnm, zIDs, zGC, zXY = lbr.ShrinkArrays( mask, zPnm, xIDs, zGC, zXY )
+
+    print(np.shape(zPnm),np.shape(zIDs),np.shape(zGC),np.shape(zXY) )
+    
+    
+    #for jr in range(Nrec):
         
 
-        zGC = np.zeros((NbP,2,Nrec))
-        zXY = np.zeros((NbP,2,Nrec))
-                
-        # Loop along requested records:
-        
-        #print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
-        NbP0 = NbP ; # backup because this one is gonna shrink!
-
-        zPnm = np.array( [ str(i) for i in xIDs[:,vRec[0]] ], dtype='U32' ) ; # Name for each point, based on 1st record...
-        
+    
+    if idebug>0:
         for jr in range(Nrec):
-            print('\n   * Record #'+str(vRec[jr])+':')
+            print('\n  DEBUG *** Record #'+str(vRec[jr])+':')
+            for jc in range(NbP):                    
+                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zIDs[jc,jr],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
+                       ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr] )
+                if str(zIDs[jc,jr])!=zPnm[jc]:
+                    print(' Fuck Up!!!! => zIDs[jc,jr], zPnm[jc] =',zIDs[jc,jr], zPnm[jc] ); exit(0)
+        print('')
+    #
+    # We do not need to keep a record dimension for IDs, but first ensure there's no fuck-up...
+    zPntIDs = zIDs[:,0].copy()
+    print(np.shape(zPntIDs))
+    for jr in range(Nrec):
+        if np.any(zIDs[:,jr]-zPntIDs[:] != 0):
+            print(' Fuck Up!!!! => `zIDs` not consistent along the records!!!' ); exit(0)
+    del zIDs
+        
 
-            # Translate rji,rjj from TracIce to lon,lat and x,y:
-            zGC[:,:,jr], zXY[:,:,jr] = lbr.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
+
+    for jr in range(Nrec):
+        print('\n\n *** QUAD-MESH GENERATION => record #'+str(vRec[jr])+':')
+
+        irec = vRec[jr]
+        
+        cdats = epoch2clock(vtime[irec])
+        cdate = str.replace( epoch2clock(vtime[irec], precision='D'), '-', '')
+        
+        vf = split('_|\.', path.basename(cf_npz))
+        cfroot = vf[0]+'_'+vf[1]+'_'+vf[2]+'_'+vf[5]+'_'+vf[6]+'_'+cdate
+        cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
+
+        print('    * which is original record '+str(irec)+' => date =',cdats,'=>',cfroot)
+        
+        if jr == 0:
+            print('\n *** Delaunay for 1st record!')
+
+            cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
             
-            # Get rid of points to close to land (shrinks arrays!):
-            mask[:] = lbr.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+            # Generating triangular meshes out of the cloud of points for 1st record:
+            TRI = Delaunay(zXY[:,:,jr])
 
-        # How many points left:
-        NbP = np.sum(mask)
-        print('\n *** '+str(NbP)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP)+' points to delete!')
+            xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+
+            (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
+
+            xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+
+            print('\n *** We have '+str(NbT)+' triangles!')
+            #
+            # Conversion to the `Triangle` class:
+            TRIAS = lbr.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, zPnm )
+
+            del xTpnts, xNeighborIDs, TRI
+
+            # Merge triangles into quadrangles:
+            xQcoor, vPids, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                                         ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                         areaR=(rQarea_min,rQarea_max) )
+            if len(xQpnts)<=0: exit(0)
+
+            (NbQ,_) = np.shape(xQpnts)
+            print('\n *** We have '+str(NbQ)+' quadrangles!')
+
+            # Save the triangular mesh info:
+            lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
+
+            # To be used for other record, indices of Points to keep for Quads:
+            _,ind2keep,_ = np.intersect1d(zPntIDs, vPids, return_indices=True); # retain only indices of `zPntIDs` that exist in `vPids`
+
             
-        exit(0); #lilo
+        else:
+            
+            # This is not 1st record !!!
+            print('\n *** Quad tracking for jr=',jr)
+            
+            # Loop along the nQ quads found at former record
+            nPprev = QUADS.nP
+            nQprev = QUADS.nQ
+    
+            print(' *** At former record, we had '+str(nQprev)+' Quads relying on '+str(nPprev)+' points!')
+            
+            #vPids = QUADS.PointIDs ; # memory!
+    
+            nQ = 0
+            lst_PntIDs   = []
+            #lst_Qprev_ok = []
+    
+            for jQ in range(nQprev):
+    
+                l_mv_next = False
+    
+                print('\n --- Quad #'+str(jQ)+':')
+    
+                # Indices of the 4 points:
+                v4p = QUADS.MeshVrtcPntIdx[jQ,:]
+                vIDs = np.array( [ vPids[i] for i in v4p ], dtype=int )
+                if idebug>0: print(vIDs[:])
+    
+                for jid in vIDs:
+                    #if not jid in xIDs:
+                    if not jid in zPntIDs:
+                        print(' Nuhh! Point with ID '+str(jid)+' does not exist anymore in this record')
+                        print('  => this Quad is forgotten...')
+                        l_mv_next = True
+                        break
+    
+                if not l_mv_next:
+                    # Ok here we now that this Quad still exist in this new record:
+                    nQ = nQ + 1
+                    print('  => still exists at current record :)!')
+                    #lst_Qprev_ok.append(jQ)
+                    lst_PntIDs.append(vIDs)
+    
+            #vQindKeep = np.array( lst_Qprev_ok )
+            #del lst_Qprev_ok
+    
+            if idebug>0:
+                pids_prev = QUADS.PointIDs
+    
+            # At this stage if no point has disapeared between the 2 records we have:
+            #   => zids == QUADS.PointIDs
+    
+            zids = np.unique(np.array(lst_PntIDs))
+            if idebug: print('  => IDs of points still involved:', zids)
+            nP = len(zids)
+            del vIDs, lst_PntIDs
+    
+            # We have now `nQ` surviving Quads with indices:
+            print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQprev)+' that survived!')
+            print('        and  '+str(nP)+' points  / '+str(nPprev)+' involved...')
 
-        
-        if idebug>0:
-            for jc in range(NbP):
-                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zPid[jc],', X=',zXY[jc,0],', Y=',zXY[jc,1],
-                       ', lon=',zGC[jc,0],', lat=',zGC[jc,1] )
-            print('')
+            # * xQpnts remains the same! That's the whole point!!!
+            # * xQcoor should be updated with the new point coordinates at this record:
 
-        
-        # Generating triangular meshes out of the cloud of points:
-        TRI = Delaunay(zXY)
+            xQcoor[:,:] = zXY[ind2keep,:,jr]
+            
 
-        
-        xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-
-        (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
-
-        xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
-        print('\n *** We have '+str(NbT)+' triangles!')
-        #
-        # Conversion to the `Triangle` class:
-        TRIAS = lbr.Triangle( zXY, xTpnts, xNeighborIDs, zPid, zPnm )
-
-        del xTpnts, xNeighborIDs, TRI
-
-        # Merge triangles into quadrangles:
-        xQcoor, vPids, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                                     ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                     areaR=(rQarea_min,rQarea_max) )
-        if len(xQpnts)<=0: exit(0)
-
-        (NbQ,_) = np.shape(xQpnts)
-        print('\n *** We have '+str(NbQ)+' quadrangles!')
+        ### if jr == 0
 
         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
         QUADS = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
 
-        del xQpnts, xQcoor, zXY
-
-        if not path.exists('./npz'): mkdir('./npz')
-
-        # Save the triangular mesh info:
-        lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
 
         # Save the quadrangular mesh info:
         lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', date=cdats )
 
-        #del TRIAS, QUADS
-    else:
-
-        # Reading the triangle and quad class objects in the npz files:
-        TRIAS = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
-        QUADS = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
-
-        l_debug_plot = False ; # we don't have zXY_dbg and vPids_dbg !
-
-    #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
-    ############################################################
 
 
-    if l_plot:
-        if not path.exists('./figs'): mkdir('./figs')
 
-        if l_debug_plot:
-            # Show all initial points (out of TrackIce):
-            print('\n *** Launching initial cloud point plot!')
-            kk = lbr.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
-                                 ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig )
-
-        # Show triangles on a map:
-        print('\n *** Launching Triangle plot!')
-        kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
-                             ppntIDs=TRIAS.PointIDs,
-                             TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
-
-        # Show triangles together with the quadrangles on a map:
-        print('\n *** Launching Triangle+Quad plot!')
-        kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
-                             ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
-                             pX_Q=QUADS.PointXY[:,0], pY_Q=QUADS.PointXY[:,1], QuadMesh=QUADS.MeshVrtcPntIdx,
-                             lGeoCoor=False, zoom=rzoom_fig)
-
-        ## Show only points composing the quadrangles:
-        #kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfroot+'.png',
-        #                     ppntIDs=QUADS.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
-
-        # Show only the quads with only the points that define them:
-        print('\n *** Launching Quad-only plot!')
-        kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-                             ppntIDs=QUADS.PointIDs,
-                             QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
-
-    ##############################################################################################################################
+        if l_plot:
+            if not path.exists('./figs'): mkdir('./figs')
+    
+            if l_debug_plot:
+                # Show all initial points (out of TrackIce):
+                print('\n *** Launching initial cloud point plot!')
+                kk = lbr.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
+                                     ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig )
+    
+            # Show triangles on a map:
+            print('\n *** Launching Triangle plot!')
+            kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
+                                 ppntIDs=TRIAS.PointIDs,
+                                 TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+    
+            # Show triangles together with the quadrangles on a map:
+            print('\n *** Launching Triangle+Quad plot!')
+            kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
+                                 ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
+                                 pX_Q=QUADS.PointXY[:,0], pY_Q=QUADS.PointXY[:,1], QuadMesh=QUADS.MeshVrtcPntIdx,
+                                 lGeoCoor=False, zoom=rzoom_fig)
+    
+            ## Show only points composing the quadrangles:
+            #kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfroot+'.png',
+            #                     ppntIDs=QUADS.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
+    
+            # Show only the quads with only the points that define them:
+            print('\n *** Launching Quad-only plot!')
+            kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+                                 ppntIDs=QUADS.PointIDs,
+                                 QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+    
+        ##############################################################################################################################
 
 
 
@@ -336,7 +423,7 @@ if __name__ == '__main__':
         with np.load(cf_npz) as data:
             xIDs    = data['IDs'][:,irec]
             # We only want to read what was used at former record:
-            xIDs,vind,_ = np.intersect1d(xIDs, zPid, return_indices=True) ; # retain only values,indices of `xIDs` that exist in zPid
+            xIDs,vind,_ = np.intersect1d(xIDs, zPntIDs, return_indices=True) ; # retain only values,indices of `xIDs` that exist in zPntIDs
             xJIs    = data['JIs'][vind,irec]
             xJJs    = data['JJs'][vind,irec]
 
@@ -344,125 +431,6 @@ if __name__ == '__main__':
         #  => we just rebuild the same quads out of the info we had from former records
 
 
-        # Loop along the nQ quads found at former record
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        nPprev = QUADS.nP
-        nQprev = QUADS.nQ
-
-        print(' *** At former record, we had '+str(nQprev)+' Quads relying on '+str(nPprev)+' points!')
-
-        vPids = QUADS.PointIDs
-
-        nQ = 0
-        lst_PntIDs   = []
-        lst_Qprev_ok = []
-
-        for jQ in range(nQprev):
-
-            l_mv_next = False
-
-            print('\n --- Quad #'+str(jQ)+':')
-
-            # Indices of the 4 points:
-            v4p = QUADS.MeshVrtcPntIdx[jQ,:]
-            vIDs = np.array( [ vPids[i] for i in v4p ], dtype=int )
-            if idebug>0: print(vIDs[:])
-
-            for jid in vIDs:
-                if not jid in xIDs:
-                    print(' Nuhh! Point with ID '+str(jid)+' does not exist anymore in this record')
-                    print('  => this Quad is forgotten...')
-                    l_mv_next = True
-                    break
-
-            if not l_mv_next:
-                # Ok here we now that this Quad still exist in this new record:
-                nQ = nQ + 1
-                print('  => still exists at current record :)!')
-                lst_Qprev_ok.append(jQ)
-                lst_PntIDs.append(vIDs)
-
-        vQindKeep = np.array( lst_Qprev_ok )
-        del lst_Qprev_ok
-
-        if idebug>0:
-            pids_prev = QUADS.PointIDs
-
-        # At this stage if no point has disapeared between the 2 records we have:
-        #   => zids == QUADS.PointIDs
-
-        zids = np.unique(np.array(lst_PntIDs))
-        if idebug: print('  => IDs of points still involved:', zids)
-        nP = len(zids)
-        del vind, vIDs, lst_PntIDs
-
-        # We have now `nQ` surviving Quads with indices: `vQindKeep`
-        print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQprev)+' that survived!')
-        print('        and  '+str(nP)+' points  / '+str(nPprev)+' involved...')
-
-        # We can now reduce xJJs, xJIs, xIDs accordingly:
-        xIDs,vPindKeep,_ = np.intersect1d(xIDs, zids, return_indices=True) ; # retain only values,indices of `xIDs` that exist in `zids`
-        xJIs        = xJIs[vPindKeep]
-        xJJs        = xJJs[vPindKeep]
-
-
-
-        zQGC, zQXY, zPnm = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
-        vPids = xIDs
-        
-        # Get rid of points to close to land (shrinks arrays!):
-        #NbP, zPid, zGC, zXY, zPnm = lbr.MaskCoastal( xIDs, zGC, zXY, zPnm,
-        #                                                rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
-        #print(NbP, len(zPid), np.shape(zGC), np.shape(zXY), len(zPnm))
-        NbP=nP
-        
-        # We must update `vQindKeep` in case we suppressed points in `rJIrJJtoCoord()` (due to proximity to coast):
-        if NbP < nP:
-            vIDgone = np.setdiff1d( xIDs, vPids ) ; # keep the values of `xIDs` that are not in `vPids`
-            print('\n *** IDs of points that were supressed due to coast proximity:\n',vIDgone[:])
-            # We must suppress Quads that were relying on these points:
-            lQrm = []
-            for jid in vIDgone:
-                ([jind],) = np.where(QUADS.PointIDs==jid) ; # we want point INDEX that gives this point ID !!!
-                for jQ in vQindKeep:
-                    if jind in QUADS.MeshVrtcPntIdx[jQ,:]: lQrm.append(jQ)
-            if len(lQrm) != nP-NbP:
-                print('ERROR: len(lQrm)!=NbP-len(xIDs) !',len(lQrm),NbP-len(xIDs)); exit(0)
-            print('   ==> Quads to supress (ID, name):\n',[ (QUADS.QuaIDs[i], QUADS.QuadNames[i]) for i in lQrm ])
-
-            vQindKeep = np.setdiff1d( vQindKeep, np.array(lQrm) ) ; # rm lQrm from vQindKeep
-
-            # Now, the problem is that supression of a Quad can also lead to the vanishing of up to 3 other points!
-            #zvPIDs = QUADS.MeshVrtcPntIDs()
-            vPIDs_o = np.unique(zvPIDs[:        ,:])
-            vPIDs_n = np.unique(zvPIDs[vQindKeep,:])
-            #nP2s = len(vPIDs_o) - len(vPIDs_n)
-            vPIDsRM = np.setdiff1d( vPIDs_o, vPIDs_n )
-            vPIDsRM = np.setdiff1d( vPIDsRM, vIDgone)
-            #if nP2s > nP-NbP:
-            if len(vPIDsRM)>0:
-                #print('   ==> we also need to supress '+str(nP2s-(nP-NbP))+' extra points that are not in use anymore!')
-                print('   ==> we also need to supress '+str(len(vPIDsRM))+' extra points that are not in use anymore!')
-            print('   ==> IDs of these points to supress =',vPIDsRM)
-
-
-            _,vind,_ = np.intersect1d(vPIDs_o, vPIDs_n, return_indices=True) ; # retain only values,indices of `vPIDs_o` that exist in `vPIDs_n`
-            
-            print(vind,len(vind))
-            
-            #print( np.shape(vPidx_o),np.shape(vPidx_n) )
-
-            print('shape(zQXY) =',np.shape(zQXY))
-            zQXY = zQXY[vind,:]
-            vPids  = vPids[vind]
-            exit(0)
-            
-        
-        QUADS_NEW = lbr.Quadrangle( zQXY, QUADS.MeshVrtcPntIdx[vQindKeep], vPids, QUADS.QuadNames[vQindKeep] )
-
-        # Save the quadrangular mesh info:
-        lbr.SaveClassPolygon( cf_npzQ, QUADS_NEW, ctype='Q', date=cdats )
 
     else:
 
