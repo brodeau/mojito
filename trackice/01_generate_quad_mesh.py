@@ -128,61 +128,7 @@ if __name__ == '__main__':
 
     if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
-        # Have to build triangle and quadrangle mesh!
 
-        print('\n *** We are going to build triangle and quad meshes!')
-
-
-        # First explore how many buoys and how many records we have based on point IDs:
-        with np.load(cf_npz) as data:
-            xIDs    = data['IDs'][:,:]
-
-        (NbP,Nrtot) = np.shape(xIDs)
-
-        if np.any(xIDs<1):
-            print('FixMe! any(xIDs<1) !!!'); exit(0)
-        #for jt in range(Nrtot):
-        #    print('* rec #',jt, xIDs[::5,jt])
-        if Nrec > Nrtot:
-            print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
-        if np.max(vRec) > Nrtot-1:
-            print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)                    
-        del xIDs
-            
-        # Array with the shape coresponding to the # of records we want to read:
-        xIDs = np.zeros((NbP,Nrec), dtype=int)
-        xJIs = np.zeros((NbP,Nrec), dtype=int)
-        xJJs = np.zeros((NbP,Nrec), dtype=int)
-
-        with np.load(cf_npz) as data:
-            jr = 0
-            for jrec in vRec:
-                print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
-                xIDs[:,jr] = data['IDs'][:,jrec]
-                xJIs[:,jr] = data['JIs'][:,jrec]
-                xJJs[:,jr] = data['JJs'][:,jrec]
-                jr = jr+1
-        
-            
-        exit(0)
-        
-        #############################
-        
-        with np.load(cf_npz) as data:
-            #xIDs    = data['IDs'][:,irec]
-            #xJIs    = data['JIs'][:,irec]
-            #xJJs    = data['JJs'][:,irec]
-            xIDs    = data['IDs'][:,vRec]
-            xJIs    = data['JIs'][:,vRec]
-            xJJs    = data['JJs'][:,vRec]
-
-        print('np.shape(xIDs) =',np.shape(xIDs))
-        exit(0)
-            
-        (NbP,) = np.shape(xIDs)
-        print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
-        NbP0 = NbP ; # backup because this one is gonna shrink!
-        
         # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
         print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
         with Dataset(cf_lsm) as id_lsm:
@@ -195,6 +141,56 @@ if __name__ == '__main__':
             xlon_u = id_lsm.variables['glamu'][0,:,:]
             xlat_v = id_lsm.variables['gphiv'][0,:,:]
             print('      done.')
+
+
+        
+        # Have to build triangle and quadrangle mesh!
+
+        print('\n *** We are going to build triangle and quad meshes!')
+
+        # First explore how many buoys and how many records we have based on point IDs:
+        with np.load(cf_npz) as data:
+            xIDs    = data['IDs'][:,:]
+
+        (NbP,Nrtot) = np.shape(xIDs)
+
+        if np.any(xIDs<1):
+            print('FixMe! any(xIDs<1) !!!'); exit(0)
+            # => il peut y en avoir des masques...
+        #for jt in range(Nrtot):
+        #    print('* rec #',jt, xIDs[::5,jt])
+        if Nrec > Nrtot:
+            print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
+        if np.max(vRec) > Nrtot-1:
+            print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)                    
+        del xIDs
+            
+        # Array with the shape coresponding to the # of records we want to read:
+        xIDs = np.zeros((NbP,Nrec), dtype=int)
+        xJIs = np.zeros((NbP,Nrec), dtype=int)
+        xJJs = np.zeros((NbP,Nrec), dtype=int)
+        
+        #############################
+        with np.load(cf_npz) as data:
+            jr = 0
+            for jrec in vRec:
+                print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
+                xIDs[:,jr] = data['IDs'][:,jrec]
+                xJIs[:,jr] = data['JIs'][:,jrec]
+                xJJs[:,jr] = data['JJs'][:,jrec]
+                jr = jr+1
+        
+            
+
+        
+        print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
+        NbP0 = NbP ; # backup because this one is gonna shrink!
+
+
+
+        exit(0); #lilo
+
+        
 
         zGC, zXY, zPnm = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
 
