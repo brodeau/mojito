@@ -411,7 +411,7 @@ def ShearPDV( pdUdxy, pdVdxy ):
 
 
 
-def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v,
+def rJIrJJtoCoord_old( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v,
                    rMinDistFromLand=0, fNCdist2coast=None ):
     '''
         Get `ji,jj` from trackmice trajectories and convert it to Cartesian coordinates in km
@@ -498,3 +498,60 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v,
     #    xCoor_dbg = np.array( [ zx, zy ] ).T / 1000. ; # to km
     
     return nB, zCoor, zPid, zPnam
+
+
+
+
+
+
+
+
+
+def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
+    '''
+        Get `ji,jj` from trackmice trajectories and convert it to Cartesian coordinates in km
+    '''
+    #
+    (nB,) = np.shape(pIDs)
+    if len(pJJs)!=nB or len(pJIs)!=nB:
+        print('ERROR [rJIrJJtoCoord()]: len(pJJs)!=nB or len(pJIs)!=nB'); exit(0)
+    zlon, zlat = np.zeros(nB), np.zeros(nB)
+    
+    for jb in range(nB):
+        rjj, rji = pJJs[jb], pJIs[jb]
+
+        jj, rj = int(rjj)-1, rjj%1.   ; # F2C !
+        ji, ri = int(rji)-1, rji%1.   ; # F2C !
+        # #fixme: I'm still not sure whether 0.5 means T point or U,V point !!! => find out !!!
+        ####      => for now, assume T is at 0 and U is at 0.5 (that might be the opposite...)
+
+        #  --  working with geographic coordinates rather than cartesian coordinates...
+        if ri <= 0.5:
+            # 0<=ri<=0.5 ==> then we must interpolate between T_i and U_i:
+            rlon = 2.*(0.5-ri)*plon_t[jj,ji] + 2.*ri*plon_u[jj,ji]
+        else:
+            # 0.5<ri<1 ==> then we must interpolate between U_i and T_i+1:
+            rlon = 2.*(1.-ri)*plon_u[jj,ji] + 2*(ri-0.5)*plon_t[jj,ji+1]
+
+        if rj <= 0.5:
+            # 0<=rj<=0.5 ==> then we must interpolate between T_j and V_j:
+            rlat = 2.*(0.5-rj)*plat_t[jj,ji] + 2.*rj*plat_v[jj,ji]
+        else:
+            # 0.5<rj<1 ==> then we must interpolate between V_j and T_j+1:
+            rlat = 2.*(1.-rj)*plat_v[jj,ji] + 2*(rj-0.5)*plat_t[jj+1,ji]
+
+        zlon[jb] = rlon
+        zlat[jb] = rlat
+    #    
+    zPnam = np.array( [ str(i) for i in pIDs ], dtype='U32' ) ; # Name for each point
+
+    # Conversion from Geo coordinates lon,lat to Cartesian `NorthPolarStereo` projection in [km]
+    from cartopy.crs import PlateCarree, NorthPolarStereo
+    crs_src = PlateCarree()
+    crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    zx,zy,_ = crs_trg.transform_points(crs_src, zlon, zlat).T
+
+    zCCoor = np.array( [  zx ,  zy  ] ).T / 1000. ; #  Cartesian coordinates [km]
+    zGCoor = np.array( [ zlon, zlat ] ).T         ; # Geographic coordinates [degrees]
+    
+    return zGCoor, zCCoor, zPnam

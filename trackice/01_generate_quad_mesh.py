@@ -155,20 +155,17 @@ if __name__ == '__main__':
             xlat_v = id_lsm.variables['gphiv'][0,:,:]
             print('      done.')
 
-        #if l_debug_plot:
-        #    xCoor_dbg = np.zeros((NbP,2))
-        #    vPids_dbg = np.zeros(NbP, dtype=int)
-
-        NbP, xCoor, zPid, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,
-                                                     rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
-
+        zCoor, zXY, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
+        #                                      rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        zPid = xIDs
+        
         if idebug>0:
             for jc in range(NbP):
-                print(' * #'+str(jc)+' => Name: "'+vPnam[jc]+'": ID='+str(zPid[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
+                print(' * #'+str(jc)+' => Name: "'+vPnam[jc]+'": ID='+str(zPid[jc])+', X='+str(round(zXY[jc,0],2))+', Y='+str(round(zXY[jc,1],2)))
             print('')
 
         # Generating triangular meshes out of the cloud of points:
-        TRI = Delaunay(xCoor)
+        TRI = Delaunay(zXY)
 
         xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
@@ -179,7 +176,7 @@ if __name__ == '__main__':
         print('\n *** We have '+str(NbT)+' triangles!')
         #
         # Conversion to the `Triangle` class:
-        TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, zPid, vPnam )
+        TRIAS = lbr.Triangle( zXY, xTpnts, xNeighborIDs, zPid, vPnam )
 
         del xTpnts, xNeighborIDs, TRI
 
@@ -195,7 +192,7 @@ if __name__ == '__main__':
         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
         QUADS = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
 
-        del xQpnts, xQcoor, xCoor
+        del xQpnts, xQcoor, zXY
 
         if not path.exists('./npz'): mkdir('./npz')
 
@@ -212,7 +209,7 @@ if __name__ == '__main__':
         TRIAS = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
         QUADS = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
-        l_debug_plot = False ; # we don't have xCoor_dbg and vPids_dbg !
+        l_debug_plot = False ; # we don't have zXY_dbg and vPids_dbg !
 
     #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
     ############################################################
@@ -224,7 +221,7 @@ if __name__ == '__main__':
         if l_debug_plot:
             # Show all initial points (out of TrackIce):
             print('\n *** Launching initial cloud point plot!')
-            kk = lbr.ShowTQMesh( xCoor_dbg[:,0], xCoor_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
+            kk = lbr.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfroot+'.png',
                                  ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig )
 
         # Show triangles on a map:
@@ -358,8 +355,9 @@ if __name__ == '__main__':
         xJJs        = xJJs[vPindKeep]
 
         
-        NbP, xQcoor, vPids, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
-
+        zQcoor, zQXY, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )
+        #,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        vPids = xIDs
 
 
         #vi = QUADS.MeshVrtcPntIdx
@@ -404,13 +402,13 @@ if __name__ == '__main__':
             
             #print( np.shape(vPidx_o),np.shape(vPidx_n) )
 
-            print('shape(xQcoor) =',np.shape(xQcoor))
-            xQcoor = xQcoor[vind,:]
+            print('shape(zQXY) =',np.shape(zQXY))
+            zQXY = zQXY[vind,:]
             vPids  = vPids[vind]
             exit(0)
             
         
-        QUADS_NEW = lbr.Quadrangle( xQcoor, QUADS.MeshVrtcPntIdx[vQindKeep], vPids, QUADS.QuadNames[vQindKeep] )
+        QUADS_NEW = lbr.Quadrangle( zQXY, QUADS.MeshVrtcPntIdx[vQindKeep], vPids, QUADS.QuadNames[vQindKeep] )
 
         # Save the quadrangular mesh info:
         lbr.SaveClassPolygon( cf_npzQ, QUADS_NEW, ctype='Q', date=cdats )
