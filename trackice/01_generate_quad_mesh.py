@@ -169,6 +169,7 @@ if __name__ == '__main__':
         xIDs = np.zeros((NbP,Nrec), dtype=int)
         xJIs = np.zeros((NbP,Nrec), dtype=int)
         xJJs = np.zeros((NbP,Nrec), dtype=int)
+        mask = np.zeros( NbP      , dtype=int) + 1  ; # Mask to for "deleted" points (to cancel)
         
         #############################
         with np.load(cf_npz) as data:
@@ -180,24 +181,32 @@ if __name__ == '__main__':
                 xJJs[:,jr] = data['JJs'][:,jrec]
                 jr = jr+1
         
-            
 
+        zGC = np.zeros((NbP,2,Nrec))
+        zXY = np.zeros((NbP,2,Nrec))
+                
+        # Loop along requested records:
         
-        print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
+        #print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
         NbP0 = NbP ; # backup because this one is gonna shrink!
 
+        zPnm = np.array( [ str(i) for i in xIDs[:,vRec[0]] ], dtype='U32' ) ; # Name for each point, based on 1st record...
+        
+        for jr in range(Nrec):
+            print('\n   * Record #'+str(vRec[jr])+':')
 
+            # Translate rji,rjj from TracIce to lon,lat and x,y:
+            zGC[:,:,jr], zXY[:,:,jr] = lbr.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
+            
+            # Get rid of points to close to land (shrinks arrays!):
+            mask[:] = lbr.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
+        # How many points left:
+        NbP = np.sum(mask)
+        print('\n *** '+str(NbP)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP)+' points to delete!')
+            
         exit(0); #lilo
 
-        
-
-        zGC, zXY, zPnm = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
-
-        # Get rid of points to close to land (shrinks arrays!):
-        NbP, zPid, zGC, zXY, zPnm = lbr.MaskCoastal( xIDs, zGC, zXY, zPnm,
-                                                        rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
-        #print(NbP, len(zPid), np.shape(zGC), np.shape(zXY), len(zPnm))
         
         if idebug>0:
             for jc in range(NbP):

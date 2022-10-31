@@ -411,100 +411,6 @@ def ShearPDV( pdUdxy, pdVdxy ):
 
 
 
-def rJIrJJtoCoord_old( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v,
-                   rMinDistFromLand=0, fNCdist2coast=None ):
-    '''
-        Get `ji,jj` from trackmice trajectories and convert it to Cartesian coordinates in km
-        with the possibility to exclude buoys too close to the shore...
-    '''
-    
-    
-    if rMinDistFromLand>0:
-        if not fNCdist2coast:
-            print('ERROR [rJIrJJtoCoord()]: provide `fNCdist2coast` !!!'); exit(0)
-        from .util import LoadDist2CoastNC, Dist2Coast
-        # Load `distance to coast` data:
-        vlon_dist, vlat_dist, xdist = LoadDist2CoastNC( fNCdist2coast )
-
-    (nB,) = np.shape(pIDs)
-    if len(pJJs)!=nB or len(pJIs)!=nB:
-        print('ERROR [rJIrJJtoCoord()]: len(pJJs)!=nB or len(pJIs)!=nB'); exit(0)
-    nBo = nB
-    zlon, zlat = np.zeros(nB), np.zeros(nB)
-    zmsk       = np.zeros(nB, dtype=int)        
-    
-    for jb in range(nB):
-        rjj, rji = pJJs[jb], pJIs[jb]
-
-        jj, rj = int(rjj)-1, rjj%1.   ; # F2C !
-        ji, ri = int(rji)-1, rji%1.   ; # F2C !
-        # #fixme: I'm still not sure whether 0.5 means T point or U,V point !!! => find out !!!
-        ####      => for now, assume T is at 0 and U is at 0.5 (that might be the opposite...)
-
-        #  --  working with geographic coordinates rather than cartesian coordinates...
-        if ri <= 0.5:
-            # 0<=ri<=0.5 ==> then we must interpolate between T_i and U_i:
-            rlon = 2.*(0.5-ri)*plon_t[jj,ji] + 2.*ri*plon_u[jj,ji]
-        else:
-            # 0.5<ri<1 ==> then we must interpolate between U_i and T_i+1:
-            rlon = 2.*(1.-ri)*plon_u[jj,ji] + 2*(ri-0.5)*plon_t[jj,ji+1]
-
-        if rj <= 0.5:
-            # 0<=rj<=0.5 ==> then we must interpolate between T_j and V_j:
-            rlat = 2.*(0.5-rj)*plat_t[jj,ji] + 2.*rj*plat_v[jj,ji]
-        else:
-            # 0.5<rj<1 ==> then we must interpolate between V_j and T_j+1:
-            rlat = 2.*(1.-rj)*plat_v[jj,ji] + 2*(rj-0.5)*plat_t[jj+1,ji]
-
-        #if l_debug_plot:
-        #    vPids_dbg[jb]   = xIDs[jb]
-        #    xCoor_dbg[jb,:] = [ rlon, rlat ]
-
-        zlon[jb],zlat[jb] = rlon,rlat
-        zmsk[jb] = 1
-        #
-        if rMinDistFromLand>0:
-            rd_ini = Dist2Coast( rlon, rlat, vlon_dist, vlat_dist, xdist )
-            if rd_ini < rMinDistFromLand:
-                zlon[jb],zlat[jb] = 0.,0.
-                zmsk[jb] = 0
-
-    # Okay not we have to get rid of points that are masked (only viscinity to land at play so far...)
-    zlon = np.ma.masked_where( zmsk==0, zlon)
-    zlat = np.ma.masked_where( zmsk==0, zlat)
-    zPid = np.ma.masked_where( zmsk==0, pIDs)
-
-    # Delete masked elements:
-    zlon = np.ma.MaskedArray.compressed(zlon)
-    zlat = np.ma.MaskedArray.compressed(zlat)
-    zPid = np.ma.MaskedArray.compressed(zPid)
-
-    # Update number of valid points:
-    nB = len(zlon)
-    if len(zlat)!=nB or len(zPid)!=nB:
-        print('ERROR [rJIrJJtoCoord()]: len(zlat)!=nB or len(zPid)!=nB !'); exit(0)
-    print('\n *** [rJIrJJtoCoord()]: We retain only '+str(nB)+' buoys / '+str(nBo)+'! (others were too close to land)')
-        
-    zPnam = np.array( [ str(i) for i in zPid ], dtype='U32' ) ; # Name for each point
-
-    # Conversion from Geo coordinates lon,lat to Cartesian `NorthPolarStereo` projection in [km]
-    from cartopy.crs import PlateCarree, NorthPolarStereo
-    crs_src = PlateCarree()
-    crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
-    zx,zy,_ = crs_trg.transform_points(crs_src, zlon, zlat).T
-    zCoor = np.array( [ zx, zy ] ).T / 1000. ; # to km
-    #if l_debug_plot:
-    #    zx,zy,_ = crs_trg.transform_points(crs_src, xCoor_dbg[:,0], xCoor_dbg[:,1]).T
-    #    xCoor_dbg = np.array( [ zx, zy ] ).T / 1000. ; # to km
-    
-    return nB, zCoor, zPid, zPnam
-
-
-
-
-
-
-
 
 
 def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
@@ -542,8 +448,6 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
 
         zlon[jb] = rlon
         zlat[jb] = rlat
-    #    
-    zPnam = np.array( [ str(i) for i in pIDs ], dtype='U32' ) ; # Name for each point
 
     # Conversion from Geo coordinates lon,lat to Cartesian `NorthPolarStereo` projection in [km]
     from cartopy.crs import PlateCarree, NorthPolarStereo
@@ -554,7 +458,7 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
     zCCoor = np.array( [  zx ,  zy  ] ).T / 1000. ; #  Cartesian coordinates [km]
     zGCoor = np.array( [ zlon, zlat ] ).T         ; # Geographic coordinates [degrees]
     
-    return zGCoor, zCCoor, zPnam
+    return zGCoor, zCCoor
 
 
 
@@ -562,7 +466,49 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
 
 
 
-def MaskCoastal( pIDs, pGC, pXY, pNam, rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc' ):
+def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc' ):
+    '''
+        * rMinDistFromLand: minimum distance to coast allowed [km]
+        * fNCdist2coast   : netCDF file containing "distance to coast" info
+    
+        RETURNS: mask==0 for buoys that must be deleted....
+    '''
+    if (not path.exists(fNCdist2coast)):
+        print('ERROR [MaskCoastal()]: provide '+fNCdist2coast+' does not exist!!!'); exit(0)        
+    if rMinDistFromLand<=0:
+        print('ERROR [MaskCoastal()]: rMinDistFromLand<=0 !!!'); exit(0)
+
+    (nB,_) = np.shape(pGC)
+
+    mask1d = np.zeros(nB, dtype=int) + 1
+    
+    if len(mask) > 0:
+        if len(mask)!=nB:
+            print('ERROR [MaskCoastal()]: shape problem => `len(mask)!=nB` !!!'); exit(0)        
+        mask1d[:] = mask[:]
+            
+    from .util import LoadDist2CoastNC, Dist2Coast
+        
+    vlon_dist, vlat_dist, xdist = LoadDist2CoastNC( fNCdist2coast ) ; # Load `distance to coast` data...
+
+    mask1d = np.zeros(nB, dtype=int) + 1
+    
+    for jb in range(nB):
+        if mask1d[jb]==1:
+            rD = Dist2Coast( pGC[jb,0], pGC[jb,1], vlon_dist, vlat_dist, xdist )
+            if rD < rMinDistFromLand:
+                mask1d[jb] = 0
+    
+    nBn = np.sum(mask1d)
+    print('   +++ [MaskCoastal()]: found '+str(nB-nBn)+' buoys to remove due to excessive shore proximity!')
+    
+    return mask1d
+
+
+
+
+
+def MaskCoastalOld( pIDs, pGC, pXY, pNam, rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc' ):
     '''
         * rMinDistFromLand: minimum distance to coast allowed [km]
         * fNCdist2coast   : netCDF file containing "distance to coast" info

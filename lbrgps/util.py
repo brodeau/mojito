@@ -9,18 +9,19 @@ import numpy as np
 
 
 
-def LoadDist2CoastNC( cNCfile ):
+def LoadDist2CoastNC( cNCfile, ivrbs=0 ):
     from climporn import chck4f
     from netCDF4  import Dataset
     #
-    print('\n *** [util.LoadDist2CoastNC()] Loading "distance to coast" from file:')
-    print('      '+cNCfile)
+    if ivrbs>0:
+        print('  +++ [util.LoadDist2CoastNC()] Loading "distance to coast" from file:')
+        print('       '+cNCfile)
     chck4f(cNCfile)
     with Dataset(cNCfile) as id_in:
         vlon  = id_in.variables['lon'][:]
         vlat  = id_in.variables['lat'][:]
         xdist = id_in.variables['dist'][:,:]
-        print('       => ok!\n')
+    if ivrbs>0: print('       => ok!\n')
         #
     return vlon, vlat, xdist
 
