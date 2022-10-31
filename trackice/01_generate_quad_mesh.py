@@ -141,7 +141,8 @@ if __name__ == '__main__':
 
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
-
+        NbP0 = NbP ; # backup because this one is gonna shrink!
+        
         # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
         print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
         with Dataset(cf_lsm) as id_lsm:
@@ -155,18 +156,24 @@ if __name__ == '__main__':
             xlat_v = id_lsm.variables['gphiv'][0,:,:]
             print('      done.')
 
-        zCoor, zXY, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
-        #                                      rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
-        zPid = xIDs
+        zGC, zXY, zPnm = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
+
+        # Get rid of points to close to land (shrinks arrays!):
+        NbP, zPid, zGC, zXY, zPnm = lbr.MaskCoastal( xIDs, zGC, zXY, zPnm,
+                                                        rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        #print(NbP, len(zPid), np.shape(zGC), np.shape(zXY), len(zPnm))
         
         if idebug>0:
             for jc in range(NbP):
-                print(' * #'+str(jc)+' => Name: "'+vPnam[jc]+'": ID='+str(zPid[jc])+', X='+str(round(zXY[jc,0],2))+', Y='+str(round(zXY[jc,1],2)))
+                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zPid[jc],', X=',zXY[jc,0],', Y=',zXY[jc,1],
+                       ', lon=',zGC[jc,0],', lat=',zGC[jc,1] )
             print('')
 
+        
         # Generating triangular meshes out of the cloud of points:
         TRI = Delaunay(zXY)
 
+        
         xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
 
         (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
@@ -176,7 +183,7 @@ if __name__ == '__main__':
         print('\n *** We have '+str(NbT)+' triangles!')
         #
         # Conversion to the `Triangle` class:
-        TRIAS = lbr.Triangle( zXY, xTpnts, xNeighborIDs, zPid, vPnam )
+        TRIAS = lbr.Triangle( zXY, xTpnts, xNeighborIDs, zPid, zPnm )
 
         del xTpnts, xNeighborIDs, TRI
 
@@ -354,17 +361,16 @@ if __name__ == '__main__':
         xJIs        = xJIs[vPindKeep]
         xJJs        = xJJs[vPindKeep]
 
-        
-        zQcoor, zQXY, vPnam = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )
-        #,  rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+
+
+        zQGC, zQXY, zPnm = lbr.rJIrJJtoCoord( xJJs, xJIs, xIDs, xlon_t, xlon_u, xlat_t, xlat_v )        
         vPids = xIDs
-
-
-        #vi = QUADS.MeshVrtcPntIdx
-        #vx = QUADS.MeshVrtcPntIDs()
-        #print(vx[11,:],' name:',QUADS.QuadNames[11],vi[11,:])
-        #print(vx[56,:],' name:',QUADS.QuadNames[56],vi[56,:])
-        #exit(0)
+        
+        # Get rid of points to close to land (shrinks arrays!):
+        #NbP, zPid, zGC, zXY, zPnm = lbr.MaskCoastal( xIDs, zGC, zXY, zPnm,
+        #                                                rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        #print(NbP, len(zPid), np.shape(zGC), np.shape(zXY), len(zPnm))
+        NbP=nP
         
         # We must update `vQindKeep` in case we suppressed points in `rJIrJJtoCoord()` (due to proximity to coast):
         if NbP < nP:

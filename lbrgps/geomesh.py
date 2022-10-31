@@ -4,7 +4,7 @@
 ##################################################################
 
 from sys import exit
-#from os import path, mkdir
+from os import path
 import numpy as np
 
 
@@ -555,3 +555,59 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
     zGCoor = np.array( [ zlon, zlat ] ).T         ; # Geographic coordinates [degrees]
     
     return zGCoor, zCCoor, zPnam
+
+
+
+
+
+
+
+def MaskCoastal( pIDs, pGC, pXY, pNam, rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc' ):
+    '''
+        * rMinDistFromLand: minimum distance to coast allowed [km]
+        * fNCdist2coast   : netCDF file containing "distance to coast" info
+    
+        RETURNS: new size + shrinked version of input arrays
+                 => all elements corresponding to points to close
+                    to the shore are deleted!
+    '''
+    if (not path.exists(fNCdist2coast)):
+        print('ERROR [MaskCoastal()]: provide '+fNCdist2coast+' does not exist!!!'); exit(0)        
+    if rMinDistFromLand<=0:
+        print('ERROR [MaskCoastal()]: rMinDistFromLand<=0 !!!'); exit(0)
+
+    nB = len(pIDs)
+    
+    if np.shape(pGC)!=(nB,2) or np.shape(pXY)!=(nB,2) or len(pNam)!=nB:
+        print('ERROR [MaskCoastal()]: shape problem => shape(pGC)!=(nB,2) or shape(pXY)!=(nB,2) !!!'); exit(0)
+            
+    from .util import LoadDist2CoastNC, Dist2Coast
+        
+    vlon_dist, vlat_dist, xdist = LoadDist2CoastNC( fNCdist2coast ) ; # Load `distance to coast` data...
+
+    mask1d = np.zeros(nB, dtype=int) + 1
+    
+    for jb in range(nB):
+        if Dist2Coast( pGC[jb,0], pGC[jb,1], vlon_dist, vlat_dist, xdist ) < rMinDistFromLand:
+            mask1d[jb] = 0
+            
+    nBn = np.sum(mask1d)
+    print('\n *** [MaskCoastal()]: found '+str(nB-nBn)+' buoys to remove due to excessive shore proximity!\n')
+
+    zIDs = np.ma.masked_where( mask1d==0, pIDs)
+    zNam = np.ma.masked_where( mask1d==0, pNam)
+
+    zx0 = np.ma.masked_where( mask1d==0, pGC[:,0])
+    zx1 = np.ma.masked_where( mask1d==0, pGC[:,1])
+    zGC = np.array( [np.ma.MaskedArray.compressed(zx0),np.ma.MaskedArray.compressed(zx1)] ).T
+
+    zx0 = np.ma.masked_where( mask1d==0, pXY[:,0])
+    zx1 = np.ma.masked_where( mask1d==0, pXY[:,1])
+    zXY = np.array( [np.ma.MaskedArray.compressed(zx0),np.ma.MaskedArray.compressed(zx1)] ).T
+    
+    return nBn, np.ma.MaskedArray.compressed(zIDs), zGC, zXY, np.ma.MaskedArray.compressed(zNam)
+
+
+
+
+
