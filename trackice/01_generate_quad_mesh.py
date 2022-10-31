@@ -86,9 +86,9 @@ if __name__ == '__main__':
 
     vcrec = split(',',lirec)
     Nrec  = len(vcrec)
-    vrec = [ int(vcrec[i]) for i in range(Nrec) ]
+    vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
     del vcrec
-
+    
     chck4f(cf_npz)
     chck4f(cf_lsm)
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     #########################################################################################################
 
     # First record:
-    irec = vrec[0]
+    irec = vRec[0]
 
     # Getting time info and time step from input npz file which is should look like NEMO output file:
     vv = split('-|_', path.basename(cf_npz))
@@ -132,13 +132,53 @@ if __name__ == '__main__':
 
         print('\n *** We are going to build triangle and quad meshes!')
 
-        #############################
-        print('\n *** Reading for record # '+str(irec)+' into '+cf_npz+' !!!')
-        with np.load(cf_npz) as data:
-            xIDs    = data['IDs'][:,irec]
-            xJIs    = data['JIs'][:,irec]
-            xJJs    = data['JJs'][:,irec]
 
+        # First explore how many buoys and how many records we have based on point IDs:
+        with np.load(cf_npz) as data:
+            xIDs    = data['IDs'][:,:]
+
+        (NbP,Nrtot) = np.shape(xIDs)
+
+        if np.any(xIDs<1):
+            print('FixMe! any(xIDs<1) !!!'); exit(0)
+        #for jt in range(Nrtot):
+        #    print('* rec #',jt, xIDs[::5,jt])
+        if Nrec > Nrtot:
+            print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
+        if np.max(vRec) > Nrtot-1:
+            print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)                    
+        del xIDs
+            
+        # Array with the shape coresponding to the # of records we want to read:
+        xIDs = np.zeros((NbP,Nrec), dtype=int)
+        xJIs = np.zeros((NbP,Nrec), dtype=int)
+        xJJs = np.zeros((NbP,Nrec), dtype=int)
+
+        with np.load(cf_npz) as data:
+            jr = 0
+            for jrec in vRec:
+                print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
+                xIDs[:,jr] = data['IDs'][:,jrec]
+                xJIs[:,jr] = data['JIs'][:,jrec]
+                xJJs[:,jr] = data['JJs'][:,jrec]
+                jr = jr+1
+        
+            
+        exit(0)
+        
+        #############################
+        
+        with np.load(cf_npz) as data:
+            #xIDs    = data['IDs'][:,irec]
+            #xJIs    = data['JIs'][:,irec]
+            #xJJs    = data['JJs'][:,irec]
+            xIDs    = data['IDs'][:,vRec]
+            xJIs    = data['JIs'][:,vRec]
+            xJJs    = data['JJs'][:,vRec]
+
+        print('np.shape(xIDs) =',np.shape(xIDs))
+        exit(0)
+            
         (NbP,) = np.shape(xIDs)
         print('\n *** There are '+str(NbP)+' buoys at record #'+str(irec)+'...')
         NbP0 = NbP ; # backup because this one is gonna shrink!
@@ -274,7 +314,7 @@ if __name__ == '__main__':
 
     # 2nd record !!!
     ################
-    irec = vrec[1]
+    irec = vRec[1]
 
     cdats = epoch2clock(vtime[irec])
     cdate = str.replace( epoch2clock(vtime[irec], precision='D'), '-', '')
