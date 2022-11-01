@@ -131,7 +131,9 @@ if __name__ == '__main__':
     (NbP0,Nrtot) = np.shape(xIDs)
 
     if np.any(xIDs<1):
-        print('WARNING! any(xIDs<1) = True !!!')        
+        print('WARNING! any(xIDs<1) = True !!!')
+        print(' => lolo: we have to exclude the buoys that disapear before the last record specified!')
+        exit(0)
         # => il peut y en avoir des masques...
         idcneg = np.where(xIDs<1)
         print(idcneg,'\n')
