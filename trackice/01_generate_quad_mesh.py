@@ -56,9 +56,8 @@ rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
 
 
 #rQarea_max = 500. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
-#rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
-#rQarea_max = 70000. ; rzoom_fig = 1  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
-rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+#rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
 
 
 
@@ -132,8 +131,14 @@ if __name__ == '__main__':
     (NbP0,Nrtot) = np.shape(xIDs)
 
     if np.any(xIDs<1):
-        print('FixMe! any(xIDs<1) !!!'); exit(0)
+        print('WARNING! any(xIDs<1) = True !!!')        
         # => il peut y en avoir des masques...
+        idcneg = np.where(xIDs<1)
+        print(idcneg,'\n')
+        #print(xIDs[idcneg])
+        #exit(0)
+
+        
     if Nrec > Nrtot:
         print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
     if np.max(vRec) > Nrtot-1:
