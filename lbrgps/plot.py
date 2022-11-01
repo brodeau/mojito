@@ -21,7 +21,7 @@ import climporn as cp
 
 #idebug = 0
 
-rndaxiskm = 100 ; 
+rndaxiskm = 500 ; 
 
 # Figure stuff:
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
@@ -49,7 +49,7 @@ vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # No
 
 
 
-def __initStyle__( fntzoom=1., color_top='k' ):
+def _initStyle_( fntzoom=1., color_top='k' ):
     #
     global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mail
     #
@@ -73,22 +73,36 @@ def __initStyle__( fntzoom=1., color_top='k' ):
     #
     return 0
 
-def __set_fig_axis__( pX, pY, zoom=1):
+def _rnd_ax_range_( pR ):
     from math import floor,ceil
+    return floor(np.min(pR)/rndaxiskm)*rndaxiskm , ceil(np.max(pR)/rndaxiskm)*rndaxiskm
+
+def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):    
     #  => we want to preserve aspect ratio!
-    # Rounding axis boundaries at 100 km:    
-    xA, xB = floor(np.min(pX)/rndaxiskm)*rndaxiskm , ceil(np.max(pX)/rndaxiskm)*rndaxiskm
-    yA, yB = floor(np.min(pY)/rndaxiskm)*rndaxiskm , ceil(np.max(pY)/rndaxiskm)*rndaxiskm
-    Lx, Ly = xB-xA, yB-yA
-    dx, dy = 0.05*(Lx)*1.5/zoom, 0.05*(Ly)
-    vfig = (10*zoom,10*Ly/Lx*zoom)
+    # Rounding axis boundaries at 100 km:
+    lFrxy = False
+    if rangeX and rangeY: lFrxy = ( len(rangeX)==2 and len(rangeY)==2 )
+    if lFrxy:
+        xA, xB = rangeX[0], rangeX[1]
+        yA, yB = rangeY[0], rangeY[1]
+    else:
+        xA, xB = _rnd_ax_range_(pX)
+        yA, yB = _rnd_ax_range_(pY)
     #
-    return (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), (10*zoom,10*Ly/Lx*zoom)
+    Lx, Ly = xB-xA, yB-yA
+    #dx, dy = rdr*(Lx)*1.5/zoom, rdr*(Ly)*1.5/zoom
+    dx, dy = rdr*Lx, rdr*Ly
+    vfig   = (10*zoom,10*Ly/Lx*zoom)
+    if not lFrxy:
+        xA, xB = xA-dx, xB+dx
+        yA, yB = yA-dy, yB+dy
+    #
+    return (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig
 
 
 
 
-def __figMap__( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png', ms=5, ralpha=0.5, caller='unknown' ):
+def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png', ms=5, ralpha=0.5, caller='unknown' ):
     '''
         IN:
             * pt     => the date as epoch/unix time (integer)
@@ -109,7 +123,7 @@ def __figMap__( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.p
     # Add IDs figure right next to buoys:
     if len(pvIDs) > 0:
         if Nb != len(pvIDs):
-            print('\n *** ERROR ['+caller+'/__figMap__]: `Nb` different for `pvIDs` and `coordinates`!'); exit(0)
+            print('\n *** ERROR ['+caller+'/_figMap_]: `Nb` different for `pvIDs` and `coordinates`!'); exit(0)
         for ii in range(Nb):
             x0,y0 = BMProj(pvlon[jt,ii],pvlat[jt,ii])
             ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
@@ -161,7 +175,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
     if cnmfig:
         cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
-    return __figMap__( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha, caller='ShowBuoysMap' )
+    return _figMap_( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha, caller='ShowBuoysMap' )
 
 
 def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5, clock_res='s' ):
@@ -204,7 +218,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
 
         
 
-        kk = kk + __figMap__( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
+        kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
     #
     return kk
 
@@ -239,7 +253,8 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh=[],
-                pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS' ):
+                pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS',
+                rangeX=None, rangeY=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -255,7 +270,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
     from math import log
     
     zrat = 1./zoom    
-    kk = __initStyle__(fntzoom=zoom)    
+    kk = _initStyle_(fntzoom=zoom)    
 
     l_annotate = ( zoom < 7 ) ; # looks like shit for big stuff if we show IDs on triangles and quads...
 
@@ -278,8 +293,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
             print('\n *** ERROR ['+caller+'.ShowTQMesh()]: Unknown projection "'+cProj+'"!'); exit(0)
         #            
     else:
-        # Cartesian coordinates (x,y)
-        (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = __set_fig_axis__( pX, pY, zoom=zoom)
+        # Cartesian coordinates (x,y) in km...
+        (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom, rangeX=rangeX, rangeY=rangeY )
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='w')
     
@@ -291,8 +306,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
         plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
     else:
         ddx = dx*Ly/Lx
-        ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')
-        plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
+        ax  = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')
+        plt.axis([ xA,xB , yA,yB ])
         # Showing points:
         plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200 )
     
@@ -356,7 +371,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     from math import log
     
     zrat = 1./zoom
-    kk = __initStyle__(fntzoom=zoom)    
+    kk = _initStyle_(fntzoom=zoom)    
 
     # Colormap:
     if cwhat=='shr':
@@ -372,7 +387,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #    vfig = (12*zoom,9*zoom)
     #else:
     # Cartesian coordinates (x,y)
-    (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = __set_fig_axis__( pX, pY, zoom=zoom)
+    (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom)
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
     
@@ -383,7 +398,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #else:
     ddx = dx*Ly/Lx
     ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
-    plt.axis([ xA-dx,xB+dx , yA-dy,yB+dy ])
+    plt.axis([ xA,xB , yA,yB ])
 
     # Showing points:
     #plt.plot( pX, pY, '.', ms=msPoints*zrat, color=clPoints, zorder=200) ; #, alpha=0.5)

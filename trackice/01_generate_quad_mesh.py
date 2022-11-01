@@ -35,6 +35,8 @@ idebug=1
 l_debug_plot = False
 
 l_plot = True ; # Create figures to see what we are doing...
+vrngX = [-2200.,1600.]
+vrngY = [-850.,1800.]
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -250,12 +252,14 @@ if __name__ == '__main__':
                     # Show all initial points (out of TrackIce):
                     print('\n *** Launching initial cloud point plot!')
                     kk = lbr.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfbase+'.png',
-                                         ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig )
+                                         ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
+                                         rangeX=vrngX, rangeY=vrngY )
                 # Show triangles on a map:
                 print('\n *** Launching Triangle plot!')
                 kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
                                      ppntIDs=TRIAS.PointIDs,
-                                     TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+                                     TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
+                                     rangeX=vrngX, rangeY=vrngY )
 
 
             #######################################################################################################
@@ -323,7 +327,7 @@ if __name__ == '__main__':
             kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
                                  ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
                                  pX_Q=QUADS.PointXY[:,0], pY_Q=QUADS.PointXY[:,1], QuadMesh=QUADS.MeshVrtcPntIdx,
-                                 lGeoCoor=False, zoom=rzoom_fig)
+                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
             ## Show only points composing the quadrangles:
             #kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
             #                     ppntIDs=QUADS.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
@@ -331,7 +335,8 @@ if __name__ == '__main__':
             print('\n *** Launching Quad-only plot!')
             kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                  ppntIDs=QUADS.PointIDs,
-                                 QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+                                 QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
+                                 rangeX=vrngX, rangeY=vrngY )
     
     ### for jr in range(Nrec):
     print('\n --- Over!\n')
