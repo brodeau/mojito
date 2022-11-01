@@ -36,7 +36,7 @@ l_debug_plot = False
 
 l_plot = True ; # Create figures to see what we are doing...
 vrngX = [-2200.,1600.]
-vrngY = [-850.,1800.]
+vrngY = [-1000.,1800.]
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
