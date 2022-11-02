@@ -27,7 +27,7 @@ from scipy.spatial import Delaunay
 from netCDF4 import Dataset
 
 from climporn import chck4f, epoch2clock
-import lbrgps   as lbr
+import mojito   as mjt
 
 
 idebug=1
@@ -171,16 +171,16 @@ if __name__ == '__main__':
         print('\n   * Record #'+str(vRec[jr])+':')
 
         # Translate rji,rjj from TracIce to lon,lat and x,y:
-        zGC[:,:,jr], zXY[:,:,jr] = lbr.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
+        zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
         
         # Get rid of points to close to land (shrinks arrays!):
-        mask[:] = lbr.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
     # How many points left after elimination of buoys that get too close to land (at any record):
     NbP = np.sum(mask)
     print('\n *** '+str(NbP)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP)+' points to delete!')
 
-    zPnm, zIDs, zGC, zXY = lbr.ShrinkArrays( mask, zPnm, xIDs, zGC, zXY )
+    zPnm, zIDs, zGC, zXY = mjt.ShrinkArrays( mask, zPnm, xIDs, zGC, zXY )
     
     if idebug>0:
         for jr in range(Nrec):
@@ -233,12 +233,12 @@ if __name__ == '__main__':
             print('\n *** We have '+str(NbT)+' triangles!')
             #
             # Conversion to the `Triangle` class:
-            TRIAS = lbr.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, zPnm )
+            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, zPnm )
 
             del xTpnts, xNeighborIDs, TRI
 
             # Merge triangles into quadrangles:
-            xQcoor, vPids, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+            xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                                          ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
                                                          areaR=(rQarea_min,rQarea_max) )
             if len(xQpnts)<=0: exit(0)
@@ -247,7 +247,7 @@ if __name__ == '__main__':
             print('\n *** We have '+str(NbQ)+' quadrangles!')
 
             # Save the triangular mesh info:
-            lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
+            mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
 
             # To be used for other record, indices of Points to keep for Quads:
             _,ind2keep,_ = np.intersect1d(zPntIDs, vPids, return_indices=True); # retain only indices of `zPntIDs` that exist in `vPids`
@@ -258,12 +258,12 @@ if __name__ == '__main__':
                 if l_debug_plot:
                     # Show all initial points (out of TrackIce):
                     print('\n *** Launching initial cloud point plot!')
-                    kk = lbr.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfbase+'.png',
+                    kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfbase+'.png',
                                          ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
                                          rangeX=vrngX, rangeY=vrngY )
                 # Show triangles on a map:
                 print('\n *** Launching Triangle plot!')
-                kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
+                kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
                                      ppntIDs=TRIAS.PointIDs,
                                      TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
                                      rangeX=vrngX, rangeY=vrngY )
@@ -322,25 +322,25 @@ if __name__ == '__main__':
         ### if jr == 0
 
         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-        QUADS = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
+        QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
 
         # Save the quadrangular mesh info:
-        lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', date=cdats )
+        mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', date=cdats )
 
 
         if l_plot:
             # Show triangles together with the quadrangles on a map:
             print('\n *** Launching Triangle+Quad plot!')
-            kk = lbr.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
+            kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
                                  ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
                                  pX_Q=QUADS.PointXY[:,0], pY_Q=QUADS.PointXY[:,1], QuadMesh=QUADS.MeshVrtcPntIdx,
                                  lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
             ## Show only points composing the quadrangles:
-            #kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
+            #kk = mjt.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
             #                     ppntIDs=QUADS.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
             # Show only the quads with only the points that define them:
             print('\n *** Launching Quad-only plot!')
-            kk = lbr.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
+            kk = mjt.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                  ppntIDs=QUADS.PointIDs,
                                  QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
                                  rangeX=vrngX, rangeY=vrngY )

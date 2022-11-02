@@ -9,7 +9,7 @@ import numpy as np
 
 from scipy.spatial import Delaunay
 
-import lbrgps   as lbr
+import mojito   as mjt
 
 idebug=3
 
@@ -115,7 +115,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We have '+str(NbT)+' triangles!')
 
     # Conversion to the `Triangle` class:
-    TRIAS = lbr.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam )
+    TRIAS = mjt.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam )
 
     del xTpnts, xNeighborIDs, TRI
 
@@ -137,7 +137,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    xQcoor, vPids, xQpnts, vQnam = lbr.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+    xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                                  ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
                                                  areaR=(rQarea_min,rQarea_max) )
     if len(xQpnts)<=0: exit(0)
@@ -146,7 +146,7 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     print('\n *** We have '+str(NbQ)+' quadrangles!')
 
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = lbr.Quadrangle( xQcoor, xQpnts, vPids, vQnam )    
+    QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam )    
 
     del xQpnts, xQcoor
 
@@ -178,34 +178,34 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
     del xCoor
 
     # Save the triangular mesh info:
-    lbr.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+    mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
 
     # Save the quadrangular mesh info:
-    lbr.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
+    mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
 
 #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
 ############################################################
 
 
 # Reading the triangle and quad class objects in the npz files:
-TRI = lbr.LoadClassPolygon( cf_npzT, ctype='T' )
-QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
+TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
+QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
 # Show triangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
+kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig01_Mesh_Map_TRIangles_Europe'+cc+'.png',
                      pnames=vPnam, ppntIDs=TRI.PointIdx, TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist))
 
 # Show triangles together with the quadrangles on a map:
-kk = lbr.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
+kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='fig02_Mesh_Map_Quadrangles_Europe'+cc+'.png',
                      pnames=vPnam, ppntIDs=TRI.PointIdx, TriMesh=TRI.MeshVrtcPntIdx,
                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist) )
 
 ## Show only points composing the quadrangles:
-#kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+#kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
 #                     lGeoCoor=(not l_work_with_dist) )
 
 # Show only the quads with only the points that define them:
-kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
+kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='fig03_Mesh_Map_Points4Quadrangles_Europe'+cc+'.png',
                      ppntIDs=QUA.PointIDs, QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist) )
 

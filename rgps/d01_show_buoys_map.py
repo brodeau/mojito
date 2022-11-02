@@ -5,7 +5,7 @@
 from sys import argv, exit
 from os import path
 import numpy as np
-import lbrgps as lbr
+import mojito as mjt
 
 
 if not len(argv) in [3]:
@@ -27,4 +27,4 @@ with np.load(cf_npz) as data:
     
 
 # Show
-lbr.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cf_fig, ms=5, ralpha=0.5 )
+mjt.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cf_fig, ms=5, ralpha=0.5 )

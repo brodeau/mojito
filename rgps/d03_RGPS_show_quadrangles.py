@@ -4,7 +4,7 @@
 
 from sys import argv, exit
 from os import path
-import lbrgps   as lbr
+import mojito   as mjt
 
 idebug=1
 
@@ -19,7 +19,7 @@ print('')
 cf_fig = str.replace( path.basename(cf_npzQ), '.npz', '.png' )
 
 # Reading the quad meshes in the npz files:
-QUA = lbr.LoadClassPolygon( cf_npzQ, ctype='Q' )
+QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 # Show the quads with only the points that define them:
-kk = lbr.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cf_fig, QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=izoom )
+kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cf_fig, QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=izoom )

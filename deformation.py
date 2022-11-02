@@ -10,7 +10,7 @@ from re import split
 from scipy.spatial import Delaunay
 
 from climporn import epoch2clock
-import lbrgps   as lbr
+import mojito   as mjt
 
 idebug=1
 
@@ -33,8 +33,8 @@ cnm_pref = cnm_pref+'_'+cdt1+'-'+cdt2
 
 
 # Reading the quad meshes in both npz files:
-QUA1 = lbr.LoadClassPolygon( cf_Q1, ctype='Q' )
-QUA2 = lbr.LoadClassPolygon( cf_Q2, ctype='Q' )
+QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
+QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
 
 print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
 print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
@@ -49,7 +49,7 @@ zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #* 1000.  ; # 1000 => from km to m
 zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #* 1000.
 
 # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
-zX, zY, zdUdxy, zdVdxy = lbr.PDVfromPos( dt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],  iverbose=idebug )
+zX, zY, zdUdxy, zdVdxy = mjt.PDVfromPos( dt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],  iverbose=idebug )
 
 # zX, zY => positions at center of time interval!
 
@@ -58,10 +58,10 @@ zXc = np.mean( zX[:,:], axis=1 )
 zYc = np.mean( zY[:,:], axis=1 )
 
 # Divergence:
-zdiv = lbr.DivPDV(zdUdxy, zdVdxy)
+zdiv = mjt.DivPDV(zdUdxy, zdVdxy)
 
 # Shear:
-zshr = lbr.ShearPDV(zdUdxy, zdVdxy )
+zshr = mjt.ShearPDV(zdUdxy, zdVdxy )
 
 del zdUdxy, zdVdxy
 
@@ -73,5 +73,5 @@ np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, 
 # Some plots:
 if not path.exists('./figs'): mkdir('./figs')
 
-lbr.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
-lbr.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
+mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
+mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )

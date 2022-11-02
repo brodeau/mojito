@@ -9,7 +9,7 @@ import numpy as nmp
 
 #from scipy.spatial import Delaunay
 
-import lbrgps   as lbr
+import mojito   as mjt
 
 
 vangles_perfect = nmp.array([ 90. , 90., 90., 90. ])
@@ -22,15 +22,15 @@ vangles_bad = nmp.array([ 122. , 105., 77., 82. ])
 vangles_terrible = nmp.array([ 132. , 115., 62., 72. ])
 
 
-lok, scr = lbr.lQuadOK( vangles_perfect )
+lok, scr = mjt.lQuadOK( vangles_perfect )
 print("For perfect we have:", lok, scr )
 
 
-lok, scr = lbr.lQuadOK( vangles_good )
+lok, scr = mjt.lQuadOK( vangles_good )
 print("For good we have:", lok, scr )
 
-lok, scr = lbr.lQuadOK( vangles_bad )
+lok, scr = mjt.lQuadOK( vangles_bad )
 print("For bad we have:", lok, scr )
 
-lok, scr = lbr.lQuadOK( vangles_terrible )
+lok, scr = mjt.lQuadOK( vangles_terrible )
 print("For terrible we have:", lok, scr )

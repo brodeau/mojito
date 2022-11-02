@@ -31,7 +31,7 @@ from scipy import interpolate
 
 from climporn import chck4f, epoch2clock, clock2epoch
 
-import lbrgps as lbr
+import mojito as mjt
 
 idebug = 2
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
 
     # Load `distance to coast` data:
-    vlon_dist, vlat_dist, xdist = lbr.LoadDist2CoastNC( fdist2coast_nc )
+    vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
     # Build scan time axis willingly at relative high frequency (dt_scan << dt_buoy)
     NTscan = int(round((rdt2 - rdt1) / dt_scan)) + 1
@@ -295,8 +295,8 @@ if __name__ == '__main__':
                             # Initial position for the buoy: #fixme: control all time records!
                             #it1, it2 = idx_id[0], idx_id[nbRec-1]
                             it1 = idx_id[0]
-                            rd_ini = lbr.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                            #rd_fin = lbr.Dist2Coast( vlon0[it2], vlat0[it2], vlon_dist, vlat_dist, xdist )
+                            rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
+                            #rd_fin = mjt.Dist2Coast( vlon0[it2], vlat0[it2], vlon_dist, vlat_dist, xdist )
                             #print('\nLOLO: ==> initial distance to land =', rd_ini, 'km') ; exit(0)
     
 
@@ -467,7 +467,7 @@ if __name__ == '__main__':
         ifd = 0
         for jr in range(NCRmax):
             xcoor = np.array([ xx[jr,:], xy[jr,:] ]).T
-            idx_clones = lbr.idx_suppress_xy_copies( xcoor, rmask_val=-9999. )            
+            idx_clones = mjt.idx_suppress_xy_copies( xcoor, rmask_val=-9999. )            
             if len(idx_clones) > 0:
                 # There are doublons!
                 ifd = ifd + len(idx_clones) ; # another hit
@@ -532,7 +532,7 @@ if __name__ == '__main__':
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
-            kf = lbr.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
+            kf = mjt.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
 
 
     ### for js in range(Nstreams)

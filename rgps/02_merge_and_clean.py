@@ -11,7 +11,7 @@ from re import split
 from scipy.spatial import Delaunay
 
 from climporn import epoch2clock
-import lbrgps   as lbr
+import mojito   as mjt
 
 idebug=1
 
@@ -44,7 +44,7 @@ for cdate in vdates:
         cf_out = cd_in+'/merged_selection_'+cdate+'.npz'
         print('         => will merge these '+str(nbf)+'!')
         
-        kk = lbr.mergeNPZ( listnpz, cf_out, iverbose=idebug )
+        kk = mjt.mergeNPZ( listnpz, cf_out, iverbose=idebug )
 
         if idebug>0:
             # Plotting the results:
@@ -55,5 +55,5 @@ for cdate in vdates:
                 #vids  = data['vids']
             #
             cfig =  str.replace( cf_out, '.npz', '.png' )
-            lbr.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cfig, ms=5, ralpha=0.5 )
+            mjt.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cfig, ms=5, ralpha=0.5 )
 
