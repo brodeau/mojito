@@ -98,14 +98,14 @@ if __name__ == '__main__':
     
     # Need some calendar info:
     with np.load(cf_npz) as data:
-        NrTraj = data['NrTraj']
-        vtime  = data['time']
+        NbRec = data['NbRec']
+        vtime = data['time']
 
     NbDays = int( (vtime[-1] - vtime[0]) / (3600.*24.) )
     cdt1 = epoch2clock(vtime[0] )
     cdt2 = epoch2clock(vtime[-1])
 
-    print('\n *** Trajectories contain '+str(NrTraj)+' records...')
+    print('\n *** Trajectories contain '+str(NbRec)+' records...')
     print('    *  start and End dates => '+cdt1+' -- '+cdt2)
     print('        ==> nb of days =', NbDays)
 
@@ -126,27 +126,35 @@ if __name__ == '__main__':
 
     # First explore how many buoys and how many records we have based on point IDs:
     with np.load(cf_npz) as data:
-        xIDs    = data['IDs'][:,:]
+        xMSK = data['mask'][:,:]
+        xIDs = data['IDs'][:,:]
 
     (NbP0,Nrtot) = np.shape(xIDs)
-
-    if np.any(xIDs<1):
-        print('WARNING! any(xIDs<1) = True !!!')
-        print(' => lolo: we have to exclude the buoys that disapear before the last record specified!')
-        exit(0)
-        # => il peut y en avoir des masques...
-        idcneg = np.where(xIDs<1)
-        print(idcneg,'\n')
-        #print(xIDs[idcneg])
-        #exit(0)
-
-        
+    
+    # Disapearing buoys along the specified records?
+    idxBok = np.arange(NbP0) ; # default: they are all fine!
+    if np.any(xIDs[:,vRec]<1):
+        (idxB0,idxR0) = np.where(xMSK==0)
+        (idxB1,idxR1) = np.where(xIDs <1)
+        if np.sum( np.abs(idxB0-idxB1) ) != 0 or np.sum( np.abs(idxR0-idxR1) ):
+            print('ERROR: np.where(xIDs[:,vRec]<1) != np.where(xMSK==0) !'); exit(0)
+        idx_vnshd = np.unique(idxB1)
+        nbrm = len(idx_vnshd)
+        print('\n *** The '+str(nbrm)+' buoys, with following IDs, do not make it along the '+str(Nrec)+' records specified:',xIDs[idx_vnshd,0])
+        print('   ==> will be ignored!')
+        (idxBok,) = np.where( xMSK[:,np.max(vRec)] == 1 ) ;  # those OK at the last record are good to keep !
+        print('    ==>  updating number of buoys from '+str(NbP0)+' to '+str(len(idxBok))+'!')
+        NbP0 = len(idxBok)
+        del idxB0,idxR0,idxB1,idxR1
+    
     if Nrec > Nrtot:
         print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)                    
     if np.max(vRec) > Nrtot-1:
-        print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)                    
+        print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)
+
     del xIDs
-        
+    print('')
+    
     # Array with the shape coresponding to the # of records we want to read:
     xIDs = np.zeros((NbP0,Nrec), dtype=int)
     xJIs = np.zeros((NbP0,Nrec), dtype=int)
@@ -158,14 +166,14 @@ if __name__ == '__main__':
         jr = 0
         for jrec in vRec:
             print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
-            xIDs[:,jr] = data['IDs'][:,jrec]
-            xJIs[:,jr] = data['JIs'][:,jrec]
-            xJJs[:,jr] = data['JJs'][:,jrec]
+            xIDs[:,jr] = data['IDs'][idxBok,jrec]
+            xJIs[:,jr] = data['JIs'][idxBok,jrec]
+            xJJs[:,jr] = data['JJs'][idxBok,jrec]
             jr = jr+1
     
     zGC  = np.zeros((NbP0,2,Nrec))
     zXY  = np.zeros((NbP0,2,Nrec))            
-    zPnm = np.array( [ str(i) for i in xIDs[:,vRec[0]] ], dtype='U32' ) ; # Name for each point, based on 1st record...
+    zPnm = np.array( [ str(i) for i in xIDs[:,0] ], dtype='U32' ) ; # Name for each point, based on 1st record...
     
     for jr in range(Nrec):
         print('\n   * Record #'+str(vRec[jr])+':')
