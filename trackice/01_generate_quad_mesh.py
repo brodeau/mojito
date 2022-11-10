@@ -188,26 +188,24 @@ if __name__ == '__main__':
     NbP = np.sum(mask)
     print('\n *** '+str(NbP)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP)+' points to delete!')
 
-    zPnm, zIDs, zGC, zXY = mjt.ShrinkArrays( mask, zPnm, xIDs, zGC, zXY )
+    # We do not need to keep a record dimension for IDs, but first ensure there's no fuck-up...
+    zPntIDs = xIDs[:,0].copy()
+    for jr in range(Nrec):
+        if np.any(xIDs[:,jr]-zPntIDs[:] != 0):
+            print(' Fuck Up!!!! => `xIDs` not consistent along the records!!!' ); exit(0)
+    del xIDs
+
+    zPnm, zPntIDs, zGC, zXY = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY )
     
-    if idebug>0:
+    if idebug>1:
         for jr in range(Nrec):
             print('\n  DEBUG *** Record #'+str(vRec[jr])+':')
             for jc in range(NbP):                    
-                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zIDs[jc,jr],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
+                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zPntIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
                        ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr] )
-                if str(zIDs[jc,jr])!=zPnm[jc]:
-                    print(' Fuck Up!!!! => zIDs[jc,jr], zPnm[jc] =',zIDs[jc,jr], zPnm[jc] ); exit(0)
+                if str(zPntIDs[jc])!=zPnm[jc]:
+                    print(' Fuck Up!!!! => zPntIDs[jc], zPnm[jc] =',zPntIDs[jc], zPnm[jc] ); exit(0)
         print('')
-
-    # We do not need to keep a record dimension for IDs, but first ensure there's no fuck-up...
-    zPntIDs = zIDs[:,0].copy()
-    print(np.shape(zPntIDs))
-    for jr in range(Nrec):
-        if np.any(zIDs[:,jr]-zPntIDs[:] != 0):
-            print(' Fuck Up!!!! => `zIDs` not consistent along the records!!!' ); exit(0)
-    del zIDs
-        
 
 
     for jr in range(Nrec):
@@ -230,19 +228,43 @@ if __name__ == '__main__':
             cf_npzT = './npz/T-mesh_'+cfbase+'.npz'
             
             # Generating triangular meshes out of the cloud of points for 1st record:
-            TRI = Delaunay(zXY[:,:,jr])
+            lOK = False
+            while not lOK:
+            
+                TRI = Delaunay(zXY[:,:,jr])
+                xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+                (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
+                xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
-            xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+                # For some reasons, here, `xTpnts` can involve less points than the number of points
+                # fed into Delaunay (zXY), if it is the case we have to shrink `zXY`, `zPntIDs`, `zPnm`
+                # accordingly...
+                PntIdxInUse = np.unique( xTpnts.flatten() )
+                NbPnew      = len(PntIdxInUse)
+                lOK = ( NbPnew == NbP )
+                
+                if not lOK:
+                    if NbPnew > NbP:
+                        print('ERROR: `NbPnew > NbP` !!!'); exit(0)
+                    print('\n *** Need to cancel the '+str(NbP-NbPnew)+' points that vanished in Delaunay triangulation!')
+                    mask  = np.zeros(  NbP, dtype=int )
+                    zPntIdx0 = np.arange( NbP, dtype=int )
+                    _,ind2keep,_ = np.intersect1d(zPntIdx0, PntIdxInUse, return_indices=True); # retain only indices of `zPntIdx0` that exist in `PntIdxInUse`
+                    mask[ind2keep] = 1
+                    if np.sum(mask) != NbPnew:
+                        print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
+                    zPnm, zPntIDs, zGC, zXY = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY )
+                    del zPntIdx0, mask, ind2keep
+                    NbP = NbPnew
+                    print('      => done! Only '+str(NbP)+' points left in the game...')                    
+    
+                del PntIdxInUse, NbPnew
 
-            (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
-
-            xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
+            ### while not lOK
             print('\n *** We have '+str(NbT)+' triangles!')
-            #
+            
             # Conversion to the `Triangle` class:
             TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, zPnm )
-
             del xTpnts, xNeighborIDs, TRI
 
             # Merge triangles into quadrangles:

@@ -28,20 +28,22 @@ class Triangle:
                   A            B
 
         '''
+        cEM = 'ERROR: [polygons.Triangle] =>'
+        #
         (nP,nd2) = np.shape(xPcoor)
         if nd2!=2:
-            print('ERROR: [polygons.Triangle] => problem in the shape of coordinate array!'); exit(0)
+            print(cEM+' problem in the shape of coordinate array!'); exit(0)
         (nT,nd3) = np.shape(xTPntIdx)
         if nd3!=3:
-            print('ERROR: [polygons.Triangle] => we expected 2nd axis to have length 3, not:',nd3,' in the Triangle array!'); exit(0)
+            print(cEM+' we expected 2nd axis to have length 3, not:',nd3,' in the Triangle array!'); exit(0)
         if np.shape(xTnbgh) != (nT,3):
-            print('ERROR: [polygons.Triangle] => problem in the shape of neighbor array!'); exit(0)
+            print(cEM+' problem in the shape of neighbor array!'); exit(0)
         if (nP,) != np.shape(vPnames):
-            print('ERROR: [polygons.Triangle] => problem in the length of point names!'); exit(0)
+            print(cEM+' problem in the length of point names!'); exit(0)
             
-        zvPntIdx = np.unique( xTPntIdx.flatten() )
+        zvPntIdx = np.unique( xTPntIdx.flatten() ) ; # Populate all the points (IDs) involved
         if len(zvPntIdx) != nP:
-            print('ERROR: [polygons.Triangle] => problem with the number of points at play deduced from `xTPntIdx`', len(zvPntIdx), nP); exit(0)
+            print(cEM+' problem with the number of points at play deduced from `xTPntIdx`', len(zvPntIdx), nP); exit(0)
 
         zTcoor = np.array([ [ xPcoor[i,:] for i in xTPntIdx[jT,:] ] for jT in range(nT) ]) ; # for each Triangle the 3 coordinates of 3 points [nQ,3,2]
 
@@ -103,18 +105,20 @@ class Quadrangle:
                   A            B
 
         '''
+        cEM = 'ERROR: [polygons.Quadrangle] =>'
+        #
         (nP,nd2) = np.shape(xPcoor)
         if nd2!=2:
-            print('ERROR: [polygons.Quadrangle] => problem in the shape of coordinate array!'); exit(0)
+            print(cEM+' problem in the shape of coordinate array!'); exit(0)
         (nQ,nd4) = np.shape(xQPntIdx)
         if nd4!=4:
-            print('ERROR: [polygons.Quadrangle] => we expected 2nd axis to have length 4, not:',nd4,' in the Quad array!'); exit(0)
+            print(cEM+' we expected 2nd axis to have length 4, not:',nd4,' in the Quad array!'); exit(0)
         if (nQ,) != np.shape(vQnames):
-            print('ERROR: [polygons.Quadrangle] => problem in the length of point names!', nP, np.shape(vQnames)); exit(0)
+            print(cEM+' problem in the length of point names!', nP, np.shape(vQnames)); exit(0)
 
-        zvPntIdx = np.unique( xQPntIdx.flatten() )
+        zvPntIdx = np.unique( xQPntIdx.flatten() ) ; # Populate all the points (IDs) involved
         if len(zvPntIdx) != nP:
-            print('ERROR: [polygons.Quadrangle] => problem with the number of points at play deduced from `xQPntIdx`: found,expected(nP)=',len(zvPntIdx),nP); exit(0)
+            print(cEM+' problem with the number of points at play deduced from `xQPntIdx`: ',len(zvPntIdx),nP); exit(0)
 
         zTcoor = np.array([ [ xPcoor[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
 

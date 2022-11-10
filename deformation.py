@@ -14,16 +14,16 @@ import mojito   as mjt
 
 idebug=1
 
-dt =  3600. * 3.   ;  # time interval between 2 records #fixme: use the real time !!!!
-
-
-
-if not len(argv) in [3]:
-    print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz>')
+if not len(argv) in [4]:
+    print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <dt (days)>')
     exit(0)
 
 cf_Q1 = argv[1]
 cf_Q2 = argv[2]
+cdtd  = argv[3]
+
+dt = float(3600*24*int(cdtd)) ;  # time interval between 2 records #fixme: use the real time !!!!
+
 
 # Comprehensive name for npz and figs to save later on:
 cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)

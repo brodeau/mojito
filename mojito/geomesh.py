@@ -510,26 +510,28 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
 
 def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY ):
     '''
-        RETURNS: new size + shrinked version of input arrays
-                 => all elements corresponding to points to close
-                    to the shore are deleted!
+        RETURNS: shrinked version of input arrays
+                 => all elements corresponding to points where
+                    mask==0 are deleted!
+       * pmask, pNam, pIDs => shape = (nP)
+       * pGC, pXY          => shape = (nP,2,nrec)
+
     '''
-    nBi = len(pmask)
+    cEM = 'ERROR [geomesh.ShrinkArrays()]:'
     
-    if len(pNam)!=nBi:
-        print('ERROR [ShrinkArrays()]: shape problem => `len(pNam)!=nBi` !!!'); exit(0)
+    nBi = len(pmask) ; # number of initial points
+    
+    if len(pIDs)!=nBi or len(pNam)!=nBi:
+        print(cEM+' shape problem => `len(pIDs)!=nBi or len(pNam)!=nBi` !!!'); exit(0)
     (nP,nd,nrec) = np.shape(pXY)
     if nP!=nBi or nd!=2: 
-        print('ERROR [ShrinkArrays()]: shape problem => `nP!=nBi or nd!=2` !!!'); exit(0)
+        print(cEM+' shape problem => `nP!=nBi or nd!=2` !!!'); exit(0)
     if np.shape(pXY)!=np.shape(pGC):
-        print('ERROR [ShrinkArrays()]: shape problem => `np.shape(pXY)!=np.shape(pGC)` !!!'); exit(0)
+        print(cEM+' shape problem => `np.shape(pXY)!=np.shape(pGC)` !!!'); exit(0)
 
-    nBo = np.sum(pmask)
-    print('LOLO: nBo =',nBo)
-
-    
-    zIDs = np.zeros((nBo,  nrec), dtype=int  )
-    zNam = np.zeros( nBo,         dtype='U32')
+    nBo  = np.sum(pmask) ; # number of points to keep
+    zIDs = np.zeros( nBo, dtype=int  )
+    zNam = np.zeros( nBo, dtype='U32')
     zGC  = np.zeros((nBo,2,nrec))
     zXY  = np.zeros((nBo,2,nrec))
 
@@ -538,8 +540,8 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY ):
         if pmask[jB] == 1:
             jBo = jBo+1
             zNam[jBo] = pNam[jB]            
+            zIDs[jBo] = pIDs[jB]
             for jr in range(nrec):
-                zIDs[jBo,jr]  = pIDs[jB,jr]
                 zGC[jBo,:,jr] =  pGC[jB,:,jr]
                 zXY[jBo,:,jr] =  pXY[jB,:,jr]
     
