@@ -84,5 +84,5 @@ np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, 
 # Some plots:
 if not path.exists('./figs'): mkdir('./figs')
 
-mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-5.e-6, pFmax=5.e-6, zoom=4 )
-mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-5, zoom=4 )
+mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-0.7e-6, pFmax=0.7e-6, zoom=4 )
+mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-6, zoom=4 )
