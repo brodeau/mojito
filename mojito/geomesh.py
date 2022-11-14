@@ -351,7 +351,7 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
         The velocity vector is constructed from the two consecutive X,Y positions
         given as `pXY1, pXY2`...
           --- `nq` is the number of quadrangles provided ---
-        * pdt : time interval between the 2 consecutive position time [s] #fixme (do better than use the nominal time step???)
+        * pdt : time interval between the 2 consecutive position time [s]
         * pXY1, pXY2 : shape=(nq,4,2), the two consecutive X,Y positions of the 4 vertices of each quad [km]
         *  pA1,  pA2 : shape=(nq),     the two consecutive areas of each quad [km^2]
     '''
