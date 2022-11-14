@@ -80,7 +80,7 @@ class Triangle:
 
 class Quadrangle:
 
-    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vQnames ):
+    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vQnames, date='unknown' ):
         '''
                => `nQ` Quadrangles!
 
@@ -88,6 +88,7 @@ class Quadrangle:
             * xQPntIdx: [(nQ,4] array of integers] the 4 point indices composing the quad, in counter-clockwize
             * vPIDs:    [(nP)  vector of integers] an integer to identify each point as in xPcoor
             * vQnames:  [(nQ)  vector of strings]  a string to identify each quadrangle
+            * date:   OPTIONAL string of the form `YYYY-MM-DD_hh:mm:ss`
 
             IMPORTANT: we expect the 1st and 3rd (indices 0 & 2) elements of the 4 points to be the
                        the two points of the quadrangle facing the diagonal that was the common segment
@@ -126,6 +127,7 @@ class Quadrangle:
         self.nP        = nP ; # number of points making the quadrangles
         self.nQ        = nQ ; # number of quadrangles (nQ < nP)
         self.length    = nQ ; #    "        "
+        self.date      = date ;  # as a string!
 
         # NumPy Arrays:
         self.PointIDs     = np.array( vPIDs,   dtype=int )   ; # point IDs   => shape = (nP)        
@@ -189,9 +191,10 @@ def SaveClassPolygon( cfile, Poly, ctype='Q', date='unknown' ):
     '''
         Save all arrays necessary to rebuild the Polygon object later on.
 
-        cfile: file to save into
-        Poly:  polygon object to save (`polygon.Triangle` or `polygon.Quadrangle`)
-        ctype: type of polygon object: 'Q' => Quadrangle, 'T' => Triangle
+       * cfile: file to save into
+       * Poly:  polygon object to save (`polygon.Triangle` or `polygon.Quadrangle`)
+       * ctype: type of polygon object: 'Q' => Quadrangle, 'T' => Triangle
+       * date:   OPTIONAL string of the form `YYYY-MM-DD_hh:mm:ss`
 
     '''
     if not ctype in ['Q','T']:
@@ -227,9 +230,10 @@ def LoadClassPolygon( cfile, ctype='Q' ):
 
     data = np.load(cfile) ; #, allow_pickle=True)
 
-    PointXY      = data['PointXY']
+    cdate          = data['date']
+    PointXY        = data['PointXY']
     MeshVrtcPntIdx = data['MeshVrtcPntIdx']        ; # the `nVrtc` point indices for each polygon => shape: (nPoly,nVrtc)
-    PointIDs    = data['PointIDs']
+    PointIDs       = data['PointIDs']
 
     (nPoly,nVrtc) = np.shape(MeshVrtcPntIdx)
 
@@ -244,6 +248,6 @@ def LoadClassPolygon( cfile, ctype='Q' ):
         if nVrtc!=4:
             print('ERROR: [polygons.LoadPolygon()] => wrong number of vertices for a quadrangle:',nVrtc); exit(0)
         QuadNames   = data['QuadNames']
-        POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, QuadNames )
+        POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, QuadNames, date=cdate )
 
     return POLY

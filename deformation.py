@@ -9,35 +9,46 @@ from re import split
 
 from scipy.spatial import Delaunay
 
-from climporn import epoch2clock
+from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1
 
-if not len(argv) in [4]:
-    print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <dt (days)>')
+if not len(argv) in [3]:
+    print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz>')
     exit(0)
-
 cf_Q1 = argv[1]
 cf_Q2 = argv[2]
-cdtd  = argv[3]
 
-dt = float(3600*24*int(cdtd)) ;  # time interval between 2 records #fixme: use the real time !!!!
-
-
-# Comprehensive name for npz and figs to save later on:
-cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
-cnm_pref = split('_',cf1)[1]
-cdt1, cdt2 = split('_',cf1)[4], split('_',cf2)[4]
-cnm_pref = cnm_pref+'_'+cdt1+'-'+cdt2
 
 
 # Reading the quad meshes in both npz files:
 QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
 QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
 
+
+cdt1 = str(QUA1.date)
+cdt2 = str(QUA2.date)
+print('\n *** Dates for the two records:',cdt1,cdt2)
+
+idt1 = clock2epoch(cdt1)
+idt2 = clock2epoch(cdt2)
+
+rdt = idt2 - idt1
+print('      => `dt` = '+str(rdt)+' s, or '+str(rdt/(3600*24))+' days')
+
+
+# Comprehensive name for npz and figs to save later on:
+cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
+cnm_pref = split('_',cf1)[1]
+ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
+cnm_pref = cnm_pref+'_'+ccdt1+'_'+ccdt2
+
 print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
 print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
+
+
+
 
 # The Quads we retain, i.e. those who exist in both snapshots:
 vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
@@ -49,7 +60,7 @@ zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #* 1000.  ; # 1000 => from km to m
 zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #* 1000.
 
 # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
-zX, zY, zdUdxy, zdVdxy = mjt.PDVfromPos( dt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],  iverbose=idebug )
+zX, zY, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],  iverbose=idebug )
 
 # zX, zY => positions at center of time interval!
 

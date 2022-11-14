@@ -357,6 +357,8 @@ if __name__ == '__main__':
         # Save the quadrangular mesh info:
         mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', date=cdats )
 
+        print('LOLO: `SaveClassPolygon` saved file',cf_npzQ,'with date =',cdats)
+        
 
         if l_plot:
             # Show triangles together with the quadrangles on a map:
