@@ -14,12 +14,12 @@ import mojito   as mjt
 
 idebug=1
 
-if not len(argv) in [3]:
-    print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz>')
+if not len(argv) in [4]:
+    print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <marker_size>')
     exit(0)
 cf_Q1 = argv[1]
 cf_Q2 = argv[2]
-
+mrkrsz= int(argv[3])
 
 
 # Reading the quad meshes in both npz files:
@@ -72,23 +72,26 @@ if idebug>0:
     zzu = zU.flatten()
     zzv = zV.flatten()
     #
-    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4.png', cwhat='U4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
-    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4.png', cwhat='V4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4.png', cwhat='U4',
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4.png', cwhat='V4',
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
     #
     del zzx, zzy, zzu, zzv
-
 
 # Coordinates of barycenter of Quads at center of time interval:
 zXc = np.mean( zX[:,:], axis=1 )
 zYc = np.mean( zY[:,:], axis=1 )
 
-if idebug>0:
+if idebug>1:
     # Velocities of barycenter of Quads at center of time interval:
     zUc = np.mean( zU[:,:], axis=1 )
     zVc = np.mean( zV[:,:], axis=1 )
     #
-    mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc.png', cwhat='Uc', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
-    mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc.png', cwhat='Vc', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc.png', cwhat='Uc',
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc.png', cwhat='Vc',
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
     #
     del zUc, zVc
 
@@ -108,5 +111,7 @@ np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, 
 # Some plots:
 if not path.exists('./figs'): mkdir('./figs')
 
-mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div', pFmin=-0.7e-6, pFmax=0.7e-6, zoom=4 )
-mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr', pFmin=0.,     pFmax=1.e-6, zoom=4 )
+mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div',
+                     marker_size=mrkrsz, pFmin=-1.e-5, pFmax=1.e-5, zoom=4 )
+mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr',
+                     marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-5,  zoom=4 )
