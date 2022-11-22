@@ -60,9 +60,23 @@ zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #* 1000.  ; # 1000 => from km to m
 zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #* 1000.
 
 # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
-zX, zY, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],  iverbose=idebug )
+zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],  iverbose=idebug )
 
 # zX, zY => positions at center of time interval!
+# zU, zV => velocities at center of time interval!
+
+if idebug>0:
+    # DEBUG: show velocities at each 4 vertices of each Quad:
+    zzx = zX.flatten()
+    zzy = zY.flatten()
+    zzu = zU.flatten()
+    zzv = zV.flatten()
+    #
+    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U_at_4_vert.png', cwhat='U4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V_at_4_vert.png', cwhat='V4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    #
+    del zzx, zzy, zzu, zzv
+
 
 # Coordinates of barycenter of Quads at center of time interval:
 zXc = np.mean( zX[:,:], axis=1 )

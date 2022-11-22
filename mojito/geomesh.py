@@ -359,9 +359,9 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
     (nq,n4,n2) = np.shape(pXY1)
     if n4!=4 or n2!=2: print('ERROR [PDVfromPos()]: wrong shape for `pXY1`!'); exit(0)
     if np.shape(pXY2)!=(nq,n4,n2): print('ERROR [PDVfromPos()]: `pXY1` & `pXY2` do not agree in shape!'); exit(0)
-    if np.shape(pA1)!=(nq,) or np.shape(pA2)!=(nq,): print('ERROR [PDVfromPos()]: wrong shape for `pA1` or `pA2`!'); exit(0)
+    if np.shape(pA1 )!=(nq,) or np.shape(pA2)!=(nq,): print('ERROR [PDVfromPos()]: wrong shape for `pA1` or `pA2`!'); exit(0)
 
-    # Velocities at center of time interval:
+    # Velocities at the 4 vertices at center of time interval:
     zU = np.array( [ pXY2[:,k,0] - pXY1[:,k,0] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
     zV = np.array( [ pXY2[:,k,1] - pXY1[:,k,1] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
 
@@ -396,9 +396,7 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
             print('  dU/dx =',zdUdxy[jQ,0],'1/s, dU/dy =',zdUdy[jQ,1],'1/s')
             print('  dV/dx =',zdVdxy[jQ,0],'1/s, dV/dy =',zdVdy[jQ,1],'1/s\n')
 
-    del zU, zV, zA
-
-    return zX, zY, zdUdxy, zdVdxy
+    return zX, zY, zU, zV, zdUdxy, zdVdxy
 
 
 def DivPDV( pdUdxy, pdVdxy ):
