@@ -72,8 +72,8 @@ if idebug>0:
     zzu = zU.flatten()
     zzv = zV.flatten()
     #
-    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U_at_4_vert.png', cwhat='U4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
-    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V_at_4_vert.png', cwhat='V4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4.png', cwhat='U4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4.png', cwhat='V4', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
     #
     del zzx, zzy, zzu, zzv
 
@@ -81,6 +81,16 @@ if idebug>0:
 # Coordinates of barycenter of Quads at center of time interval:
 zXc = np.mean( zX[:,:], axis=1 )
 zYc = np.mean( zY[:,:], axis=1 )
+
+if idebug>0:
+    # Velocities of barycenter of Quads at center of time interval:
+    zUc = np.mean( zU[:,:], axis=1 )
+    zVc = np.mean( zV[:,:], axis=1 )
+    #
+    mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc.png', cwhat='Uc', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc.png', cwhat='Vc', pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+    #
+    del zUc, zVc
 
 # Divergence:
 zdiv = mjt.DivPDV(zdUdxy, zdVdxy)
