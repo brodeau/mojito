@@ -514,9 +514,10 @@ if __name__ == '__main__':
         for jr in range(NCRmax):
 
             Nbuoys = nBpR[jr] ; # number of buoys alive in current record of this stream
-            
+            cdate = epoch2clock(VT[jr])
+
             if Nbuoys >= Nb_min_buoys:
-                ctr = str.replace( str.replace(epoch2clock(VT[jr])[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
+                ctr = str.replace( str.replace(cdate[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
                 cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti+'_'+ctr+'.npz'
 
 
@@ -524,7 +525,7 @@ if __name__ == '__main__':
                 (indV,) = np.where(vmsk==1) ; # index of valid points
                 if len(indV)!= Nbuoys: print('ERROR: len(indV)!= Nbuoys) !'); exit(0)
                 
-                np.savez_compressed( cf_out, itime=int(VT[jr]), Npoints=Nbuoys, vids=vids[indV],
+                np.savez_compressed( cf_out, itime=int(VT[jr]), date=cdate, Npoints=Nbuoys, vids=vids[indV],
                                      vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
             else:
                 if idebug>0:

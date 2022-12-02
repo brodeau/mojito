@@ -26,8 +26,8 @@ cd_in = argv[1]
 vdates = []
 listnpz = glob(cd_in+'/SELECTION_buoys_RGPS*.npz')
 for ff in listnpz:
-    czz   = split('.npz',path.basename(ff))[0]
-    cdate = split( '_', czz )[-2]+split( '_', czz )[-1]
+    with np.load(ff) as data:
+        cdate = str( data['date'] )
     print(' file: '+ff+' => date = '+cdate)
     vdates.append(cdate)
 
