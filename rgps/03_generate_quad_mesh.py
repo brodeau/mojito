@@ -55,6 +55,7 @@ if __name__ == '__main__':
         print('\n *** Reading into '+cf_npz+' !!!')
         with np.load(cf_npz) as data:
             it     = data['itime']
+            cdate  = str( data['date'] )
             Nbuoys = data['Npoints']
             vids   = data['vids']
             if l_work_with_dist:
@@ -122,21 +123,21 @@ if __name__ == '__main__':
         print('\n *** We have '+str(NbT)+' triangles!')
 
         # Conversion to the `Triangle` class:
-        TRIAS = mjt.Triangle( xCoor, xTpnts, xNeighborIDs, vPnam )
+        TRIAS = mjt.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam ) ; #lolo
 
         del xTpnts, xNeighborIDs, TRI
 
         # Merge triangles into quadrangles:
-        xQcoor, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                              ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                              areaR=(rQarea_min,rQarea_max) )
+        xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                                      ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                      areaR=(rQarea_min,rQarea_max) )
         if len(xQpnts)<=0: exit(0)
 
         (NbQ,_) = np.shape(xQpnts)
         print('\n *** We have '+str(NbQ)+' quadrangles!')
 
         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-        QUADS = mjt.Quadrangle( xQcoor, xQpnts, vQnam )
+        QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
 
         del xQpnts, xQcoor, xCoor
 

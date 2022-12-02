@@ -51,6 +51,8 @@ class Triangle:
         self.nP        = nP ; # number of points making the triangles
         self.nT        = nT ; # number of triangles (nT < nP)
         self.length    = nT ; #    "        "
+        self.date      = 'unknown' ;  # we are not going to work with triangles...
+                
         # NumPy Arrays:
         self.PointIDs     = np.array( vPIDs,   dtype=int )   ; # point IDs   => shape = (nP)        
         self.PointNames   = np.array( vPnames, dtype='U32' ) ; # point names => shape = (nP)
@@ -187,26 +189,30 @@ class Quadrangle:
 
 
 
-def SaveClassPolygon( cfile, Poly, ctype='Q', date='unknown' ):
+def SaveClassPolygon( cfile, Poly, ctype='Q', force_date='unknown' ):
     '''
         Save all arrays necessary to rebuild the Polygon object later on.
 
        * cfile: file to save into
        * Poly:  polygon object to save (`polygon.Triangle` or `polygon.Quadrangle`)
        * ctype: type of polygon object: 'Q' => Quadrangle, 'T' => Triangle
-       * date:   OPTIONAL string of the form `YYYY-MM-DD_hh:mm:ss`
+       * force_date:   OPTIONAL string of the form `YYYY-MM-DD_hh:mm:ss`
 
     '''
     if not ctype in ['Q','T']:
         print('ERROR: [polygons.SavePolygon()] => wrong polygon type'); exit(0)
 
+    cdate = Poly.date
+    if cdate != 'unknown' and force_date != 'unknown':
+        print('WARNING: [polygons.SavePolygon()] => overriding class original date: '+cdate+' with: '+force_date); exit(0)
+        cdate = force_date
     if ctype=='Q':
-        np.savez_compressed( cfile, date=date, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx,
+        np.savez_compressed( cfile, date=cdate, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx,
                              PointIDs=Poly.PointIDs, QuadNames=Poly.QuadNames )
         print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
 
     if ctype=='T':
-        np.savez_compressed( cfile, date=date, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx,
+        np.savez_compressed( cfile, date=cdate, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx,
                              NeighborIDs=Poly.NeighborIDs, PointIDs=Poly.PointIDs, PointNames=Poly.PointNames )
         print('\n *** Triangle mesh saved into "'+cfile+'" !')
 

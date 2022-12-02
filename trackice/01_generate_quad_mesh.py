@@ -277,7 +277,7 @@ if __name__ == '__main__':
             print('\n *** We have '+str(NbQ)+' quadrangles!')
 
             # Save the triangular mesh info:
-            mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', date=cdats )
+            mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
 
             # To be used for other record, indices of Points to keep for Quads:
             _,ind2keep,_ = np.intersect1d(zPntIDs, vPids, return_indices=True); # retain only indices of `zPntIDs` that exist in `vPids`
@@ -352,12 +352,12 @@ if __name__ == '__main__':
         ### if jr == 0
 
         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-        QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam )
-
+        QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam, date=cdats )
+        print('LOLO: class `Quadrangle` built with date =',cdats)
+        
         # Save the quadrangular mesh info:
-        mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', date=cdats )
+        mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
 
-        print('LOLO: `SaveClassPolygon` saved file',cf_npzQ,'with date =',cdats)
         
 
         if l_plot:
