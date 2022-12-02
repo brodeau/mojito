@@ -26,8 +26,9 @@ cd_in = argv[1]
 vdates = []
 listnpz = glob(cd_in+'/SELECTION_buoys_RGPS*.npz')
 for ff in listnpz:
-    cdate = split( '_', split('.npz',path.basename(ff))[0] )[-1]
-    print(' file, date =',ff,cdate)
+    czz   = split('.npz',path.basename(ff))[0]
+    cdate = split( '_', czz )[-2]+split( '_', czz )[-1]
+    print(' file: '+ff+' => date = '+cdate)
     vdates.append(cdate)
 
 vdates = np.unique(vdates)
