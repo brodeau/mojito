@@ -23,10 +23,11 @@ rzoom_fig = 5
 
 if __name__ == '__main__':
 
-    if not len(argv) in [2]:
-        print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz>')
+    if not len(argv) in [3]:
+        print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz> <min_dist_km>')
         exit(0)
     cf_npz = argv[1]
+    cd_min = argv[2] ; rd_min = float(cd_min)
 
     #cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
     #cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
@@ -62,7 +63,7 @@ if __name__ == '__main__':
 
     # That's the original cloud of points, plotting it:
 
-    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/OriginalCloud.png',  lGeoCoor=False,
+    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/01_OriginalCloud.png',  lGeoCoor=False,
                          rangeX=[-1650,-700], rangeY=[-400,100], zoom=1.5 )
     
     # Projection, need to provide lon,lat, not distances:
@@ -71,13 +72,13 @@ if __name__ == '__main__':
 
     print(' *** Shape of xCoor: ',np.shape(xCoor))
     
-    xx = sbspl.sparsify_point_set(xCoor, min_squared_dist=2500.)
+    xx = sbspl.sparsify_point_set( xCoor, min_squared_dist=rd_min*rd_min )
 
     xx = np.array(xx)
     
     print(' *** Shape of xx: ',np.shape(xx))
     
-    kk = mjt.ShowTQMesh( xx[:,0], xx[:,1], cfig='./figs/SparsifiedCloud.png',  lGeoCoor=False,
+    kk = mjt.ShowTQMesh( xx[:,0], xx[:,1], cfig='./figs/02_SparsifiedCloud_'+cd_min+'km.png',  lGeoCoor=False,
                          rangeX=[-1650,-700], rangeY=[-400,100], zoom=1.5 )
 
 
