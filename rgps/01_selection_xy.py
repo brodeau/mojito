@@ -533,7 +533,7 @@ if __name__ == '__main__':
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
-            kf = mjt.ShowBuoysMap_Trec( VT, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
+            kf = mjt.ShowBuoysMap_Trec( [it], xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
 
 
     ### for js in range(Nstreams)

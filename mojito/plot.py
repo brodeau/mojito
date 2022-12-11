@@ -122,10 +122,11 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
 
     # Add IDs figure right next to buoys:
     if len(pvIDs) > 0:
-        if Nb != len(pvIDs):
+        Nb = len(pvIDs)
+        if Nb != len(pvlon):
             print('\n *** ERROR ['+caller+'/_figMap_]: `Nb` different for `pvIDs` and `coordinates`!'); exit(0)
         for ii in range(Nb):
-            x0,y0 = BMProj(pvlon[jt,ii],pvlat[jt,ii])
+            x0,y0 = BMProj(pvlon[ii],pvlat[ii])
             ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
 
 
@@ -176,6 +177,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
         cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
     return _figMap_( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha, caller='ShowBuoysMap' )
+
 
 
 def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5, clock_res='s' ):
@@ -273,6 +275,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
     kk = _initStyle_(fntzoom=zoom)    
 
     l_annotate = ( zoom < 7 ) ; # looks like shit for big stuff if we show IDs on triangles and quads...
+    rsz_annot  = 5*zoom**0.4
 
     (nbP,) = np.shape(pX) ; # Number of points that defines all the triangles...
     
@@ -323,7 +326,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
             for jT in range(nbT):
                 vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
                 rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=8*zoom**0.4, zorder=60)
+                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=rsz_annot, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -341,14 +344,14 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
             if l_annotate:
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=8*zoom**0.4, zorder=160)
+                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=rsz_annot, zorder=160)
 
     if len(pnames)>0:
         for jP in range(nbP):
-            ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=8*zoom**0.4, zorder=500)
+            ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=rsz_annot, zorder=500)
     if len(ppntIDs)>0:
         for jP in range(nbP):
-            ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=8*zoom**0.4, zorder=520)
+            ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=rsz_annot, zorder=520)
 
     plt.savefig(cfig)
     plt.close(1)
