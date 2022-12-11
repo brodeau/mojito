@@ -7,7 +7,10 @@ from os import path
 import numpy as np
 from re import split
 
-from scipy.spatial import Delaunay
+#from scipy.spatial import Delaunay
+
+from gudhi import subsampling as sbspl
+
 
 from climporn import epoch2clock
 import mojito   as mjt
@@ -65,106 +68,20 @@ if __name__ == '__main__':
     # Projection, need to provide lon,lat, not distances:
     #kf = mjt.ShowBuoysMap( it, xCoor[:,0], xCoor[:,1], pvIDs=vIDs, cnmfig='OriginalCloud' )
 
+
+    print(' *** Shape of xCoor: ',np.shape(xCoor))
     
+    xx = sbspl.sparsify_point_set(xCoor, min_squared_dist=2500.)
+
+    xx = np.array(xx)
+    
+    print(' *** Shape of xx: ',np.shape(xx))
+    
+    kk = mjt.ShowTQMesh( xx[:,0], xx[:,1], cfig='./figs/SparsifiedCloud.png',  lGeoCoor=False,
+                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=1.5 )
+
 
     
-    exit(0)
-
-
-
-
+    #print(xx)
     
-    # Name for each point:
-    vPnam = np.array( [ str(i) for i in vIDs ], dtype='U32' )
-
-    if idebug>0:
-        for jc in range(NbP):
-            print(' * Name: "'+vPnam[jc]+'": ID='+str(vIDs[jc])+', x_coor='+str(round(xCoor[jc,0],2))+', y_coor='+str(round(xCoor[jc,1],2)))
-        print('')
-
-    #if l_work_with_dist:
-    #    # Distance, aka cartesian coordinates, not degrees... => [km]
-    #    x0, y0 = xCoor[:,0], xCoor[:,1]
-    #    if l_cartopy:
-    #        from cartopy.crs import PlateCarree, NorthPolarStereo ;#, epsg
-    #        crs_src = PlateCarree()
-    #        crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
-    #        zx,zy,_ = crs_trg.transform_points(crs_src, x0, y0).T
-    #    else:
-    #        print('FIX ME `pyproj`!'); exit(0)
-    #        import pyproj as proj
-    #        crs_src = proj.Proj(init='epsg:4326') # LatLon with WGS84 datum used by GPS units and Google Earth
-    #        crs_trg = proj.Proj(init='epsg:3035') # Europe ?
-    #        zx,zy   = proj.transform(crs_src, crs_trg, x0, y0)
-    #
-    #    xCoor[:,0],xCoor[:,1] = zx/1000., zy/1000. ; # to km...
-    #    del x0, y0, zx, zy
-
-
-    # Generating triangular meshes out of the cloud of points:
-    TRI = Delaunay(xCoor)
-
-    xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-
-    (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
-
-    xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
-    print('\n *** We have '+str(NbT)+' triangles!')
-
-    # Conversion to the `Triangle` class:
-    TRIAS = mjt.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam ) ; #lolo
-
-    del xTpnts, xNeighborIDs, TRI
-
-    # Merge triangles into quadrangles:
-    xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                                  ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                  areaR=(rQarea_min,rQarea_max) )
-    if len(xQpnts)<=0: exit(0)
-
-    (NbQ,_) = np.shape(xQpnts)
-    print('\n *** We have '+str(NbQ)+' quadrangles!')
-
-    # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
-
-    del xQpnts, xQcoor, xCoor
-
-    # Save the triangular mesh info:
-    mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
-
-    # Save the quadrangular mesh info:
-    mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
-
-    del TRIAS, QUADS
-
-    #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
-    ############################################################
-
-
-    # Reading the triangle and quad class objects in the npz files:
-    TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
-    QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
-
-
-    if not path.exists('./figs'): mkdir('./figs')
-
-    # Show triangles on a map:
-    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+cc+'.png',
-                         TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
-
-    # Show triangles together with the quadrangles on a map:
-    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+cc+'.png',
-                         TriMesh=TRI.MeshVrtcPntIdx,
-                         pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
-                         lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
-
-    ## Show only points composing the quadrangles:
-    #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
-    #                     lGeoCoor=(not l_work_with_dist) )
-
-    # Show only the quads with only the points that define them:
-    kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+cc+'.png',
-                         QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=(not l_work_with_dist), zoom=rzoom_fig)
-
+    #print(xCoor)
