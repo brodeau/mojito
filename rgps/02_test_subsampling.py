@@ -3,22 +3,15 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path
+#from os import path
 import numpy as np
-from re import split
-
-#from scipy.spatial import Delaunay
-
-from gudhi import subsampling as sbspl
-
 
 from climporn import epoch2clock
 import mojito   as mjt
 
 idebug=1
 
-rzoom_fig = 5
-
+rzoom_fig = 3
 
 
 if __name__ == '__main__':
@@ -29,13 +22,6 @@ if __name__ == '__main__':
     cf_npz = argv[1]
     cd_min = argv[2] ; rd_min = float(cd_min)
 
-    #cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
-    #cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
-    #cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
-    #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
-    # Have to build triangle and quadrangle mesh!
-    #print('\n *** We are going to build triangle and quad meshes!')
-
     print('\n *** Reading into '+cf_npz+' !!!')
 
     with np.load(cf_npz) as data:
@@ -45,7 +31,8 @@ if __name__ == '__main__':
         vids   = data['vids']
         vx = data['vx']
         vy = data['vy']
-        if len(vids) != len(vx) or len(vids) != len(vy): print('ERROR Y11!') ; exit(0)
+        if len(vids) != len(vx) or len(vids) != len(vy):
+            print('ERROR: len(vids) != len(vx) or len(vids) != len(vy)!') ; exit(0)
 
     NbP = len(vids) ; # number of points
     if NbP != Nbuoys: print('ERROR: NbP != Nbuoys !'); exit(0)
@@ -63,26 +50,17 @@ if __name__ == '__main__':
 
     # That's the original cloud of points, plotting it:
 
-    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/01_OriginalCloud.png',  lGeoCoor=False,
-                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=1.5 )
-    
-    # Projection, need to provide lon,lat, not distances:
-    #kf = mjt.ShowBuoysMap( it, xCoor[:,0], xCoor[:,1], pvIDs=vIDs, cnmfig='OriginalCloud' )
-
-
+    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/01_OriginalCloud.png', ppntIDs=vIDs, lGeoCoor=False,
+                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
     print(' *** Shape of xCoor: ',np.shape(xCoor))
-    
-    xx = sbspl.sparsify_point_set( xCoor, min_squared_dist=rd_min*rd_min )
 
-    xx = np.array(xx)
-    
-    print(' *** Shape of xx: ',np.shape(xx))
-    
-    kk = mjt.ShowTQMesh( xx[:,0], xx[:,1], cfig='./figs/02_SparsifiedCloud_'+cd_min+'km.png',  lGeoCoor=False,
-                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=1.5 )
+    ########################################################################
+    Nbuoys_ss, XY, vIDs_ss = mjt.SubSampCloud( rd_min, xCoor, vIDs )
+    ########################################################################
 
+    print(' *** New number of buoys =', Nbuoys_ss, ('(there was '+str(Nbuoys)+')'))
+    
+    kk = mjt.ShowTQMesh( XY[:,0], XY[:,1], cfig='./figs/02_SparsifiedCloud_'+cd_min+'km.png', ppntIDs=vIDs_ss,
+                         lGeoCoor=False,
+                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
 
-    
-    #print(xx)
-    
-    #print(xCoor)
