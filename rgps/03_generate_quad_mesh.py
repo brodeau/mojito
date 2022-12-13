@@ -12,7 +12,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock
 import mojito   as mjt
 
-idebug=1
+idebug=2
 
 # Selection of appropriate quadrangles:
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
@@ -21,8 +21,8 @@ rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
-rQarea_min =  70. ; # min area allowed for Quadrangle [km^2]
-rQarea_max = 130. ; # max area allowed for Quadrangle [km^2]
+
+rl_nom     = 10. ; # nominal length [km] of the sides of the quadrangle we intend to build
 
 rzoom_fig = 5
 
@@ -40,14 +40,21 @@ if __name__ == '__main__':
     # Strings for names of output files:
     cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
 
+    rftol = 0.3
+    
     if l_force_min_scale:
         cd_min = argv[2]
         rd_min = float(cd_min) ; cd_min = '%2.2i'%int(cd_min)
         cfroot += '_scale_'+cd_min+'km'
         #
-        rQarea_min = 0.6*rd_min*rd_min
-        rQarea_max = 1.4*rd_min*rd_min
+        rl_nom = rd_min
+        rftol  = 0.5 ; #fixme !!! should rather take into account the deviation from 10km...
 
+
+    # #fixme: move the 2 coeffs to header...
+    rf1 , rf2 = 1.-rftol , 1.+rftol
+    rQarea_min = rf1*rl_nom*rl_nom  ; # min area allowed for Quadrangle [km^2]
+    rQarea_max = rf2*rl_nom*rl_nom  ; # max area allowed for Quadrangle [km^2]
         
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
@@ -93,8 +100,22 @@ if __name__ == '__main__':
 
         # Just prior to Delaunay we may have to sub-sample in space the cloud of point
         if l_force_min_scale:
+
+            if idebug>1:
+                kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
+                                     pnames=vPnam, ppntIDs=vIDs,
+                                     lGeoCoor=False, zoom=rzoom_fig )
+                                     #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )            
             # Update!!!!
+            rd_min = rl_nom * 0.75 ; # 0.75: magic powder...
+
             NbP, xCoor, vIDs, vPnam = mjt.SubSampCloud( rd_min, xCoor, vIDs,  pNames=vPnam ) ; #lilo
+            
+            if idebug>1:
+                kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
+                                     pnames=vPnam, ppntIDs=vIDs,
+                                     lGeoCoor=False, zoom=rzoom_fig )
+                                     #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
 
 
         # Generating triangular meshes out of the cloud of points:
@@ -112,7 +133,8 @@ if __name__ == '__main__':
         TRIAS = mjt.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam ) ; #lolo
 
         del xTpnts, xNeighborIDs, TRI
-
+        
+        
         # Merge triangles into quadrangles:
         xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                                       ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
@@ -127,6 +149,16 @@ if __name__ == '__main__':
 
         del xQpnts, xQcoor, xCoor
 
+        if idebug>0:
+            zsides = QUADS.lengths()
+            zareas = QUADS.area()
+            rl_average_side = np.mean(zsides)
+            rl_average_area = np.mean(zareas)
+            print('    ==> average side length is '+str(round(rl_average_side,1))+' km')
+            print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
+            del zareas, zsides
+
+        
         # Save the triangular mesh info:
         mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
 
@@ -147,20 +179,20 @@ if __name__ == '__main__':
     if not path.exists('./figs'): mkdir('./figs')
 
     # Show triangles on a map:
-    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfroot+'.png',
+    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/01_Mesh_Triangles_'+cfroot+'.png',
                          TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
     # Show triangles together with the quadrangles on a map:
-    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfroot+'.png',
+    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Mesh_Quadrangles_'+cfroot+'.png',
                          TriMesh=TRI.MeshVrtcPntIdx,
                          pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
                          lGeoCoor=False, zoom=rzoom_fig)
 
     ## Show only points composing the quadrangles:
-    #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+    #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
     #                     lGeoCoor=False )
 
     # Show only the quads with only the points that define them:
-    kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+    kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
                          QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
