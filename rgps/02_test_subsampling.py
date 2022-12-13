@@ -20,7 +20,7 @@ if __name__ == '__main__':
         print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz> <min_dist_km>')
         exit(0)
     cf_npz = argv[1]
-    cd_min = argv[2] ; rd_min = float(cd_min)
+    cd_min = argv[2] ; rd_min = float(cd_min) ; cd_min = '%2.2i'%int(cd_min)
 
     print('\n *** Reading into '+cf_npz+' !!!')
 

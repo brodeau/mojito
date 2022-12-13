@@ -258,20 +258,41 @@ def idx_suppress_xy_copies( X, rmask_val=-999. ):
 
 
 
-def SubSampCloud( rd_km, pCoor, pIDs ):
+def SubSampCloud( rd_km, pCoor, pIDs,  pNames=[] ):
     '''
     '''
     from gudhi import subsampling as sbspl
     #
+    cerr = 'ERROR [util.SubSampCloud()]: '
+    l_do_names = ( len(pNames) > 0 )
+
+    # Sanity check of input:
+    if rd_km <= 0. or rd_km > 2000:
+        print(cerr+'silly value for `rd_km`:',rd_km)
+        exit(0)
+    (Nb0,n2) = np.shape(pCoor)
+    if (n2 != 2 ):
+        print(cerr+'second dimmension of `pCoor` must be 2 !')
+        exit(0)
+    if len(pIDs) != Nb0:
+        print(cerr+'len(pIDs) != Nb0 !')
+        exit(0)
+    if l_do_names:
+        if len(pNames) != Nb0:
+            print(cerr+'len(pNames) != Nb0 !')
+            exit(0)
+    
     zCoor = np.array( sbspl.sparsify_point_set( pCoor, min_squared_dist=rd_km*rd_km ) )
     (Nb,_) = np.shape(zCoor)
-
-    # Retrieve corresponding IDs for selected points:
+    
+    # Retrieve corresponding indices for selected points:
     ileft = np.zeros(Nb, dtype=int)
     for i in range(Nb):
         (idx,_) = np.where( pCoor[:,:]==zCoor[i,:] )
         ileft[i] = idx[0]
-    zIDs = pIDs[ileft]
-
-    return Nb, zCoor, zIDs
+    
+    if l_do_names:
+        return Nb, zCoor, pIDs[ileft], pNames[ileft]
+    else:
+        return Nb, zCoor, pIDs[ileft]
 
