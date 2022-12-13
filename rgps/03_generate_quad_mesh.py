@@ -89,9 +89,9 @@ if __name__ == '__main__':
 
         # Just prior to Delaunay we may have to sub-sample in space the cloud of point
         if l_force_min_scale:
-            
+            # Update!!!!
+            NbP, xCoor, vIDs, vPnam = mjt.SubSampCloud( rd_min, xCoor, vIDs,  pNames=vPnam ) ; #lilo
 
-            
 
         # Generating triangular meshes out of the cloud of points:
         TRI = Delaunay(xCoor)
