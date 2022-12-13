@@ -44,7 +44,11 @@ if __name__ == '__main__':
         cd_min = argv[2]
         rd_min = float(cd_min) ; cd_min = '%2.2i'%int(cd_min)
         cfroot += '_scale_'+cd_min+'km'
+        #
+        rQarea_min = 0.6*rd_min*rd_min
+        rQarea_max = 1.4*rd_min*rd_min
 
+        
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
