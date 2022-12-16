@@ -34,7 +34,7 @@ if __name__ == '__main__':
         print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz> (<min_pt_spacing_km>)')
         exit(0)
     cf_npz = argv[1]    
-    l_force_min_scale = ( len(argv) == 3 )
+    l_force_min_scale = ( len(argv) == 3 and argv[2] != '0' )
     
 
     # Strings for names of output files:
@@ -92,7 +92,7 @@ if __name__ == '__main__':
         # Name for each point:
         vPnam = np.array( [ str(i) for i in vIDs ], dtype='U32' )
 
-        if idebug>0:
+        if idebug>2:
             for jc in range(NbP):
                 print(' * Name: "'+vPnam[jc]+'": ID='+str(vIDs[jc])
                       +', x ='+str(round(xCoor[jc,0],2))+', y ='+str(round(xCoor[jc,1],2)))

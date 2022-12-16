@@ -50,8 +50,9 @@ if __name__ == '__main__':
 
     # That's the original cloud of points, plotting it:
 
-    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/01_OriginalCloud.png', ppntIDs=vIDs, lGeoCoor=False,
-                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
+    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/01_OriginalCloud.png', ppntIDs=vIDs,
+                         lGeoCoor=False, zoom=rzoom_fig )
+                         #rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
     print(' *** Shape of xCoor: ',np.shape(xCoor))
 
     ########################################################################
@@ -61,6 +62,6 @@ if __name__ == '__main__':
     print(' *** New number of buoys =', Nbuoys_ss, ('(there was '+str(Nbuoys)+')'))
     
     kk = mjt.ShowTQMesh( XY[:,0], XY[:,1], cfig='./figs/02_SparsifiedCloud_'+cd_min+'km.png', ppntIDs=vIDs_ss,
-                         lGeoCoor=False,
-                         rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
+                         lGeoCoor=False, zoom=rzoom_fig )
+                         #rangeX=[-1650,-700], rangeY=[-400,100]
 
