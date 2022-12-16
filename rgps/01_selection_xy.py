@@ -493,7 +493,7 @@ if __name__ == '__main__':
             if idebug>2: print('      it =',it,' => ',epoch2clock(it),' => nearest of VTscan =',epoch2clock(vTscan[idx,0]))
             VT[i] = vTscan[idx,0]
             i=i+1            
-        del vtim
+        #del vtim
         
         # Are there buoys which are too far from this reference time ? lilo
         #for jb in range(NvB):
@@ -533,7 +533,7 @@ if __name__ == '__main__':
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
-            kf = mjt.ShowBuoysMap_Trec( [it], xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
 
 
     ### for js in range(Nstreams)

@@ -191,7 +191,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
 
     (Nt,Nb) = np.shape(pvlon)
     if Nt != len(pvt):
-        print('\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!')
+        print('\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!',len(pvt),Nt)
         exit(0)
 
     if not path.exists('./figs'): mkdir('./figs')
