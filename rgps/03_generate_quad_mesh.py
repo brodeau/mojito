@@ -2,11 +2,14 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
+# TO DO: add standard deviation on the analysis of quadrangles properties...
+
+
 from sys import argv, exit
 from os import path
 import numpy as np
 from re import split
-
+from math import copysign
 from scipy.spatial import Delaunay
 
 from climporn import epoch2clock
@@ -96,79 +99,111 @@ if __name__ == '__main__':
         vIDs  = np.array( vids )
         del vids
 
-        xCoor = np.array( [ [vx[i],vy[i]] for i in range(NbP) ] ) ; # original x,y cartesian cordinates of the RGPS data!
-            #                                                       # => Polar Stereographic proj., lon_0=-45, lat_ts=70
 
         # Name for each point:
         vPnam = np.array( [ str(i) for i in vIDs ], dtype='U32' )
 
+
+        xCoor = np.array( [ [vx[i],vy[i]] for i in range(NbP) ] ) ; # original x,y cartesian cordinates of the RGPS data!
+        #                                                           # => Polar Stereographic proj., lon_0=-45, lat_ts=70        
         if idebug>2:
             for jc in range(NbP):
                 print(' * Name: "'+vPnam[jc]+'": ID='+str(vIDs[jc])
                       +', x ='+str(round(xCoor[jc,0],2))+', y ='+str(round(xCoor[jc,1],2)))
             print('')
 
-        # Just prior to Delaunay we may have to sub-sample in space the cloud of point
-        if l_force_min_scale:
-
-            if idebug>1:
-                kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
-                                     pnames=vPnam, ppntIDs=vIDs,
-                                     lGeoCoor=False, zoom=rzoom_fig )
-                                     #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )            
-            # Update!!!! #fixme
-            #rd_min = rL_nom * 0.75 ; # 0.75: magic powder...
-            rd_min = rL_nom
-
-            NbP, xCoor, vIDs, vPnam = mjt.SubSampCloud( rd_min, xCoor, vIDs,  pNames=vPnam ) ; #lilo
+        itt     = 0
+        l_happy = False
+        rfact_corr = 1.
+        rdev = 1.
+        
+        while not l_happy:
+            itt = itt + 1
             
-            if idebug>1:
-                kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
-                                     pnames=vPnam, ppntIDs=vIDs,
-                                     lGeoCoor=False, zoom=rzoom_fig )
-                                     #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
+            # Just prior to Delaunay we may have to sub-sample in space the cloud of point
+            if l_force_min_scale:
+    
+                if idebug>1:
+                    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
+                                         pnames=vPnam, ppntIDs=vIDs,
+                                         lGeoCoor=False, zoom=rzoom_fig )
+                                         #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )            
+                # Update!!!! #fixme
+                rd_min = rfact_corr * rL_nom
 
+                print('\n *** Applying spatial sub-sampling with radius rd_min = '+str(round(rd_min,2))+' triangles!')
+                
+                NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_min, xCoor, vIDs,  pNames=vPnam ) ; #lilo
+                
+                if idebug>1:
+                    kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
+                                         pnames=vPnam, ppntIDs=vIDs,
+                                         lGeoCoor=False, zoom=rzoom_fig )
+                                         #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
+            else:
+                NbPss = NbP
+                zCoor = xCoor
+                zIDs  = vIDs
+                zPnam = vPnam
+                
+    
+            # Generating triangular meshes out of the cloud of points:
+            TRI = Delaunay(zCoor)
+    
+            xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+    
+            (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
+    
+            xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
+    
+            print('\n *** We have '+str(NbT)+' triangles!')
+    
+            # Conversion to the `Triangle` class:
+            TRIAS = mjt.Triangle( zCoor, xTpnts, xNeighborIDs, zIDs, zPnam ) ; #lolo
+    
+            del xTpnts, xNeighborIDs, TRI
+            
+            
+            # Merge triangles into quadrangles:
+            xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                                                          ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                          areaR=(rQarea_min,rQarea_max) )
+            if len(xQpnts)<=0: exit(0)
+    
+            (NbQ,_) = np.shape(xQpnts)
+            print('\n *** We have '+str(NbQ)+' quadrangles!')
+    
+            # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
+            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
 
-        # Generating triangular meshes out of the cloud of points:
-        TRI = Delaunay(xCoor)
-
-        xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-
-        (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
-
-        xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
-        print('\n *** We have '+str(NbT)+' triangles!')
-
-        # Conversion to the `Triangle` class:
-        TRIAS = mjt.Triangle( xCoor, xTpnts, xNeighborIDs, vIDs, vPnam ) ; #lolo
-
-        del xTpnts, xNeighborIDs, TRI
-        
-        
-        # Merge triangles into quadrangles:
-        xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                                      ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                      areaR=(rQarea_min,rQarea_max) )
-        if len(xQpnts)<=0: exit(0)
-
-        (NbQ,_) = np.shape(xQpnts)
-        print('\n *** We have '+str(NbQ)+' quadrangles!')
-
-        # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-        QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
-
-        del xQpnts, xQcoor, xCoor
-
-        if idebug>0:
+            del xQpnts, xQcoor, zCoor
+            
             zsides = QUADS.lengths()
-            zareas = QUADS.area()
             rl_average_side = np.mean(zsides)
-            rl_average_area = np.mean(zareas)
-            print('    ==> average side length is '+str(round(rl_average_side,1))+' km')
-            print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
-            del zareas, zsides
+            if idebug>0:
 
+                zareas = QUADS.area()
+                rl_average_area = np.mean(zareas)
+                print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
+                print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
+                del zareas, zsides
+
+            rdev_old = rdev
+            rdev = rl_average_side - rL_nom
+            l_happy = ( abs(rdev) < 0.05 ) ; # average quadrangle side is close to expected nominal scale
+
+            if not l_happy:
+                # Linear fit of actual correction as a function of `rL_nom`
+                rfc = 0.008*rL_nom + 0.56                
+                if itt==1: ralpha = (1.-rfc) / rdev ; # equivalent to a correction of `rfc`
+                if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
+                    ralpha = ralpha/2. ; # change of sign of deviation => we decrease alpha!
+                # will go for a next round with a correction factor becoming increasingly smaller than 1:
+                rfact_corr = min( max(0.6 , rfact_corr - ralpha * rdev ) , 0.95 )
+                print(' +++++ NEW ralpha, rfact_corr = ',ralpha, rfact_corr)
+                
+        ###################
+        # #while not l_happy
         
         # Save the triangular mesh info:
         mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
@@ -207,3 +242,5 @@ if __name__ == '__main__':
     kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
                          QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
+
+    print('\n *** rfact_corr was:',rfact_corr)
