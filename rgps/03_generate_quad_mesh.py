@@ -18,11 +18,13 @@ idebug=2
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
 rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 #
-rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+#rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
+#rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+rQang_min =  60.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 120.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 
-rl_nom     = 10. ; # nominal length [km] of the sides of the quadrangle we intend to build
+rL_nom     = 10. ; # nominal length [km] of the sides of the quadrangle we intend to build
 
 rzoom_fig = 5
 
@@ -37,34 +39,42 @@ if __name__ == '__main__':
     l_force_min_scale = ( len(argv) == 3 and argv[2] != '0' )
     
 
-    # Strings for names of output files:
-    cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
 
-    rftol = 0.3
+    rftol = 0.3 ; #fixme
     
     if l_force_min_scale:
         cd_min = argv[2]
-        rd_min = float(cd_min) ; cd_min = '%2.2i'%int(cd_min)
-        cfroot += '_scale_'+cd_min+'km'
+        rd_min = float(cd_min)
+        #rftol  = 0.5 ; #fixme !!! should rather take into account the deviation from 10km...
+        rftol = 0.3 * rd_min/rL_nom
         #
-        rl_nom = rd_min
-        rftol  = 0.5 ; #fixme !!! should rather take into account the deviation from 10km...
+        rL_nom = rd_min
+        
 
 
+    cL_nom = '%2.2i'%int(round(rL_nom,0))
+        
+    # Strings for names of output files:
+    cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
+    if l_force_min_scale:
+        cfroot += '_'+cL_nom+'km_Sampled'
+    else:
+        cfroot += '_'+cL_nom+'km_NoSample'
+    
     # #fixme: move the 2 coeffs to header...
     rf1 , rf2 = 1.-rftol , 1.+rftol
-    rQarea_min = rf1*rl_nom*rl_nom  ; # min area allowed for Quadrangle [km^2]
-    rQarea_max = rf2*rl_nom*rl_nom  ; # max area allowed for Quadrangle [km^2]
-        
+    rQarea_min = rf1*rL_nom*rL_nom  ; # min area allowed for Quadrangle [km^2]
+    rQarea_max = rf2*rL_nom*rL_nom  ; # max area allowed for Quadrangle [km^2]
+    
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
     if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
-        # Have to build triangle and quadrangle mesh!
-
         print('\n *** We are going to build triangle and quad meshes!')
-
+        print('     => desired scale for quadrangles = '+str(int(rL_nom))+'km')
+        print('     => area range for a quadrangle to qualify: '+str(int(rQarea_min))+'km^2 < A < '+str(int(rQarea_max))+'km^2')
+        
         print('\n *** Reading into '+cf_npz+' !!!')
         with np.load(cf_npz) as data:
             it     = data['itime']
@@ -106,8 +116,9 @@ if __name__ == '__main__':
                                      pnames=vPnam, ppntIDs=vIDs,
                                      lGeoCoor=False, zoom=rzoom_fig )
                                      #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )            
-            # Update!!!!
-            rd_min = rl_nom * 0.75 ; # 0.75: magic powder...
+            # Update!!!! #fixme
+            #rd_min = rL_nom * 0.75 ; # 0.75: magic powder...
+            rd_min = rL_nom
 
             NbP, xCoor, vIDs, vPnam = mjt.SubSampCloud( rd_min, xCoor, vIDs,  pNames=vPnam ) ; #lilo
             
