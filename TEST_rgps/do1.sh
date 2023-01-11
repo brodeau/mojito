@@ -1,19 +1,29 @@
 #!/bin/bash
 
+YEAR="1997"
+
+EXE="${HOME}/DEV/mojito/rgps/01_selection_xy.py"
+
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         RGPS_DIR="/MEDIA/data/data/RGPS_Kwok_98"
+        FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
+        ;;
+    "frazilo")
+        RGPS_DIR="/data/data/RGPS_Kwok_98"
+        FILIN="RGPS_1996-11-07_1997-06-01_traj.nc4"
         ;;
     *)
         echo "Unsupported host: ${host} !"
         exit
 esac
 
+CMD="${EXE} ${RGPS_DIR}/${FILIN} ${YEAR}"
+
+echo
+echo " *** About to launch:"; echo "     ${CMD}"; echo
+${CMD}
 
 
-EXE="${HOME}/DEV/mojito/rgps/01_selection_xy.py"
-
-
-${EXE} ${RGPS_DIR}/RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4 1997
 
