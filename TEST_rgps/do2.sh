@@ -2,23 +2,20 @@
 
 . ./conf.bash
 
-#EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh.py"
 EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
 
-#list=`\ls npz/SELECTION_buoys_RGPS_stream*.npz`
-#list=`\ls npz/SELECTION_buoys_RGPS_stream000_*.npz`
+for st in ${LIST_STREAM}; do
 
-pref="npz/SELECTION_buoys_RGPS_stream000"
+    pref="npz/SELECTION_buoys_RGPS_stream${st}"
 
-#for ff in ${list}; do
 
-for dd in ${LIST_RES}; do
+    for dd in ${LIST_RES}; do
+        
+        CMD="${EXE} ${pref} ${dd}"
+        echo; echo; echo "  ==> ${CMD}"; echo
+        ${CMD}
+        echo
 
-    CMD="${EXE} ${pref} ${dd}"
-    echo; echo; echo "  ==> ${CMD}"; echo
-    ${CMD}
-    echo
+    done
 
 done
-
-#done

@@ -47,8 +47,11 @@ if __name__ == '__main__':
     rd_spacing = rd_nom_data
     if l_force_min_scale:
         rd_spacing = float(argv[2])
-        if rd_spacing < rd_nom_data:
-            print('ERROR: you cannot use a spacing smaller than that of the data!'); exit(0)
+        if rd_spacing <= rd_nom_data:
+            print('WARNING: we wont sample the cloud because `rd_spacing <= rd_nom_data` !!!')
+            rd_spacing = rd_nom_data
+            l_force_min_scale = False
+            
     cL_spacing = '%2.2i'%int(round(rd_spacing,0))
 
 
@@ -139,13 +142,17 @@ if __name__ == '__main__':
 
 
 
-                
+            
                 
             if jf==0:
                 
                 #********************************************************************************************************************************
                 #********************************************************************************************************************************
 
+                # x and y axis range for all plots:
+                zrx = [ np.min(xCoor[:,0])-50. , np.max(xCoor[:,0])+50. ]
+                zry = [ np.min(xCoor[:,1])-50. , np.max(xCoor[:,1])+50. ]
+                
                 # First file! We need to do the (subsampling + the) Delaunay triagulation!
             
                 l_happy = False
@@ -169,8 +176,6 @@ if __name__ == '__main__':
                         if idebug>0:
                             # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
                             # After and before subsampling
-                            zrx = [ np.min(xCoor[:,0])-50. , np.max(xCoor[:,0])+50. ]
-                            zry = [ np.min(xCoor[:,1])-50. , np.max(xCoor[:,1])+50. ]
                             #
                             kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
                                                  ppntIDs=vIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
