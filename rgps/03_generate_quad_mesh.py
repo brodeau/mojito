@@ -28,7 +28,7 @@ rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 
 rcAtol = 0.3333 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
 
-rtol        = 0.2 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
+rtol        = 0.3 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
 
 rzoom_fig = 5
@@ -198,7 +198,12 @@ if __name__ == '__main__':
                     #rdev = rl_average_side - rd_spacing
                     rdev = rl_average_scal - rd_spacing
                     l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
-        
+
+                    if not l_happy and itt==5:
+                        # We give up after 5 itterations!
+                        print(' +++++ WE GIVE UP !!! ++++++')
+                        l_happy = True
+                    
                     if not l_happy:
                         # Linear fit of actual correction as a function of `rd_spacing`
                         rfc = 0.008*rd_spacing + 0.56                
