@@ -527,13 +527,23 @@ if __name__ == '__main__':
                 
                 np.savez_compressed( cf_out, itime=int(VT[jr]), date=cdate, Npoints=Nbuoys, vids=vids[indV],
                                      vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
+
+                cfpng = './figs/SELECTION_xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti+'_'+ctr+'.png'
+
+                if jr==0:
+                    zrx = [ np.min(xx[jr,indV])-100. , np.max(xx[jr,indV])+100. ]
+                    zry = [ np.min(xy[jr,indV])-100. , np.max(xy[jr,indV])+100. ]
+                kg = mjt.ShowTQMesh( xx[jr,indV], xy[jr,indV], ppntIDs=vids[indV], cfig=cfpng, lGeoCoor=False,
+                                     zoom=5, rangeX=zrx, rangeY=zry )
+
+
             else:
                 if idebug>0:
                     print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION_geo_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
 
 
     ### for js in range(Nstreams)
