@@ -15,19 +15,21 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock
 import mojito   as mjt
 
-idebug=2
+idebug=0
 
 # Selection of appropriate quadrangles:
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
 rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 #
-#rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
-#rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
-rQang_min =  60.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 120.  ; # maximum angle tolerable in a quadrangle [degree]
+rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
 
-rL_nom     = 10. ; # nominal length [km] of the sides of the quadrangle we intend to build
+
+rcAtol = 0.3333 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
+
+rtol        = 0.2 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
+rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
 
 rzoom_fig = 5
 
@@ -41,41 +43,42 @@ if __name__ == '__main__':
     cf_npz = argv[1]    
     l_force_min_scale = ( len(argv) == 3 and argv[2] != '0' )
     
-
-
-    rftol = 0.3 ; #fixme
-    
+    rd_spacing = rd_nom_data
     if l_force_min_scale:
-        cd_min = argv[2]
-        rd_min = float(cd_min)
-        #rftol  = 0.5 ; #fixme !!! should rather take into account the deviation from 10km...
-        rftol = 0.3 * rd_min/rL_nom
-        #
-        rL_nom = rd_min
-        
+        rd_spacing = float(argv[2])
+        if rd_spacing < rd_nom_data:
+            print('ERROR: you cannot use a spacing smaller than that of the data!'); exit(0)
+    cL_spacing = '%2.2i'%int(round(rd_spacing,0))
 
 
-    cL_nom = '%2.2i'%int(round(rL_nom,0))
-        
+    print('\n\n**********************************************************************')
+    print(' *** Ok! Scale we are going to use is: `rd_spacing` = ',str(rd_spacing)+'km')
+    
     # Strings for names of output files:
     cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
     if l_force_min_scale:
-        cfroot += '_'+cL_nom+'km_Sampled'
+        cfroot += '_'+cL_spacing+'km_Sampled'
     else:
-        cfroot += '_'+cL_nom+'km_NoSample'
+        cfroot += '_'+cL_spacing+'km_NoSample'
     
-    # #fixme: move the 2 coeffs to header...
-    rf1 , rf2 = 1.-rftol , 1.+rftol
-    rQarea_min = rf1*rL_nom*rL_nom  ; # min area allowed for Quadrangle [km^2]
-    rQarea_max = rf2*rL_nom*rL_nom  ; # max area allowed for Quadrangle [km^2]
+    rA_nom = rd_spacing*rd_spacing ; # expected nominal area of the quadrangles [km^2]
+    rf1 , rf2 = 1.-rcAtol , 1.+rcAtol
+    rQarea_min = rf1*rA_nom  ; # min area allowed for Quadrangle [km^2]
+    rQarea_max = rf2*rA_nom  ; # max area allowed for Quadrangle [km^2]
+
+    print('    => tolerance on the QUADs is: +-'+str(round(rcAtol*100.,2))+'%')
+    print('    ==> '+str(rA_nom)+'km^2 ('+str(rQarea_min)+'km^2 < A < '+str(rQarea_max)+'km^2)')
+    print('**********************************************************************\n')
+
     
+    l_someQuads = True
     cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
     cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
-    if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
+    if not path.exists(cf_npzT) or not path.exists(cf_npzQ) or idebug>0:
 
         print('\n *** We are going to build triangle and quad meshes!')
-        print('     => desired scale for quadrangles = '+str(int(rL_nom))+'km')
+        print('     => desired scale for quadrangles = '+str(int(rd_spacing))+'km')
         print('     => area range for a quadrangle to qualify: '+str(int(rQarea_min))+'km^2 < A < '+str(int(rQarea_max))+'km^2')
         
         print('\n *** Reading into '+cf_npz+' !!!')
@@ -129,11 +132,11 @@ if __name__ == '__main__':
                                          lGeoCoor=False, zoom=rzoom_fig )
                                          #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )            
                 # Update!!!! #fixme
-                rd_min = rfact_corr * rL_nom
+                rd_ss = rfact_corr * rd_spacing
 
-                print('\n *** Applying spatial sub-sampling with radius rd_min = '+str(round(rd_min,2))+' triangles!')
+                print('\n *** Applying spatial sub-sampling! Threshold radius: '+str(round(rd_ss,2))+'km')
                 
-                NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_min, xCoor, vIDs,  pNames=vPnam ) ; #lilo
+                NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs,  pNames=vPnam ) ; #lilo
                 
                 if idebug>1:
                     kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
@@ -168,50 +171,61 @@ if __name__ == '__main__':
             xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                                           ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
                                                           areaR=(rQarea_min,rQarea_max) )
-            if len(xQpnts)<=0: exit(0)
-    
-            (NbQ,_) = np.shape(xQpnts)
-            print('\n *** We have '+str(NbQ)+' quadrangles!')
-    
-            # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
+            l_someQuads = (len(xQpnts)>0)
+            #if len(xQpnts)<=0: exit(0)
 
-            del xQpnts, xQcoor, zCoor
+            if l_someQuads:
+                (NbQ,_) = np.shape(xQpnts)
+                print('\n *** We have '+str(NbQ)+' quadrangles!')
+    
+                # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
+                QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
+
+                del xQpnts, xQcoor, zCoor
             
-            zsides = QUADS.lengths()
-            rl_average_side = np.mean(zsides)
-            if idebug>0:
-
+                zsides = QUADS.lengths()
                 zareas = QUADS.area()
+                rl_average_side = np.mean(zsides)
+                rl_average_scal = np.mean( np.sqrt(zareas) )
                 rl_average_area = np.mean(zareas)
+                print('    ==> average scale (sqrt[A]) is '+str(round(rl_average_scal,3))+' km')
                 print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
                 print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
                 del zareas, zsides
-
-            rdev_old = rdev
-            rdev = rl_average_side - rL_nom
-            l_happy = ( abs(rdev) < 0.05 ) ; # average quadrangle side is close to expected nominal scale
-
-            if not l_happy:
-                # Linear fit of actual correction as a function of `rL_nom`
-                rfc = 0.008*rL_nom + 0.56                
-                if itt==1: ralpha = (1.-rfc) / rdev ; # equivalent to a correction of `rfc`
-                if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
-                    ralpha = ralpha/2. ; # change of sign of deviation => we decrease alpha!
-                # will go for a next round with a correction factor becoming increasingly smaller than 1:
-                rfact_corr = min( max(0.6 , rfact_corr - ralpha * rdev ) , 0.95 )
-                print(' +++++ NEW ralpha, rfact_corr = ',ralpha, rfact_corr)
+    
+                if l_force_min_scale:
+                    rdev_old = rdev
+                    #rdev = rl_average_side - rd_spacing
+                    rdev = rl_average_scal - rd_spacing
+                    l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
+        
+                    if not l_happy:
+                        # Linear fit of actual correction as a function of `rd_spacing`
+                        rfc = 0.008*rd_spacing + 0.56                
+                        if itt==1: ralpha = (1.-rfc) / rdev ; # equivalent to a correction of `rfc`
+                        if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
+                            ralpha = ralpha/1.3 ; # change of sign of deviation => we decrease alpha!
+                        # will go for a next round with a correction factor becoming increasingly smaller than 1:
+                        #rfact_corr = min( max(0.6 , rfact_corr - ralpha * rdev ) , 0.95 )
+                        rfact_corr = min( max(0.5 , rfact_corr - ralpha * rdev ) , 0.95 )
+                        print(' +++++ NEW itteration with: ralpha, rfact_corr = ',ralpha, rfact_corr)
+                    #
+                else:
+                    l_happy = True ; # we work with the data's nominal scale so we just go on here...
+            else:
+                l_happy = True ; # we coud not build any QUAD so we move on anyways...
                 
         ###################
         # #while not l_happy
-        
+
         # Save the triangular mesh info:
         mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+        del TRIAS
 
-        # Save the quadrangular mesh info:
-        mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
-
-        del TRIAS, QUADS
+        if l_someQuads:
+            # Save the quadrangular mesh info:
+            mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
+            del QUADS            
 
     #if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
     ############################################################
@@ -219,7 +233,7 @@ if __name__ == '__main__':
 
     # Reading the triangle and quad class objects in the npz files:
     TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
-    QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
+    if l_someQuads: QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
     if not path.exists('./figs'): mkdir('./figs')
@@ -228,19 +242,23 @@ if __name__ == '__main__':
     kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/01_Mesh_Triangles_'+cfroot+'.png',
                          TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
-    # Show triangles together with the quadrangles on a map:
-    kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Mesh_Quadrangles_'+cfroot+'.png',
-                         TriMesh=TRI.MeshVrtcPntIdx,
-                         pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
-                         lGeoCoor=False, zoom=rzoom_fig)
-
-    ## Show only points composing the quadrangles:
-    #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-    #                     lGeoCoor=False )
-
-    # Show only the quads with only the points that define them:
-    kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-                         QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+    if l_someQuads:
+        # Show triangles together with the quadrangles on a map:
+        kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Mesh_Quadrangles_'+cfroot+'.png',
+                             TriMesh=TRI.MeshVrtcPntIdx,
+                             pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
+                             lGeoCoor=False, zoom=rzoom_fig)
+    
+        ## Show only points composing the quadrangles:
+        #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+        #                     lGeoCoor=False )
+    
+        # Show only the quads with only the points that define them:
+        kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+                             QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
 
 
     print('\n *** rfact_corr was:',rfact_corr)
+
+    if not l_someQuads:
+        print('\n *** NO QUADs could be built!!!   :(\n')

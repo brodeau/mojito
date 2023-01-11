@@ -285,7 +285,7 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
             else:
                 if ivb>0: print('       => No valid neighbors for this triangle...')
 
-        print('**************************************************************')
+        if ivb>0: print('**************************************************************')
     ## -- for jT in range(NbT) --
     del Z3Pnts, Zangls, Zareas, Znghbs, v3pnts, vangles
 
