@@ -45,11 +45,11 @@ ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
 cnm_pref = cnm_pref+'_'+ccdt1+'_'+ccdt2
 
 # Try to get a spatial resolution scale from the name:
+cres = ''
 cc1 = split('km_',cf1)[0] ; cc1 = split('_',cc1)[-1]
 cc2 = split('km_',cf2)[0] ; cc2 = split('_',cc2)[-1]
 if cc1==cc2 and cc1.isdigit() and cc2.isdigit():
-    cres = cc1+'km_'
-    cnm_pref = cres+cnm_pref
+    cres = '_'+cc1+'km'
     
 print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
 print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
@@ -79,9 +79,9 @@ if idebug>0:
     zzu = zU.flatten()
     zzv = zV.flatten()
     #
-    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4.png', cwhat='U4',
+    mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4'+cres+'.png', cwhat='U4',
                          marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
-    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4.png', cwhat='V4',
+    mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4'+cres+'.png', cwhat='V4',
                          marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
     #
     del zzx, zzy, zzu, zzv
@@ -95,9 +95,9 @@ if idebug>1:
     zUc = np.mean( zU[:,:], axis=1 )
     zVc = np.mean( zV[:,:], axis=1 )
     #
-    mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc.png', cwhat='Uc',
+    mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc'+cres+'.png', cwhat='Uc',
                          marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
-    mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc.png', cwhat='Vc',
+    mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc'+cres+'.png', cwhat='Vc',
                          marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
     #
     del zUc, zVc
@@ -118,7 +118,7 @@ np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, 
 # Some plots:
 if not path.exists('./figs'): mkdir('./figs')
 
-mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence.png', cwhat='div',
+mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence'+cres+'.png', cwhat='div',
                      marker_size=mrkrsz, pFmin=-1.e-5, pFmax=1.e-5, zoom=4 )
-mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear.png',      cwhat='shr',
+mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear'+cres+'.png',      cwhat='shr',
                      marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-5,  zoom=4 )
