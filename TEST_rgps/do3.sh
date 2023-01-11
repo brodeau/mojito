@@ -13,7 +13,7 @@ CPREF="npz/Q-mesh_stream000_19970104_18h00 npz/Q-mesh_stream001_19970106_18h00_"
 
 
 
-for dd in 10 15 20; do
+for dd in ${LIST_RES}; do
 
     echo; echo
     echo " *** ${dd} km ***"
