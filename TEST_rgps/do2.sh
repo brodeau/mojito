@@ -1,9 +1,8 @@
 #!/bin/bash
 
-RGPS_DIR="/MEDIA/data/data/RGPS_Kwok_98"
+. ./conf.bash
 
-EXE="${HOME}/DEV/mojito/rgps/03_generate_quad_mesh.py"
-
+EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh.py"
 
 list=`\ls npz/SELECTION_buoys_RGPS_stream*.npz`
 
