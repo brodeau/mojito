@@ -18,7 +18,6 @@ figs
 *.old
 *.new
 *.bak
-TEST_*
 
 
 # Distribution / packaging
