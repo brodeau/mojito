@@ -15,7 +15,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock
 import mojito   as mjt
 
-idebug=0
+idebug=1
 
 # Selection of appropriate quadrangles:
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
@@ -38,7 +38,7 @@ rzoom_fig = 5
 if __name__ == '__main__':
 
     if not len(argv) in [2,3]:
-        print('Usage: '+argv[0]+' <SELECTION_buoys_RGPS_streamXXX_XXX.npz> (<min_pt_spacing_km>)')
+        print('Usage: '+argv[0]+' <list of SELECTION_* files (separated b)> (<min_pt_spacing_km>)')
         exit(0)
     cf_npz = argv[1]    
     l_force_min_scale = ( len(argv) == 3 and argv[2] != '0' )
@@ -115,34 +115,35 @@ if __name__ == '__main__':
                       +', x ='+str(round(xCoor[jc,0],2))+', y ='+str(round(xCoor[jc,1],2)))
             print('')
 
-        itt     = 0
+
+        
         l_happy = False
-        rfact_corr = 1.
-        rdev = 1.
+        itt     = 0
+        rfcorr  = 1.
+        rdev    = 1.
         
         while not l_happy:
             itt = itt + 1
             
             # Just prior to Delaunay we may have to sub-sample in space the cloud of point
             if l_force_min_scale:
-    
-                if idebug>1:
-                    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
-                                         pnames=vPnam, ppntIDs=vIDs,
-                                         lGeoCoor=False, zoom=rzoom_fig )
-                                         #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )            
-                # Update!!!! #fixme
-                rd_ss = rfact_corr * rd_spacing
+                    
+                rd_ss = rfcorr * rd_spacing ; # Correct `rd_spacing` to get closer to requested radius (based on QUADs to be generated)
 
-                print('\n *** Applying spatial sub-sampling! Threshold radius: '+str(round(rd_ss,2))+'km')
+                print('\n *** Applying spatial sub-sampling! Threshold radius: '+str(round(rd_ss,2))+'km')                
+                NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs,  pNames=vPnam )
                 
-                NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs,  pNames=vPnam ) ; #lilo
-                
-                if idebug>1:
+                if idebug>0:
+                    # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
+                    # After and before subsampling
+                    zrx = [ np.min(xCoor[:,0])-50. , np.max(xCoor[:,0])+50. ]
+                    zry = [ np.min(xCoor[:,1])-50. , np.max(xCoor[:,1])+50. ]
+                    #
+                    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
+                                         ppntIDs=vIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
                     kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
-                                         pnames=vPnam, ppntIDs=vIDs,
-                                         lGeoCoor=False, zoom=rzoom_fig )
-                                         #lGeoCoor=False, rangeX=[-1650,-700], rangeY=[-400,100], zoom=rzoom_fig )
+                                         ppntIDs=zIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
+                #lilo
             else:
                 NbPss = NbP
                 zCoor = xCoor
@@ -211,9 +212,9 @@ if __name__ == '__main__':
                         if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
                             ralpha = ralpha/1.3 ; # change of sign of deviation => we decrease alpha!
                         # will go for a next round with a correction factor becoming increasingly smaller than 1:
-                        #rfact_corr = min( max(0.6 , rfact_corr - ralpha * rdev ) , 0.95 )
-                        rfact_corr = min( max(0.5 , rfact_corr - ralpha * rdev ) , 0.95 )
-                        print(' +++++ NEW itteration with: ralpha, rfact_corr = ',ralpha, rfact_corr)
+                        #rfcorr = min( max(0.6 , rfcorr - ralpha * rdev ) , 0.95 )
+                        rfcorr = min( max(0.5 , rfcorr - ralpha * rdev ) , 0.95 )
+                        print(' +++++ NEW itteration with: ralpha, rfcorr = ',ralpha, rfcorr)
                     #
                 else:
                     l_happy = True ; # we work with the data's nominal scale so we just go on here...
@@ -245,14 +246,14 @@ if __name__ == '__main__':
 
     # Show triangles on a map:
     kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/01_Mesh_Triangles_'+cfroot+'.png',
-                         TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+                         TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
 
     if l_someQuads:
         # Show triangles together with the quadrangles on a map:
         kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Mesh_Quadrangles_'+cfroot+'.png',
                              TriMesh=TRI.MeshVrtcPntIdx,
                              pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
-                             lGeoCoor=False, zoom=rzoom_fig)
+                             lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
     
         ## Show only points composing the quadrangles:
         #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
@@ -260,10 +261,10 @@ if __name__ == '__main__':
     
         # Show only the quads with only the points that define them:
         kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-                             QuadMesh=QUA.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig)
+                             QuadMesh=QUA.MeshVrtcPntIdx, ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
 
 
-    print('\n *** rfact_corr was:',rfact_corr)
+    print('\n *** `rfcorr` was:',rfcorr)
 
     if not l_someQuads:
         print('\n *** NO QUADs could be built!!!   :(\n')

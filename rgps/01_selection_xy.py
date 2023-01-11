@@ -96,7 +96,8 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    if not path.exists('./npz'): mkdir('./npz')
+    for cd in ["npz","figs"]:
+        if not path.exists('./'+cd): mkdir('./'+cd)    
 
     narg = len(argv)
     if not narg in [3]:
@@ -518,7 +519,7 @@ if __name__ == '__main__':
 
             if Nbuoys >= Nb_min_buoys:
                 ctr = str.replace( str.replace(cdate[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
-                cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti+'_'+ctr+'.npz'
+                cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.npz'
 
 
                 vmsk = xmsk[jr,:]
@@ -528,7 +529,7 @@ if __name__ == '__main__':
                 np.savez_compressed( cf_out, itime=int(VT[jr]), date=cdate, Npoints=Nbuoys, vids=vids[indV],
                                      vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
-                cfpng = './figs/SELECTION_xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti+'_'+ctr+'.png'
+                cfpng = './figs/SELECTION_xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.png'
 
                 if jr==0:
                     zrx = [ np.min(xx[jr,indV])-100. , np.max(xx[jr,indV])+100. ]
@@ -543,7 +544,7 @@ if __name__ == '__main__':
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION_geo_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+cti, clock_res='d' )
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION_geo_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr, clock_res='d' )
 
 
     ### for js in range(Nstreams)

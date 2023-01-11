@@ -4,7 +4,8 @@
 
 EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh.py"
 
-list=`\ls npz/SELECTION_buoys_RGPS_stream*.npz`
+#list=`\ls npz/SELECTION_buoys_RGPS_stream*.npz`
+list=`\ls npz/SELECTION_buoys_RGPS_stream000_*.npz`
 
 for ff in ${list}; do
     
