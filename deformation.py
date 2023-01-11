@@ -79,10 +79,13 @@ if idebug>0:
     zzu = zU.flatten()
     zzv = zV.flatten()
     #
+    zrx = [ np.min(zzx)-50. , np.max(zzx)+50. ]
+    zry = [ np.min(zzy)-50. , np.max(zzy)+50. ]
+    #
     mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4'+cres+'.png', cwhat='U4',
-                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
     mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4'+cres+'.png', cwhat='V4',
-                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
     #
     del zzx, zzy, zzu, zzv
 
@@ -96,9 +99,9 @@ if idebug>1:
     zVc = np.mean( zV[:,:], axis=1 )
     #
     mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc'+cres+'.png', cwhat='Uc',
-                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
     mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc'+cres+'.png', cwhat='Vc',
-                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4 )
+                         marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
     #
     del zUc, zVc
 
@@ -119,6 +122,6 @@ np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, 
 if not path.exists('./figs'): mkdir('./figs')
 
 mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence'+cres+'.png', cwhat='div',
-                     marker_size=mrkrsz, pFmin=-1.e-5, pFmax=1.e-5, zoom=4 )
+                     marker_size=mrkrsz, pFmin=-1.e-5, pFmax=1.e-6, zoom=4, rangeX=zrx, rangeY=zry )
 mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear'+cres+'.png',      cwhat='shr',
-                     marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-5,  zoom=4 )
+                     marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )

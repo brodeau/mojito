@@ -362,7 +362,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
 
 
 def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
-                     marker_size=100, pFmin=-1., pFmax=1. ):
+                     marker_size=100, pFmin=-1., pFmax=1., rangeX=None, rangeY=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -391,7 +391,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #    vfig = (12*zoom,9*zoom)
     #else:
     # Cartesian coordinates (x,y)
-    (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom)
+    (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom, rangeX=rangeX, rangeY=rangeY )
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
     
