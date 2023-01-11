@@ -44,6 +44,13 @@ cnm_pref = split('_',cf1)[1]
 ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
 cnm_pref = cnm_pref+'_'+ccdt1+'_'+ccdt2
 
+# Try to get a spatial resolution scale from the name:
+cc1 = split('km_',cf1)[0] ; cc1 = split('_',cc1)[-1]
+cc2 = split('km_',cf2)[0] ; cc2 = split('_',cc2)[-1]
+if cc1==cc2 and cc1.isdigit() and cc2.isdigit():
+    cres = cc1+'km_'
+    cnm_pref = cres+cnm_pref
+    
 print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
 print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
 
