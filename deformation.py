@@ -60,6 +60,13 @@ print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
 # The Quads we retain, i.e. those who exist in both snapshots:
 vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
 nQ = len(vnm) ; # also = len(vidx*) 
+
+znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
+nQ2 = len(znm)
+if nQ!=nQ2 or np.sum(zidx1-vidx1)!=0 or np.sum(zidx2-vidx2)!=0:
+    print('ERROR: we do not get the same info based on Quad names and Quad Ids !!!')
+    exit(0)
+
 print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 # Coordinates of the 4 points of quadrangles for the 2 consecutive records:

@@ -124,11 +124,10 @@ class Quadrangle:
         if len(zvPntIdx) != nP:
             print(cEM+' problem with the number of points at play deduced from `xQPntIdx`: ',len(zvPntIdx),nP); exit(0)
 
-        print('LOLO: nQ =',nQ, 'np.shape(xQPntIdx) =',np.shape(xQPntIdx))
         zTcoor = np.array([ [ xPcoor[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
 
         l_force_Q_IDs = (len(vQIDs) == nQ)
-                
+
         # Integers:
         self.nP        = nP ; # number of points making the quadrangles
         self.nQ        = nQ ; # number of quadrangles (nQ < nP)
@@ -140,9 +139,9 @@ class Quadrangle:
         self.PointIdx     = zvPntIdx                          ; # indices of all the points making the quadrangles => shape = (nP)
         self.PointXY      = np.array(xPcoor)                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
         if l_force_Q_IDs:
-            self.QuaIDs       = np.array(vQIDs, dtype=int); # IDs of the quadrangles => shape = (nQ)
+            self.QuadIDs       = np.array(vQIDs, dtype=int); # IDs of the quadrangles => shape = (nQ)
         else:
-            self.QuaIDs       = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
+            self.QuadIDs       = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
         self.MeshVrtcPntIdx = np.array(xQPntIdx, dtype=int)   ; # 4 point indices composing the quadrangles (indices in the frame of "only Quadrangles")
         self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
         self.QuadNames   = np.array( vQnames, dtype='U32' ) ; # point names => shape = (nP)
@@ -215,7 +214,7 @@ def SaveClassPolygon( cfile, Poly, ctype='Q', force_date='unknown' ):
         cdate = force_date
     if ctype=='Q':
         np.savez_compressed( cfile, date=cdate, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx,
-                             PointIDs=Poly.PointIDs, QuadNames=Poly.QuadNames )
+                             PointIDs=Poly.PointIDs, QuadNames=Poly.QuadNames, QuadIDs=Poly.QuadIDs )
         print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
 
     if ctype=='T':
@@ -260,7 +259,8 @@ def LoadClassPolygon( cfile, ctype='Q' ):
     if ctype=='Q':
         if nVrtc!=4:
             print('ERROR: [polygons.LoadPolygon()] => wrong number of vertices for a quadrangle:',nVrtc); exit(0)
-        QuadNames   = data['QuadNames']
-        POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, QuadNames, date=cdate )
+        QuadNames = data['QuadNames']
+        QuadIDs   = data['QuadIDs']
+        POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, QuadNames, vQIDs=QuadIDs, date=cdate )
 
     return POLY

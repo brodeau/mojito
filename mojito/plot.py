@@ -254,7 +254,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qnames=[], TriMesh=[],
+def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[], qnames=[], TriMesh=[],
                 pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS',
                 rangeX=None, rangeY=None ):
     '''
@@ -274,7 +274,6 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qnames=
     zrat = 1./zoom    
     kk = _initStyle_(fntzoom=zoom)    
 
-    l_annotate = ( zoom < 7 ) ; # looks like shit for big stuff if we show IDs on triangles and quads...
     rsz_annot  = 5*zoom**0.4
 
     (nbP,) = np.shape(pX) ; # Number of points that defines all the triangles...
@@ -321,12 +320,12 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qnames=
             plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)
         else:
             plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)
-        if l_annotate:
-            # Indicate triangle # in its center:
-            for jT in range(nbT):
-                vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
-                rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=rsz_annot, zorder=60)
+
+        # Indicate triangle # in its center:
+        for jT in range(nbT):
+            vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
+            rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=rsz_annot, zorder=60)
     
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -341,13 +340,13 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qnames=
             vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
             plt.plot(vX,vY, col_blu, lw=3*zrat, zorder=100)
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
-            if l_annotate:
+            if len(qIDs)>0:
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-                ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=rsz_annot, zorder=160)
+                ax.annotate(qIDs[jQ], (rmLon, rmLat), color='w', fontweight='bold', size=rsz_annot, zorder=160)
             if len(qnames)>0:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-                ax.annotate(qnames[jQ], (rmLon, rmLat), color='r', size=0.4*rsz_annot, zorder=165)
+                ax.annotate(qnames[jQ], (rmLon, rmLat), color='b', size=0.6*rsz_annot, zorder=165)
                 
     if len(pnames)>0:
         for jP in range(nbP):

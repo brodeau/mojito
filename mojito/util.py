@@ -97,7 +97,6 @@ def OrderCW(xcoor):
 
     #idx = np.concatenate([idxL,idxR])
     #isort = np.array([isortX[i] for i in np.concatenate([isortL,isortR])])
-    #print('LOLO, idx=', idx)
 
     del isortX, isortL, isortR, leftMost, rghtMost, isortML, isortMR
 
@@ -140,7 +139,6 @@ def SortIndicesCCW(xcoor):
     # sort the points based on their x-coordinates
     isortX  = np.argsort(xcoor[:,0])
     xSorted = xcoor[isortX,:]
-    #print('LOLO: Sorted by longitude => isortX =', isortX)
 
     # grab the left-most and right-most points from the sorted
     # x-roodinate points
@@ -154,7 +152,6 @@ def SortIndicesCCW(xcoor):
     # points, respectively
     isortL     = np.argsort(leftMost[:,1])
     [i1l, i2l] = isortML[isortL]
-    #print('LOLO: isortL, idxL =', isortL, [i1l, i2l] )
 
     # if use Euclidean distance, it will run in error when the object
     # is trapezoid. So we should use the same simple y-coordinates order method.
@@ -164,11 +161,9 @@ def SortIndicesCCW(xcoor):
     # points, respectively
     isortR     = np.argsort(rghtMost[:,1])
     [i1r, i2r] = isortMR[isortR]
-    #print('LOLO: isortR, idxR =',isortR, [i1r, i2r] )
 
     #idx = np.concatenate([idxL,idxR])
     #isort = np.array([isortX[i] for i in np.concatenate([isortL,isortR])])
-    #print('LOLO, idx=', idx)
 
     del xSorted, isortX, isortL, isortR, leftMost, rghtMost, isortML, isortMR
 

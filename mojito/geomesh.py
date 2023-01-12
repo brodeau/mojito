@@ -337,11 +337,7 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     print('')
 
     del zCoor, zcN
-    #print('LOLO end of `Tri2Quad`: ')
-    #print('  ==> shape(zPCoor) =',np.shape(zPCoor))
-    #print('  ==> shape(zPQIDs) =',np.shape(zPQIDs))
-    #print('  ==> shape(zQPQ) =',np.shape(zQPQ))
-    #print('  ==> shape(zQnames) =',np.shape(zQnames))    
+
     return zPCoor, zPQIDs, zQPQ, zQnames
 
 
