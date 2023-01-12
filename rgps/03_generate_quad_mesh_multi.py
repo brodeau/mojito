@@ -32,7 +32,7 @@ rcAtol = 0.3333 ; # coefficient of tolerance for the acceptation of the area of 
 rtol        = 0.3 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
 
-rzoom_fig = 5
+rzoom_fig = 6
 
 
 
@@ -264,14 +264,9 @@ if __name__ == '__main__':
                         
                 ###################
                 # #while not l_happy
-
-                # To be used for following files, indices of Points to keep for Quads:
-                _,ind2keep,_ = np.intersect1d(zIDs, vPQids, return_indices=True); # retain only indices of `zIDs` that exist in `vPQids`
-
-                #print('ind2keep =',ind2keep) ; exit(0)
                 
-                #********************************************************************************************************************************
-                #********************************************************************************************************************************
+                #***************************************************************************************************************
+                #***************************************************************************************************************
                 
             else:
                 # jf > 0 !!!!
@@ -284,55 +279,144 @@ if __name__ == '__main__':
                 print('\n\nNow we work with file #'+str(jf+1)+'!!!\n')
 
                 # Loop along the nQ quads found at former record
-                nPprev = QUADS.nP
-                nQprev = QUADS.nQ
-
+                nPprev     = QUADS.nP
+                nQprev     = QUADS.nQ
+                zPIDs_prev = vPQids.copy() ; # All point IDs involved in initial polpulation of Quads
+                if len(zPIDs_prev) != nPprev: print('ERROR X2'); exit(0)
+                zQIDs_prev = QUADS.QuaIDs.copy() ; # All Quad IDs involved in initial polpulation of Quads
                 print(' *** In former file, we found '+str(nQprev)+' Quads relying on '+str(nPprev)+' points!')
+                
 
-                nQ = 0
-                lst_PntIDs   = []
+                lst_PIDs_aliv = []
+                lst_QIDs_aliv = []
+                #
                 for jQ in range(nQprev):
         
                     l_Survived = True
-        
-                    print('\n --- Quad #'+str(jQ)+':')
+
+                    idQuad = zQIDs_prev[jQ]
+                    
+                    print('\n --- Quad #'+str(jQ)+' with ID '+str(idQuad)+':')
         
                     # Indices of the 4 points:
                     v4Pind = QUADS.MeshVrtcPntIdx[jQ,:]
-                    v4Pids = np.array( [ vPQids[i] for i in v4Pind ], dtype=int ) ; #
+                    v4Pids = np.array( [ zPIDs_prev[i] for i in v4Pind ], dtype=int ) ; #
                 
                     for jid in v4Pids:
                         if not jid in vIDs:
-                            print(' Nuhh! Point with ID '+str(jid)+' does not exist anymore in this record')
-                            print('  => this Quad is forgotten...')
+                            print('     => point with ID '+str(jid)+' does not exist anymore in this record')
+                            print('     ===> quad with ID '+str(idQuad)+' is forgotten...')
                             l_Survived = False
                             break
         
                     if l_Survived:
                         # Current Quad still exists in this record...
-                        nQ = nQ + 1
                         if idebug>0: print('     => still exists at current record :)!')
-                        lst_PntIDs.append(v4Pids)
+                        lst_QIDs_aliv.append(idQuad)
+                        lst_PIDs_aliv.append(v4Pids)
 
-                zIDs = np.unique(np.array(lst_PntIDs))
-                if idebug: print('  => IDs of points still involved:', zIDs)
-                nP = len(zIDs)
-                del v4Pind, v4Pids, lst_PntIDs, zIDs
+                zQIDs_aliv = np.unique(np.array(lst_QIDs_aliv))
+                zPIDs_aliv = np.unique(np.array(lst_PIDs_aliv))
+                nQ = len(zQIDs_aliv)
+                nP = len(zPIDs_aliv)
+
+                if idebug>1:
+                    print('  => IDs of  quads still involved:', zQIDs_aliv)                
+                    print('  => IDs of points still involved:', zPIDs_aliv)                
+                del v4Pind, v4Pids, lst_QIDs_aliv, lst_PIDs_aliv
         
                 print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQprev)+' that survived!')
                 print('        and  '+str(nP)+' points  / '+str(nPprev)+' involved...')
-    
+                                 
                 # * xQpnts remains the same! That's the whole point!!!
                 # * xQcoor should be updated with the new point coordinates at this record:
+
+                if nQ < nQprev:
+                    # * `xQcoor` must be shrinked from (nPprev,2) to (nP,2) => No!
+                    # * `xQpnts` must be shrinked from (nQprev,4) to (nQ,4)
+                    # * `vPQids` must be shrinked from (nPprev)   to (nP)
+                    # * `vQnam`  must be updated from (nQprev)   to (nQ)
+                    #lilo
+                    #
+                    # A: indices of points that survived
+                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    print('shape of `xQcoor` =',np.shape(xQcoor))                    
+                    print('shape of `zPIDs_prev` =',np.shape(zPIDs_prev))
+                    print('shape of `zPIDs_aliv` =',np.shape(zPIDs_aliv))
+                    _,indx_P_aliv,_ = np.intersect1d(zPIDs_prev, zPIDs_aliv, return_indices=True); # retain only indices of `zPIDs_prev` that exist in `zPIDs_aliv`
+                    if len(indx_P_aliv)!=nP: print('ERROR X3'); exit(0)
+                    #
+                    vPQids = zPIDs_prev[indx_P_aliv]
+                    if np.sum(vPQids[:]-zPIDs_aliv[:])!=0: print('ERROR X4'); exit(0)  ; # should be identical to `zPIDs_aliv`                    
+
+                    #xQcoor = xQcoor[indx_P_aliv,:]
+                    
+                    
+                    # B: indices of Quads that survived
+                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    #zQIDs_prev ; # All Quad IDs involved in initial polpulation of Quads
+                    _,indx_Q_aliv,_ = np.intersect1d(zQIDs_prev, zQIDs_aliv, return_indices=True); # retain only indices of `zQIDs_prev` that exist in `zQIDs_aliv`
+                    if len(indx_Q_aliv)!=nQ: print('ERROR X4'); exit(0)
+                    vQnam  =  vQnam[indx_Q_aliv]
+                    #rm:
+                    vQids  =  zQIDs_prev[indx_Q_aliv]
+                    if np.sum( vQids - zQIDs_aliv ) != 0: print('ERROR XX4'); exit(0)
+                    del vQids
+                    #rm.
+                    
+                    #for jQ in range(nQ):
+                    #    print("ID and Name of Quad that survived:",zQIDs_aliv[jQ],vQnam[jQ])
+                    #
+                    xQpnts_prev = xQpnts.copy() ; del xQpnts
+                    xQpnts = np.zeros((nQ,4), dtype=int)
+                    #xQpnts = xQpnts[indx_Q_aliv,:] ; # NOT OKAY values in `xQpnts` are still indices of point valid for previous go, they must be decreased!
+                    #
+                    # `xQpnts` contains indices of points valid in the frame [0,nQprev-1] !!!
+                    #     => we need the corresponding indices in the frame [0,nQ-1] !!!
+                    for jp in range(4):
+                        iPidx = xQpnts_prev[indx_Q_aliv,jp] ; # `zpnts` contains indices of points valid for previous go, i.e. in the frame [0,nQprev-1]
+                        print(' iPidx =', len(iPidx), iPidx)
+                        iPids = zPIDs_prev[iPidx] ; # => IDs of the corresponding points
+                        print(' iPids =', iPids)
+                        # so now we just find the indices in these points in the new frame [0,nQ-1] => based on `vPQids`:
+                        _,iPidx_new,_ = np.intersect1d(vPQids, iPids, return_indices=True); # retain only indices of `vPQids` that exist in `iPids`
+                        #iPidx_new = np.array(iPidx_new)
+                        print(' iPidx_new =', len(iPidx_new), iPidx_new)
+                        xQpnts[:,jp] = iPidx_new
+                        #for ii in iPidx_new:
+                        #    if not vPQids[ii] in 
+                        
+                    #exit(0)
+                    del xQpnts_prev
+                    if np.any(xQpnts>=nP): print('ERROR: point IDs in `xQpnts` are not in the new [0:nP-1] frame!'); exit(0)
+
+                    # Now I think we need to re-order  Quad stuffs so it is coherent with the point IDs:
+                    #lilo
+
+
+                    
+                #elif nQ == nQprev:
+                
+                # No matter what `xQcoor` needs to be updated with the new positions:
                 xQcoor = np.zeros((nP,2))
                 _,ind2keep,_ = np.intersect1d(vIDs, vPQids, return_indices=True); # retain only indices of `vIDs` that exist in `vPQids`
                 xQcoor[:,:] = xCoor[ind2keep,:]
-                
-                    
-                del QUADS ; # the previous one...
-                QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
-                print(' *** new Quad class updated for current file!\n')
 
+                #else:
+                #    print('ERROR: nQ > nQprev!!!'); exit(0)
+
+                
+                del QUADS ; # the previous one...
+                print('new shape of `xQcoor` =',np.shape(xQcoor))
+                print('new shape of `xQpnts` =',np.shape(xQpnts))
+                print('new shape of `vPQids` =',np.shape(vPQids))
+                print('new shape of `vQnam`  =',np.shape(vQnam))
+
+                print('LOLO: xQpnts =',xQpnts)
+                
+                QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, vQIDs=zQIDs_aliv, date=cdate )
+                print(' *** new Quad class updated for current file!\n')
+                #exit(0)
                 #print(' LOLO: shape(xQcoor) =', np.shape(xQcoor))
                 #print(' LOLO: shape(xQpnts) =', np.shape(xQpnts))
                 #print(' LOLO: shape(vPQids) =', np.shape(vPQids))
@@ -376,7 +460,8 @@ if __name__ == '__main__':
         
             # Show only the quads with only the points that define them:
             kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
-                                 QuadMesh=QUA.MeshVrtcPntIdx, ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
+                                 QuadMesh=QUA.MeshVrtcPntIdx, ppntIDs=QUA.PointIDs, qnames=QUA.QuadNames,
+                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
 
 
         

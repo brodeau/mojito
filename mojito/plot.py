@@ -254,7 +254,7 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
-def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh=[],
+def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qnames=[], TriMesh=[],
                 pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS',
                 rangeX=None, rangeY=None ):
     '''
@@ -345,7 +345,10 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], TriMesh
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
                 ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', size=rsz_annot, zorder=160)
-
+            if len(qnames)>0:
+                rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
+                ax.annotate(qnames[jQ], (rmLon, rmLat), color='r', size=0.4*rsz_annot, zorder=165)
+                
     if len(pnames)>0:
         for jP in range(nbP):
             ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=rsz_annot, zorder=500)

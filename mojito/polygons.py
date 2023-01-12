@@ -82,7 +82,7 @@ class Triangle:
 
 class Quadrangle:
 
-    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vQnames, date='unknown' ):
+    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vQnames, vQIDs=[], date='unknown' ):
         '''
                => `nQ` Quadrangles!
 
@@ -90,6 +90,7 @@ class Quadrangle:
             * xQPntIdx: [(nQ,4] array of integers] the 4 point indices composing the quad, in counter-clockwize
             * vPIDs:    [(nP)  vector of integers] an integer to identify each point as in xPcoor
             * vQnames:  [(nQ)  vector of strings]  a string to identify each quadrangle
+            * vQIDs:    [(nQ)  vector of integers] force IDs of quadrangle to this instead of using 0 to nQ !!!
             * date:   OPTIONAL string of the form `YYYY-MM-DD_hh:mm:ss`
 
             IMPORTANT: we expect the 1st and 3rd (indices 0 & 2) elements of the 4 points to be the
@@ -109,7 +110,7 @@ class Quadrangle:
 
         '''
         cEM = 'ERROR: [polygons.Quadrangle] =>'
-        #
+        #        
         (nP,nd2) = np.shape(xPcoor)
         if nd2!=2:
             print(cEM+' problem in the shape of coordinate array!'); exit(0)
@@ -123,8 +124,11 @@ class Quadrangle:
         if len(zvPntIdx) != nP:
             print(cEM+' problem with the number of points at play deduced from `xQPntIdx`: ',len(zvPntIdx),nP); exit(0)
 
+        print('LOLO: nQ =',nQ, 'np.shape(xQPntIdx) =',np.shape(xQPntIdx))
         zTcoor = np.array([ [ xPcoor[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
 
+        l_force_Q_IDs = (len(vQIDs) == nQ)
+                
         # Integers:
         self.nP        = nP ; # number of points making the quadrangles
         self.nQ        = nQ ; # number of quadrangles (nQ < nP)
@@ -135,7 +139,10 @@ class Quadrangle:
         self.PointIDs     = np.array( vPIDs,   dtype=int )   ; # point IDs   => shape = (nP)        
         self.PointIdx     = zvPntIdx                          ; # indices of all the points making the quadrangles => shape = (nP)
         self.PointXY      = np.array(xPcoor)                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
-        self.QuaIDs       = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
+        if l_force_Q_IDs:
+            self.QuaIDs       = np.array(vQIDs, dtype=int); # IDs of the quadrangles => shape = (nQ)
+        else:
+            self.QuaIDs       = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
         self.MeshVrtcPntIdx = np.array(xQPntIdx, dtype=int)   ; # 4 point indices composing the quadrangles (indices in the frame of "only Quadrangles")
         self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
         self.QuadNames   = np.array( vQnames, dtype='U32' ) ; # point names => shape = (nP)

@@ -14,7 +14,7 @@ case ${host} in
     "merlat")
         RGPS_DIR="/MEDIA/data/data/RGPS_Kwok_98"
         FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
-        LIST_STREAM="000 001"
+        LIST_STREAM="001"
         ;;
     "frazilo")
         RGPS_DIR="/data/data/RGPS_Kwok_98"
