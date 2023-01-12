@@ -331,13 +331,16 @@ if __name__ == '__main__':
         
                 print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQ0)+' that survived!')
                 print('        and  '+str(nP)+' points  / '+str(nP0)+' involved...')
-                                 
+
+
+                vQIDs = zQIDs_0.copy()
+                
                 # * xQpnts remains the same! That's the whole point!!!
                 # * xQcoor should be updated with the new point coordinates at this record:
 
                 if nQ < nQ0:
                     print('\n *** nQ < nQ0 => need to shrink arrays!')
-                    del vPQids, vQnam, xQpnts, xQcoor
+                    del vPQids, vQnam, xQpnts, xQcoor, vQIDs
                     xQcoor = np.zeros((nP,2))              ; # coordinates of the nP points
                     xQpnts = np.zeros((nQ,4), dtype=int)   ; # indices (to be used in xCoor) of the 4 points composing the Quad
                     vPQids = np.zeros(nP)                  ; # IDs of points

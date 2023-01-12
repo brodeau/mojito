@@ -16,7 +16,7 @@ for dd in ${LIST_RES}; do
         
         echo " ==> will use:"; echo "     * ${list[0]}"; echo "     * ${list[1]}"
         
-        ../deformation.py ${list[0]} ${list[1]} 120
+        ../deformation.py ${list[0]} ${list[1]} 800
 
     done
     
