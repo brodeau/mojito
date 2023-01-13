@@ -24,7 +24,8 @@ rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 #
 rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
+rdRatio_max = 0.4 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+
 
 
 rcAtol = 0.3333 ; # coefficient of tolerance for the acceptation of the area of the quadrangles

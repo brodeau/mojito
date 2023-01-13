@@ -8,6 +8,9 @@ EXE2="${MOJITO_DIR}/deformation.py"
 
 for dd in ${LIST_RES}; do
 
+    csuff="Sampled"
+    if [ ${dd} -eq 10 ]; then csuff="NoSample"; fi
+    
     for st in ${LIST_STREAM}; do
 
 
@@ -31,12 +34,9 @@ for dd in ${LIST_RES}; do
             chr2=`echo ${cf2} | cut -d_ -f6`
 
             # The two quadrangle files to be generated:
-            cfQ1="npz/Q-mesh_S${st}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_NoSample.npz"
-            cfQ2="npz/Q-mesh_S${st}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_NoSample.npz"            
-            #echo "chr1 = ${chr1}, chr2 = ${chr2}, cdt1 = ${cdt1}, cdt2 = ${cdt2}"            
-            # to generate:
-            #   * Q-mesh_S${st}_${dtref}t0_${dtref}_18h00_10km_NoSample.npz
-            #   * Q-mesh_S${st}_${dtref}t0_${dtref}_18h00_10km_NoSample.npz
+            cfQ1="npz/Q-mesh_S${st}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
+            cfQ2="npz/Q-mesh_S${st}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
+            #
             echo " *** Construction of Quadrangles"
             CMD="${EXE1} ${fref},${ftst} ${dd}"
             echo "  ==> ${CMD}"; echo

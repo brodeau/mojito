@@ -78,11 +78,12 @@ def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,
     ###
     ### Input:
     ###         * pAngles: 1D array containing the 4 vertex angles of the quadrangle [degrees]
-    ###         * ratio:   ratio between apparent length and height of the quadrangle (a square would give 1)
+    ###         * ratio: max ratio between apparent length and height of the quadrangle
+    ###                  =>  >= 1 !!! (a square would give 1)
     ###
     '''
     rscore = -1.
-    lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or abs(1.-ratio)>ratioD ) )
+    lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or ratio-1.>ratioD ) )
     if lOK and pArea:
         lOK = ( pArea>areaR[0] and pArea<=areaR[1] )
     if lOK:
@@ -133,8 +134,10 @@ def QSpecsFrom2T( p3Pnt, pAngl, it1, it2, pCoor, pnam=[] ):
     Lc21 = sqrt( __distAB2__(zcoor_com[1,:], zcoor_sol[0,:]) )
     Lc12 = sqrt( __distAB2__(zcoor_com[1,:], zcoor_sol[1,:]) )
     Lc22 = sqrt( __distAB2__(zcoor_com[0,:], zcoor_sol[1,:]) )
-    ratio = (Lc11+Lc12) / (Lc21+Lc22)
-    del zcoor_com, zcoor_sol, Lc11, Lc21, Lc12, Lc22
+    rh1 = Lc11+Lc12
+    rh2 = Lc21+Lc22
+    ratio = max( rh1/rh2 , rh2/rh1 ) ; # it must be >= 1. !!! (square =>1, >1 rectangle-like regardless of the direction)
+    del zcoor_com, zcoor_sol, Lc11, Lc21, Lc12, Lc22, rh1, rh2
 
     # 2 angles associated to the 2 "solitary points":
     va_sol = np.concatenate([ va1[np.where(vp1==v2sol[0])],va2[np.where(vp2==v2sol[1])] ])
