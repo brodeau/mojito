@@ -26,7 +26,7 @@ case ${host} in
     "frazilo")
         RGPS_DIR="/data/data/RGPS_Kwok_98"
         FILIN="RGPS_1996-11-07_1997-06-01_traj.nc4"
-        LIST_STREAM="001"
+        LIST_STREAM="000 001 002 003 004 005"
         ;;
     *)
         echo "Unsupported host: ${host} !"
