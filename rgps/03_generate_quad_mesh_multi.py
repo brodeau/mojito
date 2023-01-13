@@ -39,9 +39,11 @@ rzoom_fig = 6
 if __name__ == '__main__':
 
     if not len(argv) in [2,3]:
-        print('Usage: '+argv[0]+' <SELECTION_streamXXX> (<min_pt_spacing_km>)')
+        #print('Usage: '+argv[0]+' <SELECTION_streamXXX> (<min_pt_spacing_km>)')
+        print('Usage: '+argv[0]+' <list of SELECTION_* files (comma-separated)> (<min_pt_spacing_km>)')
         exit(0)
-    cpref_npz = argv[1]    
+    #cpref_npz = argv[1]
+    clist_npz = argv[1]
     l_force_min_scale = ( len(argv) == 3 and argv[2] != '0' )
     
     rd_spacing = rd_nom_data
@@ -56,20 +58,27 @@ if __name__ == '__main__':
 
 
     # List of files to use from `cpref_npz`: lilo
-    list_npz = np.sort( glob(cpref_npz+'*') )
-
+    #list_npz = np.sort( glob(cpref_npz+'*') )
+    list_npz = list( split(',', clist_npz) )
     NbF = len(list_npz)
     if NbF < 2:
         print('ERROR: we need at least 2 npz files!!!')
         exit(0)
-    
 
-        
+
+    # Getting dates from file names for explicit output file naming...
+    list_dates = []
+    for ff in list_npz:
+        list_dates.append( split('_',path.basename(ff))[-2] )
+    cdate_ref = list_dates[0]
+
+
+    
     print('\n\n**********************************************************************')
     print(' *** The '+str(NbF)+' files to use:')
     for ff in list_npz: print('       * '+ff)
     print('\n *** Scale we are going to use is: `rd_spacing` = ',str(rd_spacing)+'km')
-    
+
     rA_nom = rd_spacing*rd_spacing ; # expected nominal area of the quadrangles [km^2]
     rf1 , rf2 = 1.-rcAtol , 1.+rcAtol
     rQarea_min = rf1*rA_nom  ; # min area allowed for Quadrangle [km^2]
@@ -85,17 +94,21 @@ if __name__ == '__main__':
 
     for jf in range(NbF):
 
-        cf_npz = list_npz[jf]
+        cf_npz    = list_npz[jf]
+        cdate_now = list_dates[jf]
+        cdate_str = cdate_ref+'t0_'+cdate_now
         
         print('\n ### File # '+str(jf+1)+' !\n','     => '+cf_npz)
         
         # Strings for names of output files:
         cfroot = str.replace( split('.npz',path.basename(cf_npz))[0] , 'SELECTION_buoys_RGPS_','' )
+        cfroot = str.replace( cfroot, cdate_now, cdate_str )
+        cfroot = str.replace( cfroot, 'stream', 'S' )
+        #
         if l_force_min_scale:
             cfroot += '_'+cL_spacing+'km_Sampled'
         else:
             cfroot += '_'+cL_spacing+'km_NoSample'
-
         
         l_someQuads = True
         cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
@@ -436,21 +449,24 @@ if __name__ == '__main__':
     
         # Show triangles on a map:
         if jf==0:
-            kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/01_Mesh_Triangles_'+cfroot+'.png',
+            #kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/01_Tmesh_'+cfroot+'.png',
+            kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/'+cfroot+'_01_Tmesh.png',
                                  TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
     
         if l_someQuads:
 
             if jf==0:
                 # Show triangles together with the quadrangles on a map:
-                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Mesh_Quadrangles_'+cfroot+'.png',
+                #kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Qmesh_'+cfroot+'.png',
+                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/'+cfroot+'_02_Qmesh.png',
                                      TriMesh=TRI.MeshVrtcPntIdx,
                                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
                                      qIDs=QUA.QuadIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
         
         
             # Show only the quads with only the points that define them:
-            kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Mesh_Points4Quadrangles_'+cfroot+'.png',
+            #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/03_Qmesh_'+cfroot+'.png',
+            kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/'+cfroot+'_03_Qmesh.png',
                                  QuadMesh=QUA.MeshVrtcPntIdx, ppntIDs=QUA.PointIDs, qIDs=QUA.QuadIDs,
                                  lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
             #qnames=QUA.QuadNames,
