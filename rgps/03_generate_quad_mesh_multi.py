@@ -22,15 +22,15 @@ idebug=1
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
 rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 #
-rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+#rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
+#rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+rQang_min =  60.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 120.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.4 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
+rcAtol = 0.3 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
 
-
-rcAtol = 0.3333 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
-
-rtol        = 0.3 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
+rtol        = 0.25 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
 
 rzoom_fig = 6
@@ -186,16 +186,7 @@ if __name__ == '__main__':
         
                         print('\n *** Applying spatial sub-sampling! Threshold radius: '+str(round(rd_ss,2))+'km')                
                         NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs,  pNames=vPnam )
-                        
-                        if idebug>0:
-                            # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
-                            # After and before subsampling
-                            #
-                            kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
-                                                 ppntIDs=vIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
-                            kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
-                                                 ppntIDs=zIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
-                    
+                                            
                     else:
                         NbPss = NbP
                         zCoor = xCoor
@@ -255,20 +246,21 @@ if __name__ == '__main__':
                             rdev = rl_average_scal - rd_spacing
                             l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
         
-                            if not l_happy and itt==5:
+                            if not l_happy and itt==8:
                                 # We give up after 5 itterations!
                                 print(' +++++ WE GIVE UP !!! ++++++')
                                 l_happy = True
                             
                             if not l_happy:
                                 # Linear fit of actual correction as a function of `rd_spacing`
-                                rfc = 0.008*rd_spacing + 0.56                
+                                #rfc = 0.008*rd_spacing + 0.56
+                                rfc = 0.008*rd_spacing + 0.7                
                                 if itt==1: ralpha = (1.-rfc) / rdev ; # equivalent to a correction of `rfc`
                                 if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
                                     ralpha = ralpha/1.3 ; # change of sign of deviation => we decrease alpha!
                                 # will go for a next round with a correction factor becoming increasingly smaller than 1:
-                                #rfcorr = min( max(0.6 , rfcorr - ralpha * rdev ) , 0.95 )
-                                rfcorr = min( max(0.5 , rfcorr - ralpha * rdev ) , 0.95 )
+                                rfcorr = min( max(0.6 , rfcorr - ralpha * rdev ) , 0.95 )
+                                #rfcorr = min( max(0.5 , rfcorr - ralpha * rdev ) , 0.95 )
                                 print(' +++++ NEW itteration with: ralpha, rfcorr = ',ralpha, rfcorr)
                             #
                         else:
@@ -279,7 +271,16 @@ if __name__ == '__main__':
                 ###################
                 # #while not l_happy
 
+                if idebug>0:
+                    # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
+                    # After and before subsampling
+                    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
+                                         ppntIDs=vIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
+                    kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
+                                         ppntIDs=zIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
 
+
+                
                 # Saving important quad info for the initial (first file) record:
                 nP0     = QUADS.nP
                 nQ0     = QUADS.nQ
