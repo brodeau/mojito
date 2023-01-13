@@ -129,6 +129,6 @@ np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, 
 if not path.exists('./figs'): mkdir('./figs')
 
 mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence'+cres+'.png', cwhat='div',
-                     marker_size=mrkrsz, pFmin=-1.e-5, pFmax=1.e-6, zoom=4, rangeX=zrx, rangeY=zry )
+                     marker_size=mrkrsz, pFmin=-1.e-6, pFmax=1.e-6, zoom=4, rangeX=zrx, rangeY=zry )
 mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear'+cres+'.png',      cwhat='shr',
                      marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )

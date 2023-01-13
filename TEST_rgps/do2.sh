@@ -2,30 +2,64 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
+EXE1="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
+EXE2="${MOJITO_DIR}/deformation.py"
 
 
-for st in ${LIST_STREAM}; do
+for dd in ${LIST_RES}; do
+
+    for st in ${LIST_STREAM}; do
 
 
-    vlist=( `\ls npz/SELECTION_buoys_RGPS_stream${st}*.npz` )
+        vlist=( `\ls npz/SELECTION_buoys_RGPS_stream${st}*.npz` )
 
-    #echo "${vlist[*]}"; echo
-    nf=`echo "${vlist[*]}" | wc -w`
-    echo; echo "*** ${nf} files!"; echo
+        #echo "${vlist[*]}"; echo
+        nf=`echo "${vlist[*]}" | wc -w`
+        echo; echo "*** ${nf} files!"; echo
 
 
-    for ii in $(seq 0 $((nf-2))); do
-        echo $ii
-        fref=${vlist[${ii}]}
-        ftst=${vlist[$((ii+1))]}
+        for ii in $(seq 0 $((nf-2))); do
+            echo $ii
+            fref=${vlist[${ii}]}      ; cf1=`basename ${fref} | cut -d'.' -f1`
+            ftst=${vlist[$((ii+1))]}  ; cf2=`basename ${ftst} | cut -d'.' -f1`
 
-        echo " => work with: ${fref} & ${ftst}"
+            echo; echo " => work with: ${fref} & ${ftst}"; echo
+            
+            cdt1=`echo ${cf1} | cut -d_ -f5`
+            cdt2=`echo ${cf2} | cut -d_ -f5`
+            chr1=`echo ${cf1} | cut -d_ -f6`
+            chr2=`echo ${cf2} | cut -d_ -f6`
 
-        CMD="${EXE} ${fref},${ftst} ${dd}"
-        echo "  ==> ${CMD}"; echo
-        ${CMD}
-        echo; echo
+            # The two quadrangle files to be generated:
+            cfQ1="npz/Q-mesh_S${st}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_NoSample.npz"
+            cfQ2="npz/Q-mesh_S${st}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_NoSample.npz"            
+            #echo "chr1 = ${chr1}, chr2 = ${chr2}, cdt1 = ${cdt1}, cdt2 = ${cdt2}"            
+            # to generate:
+            #   * Q-mesh_S${st}_${dtref}t0_${dtref}_18h00_10km_NoSample.npz
+            #   * Q-mesh_S${st}_${dtref}t0_${dtref}_18h00_10km_NoSample.npz
+            echo " *** Construction of Quadrangles"
+            CMD="${EXE1} ${fref},${ftst} ${dd}"
+            echo "  ==> ${CMD}"; echo
+            ${CMD}
+            echo; echo
+
+            echo " *** Computing deformations"
+            if [ -f ./${cfQ1} ] && [ -f ./${cfQ2} ]; then
+                echo " *** Computation of deformartions"
+                CMD="${EXE2} ./${cfQ1} ./${cfQ2} ${SIZE_MOSAIC}"
+                echo "  ==> ${CMD}"; echo
+                ${CMD}
+                echo; echo
+            else
+                echo "PROBLEM: missing Quad files:"
+                echo " ./${cfQ1}  or  ./${cfQ2} "
+                echo
+                exit
+            fi
+
+        done
+
+
     done
 
 
