@@ -298,7 +298,7 @@ if __name__ == '__main__':
                                      TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
                                      rangeX=vrngX, rangeY=vrngY )
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam, vQIDs=vQIDs, date=cdats ) ; # fixme: need the `vQIDs` !!!
+            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam, date=cdats )
 
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q' )
