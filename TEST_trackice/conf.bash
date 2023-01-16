@@ -21,11 +21,13 @@ case ${host} in
         DATA_DIR="/MEDIA/data"
         FILIN="./light/NANUK4_ICE-BBM00_1h_19970101_19970331_HSS5_TSS72.npz"
         HSS=5
+        SIZE_MOSAIC=1000
         ;;
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
         FILIN="./light/NANUK4_ICE-BBM00_1h_19970101_19970331_HSS5_TSS72.npz"
         HSS=5
+        SIZE_MOSAIC=1000
         ;;
     "frazilo")
         DATA_DIR="/data"
