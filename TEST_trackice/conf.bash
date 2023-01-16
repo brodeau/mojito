@@ -30,6 +30,8 @@ case ${host} in
     "frazilo")
         DATA_DIR="/data"
         FILIN="./hd/NANUK4_ICE-BBM00_1h_19970101_19970331_HSS1_TSS72.npz"
+        HSS=5
+        SIZE_MOSAIC=30
         ;;
     *)
         echo "Unsupported host: ${host} !"

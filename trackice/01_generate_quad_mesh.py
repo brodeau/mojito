@@ -309,12 +309,10 @@ if __name__ == '__main__':
             
             #  => jr >= 1 !!!
 
-            print('\n *** Quad tracking for jr=',jr)
-
+            print('\n *** Quad recycling for jr=',jr)
 
             # Recycling Quads found at 1st record (QUADS0):
-            xQcoor, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], zPntIDs, QUADS0,  iverbose=idebug ) ; #fixme
-            
+            xQcoor, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], zPntIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
             QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam, vQIDs=vQIDs, date=cdats )

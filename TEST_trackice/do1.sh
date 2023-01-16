@@ -5,7 +5,7 @@
 dt1=19970101
 dt2=19970104
 
-EXE1="${MOJITO_DIR}/trackice/01_generate_quad_mesh_NEW.py"
+EXE1="${MOJITO_DIR}/trackice/01_generate_quad_mesh.py"
 EXE2="${MOJITO_DIR}/deformation.py"
 
 fin=`basename ${FILIN} | cut -d '.' -f1`
