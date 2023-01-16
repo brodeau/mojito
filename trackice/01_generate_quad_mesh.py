@@ -374,7 +374,7 @@ if __name__ == '__main__':
             print('\n *** Launching Quad-only plot!')
             kk = mjt.ShowTQMesh( QUADS.PointXY[:,0], QUADS.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                  ppntIDs=QUADS.PointIDs,
-                                 QuadMesh=QUADS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
+                                 QuadMesh=QUADS.MeshVrtcPntIdx, qIDs=QUADS.QuadIDs, lGeoCoor=False, zoom=rzoom_fig,
                                  rangeX=vrngX, rangeY=vrngY )
     
     ### for jr in range(Nrec):
