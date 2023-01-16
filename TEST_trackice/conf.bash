@@ -25,6 +25,7 @@ case ${host} in
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
         FILIN="./light/NANUK4_ICE-BBM00_1h_19970101_19970331_HSS5_TSS72.npz"
+        HSS=5
         ;;
     "frazilo")
         DATA_DIR="/data"
