@@ -201,6 +201,7 @@ if __name__ == '__main__':
 
     print('\n *** The buoy with most records is '+str(id_longest_rec)+', it has '+str(nRmax)+' of them.')
 
+    xmsk = np.zeros((nBf,nRmax), dtype=int) + 1
     xlon = np.zeros((nBf,nRmax))
     xlat = np.zeros((nBf,nRmax))
     xtim = np.zeros((nBf,nRmax))
@@ -211,27 +212,39 @@ if __name__ == '__main__':
         nr = len(idx_id)
         xlon[ib,0:nr] = vlon0[idx_id]
         xlat[ib,0:nr] = vlat0[idx_id]
-        xlon[ib,nr:] = np.nan
-        xlat[ib,nr:] = np.nan
         xtim[ib,0:nr] = vtime0[idx_id]
-        xtim[ib,nr:] = np.nan
+        #        
+        xmsk[ib,nr:] = 0 ; # Following records do not exist for this buoy...
+        #
+        # Is time for this buoys monotonically increasing along records?
+        if not ( np.all(np.diff(xtim[ib,0:nr]) > 0.) ):
+            print('PROBLEM: time is not monotonically increasing along records for buoy with ID:'+str(jid)+' !!!')
+            exit(0)
+        #
         ib = ib+1
 
+    xlon = np.ma.masked_where( xmsk==0, xlon )
+    xlat = np.ma.masked_where( xmsk==0, xlat )
+    xtim = np.ma.masked_where( xmsk==0, xtim )
+        
     (idx,) = np.where(IDs2Follow==id_longest_rec)
     idlngst = idx[0]
         
     for jr in range(nRmax):
         print('')
+
+        # Here records do not correspond to the same time across the buoys!
+        # First record of buoys N can be in april, why that of buoy M in january!!!
         
         crec = 'rec%3.3i'%(jr)
         
-        #rtime = xtim[idlngst,jr]
-        #ctime = epoch2clock( rtime )        
-        #ctime = split('_',ctime)[0]
-        #print(' ctime = ',ctime)
-
         rtime = rdt1
         ctime = ''
+
+        Nalive = np.sum(xmsk[:,jr])
+
+        print('\n\n *** Number of buoys still alive at record #'+str(jr)+' => ',Nalive)
+        
         
         ik = mjt.ShowBuoysMap( rtime, xlon[:,jr], xlat[:,jr], pvIDs=[], cfig='buoys_RGPS_'+crec+'_'+ctime+'.png',
                                ms=15, ralpha=0.5, lShowDate=False )
