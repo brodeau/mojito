@@ -32,7 +32,7 @@ import mojito as mjt
 
 idebug = 2
 
-frqFollow = 100 ; # subsampling for the buoys to follow!
+frqFollow = 400 ; # subsampling for the buoys to follow!
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -205,11 +205,13 @@ if __name__ == '__main__':
     xlon = np.zeros((nBf,nRmax))
     xlat = np.zeros((nBf,nRmax))
     xtim = np.zeros((nBf,nRmax))
+    valr = np.zeros( nBf,        dtype=int) ; # number of valid records of each buoy
 
     ib = 0
     for jid in IDs2Follow:        
         (idx_id,) = np.where( vBIDs0 == jid)
         nr = len(idx_id)
+        valr[ib]      = nr
         xlon[ib,0:nr] = vlon0[idx_id]
         xlat[ib,0:nr] = vlat0[idx_id]
         xtim[ib,0:nr] = vtime0[idx_id]
@@ -244,8 +246,11 @@ if __name__ == '__main__':
         Nalive = np.sum(xmsk[:,jr])
 
         print('\n\n *** Number of buoys still alive at record #'+str(jr)+' => ',Nalive)
+
+        # Trick we put the date vector at `pvIDs=` so the date is writen next to the buoy instead of ID!
+        vtim = xtim[:,jr].data ; # `vtim` will contain `0s` rather than '--' for masked records        
+        cdates = np.array( [ '('+str(IDs2Follow[i])+')'+epoch2clock(vtim[i]) for i in range(nBf) ] , dtype='U32' )
         
-        
-        ik = mjt.ShowBuoysMap( rtime, xlon[:,jr], xlat[:,jr], pvIDs=[], cfig='buoys_RGPS_'+crec+'_'+ctime+'.png',
+        ik = mjt.ShowBuoysMap( rtime, xlon[:,jr], xlat[:,jr], pvIDs=cdates, cfig='buoys_RGPS_'+crec+'_'+ctime+'.png',
                                ms=15, ralpha=0.5, lShowDate=False )
     
