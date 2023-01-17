@@ -187,41 +187,70 @@ if __name__ == '__main__':
         vlat0  = id_in.variables['lat'][:]
 
         # Buoys' IDs:
-        vIDrgps0    = np.zeros(Np0, dtype=int)
-        vIDrgps0[:] = id_in.variables['index'][:]
+        vBIDs0    = np.zeros(Np0, dtype=int)
+        vBIDs0[:] = id_in.variables['index'][:]
 
     ### with Dataset(cf_in) as id_in
     
     vlon0[:] = np.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
 
     # Masking all point that are before and beyond our period of interest:
+    rmask_v = -99999. 
     vmsk_time = np.zeros(Np0, dtype=int) + 1
     vmsk_time[np.where(vtime0 < rdt1-dt_tolr)] = 0
     vmsk_time[np.where(vtime0 > rdt2+dt_tolr)] = 0
     #
-    vIDrgps0 =  np.ma.masked_where( vmsk_time==0, vIDrgps0 )
-    vtime0   =  np.ma.masked_where( vmsk_time==0, vtime0   )
-    vx0      =  np.ma.masked_where( vmsk_time==0, vx0   )
-    vy0      =  np.ma.masked_where( vmsk_time==0, vy0   )    
-    vlon0    =  np.ma.masked_where( vmsk_time==0, vlon0   )
-    vlat0    =  np.ma.masked_where( vmsk_time==0, vlat0   )
-
+    idx_msk = np.where( vmsk_time == 0 )    
+    #
+    vBIDs0[idx_msk] = int(rmask_v) ; vBIDs0 =  np.ma.masked_where( vmsk_time==0, vBIDs0 )
+    vtime0[idx_msk] = rmask_v      ; vtime0 =  np.ma.masked_where( vmsk_time==0, vtime0 )
+    vx0[idx_msk]    = rmask_v      ; vx0    =  np.ma.masked_where( vmsk_time==0, vx0    )
+    vy0[idx_msk]    = rmask_v      ; vy0    =  np.ma.masked_where( vmsk_time==0, vy0    )
+    vlon0[idx_msk]  = rmask_v      ; vlon0  =  np.ma.masked_where( vmsk_time==0, vlon0  )
+    vlat0[idx_msk]  = rmask_v      ; vlat0  =  np.ma.masked_where( vmsk_time==0, vlat0  )
+    #
+    #vBIDs0.set_fill_value(value=-999)
+    #vBIDs0 =  np.ma.masked_where( vmsk_time==0, vBIDs0 )
+    #np.ma.set_fill_value(vBIDs0, -999)
+    #print( np.ma.default_fill_value(vBIDs0) )
+    #print(vBIDs0)
+    #print(vBIDs0.data)
+    
+    #print('\n',idx)
+    
+    
     # Remaining buoys (IDs)
-    vIDs = np.sort( np.unique( vIDrgps0 ) )
+    (idx,) = np.where(vBIDs0.data > 0)
+    vIDs = np.sort( np.unique( vBIDs0[idx] ) ) ; # if not `[idx]` then `rmask_v` is counted once!!!
     Nb   = len(vIDs)
     print("\n *** There are "+str(Nb)+" buoys to follow...")
 
-
     #DEBUG:
     # I want to find out if a buoy ID can be reused once the first occurence has vanished:
+    IDs2Follow = []
+    ic=0 ; frqFollow = 50
     for jid in vIDs:
-        print('\n +++ Buoy ID =',jid,':')
-        (idx_id,) = np.where( vIDrgps0 == jid)
+        print('\n +++ Buoy ID =',jid,':',vIDs[ic],vIDs[ic].data, ic)
+        (idx_id,) = np.where( vBIDs0 == jid)
         #print(idx_id)
-        for ii in idx_id:
-            print(' * time: ',epoch2clock( vtime0[ii]) )
-        
+        #for ii in idx_id:
+        #    print(' * time: ',epoch2clock( vtime0[ii]) )
+        #
+        if ic%frqFollow == 0: IDs2Follow.append(jid)
+        #
+        ic = ic+1
+    ### for jid in vIDs
+    
+    IDs2Follow = np.array(IDs2Follow, dtype=int)
+
+    print('\n * '+str(len(IDs2Follow))+' to follow...')
+    print(Nb)
+
+
     exit(0)
+
+
+    
     #DEBUG.
     #LILO Cut:
     if not path.exists(cf_npz_intrmdt):
@@ -248,7 +277,7 @@ if __name__ == '__main__':
             Nok0 = len(idx_ok)
                         
             # Remove all buoys that are already taken:
-            vids = vIDrgps0[idx_ok]            
+            vids = vBIDs0[idx_ok]            
             vIDsT = np.setdiff1d( vids, np.array(ID_in_use_G) ) ; # keep the values of `vids` that are not in `ID_in_use_G`
             del vids
             
@@ -273,7 +302,7 @@ if __name__ == '__main__':
                     if (not jid in ID_in_use_G) and (not jid in ID_in_use_l):
                         #
                         jb = jb + 1
-                        (idx_id,) = np.where( vIDrgps0 == jid)
+                        (idx_id,) = np.where( vBIDs0 == jid)
                         #
                         vt1b  = vtime0[idx_id] ; # all time records for this particular buoy
                         nbRec0 = len(vt1b)      ; # n. of time records for this particulat buoy
@@ -459,7 +488,7 @@ if __name__ == '__main__':
         xmsk = np.zeros((NCRmax,NvB) , dtype=int)  ; # the mask for exluding buoys that stick out in time...
         
         for jb in range(NvB):
-            (idx_id,) = np.where( vIDrgps0 == vids[jb])
+            (idx_id,) = np.where( vBIDs0 == vids[jb])
             #
             nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
             if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)

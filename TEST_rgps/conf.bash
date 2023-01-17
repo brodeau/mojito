@@ -17,19 +17,20 @@ LIST_STREAM="000 001"
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
-        DATA_DIR="/MEDIA/data"
+        export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
         LIST_STREAM="000"
         DATE1="19970101"
-        DATE2="19970131"
+        #DATE2="19970131"
+        DATE2="19970531"
         ;;
     "mcp-oceannext-01")
-        DATA_DIR="/data/gcm_setup"
+        export DATA_DIR="/data/gcm_setup"
         FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
         #LIST_STREAM="000 001"
         ;;
     "frazilo")
-        DATA_DIR="/data"
+        export DATA_DIR="/data"
         FILIN="RGPS_1996-11-07_1997-06-01_traj.nc4"
         #LIST_STREAM="000 001 002 003 004 005"
         LIST_STREAM="001"
