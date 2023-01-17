@@ -29,7 +29,6 @@ from netCDF4 import Dataset
 from climporn import chck4f, epoch2clock, clock2epoch
 import mojito as mjt
 
-
 idebug = 2
 
 frqFollow = 400 ; # subsampling for the buoys to follow!
@@ -153,23 +152,13 @@ if __name__ == '__main__':
     #vy0[idx_masked]    = rmask_v      ; vy0    =  np.ma.masked_where( vmsk_time==0, vy0    )
     vlon0[idx_masked]  = rmask_v      ; vlon0  =  np.ma.masked_where( vmsk_time==0, vlon0  )
     vlat0[idx_masked]  = rmask_v      ; vlat0  =  np.ma.masked_where( vmsk_time==0, vlat0  )
-    #
-    #vBIDs0.set_fill_value(value=-999)
-    #vBIDs0 =  np.ma.masked_where( vmsk_time==0, vBIDs0 )
-    #np.ma.set_fill_value(vBIDs0, -999)
-    #print( np.ma.default_fill_value(vBIDs0) )
-    #print(vBIDs0)
-    #print(vBIDs0.data)
-    
-    #print('\n',idx)
-    
-    
+
     # Remaining buoys (IDs)
     (idx,) = np.where(vBIDs0.data > 0)
     vIDs = np.sort( np.unique( vBIDs0[idx] ) ) ; # if not `[idx]` then `rmask_v` is counted once!!!
     Nb   = len(vIDs)
     print("\n *** We found "+str(Nb)+" different buoys alive during specified period of time!")
-    
+
     IDs2Follow = []
     ic=0
     for jid in vIDs:

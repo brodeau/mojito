@@ -19,10 +19,11 @@ case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
+        #FILIN="RGPS_1996-11-07_1997-06-01_traj.nc4"
         LIST_STREAM="000"
         DATE1="19970101"
         #DATE2="19970131"
-        DATE2="19970531"
+        DATE2="19970630"
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"

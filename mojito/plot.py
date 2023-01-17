@@ -121,13 +121,19 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
     # Add IDs figure right next to buoys:
-    if len(pvIDs) > 0:
+    if len(pvIDs) > 0:        
+        ctype = str(pvIDs.dtype) ; # type of pvIDs:
+        lstr = ( ctype[0:2] == '<U' ) ; # does pvIDs contain strings ???
+        #
         Nb = len(pvIDs)
         if Nb != len(pvlon):
             print('\n *** ERROR ['+caller+'/_figMap_]: `Nb` different for `pvIDs` and `coordinates`!'); exit(0)
         for ii in range(Nb):
             x0,y0 = BMProj(pvlon[ii],pvlat[ii])
-            ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
+            if lstr:
+                ax.annotate(    pvIDs[ii] , xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
+            else:
+                ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
 
 
 

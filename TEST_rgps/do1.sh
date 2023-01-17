@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-idebug=1
+idebug=0
 
 EXE="${MOJITO_DIR}/rgps/01_selection_xy.py"
 EXEdbg="${MOJITO_DIR}/rgps/d01_follow_set_of_buoys.py"
@@ -25,7 +25,6 @@ if [ ${idebug} -eq 1 ]; then
     echo
     exit
 fi
-
 
 
 
