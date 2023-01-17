@@ -36,10 +36,7 @@ import mojito as mjt
 idebug = 2
 
 # Time range of interest:
-cdt1 = 'YYYY-01-01_00:00:00'
-#cdt2 = 'YYYY-01-10_00:00:00'
-#cdt2 = 'YYYY-01-31_00:00:00'
-cdt2 = 'YYYY-05-31_00:00:00'
+cdt_pattern = 'YYYY-MM-DD_00:00:00'
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -102,14 +99,22 @@ if __name__ == '__main__':
     if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')    
         
     narg = len(argv)
-    if not narg in [3]:
-        print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR>')
+    if not narg in [5]:
+        print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR> <MMDD1> <MMDD2>')
         exit(0)
     cf_in = argv[1]
     cyear = argv[2]
+    cmmd1 = argv[3]
+    cmmd2 = argv[4]
 
-    cdt1 = str.replace(cdt1, 'YYYY',cyear)
-    cdt2 = str.replace(cdt2, 'YYYY',cyear)
+    cmm1, cdd1 = cmmd1[0:2], cmmd1[2:4]
+    cmm2, cdd2 = cmmd2[0:2], cmmd2[2:4]
+
+
+
+
+    cdt1 = str.replace(cdt_pattern,'YYYY',cyear) ; cdt1 = str.replace(cdt1,'MM',cmm1) ; cdt1 = str.replace(cdt1,'DD',cdd1)
+    cdt2 = str.replace(cdt_pattern,'YYYY',cyear) ; cdt2 = str.replace(cdt2,'MM',cmm2) ; cdt2 = str.replace(cdt2,'DD',cdd2)
 
     cf_out = 'RGPS_ice_drift_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
 
@@ -119,7 +124,9 @@ if __name__ == '__main__':
     
     print("\n *** Date range to restrain data to:")
     print(" ==> "+cdt1+" to "+cdt2 )
+    exit(0)
 
+    
     rdt1 = clock2epoch(cdt1)
     rdt2 = clock2epoch(cdt2)
     print( "   ===> in epoch time: ", rdt1, "to", rdt2 )

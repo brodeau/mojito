@@ -6,6 +6,9 @@ MOJITO_DIR="${HOME}/DEV/mojito"
 
 SIZE_MOSAIC=900
 
+DATE1="19970101"
+DATE2="19970430"
+
 #LIST_RES="10 20 30"
 LIST_RES="10"
 
@@ -17,6 +20,8 @@ case ${host} in
         DATA_DIR="/MEDIA/data"
         FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
         LIST_STREAM="000"
+        DATE1="19970101"
+        DATE2="19970131"
         ;;
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
