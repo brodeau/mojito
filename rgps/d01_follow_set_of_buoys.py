@@ -230,7 +230,7 @@ if __name__ == '__main__':
     IDs2Follow = []
     ic=0 ; frqFollow = 50
     for jid in vIDs:
-        print('\n +++ Buoy ID =',jid,':',vIDs[ic],vIDs[ic].data, ic)
+        print('\n +++ Buoy ID =',jid,':',vIDs[ic], ic)
         (idx_id,) = np.where( vBIDs0 == jid)
         #print(idx_id)
         #for ii in idx_id:
@@ -244,7 +244,6 @@ if __name__ == '__main__':
     IDs2Follow = np.array(IDs2Follow, dtype=int)
 
     print('\n * '+str(len(IDs2Follow))+' to follow...')
-    print(Nb)
 
 
     exit(0)
