@@ -38,7 +38,8 @@ idebug = 2
 # Time range of interest:
 cdt1 = 'YYYY-01-01_00:00:00'
 #cdt2 = 'YYYY-01-10_00:00:00'
-cdt2 = 'YYYY-01-31_00:00:00'
+#cdt2 = 'YYYY-01-31_00:00:00'
+cdt2 = 'YYYY-05-31_00:00:00'
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
