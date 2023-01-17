@@ -19,16 +19,19 @@ import mojito   as mjt
 idebug=1
 
 # Selection of appropriate quadrangles:
+#rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
+#rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
+rTang_max = 150. ; # maximum angle tolerable in a triangle [degree]
 #
 #rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 #rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
-rQang_min =  60.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 120.  ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.4 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+rQang_min =  45.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 135.  ; # maximum angle tolerable in a quadrangle [degree]
+rdRatio_max = 0.7 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-rcAtol = 0.3 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
+#rcAtol = 0.3 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
+rcAtol = 0.75 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
 
 rtol        = 0.25 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
@@ -271,7 +274,7 @@ if __name__ == '__main__':
                 ###################
                 # #while not l_happy
 
-                if idebug>0:
+                if idebug>0 and l_force_min_scale:
                     # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
                     # After and before subsampling
                     kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',

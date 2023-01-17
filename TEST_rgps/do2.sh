@@ -64,20 +64,3 @@ for dd in ${LIST_RES}; do
 
 
 done
-exit
-
-
-
-
-
-for st in ${LIST_STREAM}; do
-
-    pref="npz/SELECTION_buoys_RGPS_stream${st}"
-
-
-    for dd in ${LIST_RES}; do
-
-
-    done
-
-done

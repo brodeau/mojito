@@ -98,7 +98,8 @@ if __name__ == '__main__':
 
     for cd in ["npz","figs"]:
         if not path.exists('./'+cd): mkdir('./'+cd)    
-
+    if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')    
+        
     narg = len(argv)
     if not narg in [3]:
         print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR>')
@@ -529,7 +530,7 @@ if __name__ == '__main__':
                 np.savez_compressed( cf_out, itime=int(VT[jr]), date=cdate, Npoints=Nbuoys, vids=vids[indV],
                                      vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
-                cfpng = './figs/SELECTION_xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.png'
+                cfpng = './figs/SELECTION/xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.png'
 
                 if jr==0:
                     zrx = [ np.min(xx[jr,indV])-100. , np.max(xx[jr,indV])+100. ]
@@ -544,7 +545,7 @@ if __name__ == '__main__':
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
         if idebug>0:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION_geo_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr, clock_res='d' )
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr, clock_res='d' )
 
 
     ### for js in range(Nstreams)

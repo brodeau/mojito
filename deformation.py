@@ -42,7 +42,7 @@ print('      => `dt` = '+str(rdt)+' s, or '+str(rdt/(3600*24))+' days')
 cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
 cnm_pref = split('_',cf1)[1]
 ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
-cnm_pref = cnm_pref+'_'+ccdt1+'_'+ccdt2
+cnm_pref = 'z_'+cnm_pref+'_'+ccdt1+'_'+ccdt2
 
 # Try to get a spatial resolution scale from the name:
 cres = ''
