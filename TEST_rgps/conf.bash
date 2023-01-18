@@ -28,8 +28,10 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
+        YEAR="2008"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
         LIST_STREAM="000 001"
+        DATE1="${YEAR}0101"
         DATE2="${YEAR}0330"
         ;;
     "frazilo")
