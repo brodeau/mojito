@@ -6,7 +6,7 @@ MOJITO_DIR="${HOME}/DEV/mojito"
 
 DT_BINS_H=12  ; # width of a bin for time sampling [hours] 
 
-SIZE_MOSAIC=900
+SIZE_MOSAIC=500
 
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0531"
@@ -34,7 +34,9 @@ case ${host} in
         ;;
     "frazilo")
         export DATA_DIR="/data"
-        DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours] 
+        #
+        DT_BINS_H=$((24*5))  ; # width of a bin for time sampling [hours]
+        SIZE_MOSAIC=200
         #LIST_STREAM="000 001 002 003 004 005"
         LIST_STREAM="000 001"
         ;;
