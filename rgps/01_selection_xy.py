@@ -39,11 +39,11 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 
-#dt_scan =    6*3600 ; # bin width, aka time increment while scanning for valid time intervals
-#dt_scan =    2*24*3600 ; # bin width, aka time increment while scanning for valid time intervals
-dt_scan =    3*24*3600 ; # bin width, aka time increment while scanning for valid time intervals
+#dt_bin =    6*3600 ; # bin width, aka time increment while scanning for valid time intervals
+#dt_bin =    2*24*3600 ; # bin width, aka time increment while scanning for valid time intervals
+dt_bin =    5*24*3600 ; # bin width, aka time increment while scanning for valid time intervals
 #
-dt_tolr = dt_scan/2. ; # time interval aka half width of the bin, aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
+dt_half_bin = dt_bin/2. ; # time interval aka half width of the bin, aka tolerance `+-dt_half_bin` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
 Ns_max = 100  # Max number of Streams, guess!!! #fixme...
 
@@ -123,28 +123,28 @@ if __name__ == '__main__':
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
-    # Build scan time axis willingly at relative high frequency (dt_scan << dt_buoy)
-    NTscan = int(round((rdt2 - rdt1) / dt_scan)) + 1
+    # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy)
+    NTscan = int(round((rdt2 - rdt1) / dt_bin)) + 1
     print("\n *** New fixed time axis to use to scan data:")
     print( "   ===> NTscan = "+str(NTscan)+" time increments!")
-    vTscan = np.zeros((NTscan,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
+    vTbin = np.zeros((NTscan,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
     cTscan = np.zeros( NTscan   , dtype='U19')
-    #vTscan[0,0] =             rdt1 ; #lolo, # Nope! we want the begining of the bin to be the 01/01 at 00:00, not the center!!!
-    vTscan[0,0] =             rdt1 + dt_tolr
-    cTscan[0]   = epoch2clock(rdt1 + dt_tolr)
+
+    vTbin[0,0] =  rdt1 + dt_half_bin    ; # time at center of time bin
+    cTscan[0]   = epoch2clock(vTbin[0,0])
     for jt in range(1,NTscan):
-        tt = vTscan[jt-1,0] + dt_scan
-        vTscan[jt,0] = tt
+        tt = vTbin[jt-1,0] + dt_bin
+        vTbin[jt,0] = tt                ; # time at center of time bin
         cTscan[jt]   = epoch2clock(tt)
-    # bounds:
-    vTscan[:,1] = vTscan[:,0] - dt_tolr
-    vTscan[:,2] = vTscan[:,0] + dt_tolr
+    # Time bins bounds:
+    vTbin[:,1] = vTbin[:,0] - dt_half_bin
+    vTbin[:,2] = vTbin[:,0] + dt_half_bin
 
 
     if idebug>1:
         for jt in range(NTscan):
-            print("   --- jt: "+str(jt)+" => ",vTscan[jt,0]," => ",cTscan[jt])
-            print("          => bounds: "+epoch2clock(vTscan[jt,1])+" - "+epoch2clock(vTscan[jt,2])+"\n")
+            print("   --- jt: "+str(jt)+" => ",vTbin[jt,0]," => ",cTscan[jt])
+            print("          => bounds: "+epoch2clock(vTbin[jt,1])+" - "+epoch2clock(vTbin[jt,2])+"\n")
 
 
     # Opening and inspecting the input file
@@ -189,8 +189,8 @@ if __name__ == '__main__':
     # Masking all point that are before and beyond our period of interest:
     rmask_v = -99999.
     vmsk_time = np.zeros(Np0, dtype=int) + 1
-    vmsk_time[np.where(vtime0 < rdt1-dt_tolr)] = 0
-    vmsk_time[np.where(vtime0 > rdt2+dt_tolr)] = 0
+    vmsk_time[np.where(vtime0 < rdt1)] = 0
+    vmsk_time[np.where(vtime0 > rdt2)] = 0
     #
     (idx_masked,) = np.where( vmsk_time == 0 )
 
@@ -231,16 +231,16 @@ if __name__ == '__main__':
         istream        = -1
         for jt in range(NTscan):
             #
-            rT = vTscan[jt,0] ; # center of the current time bin
+            rT = vTbin[jt,0] ; # center of the current time bin
             #
-            print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
-            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_tolr-1. ) ; # yes, removing 1 second to `dt_tolr`
+            print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_half_bin/3600))+"h!")
+            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_half_bin-1. ) ; # yes, removing 1 second to `dt_half_bin`
             # we don't mind about the fact that vtime0 is not masked like other arrays, because the mask itself was build based on the global
             # date range, and here we select inside this same date range !!!
             #print('rT =', rT, '=', epoch2clock(rT) )
             #print('vtime0[:] - rT =')
             #for rr in vtime0[:] - rT: print(rr,', ',end="") ; #lilo
-            #print('dt_tolr-1. =', dt_tolr-1.)
+            #print('dt_half_bin-1. =', dt_half_bin-1.)
             #print('idx_ok =', idx_ok, len(idx_ok))
             #exit(0);#lolo
 
@@ -253,22 +253,23 @@ if __name__ == '__main__':
                 vIDsT = np.setdiff1d( zids, np.array(ID_in_use_G) ) ; # keep the values of `zids` that are not in `ID_in_use_G`
                 del zids
 
-                # Sanity, check if any of the buoys found here do not belong to `vIDs`:
-                nnT = len(vIDsT)
-                _,indzz,_ = np.intersect1d(vIDsT, vIDs, return_indices=True); # retain only indices of `vIDsT` that exist in `vIDs`
-                nnV = len(indzz)
-                if nnV != nnT:
-                    print('ERROR: '+str(nnT-nnV)+' buoys in `vIDsT` do not exist in reference `vIDs` !')
-                    print('Nok0,nnT,nnV =', Nok0,nnT,nnV)
-                    exit(0)
-                del nnT, indzz, nnV
+                # Sanity check: if any of the buoys found here do not belong to the reference `vIDs`:
+                #nnT = len(vIDsT)
+                #_,indzz,_ = np.intersect1d(vIDsT, vIDs, return_indices=True); # retain only indices of `vIDsT` that exist in `vIDs`
+                vIDsT = np.intersect1d(vIDsT, vIDs); # retain only elements of `vIDsT` that exist in `vIDs`
+                #nnV = len(indzz)
+                #if nnV != nnT:
+                #    print('ERROR: '+str(nnT-nnV)+' buoys in `vIDsT` do not exist in reference `vIDs` !')
+                #    print('Nok0,nnT,nnV =', Nok0,nnT,nnV)
+                #    exit(0)
+                #del nnT, indzz, nnV
 
                 Nok = len(vIDsT)
                 if idebug>1:
                     print("    => "+str(Nok)+" buoys satisfy this!")
                     if Nok<Nok0:
                         print("       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
-
+                
                 Nbuoys_stream = 0
                 ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
                 if Nok >= Nb_min_stream:
@@ -302,9 +303,9 @@ if __name__ == '__main__':
                             nbRecOK = nbRec0
                             vt1b_ideal = np.array( [ vt1b[0]+float(i)*float(dt_buoy) for i in range(nbRec0) ], dtype=float )
                             vtdev = np.abs(vt1b - vt1b_ideal)
-                            lFU = np.any(vtdev > dt_tolr)
+                            lFU = np.any(vtdev > dt_half_bin)
                             if lFU:
-                                (indFU,) = np.where(vtdev > dt_tolr)
+                                (indFU,) = np.where(vtdev > dt_half_bin)
                                 nbRecOK = np.min(indFU) ; # yes! no -1 !!!
 
                             # We want at least `Nb_min_cnsctv` consecutive records for the buoy
@@ -519,19 +520,19 @@ if __name__ == '__main__':
         VT = vtim.copy()
         i=0
         for it in vtim:
-            idx = np.argmin( np.abs(vTscan[:,0]-it) )
-            if idebug>2: print('      it =',it,' => ',epoch2clock(it),' => nearest of VTscan =',epoch2clock(vTscan[idx,0]))
-            VT[i] = vTscan[idx,0]
+            idx = np.argmin( np.abs(vTbin[:,0]-it) )
+            if idebug>2: print('      it =',it,' => ',epoch2clock(it),' => nearest of VTscan =',epoch2clock(vTbin[idx,0]))
+            VT[i] = vTbin[idx,0]
             i=i+1
         #del vtim
 
         # Are there buoys which are too far from this reference time ? lilo
         #for jb in range(NvB):
         #    idt = np.abs(xtim[:,jb] - VT[:])
-        #    if np.any(idt>dt_tolr):
-        #        print('WOW, buoy #'+str(vids[jb])+' is more than '+str(int(dt_tolr/3600))
+        #    if np.any(idt>dt_half_bin):
+        #        print('WOW, buoy #'+str(vids[jb])+' is more than '+str(int(dt_half_bin/3600))
         #              +' hours away from reference time...')
-        #        #(idw,) = np.where(idt>dt_tolr)
+        #        #(idw,) = np.where(idt>dt_half_bin)
         #        #print(idw)
         #        #print(' ==> supressing '+str(len(idw))+' values!')
         #        #xmsk[idw,jb] = 0
