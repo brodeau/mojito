@@ -189,13 +189,15 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
 
 
 
-def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5, clock_res='s' ):
+def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5, clock_res='s', NminPnts=100 ):
     '''
         IN:
             * pvt   => vector of length Nt containing the dates as epoch/unix time (integer)
             * pvlon => 2D array (Nt,Nb) of longitudes (float)
             * pvlat => 2D array (Nt,Nb) of  latitudes (float)
             * pvIDs => (OPTIONAL) vector of length Nb of buoys IDs (integer)
+            * 
+            * NminPnts => if a record contains less points than this number we stop plotting!
     '''
 
     (Nt,Nb) = np.shape(pvlon)
@@ -216,20 +218,24 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
     kk = 0
 
     for jt in range(Nt):
-
-        ct = cp.epoch2clock(pvt[jt])
-
-        cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
         
-        if clock_res=='d':
-            # Daily precision for clock on figure:
-            ct = split('_',ct)[0]
+        #  How many buoys alive at this record ?        
+        (idx,) = np.where( pvlat[jt,:] >= -90. ) ; # ( since `pvlat` should be masked with `-9999` values...)
+        nPtsAlive = len(idx)
 
-        print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)
-
+        if nPtsAlive >= NminPnts:
         
-
-        kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
+            ct = cp.epoch2clock(pvt[jt])
+    
+            cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
+            
+            if clock_res=='d':
+                # Daily precision for clock on figure:
+                ct = split('_',ct)[0]
+    
+            print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)
+    
+            kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
     #
     return kk
 

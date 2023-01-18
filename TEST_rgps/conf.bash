@@ -6,8 +6,8 @@ MOJITO_DIR="${HOME}/DEV/mojito"
 
 SIZE_MOSAIC=900
 
-DATE1="19970101"
-DATE2="19970430"
+DATE1="${YEAR}0101"
+DATE2="${YEAR}0430"
 
 #LIST_RES="10 20 30"
 LIST_RES="10"
@@ -21,9 +21,9 @@ case ${host} in
         FILIN="RGPS_1996-11-07_1997-06-01_traj_LIGHT.nc4"
         #FILIN="RGPS_1996-11-07_1997-06-01_traj.nc4"
         LIST_STREAM="000"
-        DATE1="19970101"
-        #DATE2="19970131"
-        DATE2="19970630"
+        DATE1="${YEAR}0101"
+        #DATE2="${YEAR}0131"
+        DATE2="${YEAR}0630"
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"

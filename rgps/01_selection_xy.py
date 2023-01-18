@@ -45,15 +45,15 @@ dt_scan =    6*3600 ; # time increment while scanning for valid time intervals
 #dt_scan =    36*3600 ; # time increment while scanning for valid time intervals
 dt_tolr = dt_scan/2. ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
-Ns_max = 200  # Max number of Streams, guess!!! #fixme...
+Ns_max = 100  # Max number of Streams, guess!!! #fixme...
 
-Nb_min_stream = 200 ; # minimum number of buoys for considering a stream a stream!
+Nb_min_stream = 500 ; # minimum number of buoys for considering a stream a stream!
 
 Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
-Nb_min_buoys = 50 ; # minimum number of buoys necessary for considering the record of a stream a record!
+Nb_min_buoys = 300 ; # minimum number of buoys necessary to keep a given record of a given stream!
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
@@ -231,19 +231,22 @@ if __name__ == '__main__':
         istream        = -1
         for jt in range(NTscan):
             #
-            rT = vTscan[jt,0] ; # current scan time
+            rT = vTscan[jt,0] ; # center of the current time bin
             #
             print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_tolr/3600))+"h!")
             (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_tolr-1. ) ; # yes, removing 1 second to `dt_tolr`
 
             Nok0 = len(idx_ok)
                         
-            # Remove all buoys that are already taken:
-            vids = vBIDs0[idx_ok]            
+            # Remove all buoys that are already taken: #lolo
+            vids = vBIDs0[idx_ok]
+
+            # Sanity, check if any of the buoys found here do not belong to `vIDs`:
+            
             vIDsT = np.setdiff1d( vids, np.array(ID_in_use_G) ) ; # keep the values of `vids` that are not in `ID_in_use_G`
             del vids
             
-            Nok      = len(vIDsT)
+            Nok = len(vIDsT)
             if idebug>1:
                 print("    => "+str(Nok)+" buoys satisfy this!")
                 if Nok<Nok0:
@@ -514,6 +517,15 @@ if __name__ == '__main__':
                         
         del xtim
 
+
+        if idebug>0:
+            # Stream time evolution on Arctic map:
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_stream'+'%3.3i'%(js),
+                                        clock_res='d', NminPnts=Nb_min_buoys )
+
+
+
+        
         cti = str.replace( str.replace(cT0[0:16],':','h') ,'-','' ) ; # date of stream initialization with precision to the minute without ':'
         
         # Saving 1 file per stream and per record:
@@ -526,7 +538,6 @@ if __name__ == '__main__':
                 ctr = str.replace( str.replace(cdate[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
                 cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.npz'
 
-
                 vmsk = xmsk[jr,:]
                 (indV,) = np.where(vmsk==1) ; # index of valid points
                 if len(indV)!= Nbuoys: print('ERROR: len(indV)!= Nbuoys) !'); exit(0)
@@ -534,22 +545,19 @@ if __name__ == '__main__':
                 np.savez_compressed( cf_out, itime=int(VT[jr]), date=cdate, Npoints=Nbuoys, vids=vids[indV],
                                      vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
-                cfpng = './figs/SELECTION/xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.png'
-
-                if jr==0:
-                    zrx = [ np.min(xx[jr,indV])-100. , np.max(xx[jr,indV])+100. ]
-                    zry = [ np.min(xy[jr,indV])-100. , np.max(xy[jr,indV])+100. ]
-                kg = mjt.ShowTQMesh( xx[jr,indV], xy[jr,indV], ppntIDs=vids[indV], cfig=cfpng, lGeoCoor=False,
-                                     zoom=5, rangeX=zrx, rangeY=zry )
-
-
+                if idebug>0:
+                    # Plot on cartesian coordinates (km):
+                    cfpng = './figs/SELECTION/xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.png'
+                    if jr==0:
+                        zrx = [ np.min(xx[jr,indV])-100. , np.max(xx[jr,indV])+100. ]
+                        zry = [ np.min(xy[jr,indV])-100. , np.max(xy[jr,indV])+100. ]
+                    kg = mjt.ShowTQMesh( xx[jr,indV], xy[jr,indV], ppntIDs=vids[indV], cfig=cfpng, lGeoCoor=False,
+                                         zoom=5, rangeX=zrx, rangeY=zry )
             else:
                 if idebug>0:
                     print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
                           ' (unsufficient n. of buoys alive:',Nbuoys,')')
     
-        if idebug>0:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr, clock_res='d' )
 
 
     ### for js in range(Nstreams)
