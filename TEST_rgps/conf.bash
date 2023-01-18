@@ -34,6 +34,7 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         FILIN="RGPS_1996-11-07_1997-06-01_traj.nc4"
+        DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours] 
         #LIST_STREAM="000 001 002 003 004 005"
         LIST_STREAM="000 001"
         ;;
