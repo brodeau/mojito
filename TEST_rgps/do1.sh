@@ -28,7 +28,7 @@ fi
 
 
 
-CMD="${EXE} ${RGPS_DIR}/${FILIN} ${YEAR} ${MMDD1} ${MMDD2}"
+CMD="${EXE} ${RGPS_DIR}/${FILIN} ${YEAR} ${MMDD1} ${MMDD2} ${DT_BINS_H}"
 
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo

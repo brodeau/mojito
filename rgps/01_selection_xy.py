@@ -39,12 +39,6 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 
-#dt_bin =    6*3600 ; # bin width, aka time increment while scanning for valid time intervals
-#dt_bin =    2*24*3600 ; # bin width, aka time increment while scanning for valid time intervals
-dt_bin =    5*24*3600 ; # bin width, aka time increment while scanning for valid time intervals
-#
-dt_half_bin = dt_bin/2. ; # time interval aka half width of the bin, aka tolerance `+-dt_half_bin` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
-
 Ns_max = 100  # Max number of Streams, guess!!! #fixme...
 
 Nb_min_stream = 500 ; # minimum number of buoys for considering a stream a stream!
@@ -92,14 +86,20 @@ if __name__ == '__main__':
         if not path.exists('./'+cd): mkdir('./'+cd)
     if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')
 
+    ####################################################################################################
     narg = len(argv)
-    if not narg in [5]:
-        print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR> <MMDD1> <MMDD2>')
+    if not narg in [6]:
+        print('Usage: '+argv[0]+' <file_RGPS.nc> <YEAR> <MMDD1> <MMDD2> <dt_binning (hours)>')
         exit(0)
     cf_in = argv[1]
     cyear = argv[2]
     cmmd1 = argv[3]
     cmmd2 = argv[4]
+    idtbin_h = int(argv[5])
+    ####################################################################################################
+    
+    dt_bin =   float(idtbin_h*3600) ; # bin width in [s], aka time increment while scanning for valid time intervals
+    dt_half_bin = dt_bin/2.         ; # time interval aka half width of the bin, aka tolerance `+-dt_half_bin` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
 
     cmm1, cdd1 = cmmd1[0:2], cmmd1[2:4]
     cmm2, cdd2 = cmmd2[0:2], cmmd2[2:4]

@@ -4,6 +4,8 @@ YEAR="1997"
 
 MOJITO_DIR="${HOME}/DEV/mojito"
 
+DT_BINS_H=12  ; # width of a bin for time sampling [hours] 
+
 SIZE_MOSAIC=900
 
 DATE1="${YEAR}0101"
