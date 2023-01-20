@@ -23,7 +23,7 @@ case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        LIST_STREAM="000"
+        #LIST_STREAM="000"
         DATE2="${YEAR}0131"
         ;;
     "mcp-oceannext-01")

@@ -53,8 +53,9 @@ if __name__ == '__main__':
     rd_spacing = rd_nom_data
     if l_force_min_scale:
         rd_spacing = float(argv[2])
-        if rd_spacing <= rd_nom_data:
-            print('WARNING: we wont sample the cloud because `rd_spacing <= rd_nom_data` !!!')
+        #if rd_spacing <= rd_nom_data:
+        if rd_spacing < rd_nom_data:
+            print('WARNING: we wont sample the cloud because `rd_spacing < rd_nom_data` !!!')
             rd_spacing = rd_nom_data
             l_force_min_scale = False
             
