@@ -7,11 +7,14 @@ from os import path
 from glob import glob
 import numpy as np
 from re import split
+from math import ceil,floor
 
-from scipy.spatial import Delaunay
+#from scipy.spatial import Delaunay
+import matplotlib.pyplot as plt
+
 
 from climporn import epoch2clock, clock2epoch
-import mojito   as mjt
+#import mojito   as mjt
 
 idebug=1
 
@@ -22,7 +25,7 @@ rconv = 24.*3600.
 
 
 # Bin widths for pdfs
-wbin_div = 0.005 ; # day^-1
+wbin_div = 0.0025 ; # day^-1
 
 
 
@@ -121,9 +124,61 @@ xbin_center_div = np.round( xbin_center_div, 6 )
 print('xbin_center_div =',xbin_center_div)
 
 
+PDF_div = np.zeros(nBins)
+
+for iP in range(nP):
+    rdiv = Zdiv[iP]
+
+    #print('rdiv =',rdiv)
+
+    jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
+    #(idx1,) = np.where( xbin_bounds_div >=  rdiv )
+    #(idx2,) = np.where( xbin_bounds_div <= rdiv )
+
+    if not ( rdiv>=xbin_bounds_div[jf] and rdiv<xbin_bounds_div[jf+1] ):
+        print(' Binning error!'); exit(0)
+
+    PDF_div[jf] = PDF_div[jf]+1
+    #print('jf = ', jf)
+    #print('idx1 =',idx1)
+    #print('idx2 =',idx2)
+
+    #exit(0)
 
 
 
+PDF_div[:] = PDF_div[:]/float(nP)
+
+ax_fig_pdf = [0.119, 0.105, 0.86, 0.87]
+
+fig = plt.figure( num = 1, figsize=(8,7.2), dpi=None )
+#
+ax1 = plt.axes(ax_fig_pdf)
+ax1.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
+#
+# Y-axis:
+ymax = np.max(PDF_div)
+ymax = ceil(10.*ymax)/10.
+
+ax1.set_ylabel(r'Probability $(\%)$')
+plt.yticks( np.arange(0.,ymax+0.1,0.1) )
+ax1.set_ylim(0.,ymax)
+#
+# X-axis:
+plt.xlabel(r'Divergence [day$^{-1}$]', color='k')
+plt.xticks( xbin_bounds_div[::2] )
+ax1.set_xlim(xbin_bounds_div[0], xbin_bounds_div[nBins])
+#
+
+#plt.plot(xbin_center_div[:], PDF_div[:], 'o', color='0.6', zorder=5)
+
+plt.bar( xbin_center_div[:], PDF_div[:], width=wbin_div, color='0.6', zorder=2)
+
+
+
+
+plt.savefig('pdf.png', dpi=100, orientation='portrait', transparent=False)
+plt.close(1)
 ### np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr )
 
 
