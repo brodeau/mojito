@@ -28,6 +28,7 @@ rconv = 24.*3600.
 wbin_div = 0.0025 ; # day^-1
 #wbin_div = 0.01 ; # day^-1
 
+wbin_shr = 0.0025 ; # day^-1
 
 
 if not len(argv) in [2]:
@@ -103,31 +104,61 @@ for ff in listnpz:
 #print(Zdiv)
 
 div_min, div_max = np.min(Zdiv), np.max(Zdiv)
-print(' min and max for div:', div_min, div_max)
+print(' min & max for div:', div_min, div_max)
 
 vdmax =  ( round( 1.25 * max(abs(div_min),abs(div_max)), 2 ) )
 print('    ==> x-axis max =',vdmax,' day^-1')
 
-nBins = 2.*vdmax / wbin_div
-if not nBins%1.==0.:
-    print('ERROR: nBins is not an integer! nBins =',nBins)
+nBinsD = 2.*vdmax / wbin_div
+if not nBinsD%1.==0.:
+    print('ERROR: nBinsD is not an integer! nBinsD =',nBinsD)
     exit(0)
 
-nBins = int(nBins)
-print('nBins =',nBins)
+nBinsD = int(nBinsD)
+print('nBinsD =',nBinsD)
 
-xbin_bounds_div = [ -vdmax + float(i)*wbin_div for i in range(nBins+1) ]
+xbin_bounds_div = [ -vdmax + float(i)*wbin_div for i in range(nBinsD+1) ]
 xbin_bounds_div = np.round( xbin_bounds_div, 6 )
-print('xbin_bounds_div =',xbin_bounds_div)
+#print('xbin_bounds_div =',xbin_bounds_div)
 
-xbin_center_div = [ -vdmax+0.5*wbin_div + float(i)*wbin_div for i in range(nBins) ]
+xbin_center_div = [ -vdmax+0.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
 xbin_center_div = np.round( xbin_center_div, 6 )
-print('xbin_center_div =',xbin_center_div)
-
-PDF_div = np.zeros(nBins)
+#print('xbin_center_div =',xbin_center_div)
 
 
-#PDF_shr = np.zeros(nBins)
+
+# For the shear:
+shr_min = 0.
+shr_max = np.max(Zshr)
+print(' min & max for shr:', shr_min, shr_max)
+
+vsmax =  ( round(1.25*shr_max, 2) )
+print('    ==> x-axis max =',vsmax,' day^-1')
+
+
+nBinsS = vsmax / wbin_shr
+if not nBinsS%1.==0.:
+    print('ERROR: nBinsS is not an integer! nBinsS =',nBinsS)
+    exit(0)
+
+nBinsS = int(nBinsS)
+print('nBinsS =',nBinsS)
+
+xbin_bounds_shr = [  float(i)*wbin_shr for i in range(nBinsS+1) ]
+xbin_bounds_shr = np.round( xbin_bounds_shr, 6 )
+#print('xbin_bounds_shr =',xbin_bounds_shr)
+
+xbin_center_shr = [ 0.5*wbin_shr + float(i)*wbin_shr for i in range(nBinsS) ]
+xbin_center_shr = np.round( xbin_center_shr, 6 )
+#print('xbin_center_shr =',xbin_center_shr)
+
+#exit(0)
+
+
+
+
+PDF_div = np.zeros(nBinsD)
+PDF_shr = np.zeros(nBinsS)
 
 for iP in range(nP):
     rdiv = Zdiv[iP]
@@ -136,21 +167,19 @@ for iP in range(nP):
         print(' Binning error!'); exit(0)
     PDF_div[jf] = PDF_div[jf]+1
 
-    #rshr = Zshr[iP]
-    #jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
-    #if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
-    #    print(' Binning error!'); exit(0)
-    #PDF_shr[jf] = PDF_shr[jf]+1
+    rshr = Zshr[iP]
+    jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
+    if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
+        print(' Binning error!'); exit(0)
+    PDF_shr[jf] = PDF_shr[jf]+1
 
 
 
 PDF_div[:] = PDF_div[:]/float(nP)
-#PDF_shr[:] = PDF_shr[:]/float(nP)
-
-
+PDF_shr[:] = PDF_shr[:]/float(nP)
 
 
 kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png', nx_subsamp=4  )
 
-#kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png', nx_subsamp=4  )
+kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png', nx_subsamp=4  )
 
