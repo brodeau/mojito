@@ -12,7 +12,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
-idebug=1
+idebug=0
 
 if not len(argv) in [4]:
     print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <marker_size>')
@@ -34,15 +34,25 @@ print('\n *** Dates for the two records:',cdt1,cdt2)
 idt1 = clock2epoch(cdt1)
 idt2 = clock2epoch(cdt2)
 
+idate = 0.5*(idt1+idt2)
+cdate = epoch2clock(idate)
+print('     => deformation will be calculated at: '+cdate+'\n')
+
 rdt = idt2 - idt1
-print('      => `dt` = '+str(rdt)+' s, or '+str(rdt/(3600*24))+' days')
+print('      => Time step to be used: `dt` = '+str(rdt)+' s, or '+str(rdt/(3600*24))+' days')
+
+
+vclck = split('_',cdate)
+chh = split(':',vclck[1])[0]
+cclck = str.replace( vclck[0],'-','')+'-'+chh+'h'
 
 
 # Comprehensive name for npz and figs to save later on:
 cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
 cnm_pref = split('_',cf1)[1]
-ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
-cnm_pref = 'z_'+cnm_pref+'_'+ccdt1+'_'+ccdt2
+#ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
+#cnm_pref = 'z_'+cnm_pref+'_'+ccdt1+'_'+ccdt2
+cnm_pref = 'z_'+cnm_pref+'_'+cclck
 
 # Try to get a spatial resolution scale from the name:
 cres = ''
@@ -79,15 +89,18 @@ zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vi
 # zX, zY => positions at center of time interval!
 # zU, zV => velocities at center of time interval!
 
+
+zrx = [ np.min(zX)-25. , np.max(zX)+25. ]
+zry = [ np.min(zY)-25. , np.max(zY)+25. ]
+
+
+
 if idebug>0:
     # DEBUG: show velocities at each 4 vertices of each Quad:
     zzx = zX.flatten()
     zzy = zY.flatten()
     zzu = zU.flatten()
     zzv = zV.flatten()
-    #
-    zrx = [ np.min(zzx)-50. , np.max(zzx)+50. ]
-    zry = [ np.min(zzy)-50. , np.max(zzy)+50. ]
     #
     mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4'+cres+'.png', cwhat='U4',
                          marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
@@ -122,7 +135,8 @@ del zdUdxy, zdVdxy
 
 
 # Saving data:
-np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', Npoints=nQ, Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr )
+np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', idate=idate, cdate=cdate, Npoints=nQ,
+                     Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr )
 
 
 # Some plots:
