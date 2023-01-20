@@ -27,10 +27,13 @@ rconv = 24.*3600.
 # Bin widths for pdfs
 wbin_div = 0.0025 ; # day^-1
 #wbin_div = 0.01 ; # day^-1
-max_div = 0.05  ; # day^-1
+max_div = 0.5  ; # day^-1
+xdiv_rng=[-0.04,0.04] ; # x-range we want on the x-axis of the plot
+
 
 wbin_shr = 0.0025 ; # day^-1
-max_shr = 0.08 ; # day^-1
+max_shr = 1. ; # day^-1
+xshr_rng=[0.,0.08] ; # x-range we want on the x-axis of the plot
 
 
 if not len(argv) in [2]:
@@ -185,7 +188,9 @@ PDF_div[:] = PDF_div[:]/float(nP)
 PDF_shr[:] = PDF_shr[:]/float(nP)
 
 
-kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png', nx_subsamp=4  )
+kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png',
+                     xrng=xdiv_rng, nx_subsamp=8  )
 
-kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png', nx_subsamp=4  )
+kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png',
+                     xrng=xshr_rng, nx_subsamp=8  )
 

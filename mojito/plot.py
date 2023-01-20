@@ -455,7 +455,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
     
 
-def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', nx_subsamp=1  ):
+def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', xrng=None, nx_subsamp=1  ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
@@ -486,8 +486,13 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
     #
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
-    plt.xticks( pbinb[:] )
-    ax1.set_xlim(pbinb[0], pbinb[nB])
+    #
+    if xrng:
+        ax1.set_xlim(xrng[0], xrng[1])
+        plt.xticks( np.arange(xrng[0], xrng[1]+width_bin, width_bin) )
+    else:
+        ax1.set_xlim(pbinb[0], pbinb[nB])
+        plt.xticks( pbinb[:] )
     #
     if nx_subsamp>1:
         ax_lab = []
@@ -498,7 +503,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
                 if rr%1.0 == 0.:
                     cr = str(int(rr))  # it's something like 22.0, we want 22 !!!
                 else:
-                    cr = str(rr)
+                    cr = str(round(rr,6))
                 ax_lab.append(cr)
             else:
                 ax_lab.append(' ')
