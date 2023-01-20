@@ -164,13 +164,16 @@ for iP in range(nP):
     rdiv = Zdiv[iP]
     jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
     if not ( rdiv>=xbin_bounds_div[jf] and rdiv<xbin_bounds_div[jf+1] ):
-        print(' Binning error on divergence!'); exit(0)
+        print(' Binning error on divergence!')
+        print('  => divergence =',rdiv)
+        print('  => bounds =',xbin_bounds_div[jf],xbin_bounds_div[jf+1])
+        exit(0)
     PDF_div[jf] = PDF_div[jf]+1
 
     rshr = Zshr[iP]
     jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
     if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
-        print(' Binning error on sherar!')
+        print(' Binning error on shear!')
         print('  => shear =',rshr)
         print('  => bounds =',xbin_bounds_shr[jf],xbin_bounds_shr[jf+1])
         exit(0)
