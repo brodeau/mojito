@@ -124,40 +124,33 @@ xbin_center_div = [ -vdmax+0.5*wbin_div + float(i)*wbin_div for i in range(nBins
 xbin_center_div = np.round( xbin_center_div, 6 )
 print('xbin_center_div =',xbin_center_div)
 
-
 PDF_div = np.zeros(nBins)
+
+
+#PDF_shr = np.zeros(nBins)
 
 for iP in range(nP):
     rdiv = Zdiv[iP]
-
-    #print('rdiv =',rdiv)
-
     jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
-    #(idx1,) = np.where( xbin_bounds_div >=  rdiv )
-    #(idx2,) = np.where( xbin_bounds_div <= rdiv )
-
     if not ( rdiv>=xbin_bounds_div[jf] and rdiv<xbin_bounds_div[jf+1] ):
         print(' Binning error!'); exit(0)
-
     PDF_div[jf] = PDF_div[jf]+1
-    #print('jf = ', jf)
-    #print('idx1 =',idx1)
-    #print('idx2 =',idx2)
 
-    #exit(0)
+    #rshr = Zshr[iP]
+    #jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
+    #if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
+    #    print(' Binning error!'); exit(0)
+    #PDF_shr[jf] = PDF_shr[jf]+1
 
 
 
 PDF_div[:] = PDF_div[:]/float(nP)
+#PDF_shr[:] = PDF_shr[:]/float(nP)
 
 
 
 
-kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, name='Divergence', cfig='PDF_divergence.png', nx_subsamp=4  )
+kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png', nx_subsamp=4  )
 
+#kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png', nx_subsamp=4  )
 
-#kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, name='Divergence', cfig='PDF_divergence.png'  )
-
-
-
-exit(0)

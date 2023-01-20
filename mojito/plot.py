@@ -455,7 +455,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
     
 
-def PlotPDFdef( pbinb, pbinc, ppdf, name='Divergence', cfig='PDF.png', nx_subsamp=1  ):
+def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', nx_subsamp=1  ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
@@ -469,6 +469,8 @@ def PlotPDFdef( pbinb, pbinc, ppdf, name='Divergence', cfig='PDF.png', nx_subsam
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinb`!'); exit(0)
 
+    ki = _initStyle_()
+        
     width_bin = pbinb[2]-pbinb[1]
         
     fig = plt.figure( num = 1, figsize=(8,7.2), dpi=None )
@@ -503,14 +505,14 @@ def PlotPDFdef( pbinb, pbinc, ppdf, name='Divergence', cfig='PDF.png', nx_subsam
             cpt = cpt + 1
         plt.xticks(locs,ax_lab)
         del ax_lab
-
-    
     
     #plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
-
     plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
     #plt.step( pbinb[1:], ppdf[:],  color='b', zorder=10)
 
+    if Np:
+        ax1.annotate('N = '+str(Np), xy=(0.75, 0.85), xycoords='figure fraction', **cfont_clock)
+    
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
 
