@@ -27,8 +27,10 @@ rconv = 24.*3600.
 # Bin widths for pdfs
 wbin_div = 0.0025 ; # day^-1
 #wbin_div = 0.01 ; # day^-1
+max_div = 0.05  ; # day^-1
 
 wbin_shr = 0.0025 ; # day^-1
+max_shr = 0.08 ; # day^-1
 
 
 if not len(argv) in [2]:
@@ -103,13 +105,13 @@ for ff in listnpz:
 
 #print(Zdiv)
 
-div_min, div_max = np.min(Zdiv), np.max(Zdiv)
-print(' min & max for div:', div_min, div_max)
+if not max_div:
+    div_min, div_max = np.min(Zdiv), np.max(Zdiv)
+    print(' min & max for div:', div_min, div_max)
+    max_div =  ( round( 1.25 * max(abs(div_min),abs(div_max)), 2 ) )
+print('    ==> x-axis max =',max_div,' day^-1')
 
-vdmax =  ( round( 1.25 * max(abs(div_min),abs(div_max)), 2 ) )
-print('    ==> x-axis max =',vdmax,' day^-1')
-
-nBinsD = 2.*vdmax / wbin_div
+nBinsD = 2.*max_div / wbin_div
 if not nBinsD%1.==0.:
     print('ERROR: nBinsD is not an integer! nBinsD =',nBinsD)
     exit(0)
@@ -117,26 +119,24 @@ if not nBinsD%1.==0.:
 nBinsD = int(nBinsD)
 print('nBinsD =',nBinsD)
 
-xbin_bounds_div = [ -vdmax + float(i)*wbin_div for i in range(nBinsD+1) ]
+xbin_bounds_div = [ -max_div + float(i)*wbin_div for i in range(nBinsD+1) ]
 xbin_bounds_div = np.round( xbin_bounds_div, 6 )
 #print('xbin_bounds_div =',xbin_bounds_div)
 
-xbin_center_div = [ -vdmax+0.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
+xbin_center_div = [ -max_div+0.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
 xbin_center_div = np.round( xbin_center_div, 6 )
 #print('xbin_center_div =',xbin_center_div)
 
 
 
 # For the shear:
-shr_min = 0.
-shr_max = np.max(Zshr)
-print(' min & max for shr:', shr_min, shr_max)
+if not max_shr:
+    shr_max = np.max(Zshr)
+    print(' max for shr:', shr_max)
+    max_shr =  ( round(1.25*shr_max, 2) )
+print('    ==> x-axis max =',max_shr,' day^-1')
 
-vsmax =  ( round(1.25*shr_max, 2) )
-print('    ==> x-axis max =',vsmax,' day^-1')
-
-
-nBinsS = vsmax / wbin_shr
+nBinsS = max_shr / wbin_shr
 if not nBinsS%1.==0.:
     print('ERROR: nBinsS is not an integer! nBinsS =',nBinsS)
     exit(0)
