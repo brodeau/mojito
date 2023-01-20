@@ -9,7 +9,7 @@ DT_BINS_H=12  ; # width of a bin for time sampling [hours]
 SIZE_MOSAIC=500
 
 DATE1="${YEAR}0101"
-DATE2="${YEAR}0531"
+DATE2="${YEAR}0430"
 
 #LIST_RES="10 20 30"
 LIST_RES="10"
@@ -37,10 +37,10 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        DT_BINS_H=$((24*5))  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=$((24*5))  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
         SIZE_MOSAIC=200
-        #LIST_STREAM="000 001 002 003 004 005"
-        LIST_STREAM="000 001"
+        LIST_STREAM="000 001 002 003"
         ;;
     *)
         echo "Unsupported host: ${host} !"
