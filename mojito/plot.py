@@ -454,3 +454,64 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     plt.close(1)
 
     
+
+def PlotPDFdef( pbinb, pbinc, ppdf, name='Divergence', cfig='PDF.png', nx_subsamp=1  ):
+    '''
+      * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
+      * pbinc: vector of the center of the bins (x-axis), size = nB
+      * ppdf:  the PDF, same size as `pbinc`, size = nB
+    '''
+    from math import ceil
+
+    nB = len(ppdf)
+    if len(pbinc) != nB:
+        print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinc`!'); exit(0)
+    if len(pbinb) != nB+1:
+        print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinb`!'); exit(0)
+
+    width_bin = pbinb[2]-pbinb[1]
+        
+    fig = plt.figure( num = 1, figsize=(8,7.2), dpi=None )
+    #
+    ax1 = plt.axes([0.1, 0.1, 0.85, 0.85])
+    #ax1.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
+    #
+    # Y-axis:
+    ymax = ceil(10.*np.max(ppdf))/10.
+    ax1.set_ylabel(r'Probability')
+    plt.yticks( np.arange(0.,ymax+0.1,0.1) )
+    ax1.set_ylim(0.,ymax)
+    #
+    # X-axis:
+    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+    plt.xticks( pbinb[:] )
+    ax1.set_xlim(pbinb[0], pbinb[nB])
+    #
+    if nx_subsamp>1:
+        ax_lab = []
+        locs, labels = plt.xticks()
+        cpt = 0 # with ipct = 1: tick priting will start at y1+dt on x axis rather than y1
+        for rr in locs:
+            if cpt % nx_subsamp == 0:
+                if rr%1.0 == 0.:
+                    cr = str(int(rr))  # it's something like 22.0, we want 22 !!!
+                else:
+                    cr = str(rr)
+                ax_lab.append(cr)
+            else:
+                ax_lab.append(' ')
+            cpt = cpt + 1
+        plt.xticks(locs,ax_lab)
+        del ax_lab
+
+    
+    
+    #plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
+
+    plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
+    #plt.step( pbinb[1:], ppdf[:],  color='b', zorder=10)
+
+    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+    plt.close(1)
+
+    return 0
