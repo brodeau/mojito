@@ -23,7 +23,8 @@ case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #LIST_STREAM="000"
+        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        DATE1="$((YEAR-1))1225"
         DATE2="${YEAR}0201"
         ;;
     "mcp-oceannext-01")
