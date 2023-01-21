@@ -95,6 +95,93 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
     return nB, vTB, cTc
 
 
+def InspectLoadData( cfile, plistVar ):
+    '''
+       Open & inspect the RGPS NetCDF input file and load the raw data
+    '''
+    from netCDF4  import Dataset
+    from climporn import chck4f
+    #
+    ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
+    #
+    chck4f(cfile)
+    #
+    with Dataset(cfile) as id_in:
+
+        list_dim = list( id_in.dimensions.keys() )
+        if not 'points' in list_dim:
+            print(' ERROR: no dimensions `points` found into input file!'); exit(0)
+
+        list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
+        for cv in plistVar:
+            if not cv in list_var:
+                print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
+
+        nP = id_in.dimensions['points'].size
+        print('\n *** Total number of points in the file = ', nP)
+
+        # Time records:
+        ctunits = id_in.variables['time'].units
+        if not ctunits == ctunits_expected:
+            print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
+            exit(0)
+        ztime = id_in.variables['time'][:]
+
+        # Coordinates:
+        zx    = id_in.variables['x'][:]
+        zy    = id_in.variables['y'][:]
+        zlon  = id_in.variables['lon'][:]
+        zlat  = id_in.variables['lat'][:]
+
+        # Buoys' IDs:
+        kBIDs    = np.zeros(nP, dtype=int)
+        kBIDs[:] = id_in.variables['index'][:]
+
+    zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
+
+    return nP, ztime, zx, zy, zlon, zlat, kBIDs
+
+
+def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskVal=-99999. ):
+    '''
+       Only keep data of interest in 1D arrays (except time array), based on date1 and date2.
+       Excluded points are masked...
+       Again, time array `ptime0` won't be masked (unnecessary and dangerous)
+       Input:
+                * pdt1, pdt2 : start & end time ([s] UNIX epoch time)
+
+       Returns:
+                * nB   : number of buoys that exist during the specified time range
+                * zIDs : array(nB), IDs of the buoys that exist during the specified time range
+    '''
+    nP = len(pBIDs0)
+    
+    # Will mask all point that are before and beyond our period of interest:
+    zmsk = np.zeros(nP, dtype=int) + 1
+    zmsk[np.where(ptime0 < pdt1)] = 0
+    zmsk[np.where(ptime0 > pdt2)] = 0
+    #
+    (idx_masked,) = np.where( zmsk == 0 )
+    #
+    if nP-len(idx_masked) != np.sum(zmsk):
+        print('ERROR: fuck up #1!')
+        exit(0)
+    print('\n *** Total number of points remaining after time-range-exclusion = ',nP-len(idx_masked), '=', np.sum(zmsk))
+    #
+    pBIDs0[idx_masked] = int(rmskVal) ; pBIDs0 =  np.ma.masked_where( zmsk==0, pBIDs0 )
+    px0[idx_masked]    =     rmskVal  ; px0    =  np.ma.masked_where( zmsk==0, px0    )
+    py0[idx_masked]    =     rmskVal  ; py0    =  np.ma.masked_where( zmsk==0, py0    )
+    plon0[idx_masked]  =     rmskVal  ; plon0  =  np.ma.masked_where( zmsk==0, plon0  )
+    plat0[idx_masked]  =     rmskVal  ; plat0  =  np.ma.masked_where( zmsk==0, plat0  )
+    #
+    # Remaining buoys (IDs)
+    (idx,) = np.where(pBIDs0.data > 0)
+    zIDs = np.sort( np.unique( pBIDs0[idx] ) ) ; # if not `[idx]` then `rmskVal` is counted once!!!
+    nB   = len(zIDs)
+    print("\n *** We found "+str(nB)+" different buoys alive during specified period of time!")
+    #
+    return nB, zIDs
+
 
 def OrderCW(xcoor):
     '''
@@ -332,6 +419,11 @@ def SubSampCloud( rd_km, pCoor, pIDs,  pNames=[] ):
         return Nb, zCoor, pIDs[ileft], pNames[ileft]
     else:
         return Nb, zCoor, pIDs[ileft]
+
+
+
+
+
 
 
 

@@ -24,9 +24,8 @@ from os import path, environ, mkdir
 import numpy as np
 
 from re import split
-from netCDF4 import Dataset
 from scipy import interpolate
-from climporn import chck4f, epoch2clock, clock2epoch
+from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 idebug = 1
@@ -34,8 +33,6 @@ idebug = 1
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
-
-ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 
@@ -54,7 +51,6 @@ list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
 
 
-
 def __summary__( pVNB, pVT0, pIDs, pNRc ):
     (Nstrm,NbMax) = np.shape(pIDs)
     if Nstrm != len(pVNB):
@@ -71,8 +67,6 @@ def __summary__( pVNB, pVT0, pIDs, pNRc ):
     print('     * shape of ZIDs =', np.shape(pIDs))
     print('     * shape of ZNRc =', np.shape(pNRc))
     print(' ===================================\n')
-
-
 
 
 
@@ -125,78 +119,14 @@ if __name__ == '__main__':
 
     # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy)
     NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=idebug )
-
-
-
-
-    # Opening and inspecting the input file
-    #######################################
-    chck4f(cf_in)
-
-    with Dataset(cf_in) as id_in:
-
-        list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
-        if not 'points' in list_dim:
-            print(' ERROR: no dimensions `points` found into input file!'); exit(0)
-
-        list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
-        for cv in list_expected_var:
-            if not cv in list_var:
-                print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
-
-        Np0 = id_in.dimensions['points'].size
-        print('\n *** Total number of points in the file = ', Np0)
-
-        # Time records:
-        ctunits = id_in.variables['time'].units
-        if not ctunits == ctunits_expected:
-            print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
-            exit(0)
-        vtime0 = id_in.variables['time'][:]
-
-        # Coordinates:
-        vx0    = id_in.variables['x'][:]
-        vy0    = id_in.variables['y'][:]
-        vlon0  = id_in.variables['lon'][:]
-        vlat0  = id_in.variables['lat'][:]
-
-        # Buoys' IDs:
-        vBIDs0    = np.zeros(Np0, dtype=int)
-        vBIDs0[:] = id_in.variables['index'][:]
-
-    ### with Dataset(cf_in) as id_in
-
-    vlon0[:] = np.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
-
-    # Masking all point that are before and beyond our period of interest:
-    rmask_v = -99999.
-    vmsk_time = np.zeros(Np0, dtype=int) + 1
-    vmsk_time[np.where(vtime0 < rdt1)] = 0
-    vmsk_time[np.where(vtime0 > rdt2)] = 0
-    #
-    (idx_masked,) = np.where( vmsk_time == 0 )
-
-    if Np0-len(idx_masked) != np.sum(vmsk_time):
-        print('ERROR: fuck up #1!')
-        exit(0)
-
-    print('\n *** Total number of points remaining after time-range-exclusion = ',Np0-len(idx_masked), '=', np.sum(vmsk_time))
-    #
-    #
-    vBIDs0[idx_masked] = int(rmask_v) ; vBIDs0 =  np.ma.masked_where( vmsk_time==0, vBIDs0 )
-    #vtime0[idx_masked] = rmask_v      ; vtime0 =  np.ma.masked_where( vmsk_time==0, vtime0 )
-    vx0[idx_masked]    = rmask_v      ; vx0    =  np.ma.masked_where( vmsk_time==0, vx0    )
-    vy0[idx_masked]    = rmask_v      ; vy0    =  np.ma.masked_where( vmsk_time==0, vy0    )
-    vlon0[idx_masked]  = rmask_v      ; vlon0  =  np.ma.masked_where( vmsk_time==0, vlon0  )
-    vlat0[idx_masked]  = rmask_v      ; vlat0  =  np.ma.masked_where( vmsk_time==0, vlat0  )
-
-    # Remaining buoys (IDs)
-    (idx,) = np.where(vBIDs0.data > 0)
-    vIDs = np.sort( np.unique( vBIDs0[idx] ) ) ; # if not `[idx]` then `rmask_v` is counted once!!!
-    Nb   = len(vIDs)
-    print("\n *** We found "+str(Nb)+" different buoys alive during specified period of time!")
-    #print('vIDs = ',vIDs); exit(0)
-
+    
+    # Open, inspect the input file and load raw data:
+    Np0, vtime0, vx0, vy0, vlon0, vlat0, vBIDs0 = mjt.InspectLoadData( cf_in, list_expected_var )
+    
+    # Masking all point that are before and beyond our period of interest (note: `vtime0` is not masked!):
+    Nb, vIDs = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vx0, vy0, vlon0, vlat0,  rmskVal=-99999. )
+    
+    
     if not path.exists(cf_npz_intrmdt):
 
         # Vectors along streams:
