@@ -67,6 +67,8 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
                 *                        axe==2 => time at upper bound of bin ([s] UNIX epoch time)
                 * cTc : array(nB) human-readable date corresponding to time at center of bin (character string)
     '''
+    from climporn import epoch2clock
+    #
     zhdt = pdt/2.
     #
     nB = int(round((pdt2 - pdt1) / pdt))

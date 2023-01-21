@@ -24,7 +24,7 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
         #LIST_STREAM="000"
-        DATE2="${YEAR}0131"
+        DATE2="${YEAR}0201"
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"

@@ -75,6 +75,7 @@ def __summary__( pVNB, pVT0, pIDs, pNRc ):
 
 
 
+
 if __name__ == '__main__':
 
     cdata_dir = environ.get('DATA_DIR')
@@ -98,8 +99,7 @@ if __name__ == '__main__':
     idtbin_h = int(argv[5])
     ####################################################################################################
     
-    dt_bin =   float(idtbin_h*3600) ; # bin width in [s], aka time increment while scanning for valid time intervals
-    dt_half_bin = dt_bin/2.         ; # time interval aka half width of the bin, aka tolerance `+-dt_half_bin` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
+    dt_bin =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while scanning for valid time intervals
 
     cmm1, cdd1 = cmmd1[0:2], cmmd1[2:4]
     cmm2, cdd2 = cmmd2[0:2], cmmd2[2:4]
@@ -124,27 +124,9 @@ if __name__ == '__main__':
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
     # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy)
-    NTscan = int(round((rdt2 - rdt1) / dt_bin)) + 1
-    print("\n *** New fixed time axis to use to scan data:")
-    print( "   ===> NTscan = "+str(NTscan)+" time increments!")
-    vTbin = np.zeros((NTscan,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
-    cTscan = np.zeros( NTscan   , dtype='U19')
-
-    vTbin[0,0] =  rdt1 + dt_half_bin    ; # time at center of time bin
-    cTscan[0]   = epoch2clock(vTbin[0,0])
-    for jt in range(1,NTscan):
-        tt = vTbin[jt-1,0] + dt_bin
-        vTbin[jt,0] = tt                ; # time at center of time bin
-        cTscan[jt]   = epoch2clock(tt)
-    # Time bins bounds:
-    vTbin[:,1] = vTbin[:,0] - dt_half_bin
-    vTbin[:,2] = vTbin[:,0] + dt_half_bin
+    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=idebug )
 
 
-    if idebug>1:
-        for jt in range(NTscan):
-            print("   --- jt: "+str(jt)+" => ",vTbin[jt,0]," => ",cTscan[jt])
-            print("          => bounds: "+epoch2clock(vTbin[jt,1])+" - "+epoch2clock(vTbin[jt,2])+"\n")
 
 
     # Opening and inspecting the input file
@@ -229,18 +211,18 @@ if __name__ == '__main__':
         ID_in_use_G = []  ; # keeps memory of buoys that are already been included in a valid stream!
 
         istream        = -1
-        for jt in range(NTscan):
+        for jt in range(NTbin):
             #
             rT = vTbin[jt,0] ; # center of the current time bin
             #
-            print("\n *** Selection of buoys that exist at "+cTscan[jt]+" +-"+str(int(dt_half_bin/3600))+"h!")
-            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_half_bin-1. ) ; # yes, removing 1 second to `dt_half_bin`
+            print("\n *** Selection of buoys that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
+            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_bin/2.-1. ) ; # yes, removing 1 second to `dt_bin/2.`
             # we don't mind about the fact that vtime0 is not masked like other arrays, because the mask itself was build based on the global
             # date range, and here we select inside this same date range !!!
             #print('rT =', rT, '=', epoch2clock(rT) )
             #print('vtime0[:] - rT =')
             #for rr in vtime0[:] - rT: print(rr,', ',end="") ; #lilo
-            #print('dt_half_bin-1. =', dt_half_bin-1.)
+            #print('dt_bin/2.-1. =', dt_bin/2.-1.)
             #print('idx_ok =', idx_ok, len(idx_ok))
             #exit(0);#lolo
 
@@ -303,9 +285,9 @@ if __name__ == '__main__':
                             nbRecOK = nbRec0
                             vt1b_ideal = np.array( [ vt1b[0]+float(i)*float(dt_buoy) for i in range(nbRec0) ], dtype=float )
                             vtdev = np.abs(vt1b - vt1b_ideal)
-                            lFU = np.any(vtdev > dt_half_bin)
+                            lFU = np.any(vtdev > dt_bin/2.)
                             if lFU:
-                                (indFU,) = np.where(vtdev > dt_half_bin)
+                                (indFU,) = np.where(vtdev > dt_bin/2.)
                                 nbRecOK = np.min(indFU) ; # yes! no -1 !!!
 
                             # We want at least `Nb_min_cnsctv` consecutive records for the buoy
@@ -360,7 +342,7 @@ if __name__ == '__main__':
                 print(' ==> nothing to be found inside this period bin!!!')
             ### if Nok0>0
 
-        ### for jt in range(NTscan)
+        ### for jt in range(NTbin)
 
         VNB = np.array(VNB)
         VT0 = np.array(VT0)
@@ -516,12 +498,12 @@ if __name__ == '__main__':
         xtim = np.ma.masked_where( xmsk==0, xtim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(xtim, axis=1)
 
-        # Nearest interpolation of vtim on the VTscan calendar !!!
+        # Nearest interpolation of vtim on the VTbin calendar !!!
         VT = vtim.copy()
         i=0
         for it in vtim:
             idx = np.argmin( np.abs(vTbin[:,0]-it) )
-            if idebug>2: print('      it =',it,' => ',epoch2clock(it),' => nearest of VTscan =',epoch2clock(vTbin[idx,0]))
+            if idebug>2: print('      it =',it,' => ',epoch2clock(it),' => nearest of VTbin =',epoch2clock(vTbin[idx,0]))
             VT[i] = vTbin[idx,0]
             i=i+1
         #del vtim
@@ -529,10 +511,10 @@ if __name__ == '__main__':
         # Are there buoys which are too far from this reference time ? lilo
         #for jb in range(NvB):
         #    idt = np.abs(xtim[:,jb] - VT[:])
-        #    if np.any(idt>dt_half_bin):
-        #        print('WOW, buoy #'+str(vids[jb])+' is more than '+str(int(dt_half_bin/3600))
+        #    if np.any(idt>dt_bin/2.):
+        #        print('WOW, buoy #'+str(vids[jb])+' is more than '+str(int(dt_bin/2./3600))
         #              +' hours away from reference time...')
-        #        #(idw,) = np.where(idt>dt_half_bin)
+        #        #(idw,) = np.where(idt>dt_bin/2.)
         #        #print(idw)
         #        #print(' ==> supressing '+str(len(idw))+' values!')
         #        #xmsk[idw,jb] = 0
