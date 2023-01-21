@@ -278,9 +278,9 @@ if __name__ == '__main__':
                 if idebug>0 and l_force_min_scale:
                     # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
                     # After and before subsampling
-                    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_Original_'+cfroot+'.png',
+                    kk = mjt.ShowTQMesh( xCoor[:,0], xCoor[:,1], cfig='./figs/00_'+cfroot+'_Original.png',
                                          ppntIDs=vIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
-                    kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_SubSamp_'+cfroot+'.png',
+                    kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_'+cfroot+'_SubSamp.png',
                                          ppntIDs=zIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
 
                 if l_someQuads:
