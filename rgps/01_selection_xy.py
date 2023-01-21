@@ -37,7 +37,8 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 dt_buoy_Nmnl = 3*24*3600     ; # the expected nominal time step of the input data, ~ 3 days [s]
 max_dev_from_dt_buoy_Nmnl =  12.*3600. ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
 
-Ns_max = 100  # Max number of Streams, guess!!! #fixme...
+Ns_max  = 100  # Max number of Streams, guess!, just for dimensionning array before knowing!!!
+NrB_max =  50  # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
 
 Nb_min_stream = 500 ; # minimum number of buoys for considering a stream a stream!
 
@@ -140,6 +141,7 @@ if __name__ == '__main__':
         XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
         XNRc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
         Xmsk = np.zeros((Ns_max, Nb), dtype=int)
+        Xdat = np.zeros((Ns_max, Nb, NrB_max)) - 999. ; #lolo
 
         ID_in_use_G = []  ; # keeps memory of buoys that are already been included in a valid stream!
 
@@ -185,23 +187,17 @@ if __name__ == '__main__':
                             # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
                             if nbRecOK >= Nb_min_cnsctv:
 
-                                # Initial position for the buoy: #fixme: control all time records!
-                                #it1, it2 = idx0_id[0], idx0_id[nbRec-1]
-                                it1 = idx0_id[0]
+                                # We want the buoy to be located at least `MinDistFromLand` km off the coast                                
+                                it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                                #rd_fin = mjt.Dist2Coast( vlon0[it2], vlat0[it2], vlon_dist, vlat_dist, xdist )
-                                #print('\nLOLO: ==> initial distance to land =', rd_ini, 'km') ; exit(0)
-
-                                # We want the buoy to be located at least `MinDistFromLand` km off the coast
-                                #***************************************************************************
                                 if rd_ini > MinDistFromLand:
-
                                     ID_in_use_l.append(jID)
-                                    Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
-                                    Xmsk[istream,jb] = 1              ; # flag for valid point
-                                    XIDs[istream,jb] = jID            ; # keeps memory of select buoy
-                                    XNRc[istream,jb] = nbRecOK        ; # keeps memory of n. of valid consec. records
-
+                                    Nbuoys_stream = Nbuoys_stream + 1   ; # this is another valid buoy for this stream
+                                    Xmsk[istream,jb] = 1                ; # flag for valid point
+                                    XIDs[istream,jb] = jID              ; # keeps memory of select buoy
+                                    XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of valid consec. records
+                                    Xdat[istream,jb,:nbRecOK] = vt1b[:] ; # exact date for each buoy record position 
+                                    
                                 ### if rd_ini > MinDistFromLand
                             ### if nbRecOK >= Nb_min_cnsctv
                         ### if (not jID in ID_in_use_G) and (not jID in ID_in_use_l)
