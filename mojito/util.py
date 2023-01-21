@@ -59,7 +59,7 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
 
        Input:
                 * pdt1, pdt2 : start & end time ([s] UNIX epoch time)
-                * pdt        : width of bin ([s] UNIX epoch time) 
+                * pdt        : width of bin ([s] UNIX epoch time)
        Returns:
                 * nB :  number of bins
                 * vTB : array(nB,3) axe==0 => time at center of bin      ([s] UNIX epoch time)
@@ -155,7 +155,7 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
                 * zIDs : array(nB), IDs of the buoys that exist during the specified time range
     '''
     nP = len(pBIDs0)
-    
+
     # Will mask all point that are before and beyond our period of interest:
     zmsk = np.zeros(nP, dtype=int) + 1
     zmsk[np.where(ptime0 < pdt1)] = 0
@@ -181,6 +181,52 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
     print("\n *** We found "+str(nB)+" different buoys alive during specified period of time!")
     #
     return nB, zIDs
+
+
+def ValidCnsctvRecordsBuoy( kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_expected ):
+    '''
+         * Analysis of the time records for this particular buoy...
+            => Must cut off the series of the buoys as soon as its dt is too far
+               from the nominal time step:
+           => based on the initial time for this particular buoy:
+              - construct the ideal expected `ztime` (`ztime_ideal`) based on nominal dt
+              - dezing tout ce qui s'eloigne trop de ce ztime_ideal !
+       Input:
+                * kid    : ID of treated buoy
+                * ptime0 : time array as in raw data
+                * pBIDs0 : IDs array as in raw data
+                * dt_expected: expected time gap between 2 consecutive records of a buoy [s]
+                * max_dev_from_dt_expected: overshoot tolerance for `dt_expected` [s]
+       Returns:
+               * nbROK   : number of valid consecutive records for this buoy
+               * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
+               * ztime   : array of dates associated with all these records [s]
+    '''
+    (idx_id,) = np.where( pBIDs0 == kid)
+    #
+    ztime  = ptime0[idx_id] ; # all time records for this particular buoy
+    nbR1b = len(ztime)      ; # n. of time records for this particulat buoy
+    #
+    nbROK = nbR1b
+    ztime_ideal = np.array( [ ztime[0]+float(i)*float(dt_expected) for i in range(nbR1b) ], dtype=float )
+    vtdev = np.abs(ztime - ztime_ideal)
+    if np.any(vtdev > max_dev_from_dt_expected):
+        (indFU,) = np.where(vtdev > max_dev_from_dt_expected)
+        nbROK = np.min(indFU) ; # yes! no -1 !!!
+    #
+    if nbROK < nbR1b:
+        # Update with only keeping acceptable time records (#fixme: for now only those until first fuckup)
+        idx_id = idx_id[0:nbROK]
+        ztime   =   ztime[0:nbROK]
+    #
+    del nbR1b, ztime_ideal, vtdev
+    #
+    if len(idx_id)!=nbROK or len(ztime)!=nbROK:
+        print('ERROR: ValidCnsctvRecordsBuoy => `len(idx_id)!=nbROK or len(ztime)!=nbROK`')
+        exit(0)
+    #
+    return nbROK, idx_id, ztime
+
 
 
 def OrderCW(xcoor):
@@ -405,21 +451,20 @@ def SubSampCloud( rd_km, pCoor, pIDs,  pNames=[] ):
         if len(pNames) != Nb0:
             print(cerr+'len(pNames) != Nb0 !')
             exit(0)
-    
+
     zCoor = np.array( sbspl.sparsify_point_set( pCoor, min_squared_dist=rd_km*rd_km ) )
     (Nb,_) = np.shape(zCoor)
-    
+
     # Retrieve corresponding indices for selected points:
     ileft = np.zeros(Nb, dtype=int)
     for i in range(Nb):
         (idx,_) = np.where( pCoor[:,:]==zCoor[i,:] )
         ileft[i] = idx[0]
-    
+
     if l_do_names:
         return Nb, zCoor, pIDs[ileft], pNames[ileft]
     else:
         return Nb, zCoor, pIDs[ileft]
-
 
 
 

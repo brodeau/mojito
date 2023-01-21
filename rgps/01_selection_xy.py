@@ -52,6 +52,8 @@ list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
 
 
+
+
 def __summary__( pVNB, pVT0, pIDs, pNRc ):
     (Nstrm,NbMax) = np.shape(pIDs)
     if Nstrm != len(pVNB):
@@ -169,67 +171,48 @@ if __name__ == '__main__':
                     if idebug>0: print("    => this date is potentially the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
 
                     jb = -1              ; # buoy counter...
-                    for jid in vIDsT:
+                    for jID in vIDsT:
                         #
-                        if (not jid in ID_in_use_G) and (not jid in ID_in_use_l):
+                        if (not jID in ID_in_use_G) and (not jID in ID_in_use_l):
+
                             jb = jb + 1
-                            (idx_id,) = np.where( vBIDs0 == jid)
-                            #
-                            vt1b  = vtime0[idx_id] ; # all time records for this particular buoy
-                            nbRec1b = len(vt1b)      ; # n. of time records for this particulat buoy
 
-                            # * Analysis of the time records for this particular buoy...
-                            #    => Must cut off the series of the buoys as soon as its dt is too far
-                            #       from the nominal time step:
-                            #   => based on the initial time for this particular buoy:
-                            #      - construct the ideal expected `vt1b` (`vt1b_ideal`) based on nominal dt
-                            #      - dezing tout ce qui s'eloigne trop de ce vt1b_ideal !
-                            nbRecOK = nbRec1b
-                            vt1b_ideal = np.array( [ vt1b[0]+float(i)*float(dt_buoy_Nmnl) for i in range(nbRec1b) ], dtype=float )
-                            vtdev = np.abs(vt1b - vt1b_ideal)
-                            if np.any(vtdev > max_dev_from_dt_buoy_Nmnl):
-                                (indFU,) = np.where(vtdev > max_dev_from_dt_buoy_Nmnl)
-                                nbRecOK = np.min(indFU) ; # yes! no -1 !!!
-
-                            # We want at least `Nb_min_cnsctv` consecutive records for the buoy
-                            #******************************************************************
+                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( jID, vtime0, vBIDs0, dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+                            # * nbRecOK : number of valid consecutive records for this buoy
+                            # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
+                            # * vt1b    : array of dates associated with all these records [s]
+                            
+                            # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
                             if nbRecOK >= Nb_min_cnsctv:
 
-                                if nbRecOK < nbRec1b:
-                                    # Update with only keeping acceptable time records (#fixme: for now only those until first fuckup)
-                                    idx_id = idx_id[0:nbRecOK]
-                                    vt1b   =   vt1b[0:nbRecOK]
-                                del nbRec1b
-
                                 # Initial position for the buoy: #fixme: control all time records!
-                                #it1, it2 = idx_id[0], idx_id[nbRec-1]
-                                it1 = idx_id[0]
+                                #it1, it2 = idx0_id[0], idx0_id[nbRec-1]
+                                it1 = idx0_id[0]
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 #rd_fin = mjt.Dist2Coast( vlon0[it2], vlat0[it2], vlon_dist, vlat_dist, xdist )
                                 #print('\nLOLO: ==> initial distance to land =', rd_ini, 'km') ; exit(0)
-
 
                                 # We want the buoy to be located at least `MinDistFromLand` km off the coast
                                 #***************************************************************************
                                 if rd_ini > MinDistFromLand:
 
-                                    ID_in_use_l.append(jid)
+                                    ID_in_use_l.append(jID)
                                     Nbuoys_stream = Nbuoys_stream + 1 ; # this is another valid buoy for this stream
                                     Xmsk[istream,jb] = 1              ; # flag for valid point
-                                    XIDs[istream,jb] = jid            ; # keeps memory of select buoy
+                                    XIDs[istream,jb] = jID            ; # keeps memory of select buoy
                                     XNRc[istream,jb] = nbRecOK        ; # keeps memory of n. of valid consec. records
 
                                 ### if rd_ini > MinDistFromLand
                             ### if nbRecOK >= Nb_min_cnsctv
-                        ### if (not jid in ID_in_use_G) and (not jid in ID_in_use_l)
-                    ### for jid in vIDsT
+                        ### if (not jID in ID_in_use_G) and (not jID in ID_in_use_l)
+                    ### for jID in vIDsT
 
                     if Nbuoys_stream >= Nb_min_stream:
                         print("   +++ CONFIRMED VALID STREAM #"+str(istream)+" +++ => retained "+str(Nbuoys_stream)+" buoys!")
                         VNB.append(Nbuoys_stream)
                         VT0.append(rT)
                         # Only now can we register the buoys in `ID_in_use_G`:
-                        for jid in ID_in_use_l: ID_in_use_G.append(jid)
+                        for jID in ID_in_use_l: ID_in_use_G.append(jID)
                     else:
                         print("  * Well, this stream did not make it through the selection process... :(")
                         Xmsk[istream,:] = 0
@@ -357,12 +340,12 @@ if __name__ == '__main__':
         xmsk = np.zeros((NCRmax,NvB) , dtype=int)  ; # the mask for exluding buoys that stick out in time...
 
         for jb in range(NvB):
-            (idx_id,) = np.where( vBIDs0 == vids[jb])
+            (idx0_id,) = np.where( vBIDs0 == vids[jb])
             #
             nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
             if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
-            indv = idx_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
+            indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
             #
             xx[0:nvr,jb]   =    vx0[indv]
             xy[0:nvr,jb]   =    vy0[indv]
