@@ -38,10 +38,11 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        #DT_BINS_H=$((24*5))  ; # width of a bin for time sampling [hours]
         DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
         SIZE_MOSAIC=200
         LIST_STREAM="000 001 002 003"
+        DATE1="$((YEAR-1))1225"
+        DATE2="${YEAR}0315"
         ;;
     *)
         echo "Unsupported host: ${host} !"

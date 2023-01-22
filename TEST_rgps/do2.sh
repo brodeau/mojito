@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-i_do_def=1 ; # computes deformations or not...
+i_do_def=0 ; # computes deformations or not...
 
 EXE1="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
 EXE2="${MOJITO_DIR}/deformation.py"
