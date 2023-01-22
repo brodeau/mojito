@@ -239,6 +239,7 @@ if __name__ == '__main__':
                             print('ERROR: some Quad areas are negative!!! :(')
                             (idxFU,) = np.where(zareas<0.)
                             print('   for Quads with following indices:',idxFU)
+                            print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
                             exit(0)
                         rl_average_side = np.mean(zsides)
                         rl_average_scal = np.mean( np.sqrt(zareas) )
