@@ -428,7 +428,7 @@ def idx_suppress_xy_copies( X, rmask_val=-999. ):
 
 
 
-def SubSampCloud( rd_km, pCoor, pIDs,  pNames=[] ):
+def SubSampCloud( rd_km, pCoor, pIDs, ptime, pNames=[] ):
     '''
     '''
     from gudhi import subsampling as sbspl
@@ -447,6 +447,9 @@ def SubSampCloud( rd_km, pCoor, pIDs,  pNames=[] ):
     if len(pIDs) != Nb0:
         print(cerr+'len(pIDs) != Nb0 !')
         exit(0)
+    if len(ptime) != Nb0:
+        print(cerr+'len(ptime) != Nb0 !')
+        exit(0)
     if l_do_names:
         if len(pNames) != Nb0:
             print(cerr+'len(pNames) != Nb0 !')
@@ -462,9 +465,9 @@ def SubSampCloud( rd_km, pCoor, pIDs,  pNames=[] ):
         ileft[i] = idx[0]
 
     if l_do_names:
-        return Nb, zCoor, pIDs[ileft], pNames[ileft]
+        return Nb, zCoor, pIDs[ileft], ptime[ileft], pNames[ileft]
     else:
-        return Nb, zCoor, pIDs[ileft]
+        return Nb, zCoor, pIDs[ileft], ptime[ileft]
 
 
 

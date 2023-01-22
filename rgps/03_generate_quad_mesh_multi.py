@@ -16,7 +16,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock
 import mojito   as mjt
 
-idebug=1
+idebug=0
 
 # Selection of appropriate quadrangles:
 #rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     cL_spacing = '%2.2i'%int(round(rd_spacing,0))
 
 
-    # List of files to use from `cpref_npz`: lilo
+    # List of files to use from `cpref_npz`:
     #list_npz = np.sort( glob(cpref_npz+'*') )
     list_npz = list( split(',', clist_npz) )
     NbF = len(list_npz)
@@ -119,6 +119,7 @@ if __name__ == '__main__':
         cf_npzT = './npz/T-mesh_'+cfroot+'.npz'
         cf_npzQ = './npz/Q-mesh_'+cfroot+'.npz'
 
+        
         if not path.exists(cf_npzT) or not path.exists(cf_npzQ) or idebug>0:
     
             print('\n *** We are going to build quadrangles!')
@@ -131,8 +132,9 @@ if __name__ == '__main__':
                 cdate  = str( data['date'] )
                 Nbuoys = data['Npoints']
                 vids   = data['vids']
-                vx = data['vx']
-                vy = data['vy']
+                vtime  = data['vtime']                
+                vx     = data['vx']
+                vy     = data['vy']
                 if len(vids) != len(vx) or len(vids) != len(vy): print('ERROR Y11!') ; exit(0)
     
             NbP = len(vids) ; # number of points
@@ -189,12 +191,13 @@ if __name__ == '__main__':
                         rd_ss = rfcorr * rd_spacing ; # Correct `rd_spacing` to get closer to requested radius (based on QUADs to be generated)
         
                         print('\n *** Applying spatial sub-sampling! Threshold radius: '+str(round(rd_ss,2))+'km')                
-                        NbPss, zCoor, zIDs, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs,  pNames=vPnam )
+                        NbPss, zCoor, zIDs, ztime, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs, vtime,  pNames=vPnam )
                                             
                     else:
                         NbPss = NbP
                         zCoor = xCoor
                         zIDs  = vIDs
+                        ztime = vtime
                         zPnam = vPnam
                         
             
@@ -210,13 +213,13 @@ if __name__ == '__main__':
                     print('\n *** We have '+str(NbT)+' triangles!')
             
                     # Conversion to the `Triangle` class:
-                    TRIAS = mjt.Triangle( zCoor, xTpnts, xNeighborIDs, zIDs, zPnam ) ; #lolo
+                    TRIAS = mjt.Triangle( zCoor, xTpnts, xNeighborIDs, zIDs, ztime, zPnam )
             
                     del xTpnts, xNeighborIDs, TRI
                     
                     
                     # Merge triangles into quadrangles:
-                    xQcoor, vPQids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+                    xPcoor, vPids, vPtime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
                                                                   ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
                                                                   areaR=(rQarea_min,rQarea_max) )
                     l_someQuads = (len(xQpnts)>0)
@@ -232,7 +235,7 @@ if __name__ == '__main__':
                         print('\n *** We have '+str(NbQ)+' quadrangles!')
             
                         # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-                        QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, date=cdate )
+                        QUADS0 = mjt.Quadrangle( xPcoor, xQpnts, vPids, vPtime, vQnam, date=cdate )
                             
                         zsides = QUADS0.lengths()
                         zareas = QUADS0.area()
@@ -303,15 +306,15 @@ if __name__ == '__main__':
                 print(' *** In 1st file, we found '+str(QUADS0.nQ)+' Quads relying on '+str(QUADS0.nP)+' points!')
 
                 # Recycling Quads found at 1st record (QUADS0):
-                xQcoor, xQpnts, vPQids, vQnam, vQIDs = mjt.RecycleQuads( xCoor, vIDs, QUADS0,  iverbose=idebug )
+                xPcoor, vPtime, xQpnts, vPids, vQnam, vQIDs = mjt.RecycleQuads( xCoor, vtime, vIDs, QUADS0,  iverbose=idebug )
 
-                print('new shape of `xQcoor` =',np.shape(xQcoor))
+                print('new shape of `xPcoor` =',np.shape(xPcoor))
                 print('new shape of `xQpnts` =',np.shape(xQpnts))
-                print('new shape of `vPQids` =',np.shape(vPQids))
+                print('new shape of `vPids` =',np.shape(vPids))
                 print('new shape of `vQnam`  =',np.shape(vQnam))
                 print('new shape of `vQIDs`  =',np.shape(vQIDs))
                 
-                QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPQids, vQnam, vQIDs=vQIDs, date=cdate )
+                QUADS = mjt.Quadrangle( xPcoor, xQpnts, vPids, vPtime, vQnam, vQIDs=vQIDs, date=cdate )
                 print(' *** new Quad class updated for current file!\n')
 
                 # Save the quadrangular mesh info:
@@ -326,29 +329,37 @@ if __name__ == '__main__':
             ############
                                     
 
-    
-        ### if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ))
-        ###############################################################
+        else:
+            print('\n *** Files '+cf_npzT+' and '+cf_npzQ+' are already there!!!\n')
+        ### if not path.exists(cf_npzT) or not path.exists(cf_npzQ) or idebug>0
+        ##########################################################################
 
+        
         # Reading the triangle and quad class objects in the npz files:
         if jf==0:       TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
         if l_someQuads: QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
-    
+
+
+
+        # x and y axis range for all plots:
+        zcoor = TRI.PointXY
+        zrx = [ np.min(zcoor[:,0])-50. , np.max(zcoor[:,0])+50. ]
+        zry = [ np.min(zcoor[:,1])-50. , np.max(zcoor[:,1])+50. ]        
     
         if not path.exists('./figs'): mkdir('./figs')
     
         # Show triangles on a map:
         if jf==0:
-            #kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/01_Tmesh_'+cfroot+'.png',
-            kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/'+cfroot+'_01_Tmesh.png',
+            #kk = mjt.ShowTQMesh( zcoor[:,0], zcoor[:,1], cfig='./figs/01_Tmesh_'+cfroot+'.png',
+            kk = mjt.ShowTQMesh( zcoor[:,0], zcoor[:,1], cfig='./figs/'+cfroot+'_01_Tmesh.png',
                                  TriMesh=TRI.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
     
         if l_someQuads:
 
             if jf==0:
                 # Show triangles together with the quadrangles on a map:
-                #kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/02_Qmesh_'+cfroot+'.png',
-                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/'+cfroot+'_02_Qmesh.png',
+                #kk = mjt.ShowTQMesh( zcoor[:,0], zcoor[:,1], cfig='./figs/02_Qmesh_'+cfroot+'.png',
+                kk = mjt.ShowTQMesh( zcoor[:,0], zcoor[:,1], cfig='./figs/'+cfroot+'_02_Qmesh.png',
                                      TriMesh=TRI.MeshVrtcPntIdx,
                                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
                                      qIDs=QUA.QuadIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry)
