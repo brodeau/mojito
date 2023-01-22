@@ -349,7 +349,7 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     return zPCoor, zPIDs, zPtime, zQPQ, zQnames
 
 
-def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
+def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
     '''
         Computes spatial (x,y) partial derivatives of the velocity vector.
         The velocity vector is constructed from the two consecutive X,Y positions
@@ -366,8 +366,16 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  iverbose=0 ):
     if np.shape(pA1 )!=(nq,) or np.shape(pA2)!=(nq,): print('ERROR [PDVfromPos()]: wrong shape for `pA1` or `pA2`!'); exit(0)
 
     # Velocities at the 4 vertices at center of time interval:
-    zU = np.array( [ pXY2[:,k,0] - pXY1[:,k,0] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
-    zV = np.array( [ pXY2[:,k,1] - pXY1[:,k,1] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
+    if np.shape(xtime1)==(nq,n4) and np.shape(xtime2)==(nq,n4):
+        zdt = xtime2.copy() * 0.
+        zdt = xtime2[:,:]-xtime1[:,:]
+        zU = np.array( [ (pXY2[:,k,0] - pXY1[:,k,0])/zdt[:,k] for k in range(4) ] ).T ; # 1000 because X,Y in km !!!
+        zV = np.array( [ (pXY2[:,k,1] - pXY1[:,k,1])/zdt[:,k] for k in range(4) ] ).T ; # 1000 because X,Y in km !!!
+        del zdt
+    else:
+        # Using provided `pdt` rather than exact time difference between points:
+        zU = np.array( [ pXY2[:,k,0] - pXY1[:,k,0] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
+        zV = np.array( [ pXY2[:,k,1] - pXY1[:,k,1] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
 
     if iverbose>1:
         print('')
