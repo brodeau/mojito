@@ -33,7 +33,8 @@ rdRatio_max = 0.7 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 b
 #rcAtol = 0.3 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
 rcAtol = 0.75 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
 
-rtol        = 0.25 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
+#rtol        = 0.25 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
+rtol        = 0.5 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
 
 rzoom_fig = 6
