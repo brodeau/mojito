@@ -252,6 +252,7 @@ if __name__ == '__main__':
                             rdev_old = rdev
                             #rdev = rl_average_side - rd_spacing
                             rdev = rl_average_scal - rd_spacing
+                            print('LOLO:  abs(rdev), rtol=',abs(rdev), rtol)
                             l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
 
                             # If we are at the nominal scale:
