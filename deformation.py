@@ -2,6 +2,10 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
+#TODO:
+#     * figure out what the acceptable "time_dev_from_mean_allowed" and if some points go beyond it, just remove them from the data!
+
+
 from sys import argv, exit
 from os import path
 import numpy as np
@@ -16,25 +20,27 @@ idebug=0
 
 l_accurate_time=True
 
-time_dev_from_mean_allowed = 3600. ; # [s]
 
-
-def CheckTimeSanityQuad( kF, QD ):
+def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed ):
     '''
         * kF: file number
         * QD: Quad class loaded from file `kF`
     '''
     print('\n *** In file #'+str(kF)+':')
+    print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
     rTmean = np.mean(QD.PointTime)
     cTmean = epoch2clock(rTmean)
     rStdDv = mjt.StdDev(rTmean, QD.PointTime)
     print('     => Actual Mean time =',cTmean,', Standard Deviation =',rStdDv/60.,' minutes!')
-    if np.any(np.abs(QD.PointTime-rTmean)>time_dev_from_mean_allowed):
+    zadiff = np.abs(QD.PointTime-rTmean)
+    zdt = np.max(zadiff)/60.
+    print('     ==> furthest point is '+str(round(zdt,2))+' minutes away from mean!')
+
+    if np.any(zadiff>time_dev_from_mean_allowed):
         print('ERROR: some points read in file #'+str(kF)+' are too far (in time) from mean time=',cTmean)
+        exit(0)
     else:
         print('     => ok! No points further than '+str(time_dev_from_mean_allowed/60.)+' minutes from mean...')
-        zdt = np.max(QD.PointTime-rTmean)/60.
-        print('     ==> furthest point is '+str(round(zdt,2))+' minutes away from mean!')
         
     return rTmean
 
@@ -42,12 +48,13 @@ def CheckTimeSanityQuad( kF, QD ):
 
 if __name__ == '__main__':
 
-    if not len(argv) in [4]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <marker_size>')
+    if not len(argv) in [5]:
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <marker_size>')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
-    mrkrsz= int(argv[3])
+    time_dev_max= float(argv[3])
+    mrkrsz= int(argv[4])
         
     # Reading the quad meshes in both npz files:
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
@@ -60,8 +67,8 @@ if __name__ == '__main__':
     #idt2 = clock2epoch(cdt2)
         
     # Debug have a look at the times of all points and get the actual mean time for each file:
-    rT1 = CheckTimeSanityQuad(1, QUA1)
-    rT2 = CheckTimeSanityQuad(2, QUA2)
+    rT1 = CheckTimeSanityQuad(1, QUA1, time_dev_max)
+    rT2 = CheckTimeSanityQuad(2, QUA2, time_dev_max)
 
     rtimeC = 0.5*(rT1+rT2)
     ctimeC = epoch2clock(rtimeC)

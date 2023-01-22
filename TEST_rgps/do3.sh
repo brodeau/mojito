@@ -18,7 +18,7 @@ for dd in ${LIST_RES}; do
         
         echo " ==> will use:"; echo "     * ${list[0]}"; echo "     * ${list[1]}"
         
-        CMD="../deformation.py ${list[0]} ${list[1]} ${SIZE_MOSAIC}"
+        CMD="../deformation.py ${list[0]} ${list[1]} $((DT_BINS_H*3600/2)) ${SIZE_MOSAIC}"
         echo "  ==> ${CMD}"; echo
         ${CMD}
         echo; echo; echo
