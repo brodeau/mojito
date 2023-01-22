@@ -472,6 +472,10 @@ def SubSampCloud( rd_km, pCoor, pIDs, ptime, pNames=[] ):
 
 
 
+def StdDev( pmean, pX ):
+    zz = pX[:] - pmean
+    return np.sqrt( np.mean( zz*zz ) )
+
 
 
 

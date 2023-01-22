@@ -412,12 +412,20 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
 
 
 def DivPDV( pdUdxy, pdVdxy ):
+    # Divergence aka invariant SigmaI
     return pdUdxy[:,0] + pdVdxy[:,1]
 
 def ShearPDV( pdUdxy, pdVdxy ):
+    # Maximum Shear Strain Rate aka invariant SigmaII
     ztp1 = pdUdxy[:,0] - pdVdxy[:,1]
     ztp2 = pdUdxy[:,1] + pdVdxy[:,0]
     return np.sqrt( ztp1*ztp1 + ztp2*ztp2 )
+
+def Shear2PDV( pdUdxy, pdVdxy ):
+    # Square of the Maximum Shear Strain Rate aka invariant SigmaII
+    ztp1 = pdUdxy[:,0] - pdVdxy[:,1]
+    ztp2 = pdUdxy[:,1] + pdVdxy[:,0]
+    return ztp1*ztp1 + ztp2*ztp2
 
 
 
