@@ -224,11 +224,6 @@ if __name__ == '__main__':
                                                                   areaR=(rQarea_min,rQarea_max) )
                     l_someQuads = (len(xQpnts)>0)
                     #if len(xQpnts)<=0: exit(0)
-
-                    # Save the triangular mesh info in npz file:
-                    mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
-                    del TRIAS
-
                     
                     if l_someQuads:
                         (NbQ,_) = np.shape(xQpnts)
@@ -252,7 +247,10 @@ if __name__ == '__main__':
                             #rdev = rl_average_side - rd_spacing
                             rdev = rl_average_scal - rd_spacing
                             l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
-        
+
+                            # If we are at the nominal scale:
+                            l_happy = ( int(rd_spacing) == int(rd_nom_data) and itt>4 )
+                            
                             if not l_happy and itt==8:
                                 # We give up after 5 itterations!
                                 print(' +++++ WE GIVE UP !!! ++++++')
@@ -261,7 +259,8 @@ if __name__ == '__main__':
                             if not l_happy:
                                 # Linear fit of actual correction as a function of `rd_spacing`
                                 #rfc = 0.008*rd_spacing + 0.56
-                                rfc = 0.008*rd_spacing + 0.7                
+                                #rfc = 0.008*rd_spacing + 0.7
+                                rfc = 0.008*rd_spacing + 0.6                
                                 if itt==1: ralpha = (1.-rfc) / rdev ; # equivalent to a correction of `rfc`
                                 if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
                                     ralpha = ralpha/1.3 ; # change of sign of deviation => we decrease alpha!
@@ -285,6 +284,10 @@ if __name__ == '__main__':
                                          ppntIDs=vIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
                     kk = mjt.ShowTQMesh( zCoor[:,0], zCoor[:,1], cfig='./figs/00_'+cfroot+'_SubSamp.png',
                                          ppntIDs=zIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=zrx, rangeY=zry )
+
+                # Save the triangular mesh info in npz file:
+                mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+                del TRIAS
 
                 if l_someQuads:
                     # Save the quadrangular mesh info:
