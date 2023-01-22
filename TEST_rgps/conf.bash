@@ -24,7 +24,7 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
-        DATE1="$((YEAR-1))1225"
+        DATE1="$((YEAR-1))1230"
         DATE2="${YEAR}0201"
         ;;
     "mcp-oceannext-01")
@@ -42,8 +42,8 @@ case ${host} in
         DT_BINS_H=$((48))  ; # width of a bin for time sampling [hours]
         SIZE_MOSAIC=200
         LIST_STREAM="000 001 002 003"
-        DATE1="$((YEAR-1))1225"
-        DATE2="${YEAR}0315"
+        DATE1="$((YEAR-1))1230"
+        DATE2="${YEAR}0301"
         ;;
     *)
         echo "Unsupported host: ${host} !"
