@@ -475,15 +475,17 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
         
     width_bin = pbinb[2]-pbinb[1]
         
-    fig = plt.figure( num = 1, figsize=(8,7.2), dpi=None )
+    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
     ax1 = plt.axes([0.1, 0.1, 0.85, 0.85])
     #ax1.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
     #
     # Y-axis:
-    ymax = ceil(10.*np.max(ppdf))/10.
+    #rinc = 10. ; # => dy of 0.1
+    rinc = 100. ; # => dy of 0.01
+    ymax = ceil(rinc*np.max(ppdf))/rinc
     ax1.set_ylabel(r'Probability')
-    plt.yticks( np.arange(0.,ymax+0.1,0.1) )
+    plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
     ax1.set_ylim(0.,ymax)
     #
     # X-axis:
@@ -514,8 +516,11 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
         del ax_lab
     
     #plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
-    plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
-    #plt.step( pbinb[1:], ppdf[:],  color='b', zorder=10)
+    #
+    #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
+    plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor=None, linewidth=2, zorder=10 )
+    #
+    plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
 
     if Np:
         ax1.annotate('N = '+str(Np), xy=(0.75, 0.85), xycoords='figure fraction', **cfont_clock)

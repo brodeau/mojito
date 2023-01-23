@@ -18,23 +18,29 @@ import mojito   as mjt
 
 idebug=1
 
-cprefixIn='DEFORMATIONS_z' ; # Prefix of deformation files...
+cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 # Conversion from s-1 to day-1:
 rconv = 24.*3600.
 
 
 # Bin widths for pdfs
-wbin_div = 0.0025 ; # day^-1
-#wbin_div = 0.01 ; # day^-1
+#wbin_div = 0.0025 ; # day^-1
+#wbin_div = 0.001 ; # day^-1
+#wbin_div = 0.0005 ; # day^-1
+wbin_div = 0.00025 ; # day^-1
+#wbin_div = 0.0001 ; # day^-1
 max_div = 0.5  ; # day^-1
 xdiv_rng=[-0.04,0.04] ; # x-range we want on the x-axis of the plot
 
 
-wbin_shr = 0.0025 ; # day^-1
+#wbin_shr = 0.0025 ; # day^-1
+#wbin_shr = 0.001 ; # day^-1
+#wbin_shr = 0.0005 ; # day^-1
+wbin_shr = 0.00025 ; # day^-1
+#wbin_shr = 0.0001 ; # day^-1
 max_shr = 1. ; # day^-1
-xshr_rng=[0.,0.08] ; # x-range we want on the x-axis of the plot
-
+xshr_rng=[0.,0.1] ; # x-range we want on the x-axis of the plot
 
 if not len(argv) in [2]:
     print('Usage: '+argv[0]+' <directory_input_npz_files>')
@@ -50,7 +56,7 @@ print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
 
 
 kStreamName = np.zeros(nbFiles, dtype='U4')
-kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time
+kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
 kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
 
 #kDate1      = np.zeros(nbFiles, dtype='U10')
@@ -59,10 +65,10 @@ for ff in listnpz:
     print('\n  # File: '+ff)
     fb = path.basename(ff)
     vf = split('_',fb)
-    kStreamName[kf] = vf[2]
+    kStreamName[kf] = vf[1]
     #
     with np.load(ff) as data:
-        idate = int( data['idate'] )
+        rdate = int( data['time'] )
         #cdate = str( data['cdate'] )
         nPnts =      data['Npoints']
         #Xc    =      data['Xc']
@@ -70,9 +76,10 @@ for ff in listnpz:
         #zdiv  =      data['divergence']
         #zshr  =      data['shear']
 
-    kiDate[kf] = idate
+    kiDate[kf] = rdate
     kNbPoints[kf] = nPnts
 
+    print('   * Stream: '+kStreamName[kf] )
     print('   * Date = ',epoch2clock(kiDate[kf]))
     print('   * Nb. of points = ',kNbPoints[kf] )
         
@@ -80,7 +87,7 @@ for ff in listnpz:
 
 print('\n')
 
-print('  ==> list of streams:', kStreamName[:])
+#print('  ==> list of streams:', kStreamName[:])
 
 nP = np.sum(kNbPoints)
 print('  ==> Total number of points:', nP)
@@ -187,10 +194,13 @@ for iP in range(nP):
 PDF_div[:] = PDF_div[:]/float(nP)
 PDF_shr[:] = PDF_shr[:]/float(nP)
 
-
+ixss = int( (xshr_rng[1]-xshr_rng[0])/wbin_div/10. )
+print(ixss)
 kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png',
-                     xrng=xdiv_rng, nx_subsamp=8  )
+                     xrng=xdiv_rng, nx_subsamp=ixss )
 
+ixss = int( (xshr_rng[1]-xshr_rng[0])/wbin_shr/10. )
+print(ixss)
 kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png',
-                     xrng=xshr_rng, nx_subsamp=8  )
+                     xrng=xshr_rng, nx_subsamp=ixss )
 
