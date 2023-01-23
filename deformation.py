@@ -83,10 +83,8 @@ if __name__ == '__main__':
     
     # Comprehensive name for npz and figs to save later on:
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
-    cnm_pref = split('_',cf1)[1]
-    #ccdt1, ccdt2 = split('_',cdt1)[0], split('_',cdt2)[0]
-    #cnm_pref = 'z_'+cnm_pref+'_'+ccdt1+'_'+ccdt2
-    cnm_pref = 'z_'+cnm_pref+'_'+cclck
+    cfnm = split('_',cf1)[1]
+    cfnm = cfnm+'_'+cclck
     
     # Try to get a spatial resolution scale from the name:
     cres = ''
@@ -146,9 +144,9 @@ if __name__ == '__main__':
         zzu = zU.flatten()
         zzv = zV.flatten()
         #
-        mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cnm_pref+'_U4'+cres+'.png', cwhat='U4',
+        mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cfnm+'_U4'+cres+'.png', cwhat='U4',
                              marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
-        mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cnm_pref+'_V4'+cres+'.png', cwhat='V4',
+        mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cfnm+'_V4'+cres+'.png', cwhat='V4',
                              marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
         #
         del zzx, zzy, zzu, zzv
@@ -162,9 +160,9 @@ if __name__ == '__main__':
         zUc = np.mean( zU[:,:], axis=1 )
         zVc = np.mean( zV[:,:], axis=1 )
         #
-        mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cnm_pref+'_Uc'+cres+'.png', cwhat='Uc',
+        mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cfnm+'_Uc'+cres+'.png', cwhat='Uc',
                              marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
-        mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cnm_pref+'_Vc'+cres+'.png', cwhat='Vc',
+        mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cfnm+'_Vc'+cres+'.png', cwhat='Vc',
                              marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
         #
         del zUc, zVc
@@ -189,18 +187,18 @@ if __name__ == '__main__':
     
     
     # Saving data:
-    np.savez_compressed( './npz/DEFORMATIONS_'+cnm_pref+'.npz', time=rtimeC, date=ctimeC, Npoints=nQ,
+    np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nQ,
                          Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot )
     
     
     # Some plots:
     if not path.exists('./figs'): mkdir('./figs')
     
-    mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/'+cnm_pref+'_Divergence'+cres+'.png', cwhat='div',
+    mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
                          marker_size=mrkrsz, pFmin=-1.e-6, pFmax=1.e-6, zoom=4, rangeX=zrx, rangeY=zry )
-    mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Shear'+cres+'.png',      cwhat='shr',
+    mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
                          marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )
-    mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/'+cnm_pref+'_Total'+cres+'.png',      cwhat='tot',
+    mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
                          marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )
     
     
