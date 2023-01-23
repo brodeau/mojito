@@ -143,7 +143,7 @@ def QSpecsFrom2T( p3Pnt, pAngl, it1, it2, pCoor, pnam=[] ):
     ###         * p3Pnt:   the 3 point IDs forming the triangles, shape: (2,3) | origin: `scipy.Delaunay().simplices`
     ###         * pAngl:   the 3 angles of the triangle,          shape: (2,3)
     ###         * it1, it2: IDs of the two triangles to merge into a quadrangle
-    ###         * pCoor:    (lon,lat) coordinates of each point,      shape: (nP,2)
+    ###         * pCoor:  coordinates of each point,      shape: (nP,2)
     ###         * pnam:   OPTIONAL (DEBUG)  name of each point (string)  , shape: (nP)
     ###
     '''
@@ -193,13 +193,18 @@ def QSpecsFrom2T( p3Pnt, pAngl, it1, it2, pCoor, pnam=[] ):
     zcoor = np.array( [ pCoor[i,:] for i in vIquad ] )
     vsidx = SortIndicesCCW(zcoor)
     vIquad, vAquad = vIquad[vsidx], vAquad[vsidx]
+    zcoor[:] = zcoor[vsidx]
 
+    # Area of the would-be quadrangle:
+    zarea = AreaOfQuadrangle( zcoor[:,0], zcoor[:,1] )
+    
     if ldebug:
+        print('   [QSpecsFrom2T()] ==> area of the would-be quadrangle =',zarea)
         print('   [QSpecsFrom2T()] ==> the 4 angles of the CCW-sorted quadrangle =',vAquad)
         print('   [QSpecsFrom2T()]       ===> for ',[ pnam[i] for i in vIquad ])
 
-    # Return the CCW-sorted points and angles for the 4 vertices of the quadrangle, as well as ratio
-    return vIquad, vAquad, ratio
+    # Return the CCW-sorted points indices and angles for the 4 vertices of the quadrangle, the area of the quads, as well as ratio
+    return vIquad, vAquad, zarea, ratio
 
 
 def TriPntIDs2QuaPntIDs( xPntID ):
@@ -226,7 +231,7 @@ def TriPntIDs2QuaPntIDs( xPntID ):
 
 
 
-def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
+def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5), idbglev=0 ):
     '''
     ### Attempt to merge triangles into quadrangles:
     ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
@@ -239,8 +244,8 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     ## zQPQ   : [nQ,4] array of int] the 4 point indices composing the quad, in counter-clockwize
     ## zQnames: [nQ]   vector of strings]  a string to identify each quadrangle
     '''
-    NbT     = pTRIAs.nT
-    ivb     = iverbose
+    NbT = pTRIAs.nT
+    ivb = idbglev
 
     NbQ      = 0
     idxTdead = []   ; # IDs of canceled triangles
@@ -263,17 +268,17 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
         vangles = Zangls[jT,:] ; # the 3 angles...
         rarea   = Zareas[jT]
 
-        if ivb>0:
+        if ivb>1:
             print('\n **************************************************************')
             print(' *** Focus on triangle #'+str(jT)+' =>',[ zcN[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
         if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/2.5,areaR[1]/1.5)):
-            if ivb>0: print('       => disregarding this triangle!!! (because of extreme angles)')
+            if ivb>1: print('       => disregarding this triangle!!! (because of extreme angles)')
             idxTdead.append(jT) ; # Cancel this triangle
 
         elif jT in idxTused:
-            if ivb>0: print('       => this triangle is in use in an already defined Quad !')
+            if ivb>1: print('       => this triangle is in use in an already defined Quad !')
 
         else:
             #
@@ -284,7 +289,7 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
 
             vtmp   = Znghbs[jT,:]
             vnghbs = vtmp[vtmp >= 0] ; # shrink it, only retain non `-1`-flagged values...
-            if ivb>0: print('       => its '+str(len(vnghbs))+' neighbor triangles are:', vnghbs)
+            if ivb>1: print('       => its '+str(len(vnghbs))+' neighbor triangles are:', vnghbs)
 
             NgbrTvalid = [] ; # ID the valid neighbor triangles, i.e.: not dead, not already in use [REMOVED:, and decent shape]!
             for jN in vnghbs:
@@ -298,29 +303,33 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
             if len(NgbrTvalid)>0:
                 # `jT` is a valid+available triangle with at least one valid neighbor in `NgbrTvalid`
                 #   => need to check which of the neighbors in `NgbrTvalid` gives the best quadrangle!
-                if ivb>0: print('       => valid neighbors for triangle #'+str(jT)+':',NgbrTvalid)
+                if ivb>1: print('       => valid neighbors for triangle #'+str(jT)+':',NgbrTvalid)
 
                 vjNok  = [] ; # stores the neighbor triangles that are ok for forming a "decent" quad
                 vscore = [] ; #   => store their score of "OK-ness" !
                 xPids  = []
                 for jN in NgbrTvalid:
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
-                    v4Pnt, vang, rat  = QSpecsFrom2T( Z3Pnts[[jT,jN],:], Zangls[[jT,jN],:], jT, jN, zCoor, pnam=[] )
-                    lQok, score = lQisOK( vang, rat, pArea=Zareas[jT]+Zareas[jN], ratioD=ratioD, anglR=anglR, areaR=areaR )
+
+                    vInd4V, vAng4V, zA, rat  = QSpecsFrom2T( Z3Pnts[[jT,jN],:], Zangls[[jT,jN],:], jT, jN, zCoor, pnam=[] )
+                                      
+                    #lQok, score = lQisOK( vAng4V, rat, pArea=Zareas[jT]+Zareas[jN], ratioD=ratioD, anglR=anglR, areaR=areaR )
+                    #if lQok and zA<0.: print('LOLO: FUCK UP!!!!', zA)
+                    lQok, score = lQisOK( vAng4V, rat, pArea=zA, ratioD=ratioD, anglR=anglR, areaR=areaR )
 
                     cc = 'does NOT'
                     if lQok:
                         vjNok.append(jN)
                         vscore.append(score)
-                        xPids.append(v4Pnt)
+                        xPids.append(vInd4V)
                         cc = 'does'
                     if ivb>1:
                         print('            ===> "triangles '+str(jT)+'+'+str(jN)+'" '+cc+' give a valid Quad!')
-                        if not lQok: print('              ====> the 4 angles + ratio:',vang[:],rat)
+                        if not lQok: print('              ====> the 4 angles + ratio:',vAng4V[:],rat)
 
                 # Now we have to chose the best neighbor triangle to use (based on the score):
                 if len(vjNok)>0:
-                    if ivb>0: print('       => We have '+str(len(vjNok))+' Quad candidates!')
+                    if ivb>1: print('       => We have '+str(len(vjNok))+' Quad candidates!')
                     xPids = np.array(xPids)
                     iwin = np.argmax(vscore)
                     jN   = vjNok[iwin] ; # our winner neighbor triangle
@@ -328,23 +337,24 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
                     idxTused.append(jT)
                     idxTused.append(jN)
                     NbQ = NbQ+1
-                    if ivb>0: print('   ==> New Quad: "triangles '+str(jT)+'+'+str(jN)+'" => ',[zcN[i] for i in xPids[iwin,:]])
+                    if ivb>1: print('   ==> New Quad: "triangles '+str(jT)+'+'+str(jN)+'" => ',[zcN[i] for i in xPids[iwin,:]])
 
             else:
-                if ivb>0: print('       => No valid neighbors for this triangle...')
+                if ivb>1: print('       => No valid neighbors for this triangle...')
 
-        if ivb>0: print('**************************************************************')
+        if ivb>1: print('**************************************************************')
     ## -- for jT in range(NbT) --
     del Z3Pnts, Zangls, Zareas, Znghbs, v3pnts, vangles
 
     zQPT = np.array(Quads)
     del Quads
 
-    zPCoor  = [] ; # might be returned void if no valid Quad is identified!
-    zPIDs   = [] ; # "                "                    "
-    zPtime  = [] ; # "                "                    "
-    zQPQ    = [] ; # "                "                    "
-    zQnames = [] ; # "                "                    "
+    # Following arrays might be returned void if no valid Quad is identified...
+    zPCoor  = [] ; 
+    zPIDs   = [] ; # 
+    zPtime  = [] ; # 
+    zPindQ    = [] ; # the 4 point indices composing the quad, counter-clockwize 
+    zQnames = [] ; # 
 
     if NbQ>0:
         # Coordinates of the points in use by Quads!
@@ -359,24 +369,24 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
                             dtype='U32' )
 
         # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
-        zQPQ = TriPntIDs2QuaPntIDs(zQPT)
+        zPindQ = TriPntIDs2QuaPntIDs(zQPT)
 
         # Some sanity checks:
         if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
             print('ERROR [Tri2Quad]: agreement between number of merged triangles and created quads!')
             exit(0)
 
-        if ivb>0: print('\n *** SUMMARY ***')
+        if ivb>1: print('\n *** SUMMARY ***')
         if ivb>1:
             print('       => Triangles sucessfully merged into "acceptable" Quads:')
             print('       ==>',idxTused,)
-        if ivb>0:
+        if ivb>1:
             print('       => Summary about the '+str(NbQ)+' Quads generated:')
             for jQ in range(NbQ):
                 print('        * Quad #'+str(jQ)+' => ', zQPT[jQ,:], '('+zQnames[jQ]+')')
-                if ivb>1:
-                    vx = np.array([ zPCoor[i,0] for i in zQPQ[jQ,:] ])
-                    vy = np.array([ zPCoor[i,1] for i in zQPQ[jQ,:] ])
+                if ivb>2:
+                    vx = np.array([ zPCoor[i,0] for i in zPindQ[jQ,:] ])
+                    vy = np.array([ zPCoor[i,1] for i in zPindQ[jQ,:] ])
                     print('     X-coor:', vx[:])
                     print('     Y-coor:', vy[:])
 
@@ -386,18 +396,20 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
-    # DEBUG: identify negative areas??? How did they pass through `lQisOK`? #fixme
-    zareas = QuadsAreas( zQPQ )
-    if np.any(zareas<0.):
-        print('ERROR [Tri2Quad]: at least a quad with negative area!')
-        (idxFU,) = np.where(zareas<0.)
-        print('   for Quads with following indices:',idxFU)
-        print(' Area(s) => ', zareas[idxFU])
-        print(' Name(s) => ', zQnames[idxFU])
-        print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
-        exit(0)
+    if ivb>0:
+        # DEBUG: identify negative areas??? How did they pass through `lQisOK`? #fixme
+        zQcoor = np.array( [ zPCoor[zPindQ[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad!
+        zareas = QuadsAreas( zQcoor )
+        if np.any(zareas<0.):
+            print('ERROR [Tri2Quad]: at least a quad with negative area!')
+            (idxFU,) = np.where(zareas<0.)
+            print('   for Quads with following indices:',idxFU)
+            print(' Area(s) => ', zareas[idxFU])
+            print(' Name(s) => ', zQnames[idxFU])
+            print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
+            exit(0)
         
-    return zPCoor, zPIDs, zPtime, zQPQ, zQnames
+    return zPCoor, zPIDs, zPtime, zPindQ, zQnames
 
 
 def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
