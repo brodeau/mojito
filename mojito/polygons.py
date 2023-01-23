@@ -1,6 +1,6 @@
 import numpy as np
 
-from .geomesh import LengthsOfTriangle, AnglesOfTriangle, AreaOfTriangle, AreaOfQuadrangle
+from .geomesh import LengthsOfTriangle, AnglesOfTriangle, AreaOfTriangle, QuadsAreas
 from sys import exit
 
 
@@ -176,16 +176,14 @@ class Quadrangle:
 
     def area( self ):
         ''' Returns [nQ] array of the area of the quadrangles, see for example Bouchat et al. 2022 (Eq.5)'''
-        zX , zY = self.MeshPointXY[:,:,0].copy() , self.MeshPointXY[:,:,1].copy()
-        zA      = np.zeros(self.nQ) - 9999.
-        #
-        for i in range(self.nQ):
-            zA[i] = AreaOfQuadrangle( zX[i,:] , zY[i,:])
-            #zA[i] = np.sum( np.array([  zX[i,      k]*zY[i,(k+1)%4]
-            #                          - zX[i,(k+1)%4]*zY[i,      k] for k in range(4) ]) )
-        del zX,zY
-        #return 0.5*zA
-        return zA
+        return QuadsAreas(  self.MeshPointXY )
+    #zX , zY = self.MeshPointXY[:,:,0].copy() , self.MeshPointXY[:,:,1].copy()
+    #zA      = np.zeros(self.nQ) - 9999.
+    ##
+    #for i in range(self.nQ):
+    #    zA[i] = AreaOfQuadrangle( zX[i,:] , zY[i,:])
+    #del zX,zY
+    #return zA
 
     def MeshVrtcPntIDs( self ):
         ''' Returns the same as `MeshVrtcPntIdx` but with Point IDs rather than Point indices !'''

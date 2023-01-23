@@ -61,6 +61,7 @@ def AreaOfTriangle(pCoorT):
 def AreaOfQuadrangle( pX4, pY4 ):
     '''
     === Area of a quadrangle from the (x,y) coordinates of its 4 vertices ===
+           (see for example Bouchat et al. 2022, Eq.5 )
     # Input:
              * pX4: the 4 x-coordinates (as a length, not longitude!)
              * pY4: the 4 y-coordinates (as a length, not latitude!)
@@ -70,10 +71,26 @@ def AreaOfQuadrangle( pX4, pY4 ):
     nv = len(pX4[:]) ; # number of vertices...
     if len(pX4[:]) != 4 or len(pY4[:]) != 4:
         print('ERROR [AreaOfQuadrangle]: I am only designed for quadrangles! => 4 vertices!!!') ; exit(0)
-        
+    #
     rA = np.sum( np.array([ pX4[k]*pY4[(k+1)%4] - pX4[(k+1)%4]*pY4[k] for k in range(4) ]) )
-
+    #
     return 0.5*rA
+
+def QuadsAreas( pQVcoor ):
+    '''
+    # Input:
+             * pQVcoor: [shape = (nQ,4,2)] the (x,y) coordinates of the 4 vertices of the `nQ` quads
+    # Output:
+             * the areas of the quadrangles
+    '''
+    (nq,n4,n2) = np.shape(pQVcoor)
+    if n4!=4 or n2!=2:
+        print('ERROR [QuadsAreas]: wrong shape for `pQVcoor`!'); exit(0)
+    zA = np.zeros(nq) - 9999.
+    for i in range(nq):
+        zA[i] = AreaOfQuadrangle( pQVcoor[i,:,0] , pQVcoor[i,:,1])
+    #
+    return zA
 
 
 
