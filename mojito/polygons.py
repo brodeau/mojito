@@ -180,7 +180,7 @@ class Quadrangle:
         zA      = np.zeros(self.nQ) - 9999.
         #
         for i in range(self.nQ):
-            zA[i] = mjt.AreaOfQuadrangle( zX[i,:] , zY[i,:])
+            zA[i] = AreaOfQuadrangle( zX[i,:] , zY[i,:])
             #zA[i] = np.sum( np.array([  zX[i,      k]*zY[i,(k+1)%4]
             #                          - zX[i,(k+1)%4]*zY[i,      k] for k in range(4) ]) )
         del zX,zY
