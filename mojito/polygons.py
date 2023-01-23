@@ -177,13 +177,6 @@ class Quadrangle:
     def area( self ):
         ''' Returns [nQ] array of the area of the quadrangles, see for example Bouchat et al. 2022 (Eq.5)'''
         return QuadsAreas(  self.MeshPointXY )
-    #zX , zY = self.MeshPointXY[:,:,0].copy() , self.MeshPointXY[:,:,1].copy()
-    #zA      = np.zeros(self.nQ) - 9999.
-    ##
-    #for i in range(self.nQ):
-    #    zA[i] = AreaOfQuadrangle( zX[i,:] , zY[i,:])
-    #del zX,zY
-    #return zA
 
     def MeshVrtcPntIDs( self ):
         ''' Returns the same as `MeshVrtcPntIdx` but with Point IDs rather than Point indices !'''

@@ -137,9 +137,9 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
+    xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
                                                  ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                 areaR=(rQarea_min,rQarea_max) )
+                                                 areaR=(rQarea_min,rQarea_max),  idbglev=idebug )
     if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)

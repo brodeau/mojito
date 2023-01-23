@@ -220,9 +220,9 @@ if __name__ == '__main__':
                     
                     
                     # Merge triangles into quadrangles:
-                    xPcoor, vPids, vPtime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, iverbose=idebug, anglRtri=(rTang_min,rTang_max),
-                                                                  ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                                  areaR=(rQarea_min,rQarea_max) )
+                    xPcoor, vPids, vPtime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
+                                                                         ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                                         areaR=(rQarea_min,rQarea_max), idbglev=idebug )
                     l_someQuads = (len(xQpnts)>0)
                     #if len(xQpnts)<=0: exit(0)
                     
@@ -235,14 +235,6 @@ if __name__ == '__main__':
                             
                         zsides = QUADS0.lengths()
                         zareas = QUADS0.area()
-                        if np.any(zareas<0.):
-                            print('ERROR: some Quads areas in `QUADS0` are negative!!! :(')
-                            (idxFU,) = np.where(zareas<0.)
-                            print('   for Quads with following indices:',idxFU)
-                            print(' Area(s) => ', zareas[idxFU])
-                            print(' ID(s)   => ', QUADS0.QuadIDs[idxFU])
-                            print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
-                            exit(0)
                         rl_average_side = np.mean(zsides)
                         rl_average_scal = np.mean( np.sqrt(zareas) )
                         rl_average_area = np.mean(zareas)
@@ -255,7 +247,7 @@ if __name__ == '__main__':
                             rdev_old = rdev
                             #rdev = rl_average_side - rd_spacing
                             rdev = rl_average_scal - rd_spacing
-                            print('LOLO:  abs(rdev), rtol=',abs(rdev), rtol)
+                            #print('LOLO:  abs(rdev), rtol=',abs(rdev), rtol)
                             l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
 
                             # If we are at the nominal scale:
