@@ -39,9 +39,10 @@ case ${host} in
         export DATA_DIR="/data"
         #
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
-        DT_BINS_H=$((48))  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=$((48))  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         SIZE_MOSAIC=200
-        LIST_STREAM="000"
+        LIST_STREAM="000 001 002"
         #DATE1="$((YEAR-1))1230"
         DATE2="${YEAR}0301"
         ;;
