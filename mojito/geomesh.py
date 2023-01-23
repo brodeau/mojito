@@ -83,7 +83,10 @@ def QuadsAreas( pQVcoor ):
     # Output:
              * the areas of the quadrangles
     '''
-    (nq,n4,n2) = np.shape(pQVcoor)
+    shp = np.shape(pQVcoor)
+    if len(shp)!=3:
+        print('ERROR [QuadsAreas]: wrong number of dims for `pQVcoor`! =>',len(shp),' we need 3!'); exit(0)
+    (nq,n4,n2) = shp
     if n4!=4 or n2!=2:
         print('ERROR [QuadsAreas]: wrong shape for `pQVcoor`!'); exit(0)
     zA = np.zeros(nq) - 9999.
@@ -383,8 +386,17 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
-    # DEBUG: identify negative areas??? How did they pass through `lQisOK`?
-    
+    # DEBUG: identify negative areas??? How did they pass through `lQisOK`? #fixme
+    zareas = QuadsAreas( zQPQ )
+    if np.any(zareas<0.):
+        print('ERROR [Tri2Quad]: at least a quad with negative area!')
+        (idxFU,) = np.where(zareas<0.)
+        print('   for Quads with following indices:',idxFU)
+        print(' Area(s) => ', zareas[idxFU])
+        print(' Name(s) => ', zQnames[idxFU])
+        print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
+        exit(0)
+        
     return zPCoor, zPIDs, zPtime, zQPQ, zQnames
 
 
