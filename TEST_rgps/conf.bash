@@ -42,7 +42,7 @@ case ${host} in
         #DT_BINS_H=$((48))  ; # width of a bin for time sampling [hours]
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         SIZE_MOSAIC=200
-        LIST_STREAM="000 001 002"
+        LIST_STREAM="000 001 002 003 004"
         #DATE1="$((YEAR-1))1230"
         DATE2="${YEAR}0301"
         ;;
