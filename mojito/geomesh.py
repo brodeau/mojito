@@ -58,6 +58,26 @@ def AreaOfTriangle(pCoorT):
     return rA
 
 
+def AreaOfQuadrangle( pX4, pY4 ):
+    '''
+    === Area of a quadrangle from the (x,y) coordinates of its 4 vertices ===
+    # Input:
+             * pX4: the 4 x-coordinates (as a length, not longitude!)
+             * pY4: the 4 y-coordinates (as a length, not latitude!)
+    # Output:
+             * the area of the quadrangle
+    '''
+    nv = len(pX4[:]) ; # number of vertices...
+    if len(pX4[:]) != 4 or len(pY4[:]) != 4:
+        print('ERROR [AreaOfQuadrangle]: I am only designed for quadrangles! => 4 vertices!!!') ; exit(0)
+        
+    rA = np.sum( np.array([ pX4[k]*pY4[(k+1)%4] - pX4[(k+1)%4]*pY4[k] for k in range(4) ]) )
+
+    return 0.5*rA
+
+
+
+
 def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e5) ):
     '''
     ###  => returns Boolean: True if the triangle has a "decent" shape!
@@ -72,7 +92,7 @@ def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e5) ):
 
 def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5) ):
     '''
-    ###     Tells if a quadrangle should be kept or rejected (outrageously unrectangular shape)
+    ###     Tells if a quadrangle should be accepted or rejected (outrageously unrectangular shape)
     ###       + gives a score [0-1] (for now based on
     ###     TO DO: add the height/width ratio !!!! (we want somethibg closer to as square than a rectangle)
     ###
@@ -194,9 +214,9 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
     ###
     ### RETURNS:
     ## zPCoor : [nP,2] array of floats] the coordinates of the nP points that define the Quads
-    ## zPIDs : [nP] vector of integers] the ID of the points of zPCoor (IDs left from the original cloud of points on which triangles where build)
+    ## zPIDs : [nP] vector of int] IDs of the points of zPCoor (IDs left from the original cloud of points on which triangles are build)
     ## zPtime : [nP] vector of floats] the time of the points of zPCoor
-    ## zQPQ   : [nQ,4] array of integers] the 4 point indices composing the quad, in counter-clockwize
+    ## zQPQ   : [nQ,4] array of int] the 4 point indices composing the quad, in counter-clockwize
     ## zQnames: [nQ]   vector of strings]  a string to identify each quadrangle
     '''
     NbT     = pTRIAs.nT
@@ -346,6 +366,8 @@ def Tri2Quad( pTRIAs, iverbose=0, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,12
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
+    # DEBUG: identify negative areas??? How did they pass through `lQisOK`?
+    
     return zPCoor, zPIDs, zPtime, zQPQ, zQnames
 
 

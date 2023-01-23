@@ -236,9 +236,11 @@ if __name__ == '__main__':
                         zsides = QUADS0.lengths()
                         zareas = QUADS0.area()
                         if np.any(zareas<0.):
-                            print('ERROR: some Quad areas are negative!!! :(')
+                            print('ERROR: some Quads areas in `QUADS0` are negative!!! :(')
                             (idxFU,) = np.where(zareas<0.)
                             print('   for Quads with following indices:',idxFU)
+                            print(' Area(s) => ', zareas[idxFU])
+                            print(' ID(s)   => ', QUADS0.QuadIDs[idxFU])
                             print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
                             exit(0)
                         rl_average_side = np.mean(zsides)
