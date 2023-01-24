@@ -423,6 +423,12 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
     plt.axis([ xA,xB , yA,yB ])
 
+    # Pixel size:
+    if rangeX and rangeY:
+        rrm = int( max( abs(rangeX[1]-rangeX[0]) , abs(rangeY[1]-rangeY[0]) ) )
+        print('LOLO rrm =',rrm,  1710000./rrm)
+        marker_size = 1710000./rrm
+    
     # Showing points:
     #plt.plot( pX, pY, '.', ms=marker_size, color=clPoints, zorder=200) ; #, alpha=0.5)
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )

@@ -1,6 +1,7 @@
 #!/bin/bash
 
-YEAR="1997"
+#YEAR="1997"
+YEAR="2007"
 
 MOJITO_DIR="${HOME}/DEV/mojito"
 
@@ -38,13 +39,17 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
+        DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((48))  ; # width of a bin for time sampling [hours]
-        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=24  ; # width of a bin for time sampling [hours]
         SIZE_MOSAIC=200
         LIST_STREAM="000 001 002 003 004"
         #DATE1="$((YEAR-1))1230"
-        DATE2="${YEAR}0301"
+        #DATE2="${YEAR}0315"
+        #
+        DATE1="${YEAR}0130"
+        DATE2="${YEAR}0205"
         ;;
     *)
         echo "Unsupported host: ${host} !"
