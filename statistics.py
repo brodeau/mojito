@@ -123,11 +123,9 @@ print('    ==> x-axis max =',max_div,' day^-1')
 
 nBinsD = 2.*max_div / wbin_div
 if not nBinsD%1.==0.:
-    print('ERROR: nBinsD is not an integer! nBinsD =',nBinsD)
-    exit(0)
-
+    print('ERROR: nBinsD is not an integer! nBinsD =',nBinsD); exit(0)
 nBinsD = int(nBinsD)
-print('nBinsD =',nBinsD)
+#print('nBinsD =',nBinsD)
 
 xbin_bounds_div = [ -max_div + float(i)*wbin_div for i in range(nBinsD+1) ]
 xbin_bounds_div = np.round( xbin_bounds_div, 6 )
@@ -148,11 +146,9 @@ print('    ==> x-axis max =',max_shr,' day^-1')
 
 nBinsS = max_shr / wbin_shr
 if not nBinsS%1.==0.:
-    print('ERROR: nBinsS is not an integer! nBinsS =',nBinsS)
-    exit(0)
-
+    print('ERROR: nBinsS is not an integer! nBinsS =',nBinsS); exit(0)
 nBinsS = int(nBinsS)
-print('nBinsS =',nBinsS)
+#print('nBinsS =',nBinsS)
 
 xbin_bounds_shr = [  float(i)*wbin_shr for i in range(nBinsS+1) ]
 xbin_bounds_shr = np.round( xbin_bounds_shr, 6 )
@@ -194,13 +190,9 @@ for iP in range(nP):
 PDF_div[:] = PDF_div[:]/float(nP)
 PDF_shr[:] = PDF_shr[:]/float(nP)
 
-ixss = int( (xshr_rng[1]-xshr_rng[0])/wbin_div/10. )
-print(ixss)
 kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png',
-                     xrng=xdiv_rng, nx_subsamp=ixss )
+                     xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
 
-ixss = int( (xshr_rng[1]-xshr_rng[0])/wbin_shr/10. )
-print(ixss)
 kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png',
-                     xrng=xshr_rng, nx_subsamp=ixss )
+                     xrng=xshr_rng, wbin=wbin_shr, title='RGPS' )
 

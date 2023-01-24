@@ -66,9 +66,9 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     mpl.rcParams.update(params)
     #
     cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
-    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(18.*fntzoom_inv), 'color':color_top }
+    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(16.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(25.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(23.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
     return 0
@@ -457,27 +457,36 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
     
 
-def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', xrng=None, nx_subsamp=1  ):
+def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
+                xrng=None, wbin=None, title=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
       * ppdf:  the PDF, same size as `pbinc`, size = nB
+
+      * wbin:  width of the bin in [day^-1]
     '''
     from math import ceil
-
+    
     nB = len(ppdf)
     if len(pbinc) != nB:
         print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinc`!'); exit(0)
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinb`!'); exit(0)
 
+    # Subsampling of labels on the x-axis:
+    nx_subsamp = 1
+    if xrng and wbin:
+        nx_subsamp = int( (xrng[1]-xrng[0])/wbin/10. )
+        
     ki = _initStyle_()
         
     width_bin = pbinb[2]-pbinb[1]
         
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
-    ax1 = plt.axes([0.1, 0.1, 0.85, 0.85])
+    ax1 = plt.axes([0.1, 0.085, 0.85, 0.85])
+    #
     #ax1.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
     #
     # Y-axis:
@@ -523,8 +532,12 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
     plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
 
     if Np:
-        ax1.annotate('N = '+str(Np), xy=(0.75, 0.85), xycoords='figure fraction', **cfont_clock)
-    
+        ax1.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
+    if wbin:
+        ax1.annotate('Bin width = '+str(wbin)+r' day$^{-1}$', xy=(0.62, 0.82), xycoords='figure fraction', **cfont_clock)
+    if title:
+        ax1.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
+        
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
 
