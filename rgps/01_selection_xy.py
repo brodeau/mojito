@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 #Nok = len(vIDsT)
                 #
                 if idebug>0:
-                    print("    => "+str(Nok)+" buoys satisfy this!\n       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
+                    print("    => "+str(Nok)+" buoys satisfy this!\n       ==> "+str(Nok1-Nok)+" buoys removed because already in use...")
                     
                 exit(0)
                 
