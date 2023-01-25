@@ -37,10 +37,10 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 dt_buoy_Nmnl = 3*24*3600     ; # the expected nominal time step of the input data, ~ 3 days [s]
 max_dev_from_dt_buoy_Nmnl =  12.*3600. ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
 
-Ns_max  = 100  # Max number of Streams, guess!, just for dimensionning array before knowing!!!
-NrB_max =  50  # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
+Ns_max  =  20  ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
+NrB_max =  50  ; # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
 
-Nb_min_stream = 500 ; # minimum number of buoys for considering a stream a stream!
+min_nb_buoys_in_stream = 200 ; # minimum number of buoys for considering a stream a stream!
 
 Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
@@ -128,53 +128,65 @@ if __name__ == '__main__':
     Np0, vtime0, vx0, vy0, vlon0, vlat0, vBIDs0 = mjt.InspectLoadData( cf_in, list_expected_var )
     
     # Masking all point that are before and beyond our period of interest (note: `vtime0` is not masked!):
-    Nb, vIDs = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vx0, vy0, vlon0, vlat0,  rmskVal=-99999. )
-    
+    Nb, vIDsWP = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vx0, vy0, vlon0, vlat0,  rmskVal=-99999. )
+    # * Nb: number of different buoys that exist for at least 1 record during specified date range aka whole period (WP)
+    # * vIDsWP : array(Nb) list (unique) of IDs for these buoys
     
     if not path.exists(cf_npz_intrmdt):
 
         # Vectors along streams:
         VNB = [] ;  # number of valid buoys in each stream
-        VT0 = [] ;  # start time for stream
+        VT0 = [] ;  # start date for stream
 
         # In the following, both Ns_max & Nb are excessive upper bound values #fixme
-        XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
-        XNRc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # bad max size!! Stores the number of records
-        Xmsk = np.zeros((Ns_max, Nb), dtype=int)
-        #Xdat = np.zeros((Ns_max, Nb, NrB_max)) - 999. ; #lolo
+        XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores buoys IDs in use in a given stream
+        XNRc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
+        Xmsk = np.zeros((Ns_max, Nb), dtype=int)       ; # tells if given buoy of given stream is alive (1) or dead (0)
 
-        ID_in_use_G = []  ; # keeps memory of buoys that are already been included in a valid stream!
+        ID_in_use_G = []  ; # keeps memory of buoys that are already in use in a valid stream!
 
         istream        = -1
         for jt in range(NTbin):
             #
             rT = vTbin[jt,0] ; # center of the current time bin
             #
-            print("\n *** Selection of buoys that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
-            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_bin/2.-1. ) ; # yes, removing 1 second to `dt_bin/2.`
+            print("\n *** Selecting point indices that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
+            (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
             Nok0 = len(idx_ok)
 
             if Nok0>0:
+                print(' ---lolo: =>',Nok0,'such indices!')
                 # Exclude all buoys that are already being used:
                 vIDsT = np.setdiff1d( vBIDs0[idx_ok], np.array(ID_in_use_G) ) ; # keep the values of `vBIDs0[idx_ok]` that are not in `ID_in_use_G`
-                # Sanity check: if any of the buoys found here do not belong to the reference `vIDs`:
-                vIDsT = np.intersect1d(vIDsT, vIDs); # retain only elements of `vIDsT` that exist in `vIDs`
                 Nok = len(vIDsT)
-                if idebug>1:
-                    print("    => "+str(Nok)+" buoys satisfy this!")
+                if idebug>0:
+                    if Nok != len(np.unique(vIDsT)): print('ERROR: len(vIDsT) != len(np.unique(vIDsT)) !!!'); exit(0)
+                    # => that means some buoys are represented more than once in `vIDsT`, which should normally not happen!?
                     if Nok<Nok0: print("       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
+                #
+                # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsWP`:
+                vOUT = np.setdiff1d( vIDsT, vIDsWP) ; # keep the values of `vIDsT` that are not in `vIDsWP`
+                if len(vOUT)!=0: print('ERROR: some buoy IDs involved in this date range bin are not refenced in `vIDsWP` !!!'); exit(0)
+                #vIDsT = np.intersect1d(vIDsT, vIDsWP); # retain only elements of `vIDsT` that exist in `vIDsWP`, technically unecessary!
+                #Nok = len(vIDsT)
+                #
+                if idebug>0:
+                    print("    => "+str(Nok)+" buoys satisfy this!\n       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
+
                 
                 Nbuoys_stream = 0
                 ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
                 
-                if Nok >= Nb_min_stream:
+                if Nok >= min_nb_buoys_in_stream:
                     
                     istream   = istream+1 ; # that's a new stream
-                    if idebug>0: print("    => this date is potentially the start of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
+                    if idebug>0: print("    => this date range is potentially the first of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
 
+                    # Now, loop on all the buoys involved in this date range:
                     jb = -1              ; # buoy counter...
                     for jID in vIDsT:
                         #
+                        # #fixme: I have the feeling that `ID_in_use_l` is unecessary???
                         if (not jID in ID_in_use_G) and (not jID in ID_in_use_l):
 
                             jb = jb + 1
@@ -183,6 +195,10 @@ if __name__ == '__main__':
                             # * nbRecOK : number of valid consecutive records for this buoy
                             # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                             # * vt1b    : array of dates associated with all these records [s]
+                            print('---lolo: after `mjt.ValidCnsctvRecordsBuoy()` should have fixed the potential exclusion there...')
+                            #lolo: I thinks that's where we cancel too many buoys because a time gap means a kill???
+                            exit(0)
+
                             
                             # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
                             if nbRecOK >= Nb_min_cnsctv:
@@ -203,7 +219,7 @@ if __name__ == '__main__':
                         ### if (not jID in ID_in_use_G) and (not jID in ID_in_use_l)
                     ### for jID in vIDsT
 
-                    if Nbuoys_stream >= Nb_min_stream:
+                    if Nbuoys_stream >= min_nb_buoys_in_stream:
                         print("   +++ CONFIRMED VALID STREAM #"+str(istream)+" +++ => retained "+str(Nbuoys_stream)+" buoys!")
                         VNB.append(Nbuoys_stream)
                         VT0.append(rT)
@@ -215,12 +231,13 @@ if __name__ == '__main__':
                         istream = istream - 1 ; # REWIND!
                         if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
 
-                ### if Nok > Nb_min_stream
+                ### if Nok > min_nb_buoys_in_stream
 
             else:
-                print(' ==> nothing to be found inside this period bin!!!')
+                print(' ==> no points to be found inside this period !!!')
             ### if Nok0>0
-
+            print('')
+            
         ### for jt in range(NTbin)
 
         VNB = np.array(VNB)

@@ -151,11 +151,11 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
                 * pdt1, pdt2 : start & end time ([s] UNIX epoch time)
 
        Returns:
-                * nB   : number of buoys that exist during the specified time range
-                * zIDs : array(nB), IDs of the buoys that exist during the specified time range
+                * nB   : number of different buoys that exist for at least 1 record during specified date range
+                * zIDs : list (unique) of IDs for these buoys (array[nB] of int)
     '''
     nP = len(pBIDs0)
-
+    #
     # Will mask all point that are before and beyond our period of interest:
     zmsk = np.zeros(nP, dtype=int) + 1
     zmsk[np.where(ptime0 < pdt1)] = 0
@@ -164,9 +164,9 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
     (idx_masked,) = np.where( zmsk == 0 )
     #
     if nP-len(idx_masked) != np.sum(zmsk):
-        print('ERROR: fuck up #1!')
+        print('ERROR: [KDI] fuck up #1!')
         exit(0)
-    print('\n *** Total number of points remaining after time-range-exclusion = ',nP-len(idx_masked), '=', np.sum(zmsk))
+    print('\n *** [KDI] Total number of points remaining after time-range-exclusion = ',nP-len(idx_masked), '=', np.sum(zmsk))
     #
     pBIDs0[idx_masked] = int(rmskVal) ; pBIDs0 =  np.ma.masked_where( zmsk==0, pBIDs0 )
     px0[idx_masked]    =     rmskVal  ; px0    =  np.ma.masked_where( zmsk==0, px0    )
@@ -178,7 +178,7 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
     (idx,) = np.where(pBIDs0.data > 0)
     zIDs = np.sort( np.unique( pBIDs0[idx] ) ) ; # if not `[idx]` then `rmskVal` is counted once!!!
     nB   = len(zIDs)
-    print("\n *** We found "+str(nB)+" different buoys alive during specified period of time!")
+    print("\n *** [KDI] We found "+str(nB)+" different buoys alive during specified period of time!")
     #
     return nB, zIDs
 
