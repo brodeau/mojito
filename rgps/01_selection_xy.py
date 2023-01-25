@@ -186,8 +186,6 @@ if __name__ == '__main__':
                 if idebug>0:
                     print('     => '+str(Nok)+' buoys are still in the game! ('+str(Nok1-Nok)+' buoys removed because already in use...)')
                     
-                exit(0)
-                
                 Nbuoys_stream = 0
                 ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
                 
@@ -211,7 +209,7 @@ if __name__ == '__main__':
                             # * vt1b    : array of dates associated with all these records [s]
                             print('---lolo: after `mjt.ValidCnsctvRecordsBuoy()` should have fixed the potential exclusion there...')
                             #lolo: I thinks that's where we cancel too many buoys because a time gap means a kill???
-                            exit(0)
+                            #exit(0)
 
                             
                             # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
