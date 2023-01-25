@@ -57,7 +57,7 @@ for dd in ${LIST_RES}; do
                 echo " *** Computing deformations"
                 if [ -f ./${cfQ1} ] && [ -f ./${cfQ2} ]; then
                     echo " *** Computation of deformartions"
-                    CMD="${EXE2} ./${cfQ1} ./${cfQ2} ${SIZE_MOSAIC}"
+                    CMD="${EXE2} ./${cfQ1} ./${cfQ2}"
                     echo "  ==> ${CMD}"; echo
                     ${CMD}
                     echo; echo

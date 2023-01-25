@@ -34,7 +34,7 @@ for dd in ${LIST_RES}; do
                 
                 echo " ==> will use:"; echo "     * ${fQ1}"; echo "     * ${fQ2}"
                 
-                CMD="../deformation.py ${fQ1} ${fQ2} $((DT_BINS_H*3600/2)) ${SIZE_MOSAIC}"
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
                 echo "  ==> ${CMD}"; echo
                 ${CMD}
                 echo; echo; echo

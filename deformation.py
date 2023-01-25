@@ -48,13 +48,12 @@ def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed ):
 
 if __name__ == '__main__':
 
-    if not len(argv) in [5]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <marker_size>')
+    if not len(argv) in [4]:
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)>')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
     time_dev_max= float(argv[3])
-    mrkrsz= int(argv[4])
         
     # Reading the quad meshes in both npz files:
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
@@ -145,9 +144,9 @@ if __name__ == '__main__':
         zzv = zV.flatten()
         #
         mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/'+cfnm+'_U4'+cres+'.png', cwhat='U4',
-                             marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
+                             pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
         mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/'+cfnm+'_V4'+cres+'.png', cwhat='V4',
-                             marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
+                             pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
         #
         del zzx, zzy, zzu, zzv
     
@@ -161,9 +160,9 @@ if __name__ == '__main__':
         zVc = np.mean( zV[:,:], axis=1 )
         #
         mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/'+cfnm+'_Uc'+cres+'.png', cwhat='Uc',
-                             marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
+                             pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
         mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/'+cfnm+'_Vc'+cres+'.png', cwhat='Vc',
-                             marker_size=mrkrsz, pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
+                             pFmin=-1e-4, pFmax=1.e-4, zoom=4, rangeX=zrx, rangeY=zry )
         #
         del zUc, zVc
 
@@ -195,11 +194,11 @@ if __name__ == '__main__':
     if not path.exists('./figs'): mkdir('./figs')
     
     mjt.ShowDeformation( zXc, zYc, zdiv, cfig='./figs/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
-                         marker_size=mrkrsz, pFmin=-1.e-6, pFmax=1.e-6, zoom=4, rangeX=zrx, rangeY=zry )
+                         pFmin=-1.e-6, pFmax=1.e-6, zoom=4, rangeX=zrx, rangeY=zry )
     mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
-                         marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )
+                         pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )
     mjt.ShowDeformation( zXc, zYc, zshr, cfig='./figs/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
-                         marker_size=mrkrsz, pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )
+                         pFmin=0.,      pFmax=0.8e-6,  zoom=4, rangeX=zrx, rangeY=zry )
     
     
     ###
