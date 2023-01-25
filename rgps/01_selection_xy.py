@@ -170,17 +170,13 @@ if __name__ == '__main__':
                     print('       ==> these buoys are: ',zIDsD)
                 #
                 print('     => we have ',Nok1,' unique buoys in these ',Nok0,' selected indices!')
-                exit(0)
+                del zIDsA, idx_ok
 
                 # Exclude all buoys that are already being used:
                 print(' ---lolo: => ID_in_use_G =',np.array(ID_in_use_G))
-                vIDsT = np.setdiff1d( vBIDs0[idx_ok], np.array(ID_in_use_G), assume_unique=True ) ; # keep the values of `vBIDs0[idx_ok]` that are not in `ID_in_use_G`
+                vIDsT = np.setdiff1d( ziDsU, np.array(ID_in_use_G), assume_unique=True ) ; # keep the values of `ziDsU` that are not in `ID_in_use_G`
                 Nok = len(vIDsT)
-                if idebug>0:
-                    if Nok != len(np.unique(vIDsT)): print('ERROR: len(vIDsT) != len(np.unique(vIDsT)) !!!'); exit(0)
-                    # => that means some buoys are represented more than once in `vIDsT`, which should normally not happen!?
-                    if Nok<Nok0: print("       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
-                #
+                #                
                 # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsWP`:
                 vOUT = np.setdiff1d( vIDsT, vIDsWP) ; # keep the values of `vIDsT` that are not in `vIDsWP`
                 if len(vOUT)!=0: print('ERROR: some buoy IDs involved in this date range bin are not refenced in `vIDsWP` !!!'); exit(0)
@@ -189,7 +185,8 @@ if __name__ == '__main__':
                 #
                 if idebug>0:
                     print("    => "+str(Nok)+" buoys satisfy this!\n       ==> "+str(Nok0-Nok)+" buoys removed because already in use...")
-
+                    
+                exit(0)
                 
                 Nbuoys_stream = 0
                 ID_in_use_l = []  ; # keeps memory of buoys that are already been included, only at this stream level
