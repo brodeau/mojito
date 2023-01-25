@@ -13,6 +13,12 @@
 ##################################################################
 #
 # TO DO:
+#
+# Faire un effort sur la date moyenne (centree?) du stream, et pour les raisons suivante:
+# - quel bouee doublon exclure si plusieurs memes ID de boue dans le meme bin
+# - etre precis dans les noms de fichier et figures!!!
+# - savoir quand on peut recomposer des streams avec un des scrips suivants
+
 # * find the reason why the stream willing to start at `1997-01-04_18h00` will:
 #   - work for short selection (1st to 10th of January)
 #   - be cancelled for longer selection (1st to 31st of January)
@@ -46,7 +52,7 @@ Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
-Nb_min_buoys = 200 ; # minimum number of buoys necessary to keep a given record of a given stream!
+Nb_min_buoys = 150 ; # minimum number of buoys necessary to keep a given record of a given stream!
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
