@@ -173,7 +173,7 @@ if __name__ == '__main__':
                 del zIDsA, idx_ok
 
                 # Exclude all buoys that are already being used:
-                print(' ---lolo: => ID_in_use_G =',np.array(ID_in_use_G))
+                #print(' ---lolo: => ID_in_use_G =',np.array(ID_in_use_G))
                 vIDsT = np.setdiff1d( ziDsU, np.array(ID_in_use_G), assume_unique=True ) ; # keep the values of `ziDsU` that are not in `ID_in_use_G`
                 Nok = len(vIDsT)
                 #                
@@ -207,7 +207,7 @@ if __name__ == '__main__':
                             # * nbRecOK : number of valid consecutive records for this buoy
                             # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                             # * vt1b    : array of dates associated with all these records [s]
-                            print('---lolo: after `mjt.ValidCnsctvRecordsBuoy()` should have fixed the potential exclusion there...')
+                            #print('---lolo: after `mjt.ValidCnsctvRecordsBuoy()` should have fixed the potential exclusion there...')
                             #lolo: I thinks that's where we cancel too many buoys because a time gap means a kill???
                             #exit(0)
 
