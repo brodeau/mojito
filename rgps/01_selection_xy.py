@@ -157,6 +157,7 @@ if __name__ == '__main__':
             if Nok0>0:
                 print(' ---lolo: =>',Nok0,'such indices!')
                 # Exclude all buoys that are already being used:
+                print(' ---lolo: => ID_in_use_G =',np.array(ID_in_use_G))
                 vIDsT = np.setdiff1d( vBIDs0[idx_ok], np.array(ID_in_use_G) ) ; # keep the values of `vBIDs0[idx_ok]` that are not in `ID_in_use_G`
                 Nok = len(vIDsT)
                 if idebug>0:
