@@ -156,6 +156,10 @@ if __name__ == '__main__':
             #
             if Nok0>0:
                 #
+                # LOLO: les `in_use` avec du buoy ID c pas la bonne idee, il vaut mieux bosser en terme d'indices! Et donc de points !!!!
+                #       dans les doublons qui suit il faut juste garder la boue la plus proche en temps du centre du bin !!!!
+                #      les indices de la meme boues pourront etre reutilises!!!
+                #
                 print('     => we have ',Nok0,'such indices!')
                 # If the width of the time bin is large enough, the same buoy can exist more than once in the same time bin:
                 zIDsA = vBIDs0[idx_ok]
