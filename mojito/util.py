@@ -183,7 +183,7 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
     return nB, zIDs
 
 
-def ValidCnsctvRecordsBuoy( kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_expected ):
+def ValidCnsctvRecordsBuoy( date_min, kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_expected ):
     '''
          * Analysis of the time records for this particular buoy...
             => Must cut off the series of the buoys as soon as its dt is too far
@@ -192,6 +192,7 @@ def ValidCnsctvRecordsBuoy( kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_ex
               - construct the ideal expected `ztime` (`ztime_ideal`) based on nominal dt
               - dezing tout ce qui s'eloigne trop de ce ztime_ideal !
        Input:
+                * date_min: all buoys considered should exist at and after this time, not before!!! epoch time in [s]
                 * kid    : ID of treated buoy
                 * ptime0 : time array as in raw data
                 * pBIDs0 : IDs array as in raw data
@@ -202,9 +203,14 @@ def ValidCnsctvRecordsBuoy( kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_ex
                * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                * ztime   : array of dates associated with all these records [s]
     '''
-    (idx_id,) = np.where( pBIDs0 == kid)
+    (idx_exclude,) = np.where( ptime0<= date_min )
+    (idx_buoy,   ) = np.where( pBIDs0 == kid)
+    idx_keep       = np.setdiff1d( idx_buoy, idx_exclude) ; # keep the values of `idx_buoy` that are not in `idx_exclude`
     #
-    ztime  = ptime0[idx_id] ; # all time records for this particular buoy
+    ztime  = ptime0[idx_keep] ; # all time records for this particular buoy
+    if np.any( ztime<=date_min ):
+        print('ERROR: ValidCnsctvRecordsBuoy => `np.any( ztime<=date_min )` !!!!'); exit(0)
+    #
     nbR1b = len(ztime)      ; # n. of time records for this particulat buoy
     #
     nbROK = nbR1b
@@ -216,16 +222,16 @@ def ValidCnsctvRecordsBuoy( kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_ex
     #
     if nbROK < nbR1b:
         # Update with only keeping acceptable time records (#fixme: for now only those until first fuckup)
-        idx_id = idx_id[0:nbROK]
+        idx_keep = idx_keep[0:nbROK]
         ztime   =   ztime[0:nbROK]
     #
     del nbR1b, ztime_ideal, vtdev
     #
-    if len(idx_id)!=nbROK or len(ztime)!=nbROK:
-        print('ERROR: ValidCnsctvRecordsBuoy => `len(idx_id)!=nbROK or len(ztime)!=nbROK`')
+    if len(idx_keep)!=nbROK or len(ztime)!=nbROK:
+        print('ERROR: ValidCnsctvRecordsBuoy => `len(idx_keep)!=nbROK or len(ztime)!=nbROK`')
         exit(0)
     #
-    return nbROK, idx_id, ztime
+    return nbROK, idx_keep, ztime
 
 
 
