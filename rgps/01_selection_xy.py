@@ -166,7 +166,7 @@ if __name__ == '__main__':
                     idxD = np.setdiff1d( idx_ok, idxU, assume_unique=True ) ; # keep the values of `idx_ok` that are not in `idxU`
                     zIDsD = vBIDs0[idxD]
                     print('   => some buoys exist more than once in the current date range buoys doublons in this selection!')
-                    print('      (keeping 1 unique occurence leads to a removal of ',Nok0-Nok01,' points!)')
+                    print('      (keeping 1 unique occurence leads to a removal of ',Nok0-Nok1,' points!)')
                     print('   ==> these buoys are: ',zIDsD,'\n')
 
                 print('     => we have ',Nok1,' unique buoys in these ',Nok0,' selected indices!')
