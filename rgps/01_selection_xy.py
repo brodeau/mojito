@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 #Nok = len(vIDsT)
                 #
                 if idebug>0:
-                    print("    => "+str(Nok)+" buoys satisfy this!\n       ==> "+str(Nok1-Nok)+" buoys removed because already in use...")
+                    print('     => '+str(Nok)+' buoys are still in the game! ('+str(Nok1-Nok)+' buoys removed because already in use...)')
                     
                 exit(0)
                 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
                 if Nok >= min_nb_buoys_in_stream:
                     
                     istream   = istream+1 ; # that's a new stream
-                    if idebug>0: print("    => this date range is potentially the first of stream #"+str(istream)+", with "+str(Nok)+" buoys!")
+                    if idebug>0: print('    => this date range is potentially the first of stream #'+str(istream)+', with '+str(Nok)+' buoys!')
 
                     # Now, loop on all the buoys involved in this date range:
                     jb = -1              ; # buoy counter...
@@ -234,16 +234,16 @@ if __name__ == '__main__':
                     ### for jID in vIDsT
 
                     if Nbuoys_stream >= min_nb_buoys_in_stream:
-                        print("   +++ CONFIRMED VALID STREAM #"+str(istream)+" +++ => retained "+str(Nbuoys_stream)+" buoys!")
+                        print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(Nbuoys_stream)+' buoys!')
                         VNB.append(Nbuoys_stream)
                         VT0.append(rT)
                         # Only now can we register the buoys in `ID_in_use_G`:
                         for jID in ID_in_use_l: ID_in_use_G.append(jID)
                     else:
-                        print("  * Well, this stream did not make it through the selection process... :(")
+                        print('  * Well, this stream did not make it through the selection process... :(')
                         Xmsk[istream,:] = 0
                         istream = istream - 1 ; # REWIND!
-                        if idebug>0: print("    => this was not a stream! So back to stream #"+str(istream)+" !!!")
+                        if idebug>0: print('    => this was not a stream! So back to stream #'+str(istream)+' !!!')
 
                 ### if Nok > min_nb_buoys_in_stream
 
