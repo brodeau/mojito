@@ -46,7 +46,7 @@ Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
-Nb_min_buoys = 300 ; # minimum number of buoys necessary to keep a given record of a given stream!
+Nb_min_buoys = 200 ; # minimum number of buoys necessary to keep a given record of a given stream!
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
