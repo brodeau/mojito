@@ -153,9 +153,25 @@ if __name__ == '__main__':
             print("\n *** Selecting point indices that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
             (idx_ok,) = np.where( np.abs( vtime0[:] - rT ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
             Nok0 = len(idx_ok)
-
+            #
             if Nok0>0:
-                print(' ---lolo: =>',Nok0,'such indices!')
+                #
+                print('     => we have ',Nok0,'such indices!')
+                # If the width of the time bin is large enough, the same buoy can exist more than once in the same time bin:
+                zIDsA = vBIDs0[idx_ok]
+                ziDsU, idxU = np.unique(zIDsA, return_index=True)
+                Nok1 = len(ziDsU)
+                if Nok1 < Nok0:
+                    # indices of the doublons:
+                    idxD = np.setdiff1d( idx_ok, idxU, assume_unique=True ) ; # keep the values of `idx_ok` that are not in `idxU`
+                    zIDsD = vBIDs0[idxD]
+                    print('   => some buoys exist more than once in the current date range buoys doublons in this selection!')
+                    print('      (keeping 1 unique occurence leads to a removal of ',Nok0-Nok01,' points!)')
+                    print('   ==> these buoys are: ',zIDsD,'\n')
+
+                print('     => we have ',Nok1,' unique buoys in these ',Nok0,' selected indices!')
+                exit(0)
+
                 # Exclude all buoys that are already being used:
                 print(' ---lolo: => ID_in_use_G =',np.array(ID_in_use_G))
                 vIDsT = np.setdiff1d( vBIDs0[idx_ok], np.array(ID_in_use_G), assume_unique=True ) ; # keep the values of `vBIDs0[idx_ok]` that are not in `ID_in_use_G`
