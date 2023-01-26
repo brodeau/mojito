@@ -167,50 +167,71 @@ if __name__ == '__main__':
             print("\n *** Selecting point indices that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
             (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
             zIDsOK0 = vBIDs0[idxOK0]
-            #
+            ztimOK0 = vtime0[idxOK0]
+            
             # For some reasons this can select an ID=0 or maybe worse? <0?!
             if np.any(zIDsOK0<=0):
-                #print('LOLO: FU#1')
-                vBIDsClean,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only values of `zIDsOK0` that exist in `vIDsWP`
-                idxClean         =                 idxOK0[idx]
-                #debug, show the diff between cleaned arrays:
-                #vIDdltd = np.setdiff1d(zIDsOK0, vBIDsClean)
-                #idxdltd = np.setdiff1d( idxOK0, idxClean  )
-                #print('LOLO: cleaning we have done, we removed buoy with IDs =',vIDdltd)
-                #print('LOLO: cleaning we have done, we removed point indices =',idxdltd, '=>',vBIDs0[idxdltd])
-                #exit(0)                                
-                idxOK0 = idxClean
-                del idxClean, vBIDsClean ; #fixme: rm vBIDsClean everywhere!!!!
+                _,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only indices of `zIDsOK0` that exist in `vIDsWP`
+                idxOK0  = idxOK0[idx]
+                del idx
                 zIDsOK0 = vBIDs0[idxOK0]
+                ztimOK0 = vtime0[idxOK0]
             #
             Nok0 = len(idxOK0)
             #
             if Nok0>0:
-                #
-                print('     => we have ',Nok0,'such indices!')                                
-                # If the width of the time bin is large enough, the same buoy can exist more than once in the same time bin:
+                #                
+                # If the width of the time bin is large enough (normally>3days), the same buoy can exist more than once in the same time bin:
                 _, idxU = np.unique(zIDsOK0, return_index=True)
-                idxOKU = idxOK0[idxU] ; # because `idxU` are indices in the `zIDsOK0` world, not in the original `vBIDs0` world...
-                del idxU
-                ziDsU = vBIDs0[idxOKU]
-                if np.any(ziDsU<=0): print('LOLO: FU#2');exit(0) ; #fixme: rm
-                #
-                Nok1 = len(ziDsU)
+                Nok1 = len(idxU) ; # Nok1 is the number of buoys once the doublons are removed!
+                print('     => we have ',Nok0,'such indices for ',Nok1,' unique buoys!')                                
+                
                 if Nok1 < Nok0:
-                    # LOLO: dans les doublons qui suit il faut juste garder la boue la plus proche en temps du centre du bin !!!! #fixme
-                    #       => pour l'instant celui des 2 (voir 3,4,..) qui reste (vi le `np.unique` du dessus doit être random)
-                    # indices of the doublons:
+                    np2rm  = Nok0-Nok1
+                    idxOKU = idxOK0[idxU] ; # because `idxU` are indices in the `zIDsOK0` world, not in the original `vBIDs0` world...
+                    # Indices of the doublons:
                     idxD = np.setdiff1d( idxOK0, idxOKU, assume_unique=True ) ; # keep the values of `idxOK0` that are not in `idxOKU`
-                    zIDsD = vBIDs0[idxD]
-                    print('     => some buoys exist more than once in the current date range selection!')
-                    print('        (keeping 1 unique occurence leads to a removal of ',Nok0-Nok1,' points!)')
-                    print('       ==> these buoys are: ',zIDsD)
+                    del idxOKU
+                    zIDsD = vBIDs0[idxD] ; # IDs of the buoys that exist more than once in current time bin...
+                    print('       ==> some buoys exist more than once in the current date range selection!')
+                    print('          (keeping 1 unique occurence (based on time) leads to a removal of ',np2rm,' points!)')
+                    #print('       ==> these buoys are: ',zIDsD)
+                    # Analysis:
+                    idxRMall = []
+                    for jID in zIDsD:                        
+                        (idxMlt,) = np.where(zIDsOK0==jID)
+                        #print('   => buoy with ID '+str(jID)+', ==> loc indices in zIDsOK0:',idxMlt)
+                        #print('     ==> time for each buoy:',[ epoch2clock(ztimOK0[ii]) for ii in idxMlt ],' (center bin:'+epoch2clock(rTc)+')')
+                        # We keep the point that has the time the nearest to the center of the bin:
+                        idx = np.argmin(np.abs(ztimOK0[idxMlt]-rTc))
+                        idxKeep = idxMlt[idx]
+                        #print('     ==> idx position of the occurence nearest to center of bin =',idx,', time =',epoch2clock(ztimOK0[idxKeep]))
+                        idxRM = np.setdiff1d( idxMlt, [idxKeep], assume_unique=True ) ; # keep the values of `idxMlt` that are not in `[idxMlt[idx]]`
+                        #print('     ==> indices to remove are: ',idxRM,'\n')
+                        idxRM = idxOK0[idxRM]; # translate in the `idxOK0` frame!!!! IMPORTANT !!!!
+                        for ix in idxRM: idxRMall.append(ix)
+                    #
+                    idxRMall = np.array(idxRMall, dtype=int)
+                    #print('  +++ After loop, list of indices to remove =',idxRMall)
+                    if len(idxRMall)!=np2rm: print('ERROR: FU#2!!!'); exit(0)
+                    # Finally, update `idxOK01`:
+                    idxOK0 = np.setdiff1d( idxOK0, idxRMall, assume_unique=True ) ; # keep the values of `idxOK0` that are not in `idxRM`
+                    del idx, idxRM, idxKeep, idxRMall
+                    Nok0 = len(idxOK0)
                 #
-                print('     => we have ',Nok1,' unique buoys in these ',Nok0,' selected indices!')
-                del zIDsOK0, idxOK0
+                #
+                del zIDsOK0, idxU, Nok1
 
+                #RM double check:
+                #zIDsOK0 = vBIDs0[idxOK0]
+                #_, idxU = np.unique(zIDsOK0, return_index=True)
+                #Nok1 = len(idxU)
+                #print('     => DOUBLE CHECK we have ',len(zIDsOK0),'such indices for ',Nok1,' unique buoys!')
+                #exit(0)
+                #RM.
+                                
                 # Exclude points if index has already been used:
-                idxT  = np.setdiff1d( idxOKU, np.array(IDX_in_use_G)) ;#, assume_unique=True ) ; # keep values of `idxOKU` that are not in `IDX_in_use_G`
+                idxT  = np.setdiff1d( idxOK0, np.array(IDX_in_use_G)) ;#, assume_unique=True ) ; # keep values of `idxOK0` that are not in `IDX_in_use_G`
                 vIDsT = vBIDs0[idxT] ; # the buoys IDs we work with
                 Nok = len(vIDsT)
                 #
@@ -222,8 +243,10 @@ if __name__ == '__main__':
                         print(' ==>', vOUT)
                         exit(0)
                     #
-                    print('     => '+str(Nok)+' buoys are still in the game! ('+str(Nok1-Nok)+' buoys removed because their index is already in use...)')
-                    
+                    print('     => '+str(Nok)+' buoys are still in the game! ('+str(Nok0-Nok)+' buoys removed because their index is already in use...)')
+
+
+                
                 Nbuoys_stream = 0
                 IDX_in_use_l  = []  ; # keeps memory of buoys that are already been included, but only at this stream level
                 
