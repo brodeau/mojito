@@ -442,7 +442,7 @@ if __name__ == '__main__':
                 print('     +++ UPDATE: num. of boys still present at each record of stream #'+cs+':',nBpR[:])
 
 
-        # A "mean" time axis for all the buoys
+        # A "mean" time axis along records based on mean accross the buoys remaining at this record...
         ztim = xtim.copy()
         ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(ztim, axis=1) ; # average on the buoy axis, so `vtim` only dimension is records...
@@ -475,24 +475,30 @@ if __name__ == '__main__':
             # Stream time evolution on Arctic map:
             kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_stream'+'%3.3i'%(js),
                                         clock_res='d', NminPnts=Nb_min_buoys )
-        del vtim
+        #del vtim
 
         # Saving 1 file per stream and per record:
         for jr in range(NCRmax):
 
             Nbuoys = nBpR[jr] ; # number of buoys alive in current record of this stream
-            idate =         int(VT[jr])
-            cdate = epoch2clock(VT[jr])
+            # Dates based on the center of time bins used:
+            idate_binC =         int(VT[jr])
+            cdate_binC = epoch2clock(VT[jr])
+            # Dates based on time average accros all buoys at current record of stream
+            idate_strM =         int(vtim[jr])
+            cdate_strM = epoch2clock(vtim[jr])
+
+            print(' LOLO: cdate_binC , cdate_strM =', cdate_binC , cdate_strM )
 
             if Nbuoys >= Nb_min_buoys:
-                ctr = str.replace( str.replace(cdate[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
+                ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
                 cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.npz'
 
                 vmsk = xmsk[jr,:]
                 (indV,) = np.where(vmsk==1) ; # index of valid points
                 if len(indV)!= Nbuoys: print('ERROR: len(indV)!= Nbuoys) !'); exit(0)
 
-                np.savez_compressed( cf_out, itime=idate, date=cdate, Npoints=Nbuoys, vids=vids[indV],
+                np.savez_compressed( cf_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vids[indV],
                                      vtime=xtim[jr,indV], vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
                 if idebug>1:
