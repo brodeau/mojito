@@ -28,13 +28,12 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
-        YEAR="2007"
         DT_BINS_H=24  ; # width of a bin for time sampling [hours]
-        #FILIN="RGPS_${YEAR}LIGHT.nc4"
-        FILIN="RGPS_${YEAR}.nc4"
+        FILIN="RGPS_${YEAR}LIGHT.nc4"
+        #FILIN="RGPS_${YEAR}.nc4"
         LIST_STREAM="000 001"
         DATE1="${YEAR}0101"
-        DATE2="${YEAR}0110"
+        DATE2="${YEAR}0201"
         ;;
     "frazilo")
         export DATA_DIR="/data"
