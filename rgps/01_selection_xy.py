@@ -190,7 +190,7 @@ if __name__ == '__main__':
                     np2rm  = Nok0-Nok1
                     idxOKU = idxOK0[idxU] ; # because `idxU` are indices in the `zIDsOK0` world, not in the original `vBIDs0` world...
                     # Indices of the doublons:
-                    idxD = np.setdiff1d( idxOK0, idxOKU, assume_unique=True ) ; # keep the values of `idxOK0` that are not in `idxOKU`
+                    idxD = np.setdiff1d( idxOK0, idxOKU ) ; # keep the values of `idxOK0` that are not in `idxOKU`
                     del idxOKU
                     zIDsD = vBIDs0[idxD] ; # IDs of the buoys that exist more than once in current time bin...
                     print('       ==> some buoys exist more than once in the current date range selection!')
@@ -206,32 +206,31 @@ if __name__ == '__main__':
                         idx = np.argmin(np.abs(ztimOK0[idxMlt]-rTc))
                         idxKeep = idxMlt[idx]
                         #print('     ==> idx position of the occurence nearest to center of bin =',idx,', time =',epoch2clock(ztimOK0[idxKeep]))
-                        idxRM = np.setdiff1d( idxMlt, [idxKeep], assume_unique=True ) ; # keep the values of `idxMlt` that are not in `[idxMlt[idx]]`
+                        idxRM = np.setdiff1d( idxMlt, [idxKeep] ) ; # keep the values of `idxMlt` that are not in `[idxMlt[idx]]`
                         #print('     ==> indices to remove are: ',idxRM,'\n')
                         idxRM = idxOK0[idxRM]; # translate in the `idxOK0` frame!!!! IMPORTANT !!!!
                         for ix in idxRM: idxRMall.append(ix)
                     #
                     idxRMall = np.array(idxRMall, dtype=int)
                     #print('  +++ After loop, list of indices to remove =',idxRMall)
-                    if len(idxRMall)!=np2rm: print('ERROR: FU#2!!!'); exit(0)
+                    if len(idxRMall)!=np2rm: print('WARNING: FU#2!!!', len(idxRMall), np2rm)
                     # Finally, update `idxOK01`:
-                    idxOK0 = np.setdiff1d( idxOK0, idxRMall, assume_unique=True ) ; # keep the values of `idxOK0` that are not in `idxRM`
+                    idxOK0 = np.setdiff1d( idxOK0, idxRMall ) ; # keep the values of `idxOK0` that are not in `idxRM`
                     del idx, idxRM, idxKeep, idxRMall
                     Nok0 = len(idxOK0)
                 #
                 #
                 del zIDsOK0, idxU, Nok1
-
                 #RM double check:
-                #zIDsOK0 = vBIDs0[idxOK0]
-                #_, idxU = np.unique(zIDsOK0, return_index=True)
-                #Nok1 = len(idxU)
-                #print('     => DOUBLE CHECK we have ',len(zIDsOK0),'such indices for ',Nok1,' unique buoys!')
-                #exit(0)
+                zIDsOK0 = vBIDs0[idxOK0]
+                _,idxU = np.unique(zIDsOK0, return_index=True)
+                Nok1 = len(idxU)
+                print('     => DOUBLE CHECK we have ',len(zIDsOK0),'such indices for ',Nok1,' unique buoys!')
+                del zIDsOK0, idxU, Nok1
                 #RM.
                                 
                 # Exclude points if index has already been used:
-                idxT  = np.setdiff1d( idxOK0, np.array(IDX_in_use_G)) ;#, assume_unique=True ) ; # keep values of `idxOK0` that are not in `IDX_in_use_G`
+                idxT  = np.setdiff1d( idxOK0, np.array(IDX_in_use_G)) ; # keep values of `idxOK0` that are not in `IDX_in_use_G`
                 vIDsT = vBIDs0[idxT] ; # the buoys IDs we work with
                 Nok = len(vIDsT)
                 #
