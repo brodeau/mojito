@@ -150,7 +150,7 @@ if __name__ == '__main__':
         # Arrays along streams and buoys:
         # In the following, both Ns_max & Nb are excessive upper bound values....
         VTc_ini = np.zeros( Ns_max                ) - 999.; # time of the center of time bin that first detected this stream =~ initialization date for a given stream
-        VNB_ini = np.zeros( Ns_max,      dtype=int) - 999 ; # number of valid buoys at initialization of each stream (normally max, as the number of buoys alive decreases as records go on...)
+        VNB_ini = np.zeros( Ns_max,      dtype=int) - 999 ; # n. of valid buoys at inititialization of each stream
         XIDs    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores buoys IDs in use in a given stream
         XNRc    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
         Xmsk    = np.zeros((Ns_max, Nb), dtype=int)       ; # tells if given buoy of given stream is alive (1) or dead (0)
@@ -166,17 +166,35 @@ if __name__ == '__main__':
             #
             print("\n *** Selecting point indices that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
             (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
+            zIDsOK0 = vBIDs0[idxOK0]
+            #
+            # For some reasons this can select an ID=0 or maybe worse? <0?!
+            if np.any(zIDsOK0<=0):
+                #print('LOLO: FU#1')
+                vBIDsClean,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only values of `zIDsOK0` that exist in `vIDsWP`
+                idxClean         =                 idxOK0[idx]
+                #debug, show the diff between cleaned arrays:
+                #vIDdltd = np.setdiff1d(zIDsOK0, vBIDsClean)
+                #idxdltd = np.setdiff1d( idxOK0, idxClean  )
+                #print('LOLO: cleaning we have done, we removed buoy with IDs =',vIDdltd)
+                #print('LOLO: cleaning we have done, we removed point indices =',idxdltd, '=>',vBIDs0[idxdltd])
+                #exit(0)                                
+                idxOK0 = idxClean
+                del idxClean, vBIDsClean ; #fixme: rm vBIDsClean everywhere!!!!
+                zIDsOK0 = vBIDs0[idxOK0]
+            #
             Nok0 = len(idxOK0)
             #
             if Nok0>0:
                 #
-                print('     => we have ',Nok0,'such indices!')                
-                zIDsOK0 = vBIDs0[idxOK0]
+                print('     => we have ',Nok0,'such indices!')                                
                 # If the width of the time bin is large enough, the same buoy can exist more than once in the same time bin:
-                ziDsU, idxU = np.unique(zIDsOK0, return_index=True)
+                _, idxU = np.unique(zIDsOK0, return_index=True)
                 idxOKU = idxOK0[idxU] ; # because `idxU` are indices in the `zIDsOK0` world, not in the original `vBIDs0` world...
                 del idxU
-                
+                ziDsU = vBIDs0[idxOKU]
+                if np.any(ziDsU<=0): print('LOLO: FU#2');exit(0) ; #fixme: rm
+                #
                 Nok1 = len(ziDsU)
                 if Nok1 < Nok0:
                     # LOLO: dans les doublons qui suit il faut juste garder la boue la plus proche en temps du centre du bin !!!! #fixme
@@ -199,7 +217,10 @@ if __name__ == '__main__':
                 if idebug>0:
                     # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsWP`:
                     vOUT = np.setdiff1d( vIDsT, vIDsWP) ; # keep the values of `vIDsT` that are not in `vIDsWP`
-                    if len(vOUT)!=0: print('ERROR: some buoy IDs involved in this date range bin are not refenced in `vIDsWP` !!!'); exit(0)
+                    if len(vOUT)!=0:
+                        print('ERROR: the IDs of '+str(len(vOUT))+' buoys involved in this date range bin are not refenced in `vIDsWP` !!!')
+                        print(' ==>', vOUT)
+                        exit(0)
                     #
                     print('     => '+str(Nok)+' buoys are still in the game! ('+str(Nok1-Nok)+' buoys removed because their index is already in use...)')
                     
