@@ -183,8 +183,14 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
     return nB, zIDs
 
 
-def ValidCnsctvRecordsBuoy( date_min, kid, ptime0, pBIDs0, dt_expected, max_dev_from_dt_expected ):
+def ValidCnsctvRecordsBuoy( date_min, kidx, kid, ptime0, pBIDs0, pidx_ignore, dt_expected, max_dev_from_dt_expected ):
     '''
+
+    LOLO: add test to see if time vector we return is increasing!!! and nothing stupid / boundaries!!!
+          remove kid (we can get it with pBIDs0[kidx])
+          remove pidx_ignore, if error test below never been triggered!!!
+          
+
          * Analysis of the time records for this particular buoy...
             => Must cut off the series of the buoys as soon as its dt is too far
                from the nominal time step:
@@ -193,6 +199,7 @@ def ValidCnsctvRecordsBuoy( date_min, kid, ptime0, pBIDs0, dt_expected, max_dev_
               - dezing tout ce qui s'eloigne trop de ce ztime_ideal !
        Input:
                 * date_min: all buoys considered should exist at and after this time, not before!!! epoch time in [s]
+                * kidx   : index of point we are dealing with
                 * kid    : ID of treated buoy
                 * ptime0 : time array as in raw data
                 * pBIDs0 : IDs array as in raw data
@@ -203,9 +210,20 @@ def ValidCnsctvRecordsBuoy( date_min, kid, ptime0, pBIDs0, dt_expected, max_dev_
                * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                * ztime   : array of dates associated with all these records [s]
     '''
+    from climporn import epoch2clock
+    
+    if kid != pBIDs0[kidx]:
+        print('ERROR: ValidCnsctvRecordsBuoy => `kid != pBIDs0[kidx]` !!!!'); exit(0)
+
     (idx_exclude,) = np.where( ptime0<= date_min )
     (idx_buoy,   ) = np.where( pBIDs0 == kid)
-    idx_keep       = np.setdiff1d( idx_buoy, idx_exclude) ; # keep the values of `idx_buoy` that are not in `idx_exclude`
+    idx_keep0      = np.setdiff1d( idx_buoy, idx_exclude) ; # keep the values of `idx_buoy` that are not in `idx_exclude`
+    idx_keep       = np.setdiff1d( idx_keep0, pidx_ignore) ; # keep the values of `idx_keep0` that are not in `pidx_ignore`
+    #
+    if len(idx_keep)!=len(idx_keep0):
+        print('LOLO: idx_keep and idx_keep0 DIFFERENT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    #
+    del idx_exclude, idx_buoy, idx_keep0
     #
     ztime  = ptime0[idx_keep] ; # all time records for this particular buoy
     if np.any( ztime<=date_min ):
@@ -213,8 +231,16 @@ def ValidCnsctvRecordsBuoy( date_min, kid, ptime0, pBIDs0, dt_expected, max_dev_
     #
     nbR1b = len(ztime)      ; # n. of time records for this particulat buoy
     #
+    #print('LOLO: np.(ztime[0]), date_min =',epoch2clock(np.min(ztime[0])), epoch2clock(date_min));
+    #
     nbROK = nbR1b
     ztime_ideal = np.array( [ ztime[0]+float(i)*float(dt_expected) for i in range(nbR1b) ], dtype=float )
+    #it=0
+    #for rT in ztime_ideal:
+    #    print('LOLO ztime_ideal =',it, epoch2clock(rT))
+    #    it=it+1
+    #exit(0)
+        
     vtdev = np.abs(ztime - ztime_ideal)
     if np.any(vtdev > max_dev_from_dt_expected):
         (indFU,) = np.where(vtdev > max_dev_from_dt_expected)
@@ -231,6 +257,12 @@ def ValidCnsctvRecordsBuoy( date_min, kid, ptime0, pBIDs0, dt_expected, max_dev_
         print('ERROR: ValidCnsctvRecordsBuoy => `len(idx_keep)!=nbROK or len(ztime)!=nbROK`')
         exit(0)
     #
+    #it=0
+    #for rT in ptime0[idx_keep]:
+    #    print('LOLO time final =',it, epoch2clock(rT))
+    #    it=it+1
+    #exit(0)
+
     return nbROK, idx_keep, ztime
 
 

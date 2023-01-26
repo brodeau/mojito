@@ -13,6 +13,7 @@
 ##################################################################
 #
 # TO DO:
+#  finish the inclusion of `XIX0` !!!
 #
 # Date dans les noms de fichier e figures geo completement naze!!! En dessous de l\intitialisation du stream!!!
 #  => doit y a voir une sacree merde!
@@ -67,18 +68,18 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 
 
 
-def __summary__( pVNB, pVT0, pIDs, pNRc ):
+def __summary__( pNBini, pTcini, pIDs, pNRc ):
     (Nstrm,NbMax) = np.shape(pIDs)
-    if Nstrm != len(pVNB):
+    if Nstrm != len(pNBini):
         print('ERROR: [__summary__()] => error #1')
-    if not NbMax == np.max(pVNB):
+    if not NbMax == np.max(pNBini):
         print('ERROR: [__summary__()] => error #2')
     print('\n ==========   SUMMARY   ==========')
     print(' *** Number of identified streams: '+str(Nstrm))
     print(' *** Number of buoys selected in each stream:')
     for js in range(Nstrm):
-        cTc0  = epoch2clock(pVT0[js])
-        print('        * Stream #'+str(js)+' initiated at time bin centered around '+cTc0+' => has '+str(pVNB[js])+' buoys')
+        cTc0  = epoch2clock(pTcini[js])
+        print('        * Stream #'+str(js)+' initiated at time bin centered around '+cTc0+' => has '+str(pNBini[js])+' buoys')
     print(' *** Max number of buoys possibly found in a stream = ',NbMax)
     print('     * shape of ZIDs =', np.shape(pIDs))
     print('     * shape of ZNRc =', np.shape(pNRc))
@@ -146,15 +147,14 @@ if __name__ == '__main__':
     
     if not path.exists(cf_npz_intrmdt):
 
-        # Vectors along streams:
-        vTc_ini = [] ;  # time of the center of time bin that first detected this stream =~ initialization date for a given stream
-        vNB_ini = [] ;  # number of valid buoys at initialization of each stream (normally max, as the number of buoys alive decreases as records go on...)
-
         # Arrays along streams and buoys:
         # In the following, both Ns_max & Nb are excessive upper bound values....
-        XIDs = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores buoys IDs in use in a given stream
-        XNRc = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
-        Xmsk = np.zeros((Ns_max, Nb), dtype=int)       ; # tells if given buoy of given stream is alive (1) or dead (0)
+        VTc_ini = np.zeros( Ns_max                ) - 999.; # time of the center of time bin that first detected this stream =~ initialization date for a given stream
+        VNB_ini = np.zeros( Ns_max,      dtype=int) - 999 ; # number of valid buoys at initialization of each stream (normally max, as the number of buoys alive decreases as records go on...)
+        XIDs    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores buoys IDs in use in a given stream
+        XNRc    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
+        Xmsk    = np.zeros((Ns_max, Nb), dtype=int)       ; # tells if given buoy of given stream is alive (1) or dead (0)
+        XIX0   = np.zeros((Ns_max, Nb, NrB_max), dtype=int) - 999 ;
 
         IDX_in_use_G = []  ; # keeps memory of points (indices) that have already been used by previous streams
 
@@ -222,7 +222,8 @@ if __name__ == '__main__':
 
                             jb = jb + 1
 
-                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jID, vtime0, vBIDs0, dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, jID, vtime0, vBIDs0, np.array(IDX_in_use_G),
+                                                                                 dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
                             # * nbRecOK : number of valid consecutive records for this buoy
                             # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                             # * vt1b    : array of dates associated with all these records [s]
@@ -236,12 +237,15 @@ if __name__ == '__main__':
                                 it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 if rd_ini > MinDistFromLand:
-                                    IDX_in_use_l.append(jidx)                  ; # point for first record of buoy `jID`!
+                                    #IDX_in_use_l.append(jidx)                  ; # point for first record of buoy `jID`!
                                     for ii in idx0_id: IDX_in_use_l.append(ii) ; # points for following records of `jID
+                                    if not (jidx in IDX_in_use_l): print('ERROR: `not (jidx in IDX_in_use_l)`!'); exit(0)
+                                    #
                                     Nbuoys_stream = Nbuoys_stream + 1   ; # this is another valid buoy for this stream
                                     Xmsk[istream,jb] = 1                ; # flag for valid point
                                     XIDs[istream,jb] = jID              ; # keeps memory of select buoy
                                     XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of valid consec. records
+                                    XIX0[istream,jb,:nbRecOK] = idx0_id[:]
                                     
                                 ### if rd_ini > MinDistFromLand
                             ### if nbRecOK >= Nb_min_cnsctv
@@ -250,13 +254,17 @@ if __name__ == '__main__':
 
                     if Nbuoys_stream >= min_nb_buoys_in_stream:
                         print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(Nbuoys_stream)+' buoys!')
-                        vNB_ini.append(Nbuoys_stream)
-                        vTc_ini.append(rTc)
+                        VNB_ini[istream] = Nbuoys_stream
+                        VTc_ini[istream] = rTc
                         # Only now can we register the points indices we used into `IDX_in_use_G`:
                         for jidx in IDX_in_use_l: IDX_in_use_G.append(jidx)
                     else:
                         print('  * Well, this stream did not make it through the selection process... :(')
                         Xmsk[istream,:] = 0
+                        XIDs[istream,:] = -999 ; #rm ! masked later with Xmsk?
+                        XNRc[istream,:] = -999 ; #rm !
+                        XIX0[istream,:,:] = -999 ; #rm !
+
                         istream = istream - 1 ; # REWIND!
                         if idebug>0: print('    => this was not a stream! So back to stream #'+str(istream)+' !!!')
 
@@ -269,37 +277,35 @@ if __name__ == '__main__':
             
         ### for jt in range(NTbin)
 
-        vNB_ini = np.array(vNB_ini)
-        vTc_ini = np.array(vTc_ini)
-
-        Nstreams = istream+1
-        if len(vNB_ini) != Nstreams:
-            print('ERROR: number of streams?'); exit(0)
-
-        Nbuoys_max = np.max(vNB_ini)
+        Nstreams   = istream+1
+        Nbuoys_max = np.max(VNB_ini)
         Ncsrec_max = np.max(XNRc) ; # maximum number of valid consecutive records for a buoy
         
 
         
         # Now that we know how many streams and what is the maximum possible number of buoys into a stream,
         # we can reduce the arrays:
-        ZIDs = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
-        ZNRc = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the number of records
-        #Zdat = np.zeros((Nstreams, Nbuoys_max, Ncsrec_max)) - 999. ; #lolo
-        Zmsk = np.zeros((Nstreams, Nbuoys_max), dtype=int)
-
+        ZTc_ini = np.zeros( Nstreams                        ) - 999.
+        ZNB_ini = np.zeros( Nstreams             , dtype=int) - 999
+        ZIDs    = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
+        ZNRc    = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the number of records
+        Zmsk    = np.zeros((Nstreams, Nbuoys_max), dtype=int)
+        ZIX0    = np.zeros((Nstreams, Nbuoys_max, Ncsrec_max), dtype=int) - 999
+        
         for js in range(Nstreams):
             (indOK,) = np.where(Xmsk[js,:]==1)
-            NvB=vNB_ini[js]
+            NvB=VNB_ini[js]
             if len(indOK) != NvB:
                 print('ERROR: len(indOK) != NvB !!!'); exit(0)
             #
+            ZTc_ini[js]     = VTc_ini[js]
+            ZNB_ini[js]     = VNB_ini[js]
             Zmsk[js,:NvB]   = Xmsk[js,indOK] ; # #fixme: crash in big run with message below:
             ZIDs[js,:NvB]   = XIDs[js,indOK]
             ZNRc[js,:NvB]   = XNRc[js,indOK]
-            #Zdat[js,:NvB,:] = Xdat[js,indOK,:Ncsrec_max]
+            ZIX0[js,:NvB,:] = XIX0[js,indOK,:Ncsrec_max] ; #fixme okay?
 
-        del Xmsk, XIDs, XNRc ; #, Xdat
+        del Xmsk, VTc_ini, VNB_ini, XIDs, XNRc, XIX0
 
         # MESSAGE:
         # *** Selection of buoys that exist at 1997-01-31_00:00:00 +-3h!
@@ -313,8 +319,8 @@ if __name__ == '__main__':
         # Masking arrays:
         ZIDs = np.ma.masked_where( Zmsk==0, ZIDs )
         ZNRc = np.ma.masked_where( Zmsk==0, ZNRc )
-        #for jr in range(Ncsrec_max):
-        #    Zdat[:,:,jr] = np.ma.masked_where( Zmsk==0, Zdat[:,:,jr] )
+        for jr in range(Ncsrec_max):
+            ZIX0[:,:,jr] = np.ma.masked_where( Zmsk==0, ZIX0[:,:,jr] )
         del Zmsk
 
         # Visualize buoy IDs in each stream:
@@ -324,10 +330,10 @@ if __name__ == '__main__':
         #    print('')
         #exit(0)
 
-        __summary__(vNB_ini, vTc_ini, ZIDs, ZNRc)
+        __summary__(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
 
         print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
-        np.savez_compressed( cf_npz_intrmdt, Nstreams=Nstreams, vNB_ini=vNB_ini, vTc_ini=vTc_ini, IDs=ZIDs, NRc=ZNRc )
+        np.savez_compressed( cf_npz_intrmdt, Nstreams=Nstreams, ZNB_ini=ZNB_ini, ZTc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
 
 
 
@@ -337,15 +343,21 @@ if __name__ == '__main__':
 
         with np.load(cf_npz_intrmdt) as data:
             Nstreams = data['Nstreams']
-            vNB_ini      = data['vNB_ini']
-            vTc_ini      = data['vTc_ini']
+            ZNB_ini  = data['ZNB_ini']
+            ZTc_ini  = data['ZTc_ini']
             ZIDs     = data['IDs']
             ZNRc     = data['NRc']
+            ZIX0     = data['ZIX0']
         # For some reason, masked shit not preserved via savez/load...
         ZIDs = np.ma.masked_where( ZIDs==-999, ZIDs )
         ZNRc = np.ma.masked_where( ZNRc==-999, ZNRc )
+        #
+        Ncsrec_max = np.max(ZNRc) ; # maximum number of valid consecutive records for a buoy
+        for jr in range(Ncsrec_max):
+            ZIX0[:,:,jr] = np.ma.masked_where( ZIX0[:,:,jr]==-999, ZIX0[:,:,jr] ) ; # fixme: check!
 
-        __summary__(vNB_ini, vTc_ini, ZIDs, ZNRc)
+        
+        __summary__(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
 
     ### if not path.exists(cf_npz_intrmdt)
 
@@ -354,19 +366,19 @@ if __name__ == '__main__':
     ############################################################################################################
 
 
-
+    # Loop along streams:
     for js in range(Nstreams):
+        
         cs   = str(js)
         vids = np.ma.MaskedArray.compressed( ZIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
-        NvB  = vNB_ini[js]
-        rTc  = vTc_ini[js]
+        NvB  = ZNB_ini[js]
+        rTc  = ZTc_ini[js]
         cTc  = epoch2clock(rTc)
 
         if NvB != len(vids): print('ERROR Z1!'); exit(0)
         print('\n *** Having a look at stream #'+cs+' initiated for time bin centered around '+cTc+' !')
 
         NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
-
         print('     ===> has '+str(NvB)+' valid buoys at start!')
         print('     ===> the buoy with most records has '+str(NCRmax)+' of them!')
 
@@ -376,8 +388,8 @@ if __name__ == '__main__':
             print('')
 
 
-        # Creating arrays to save (and plot from)
-        #########################################
+        # Creating arrays specific to a single stream to save (and plot from)
+        #####################################################################
 
         nBpR = np.zeros( NCRmax      , dtype=int) ; # number of remaining buoys at given record
         xx   = np.zeros((NCRmax,NvB)) - 9999.
@@ -386,14 +398,18 @@ if __name__ == '__main__':
         xlat = np.zeros((NCRmax,NvB)) - 9999.
         xtim = np.zeros((NCRmax,NvB)) - 9999.      ; # the exact time for each buoy!
         xmsk = np.zeros((NCRmax,NvB) , dtype=int)  ; # the mask for exluding buoys that stick out in time...
+        xix0 = np.zeros((NCRmax,NvB) , dtype=int)  ;
 
         for jb in range(NvB):
-            (idx0_id,) = np.where( vBIDs0 == vids[jb])
             #
             nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
             if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
-            indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
+            xix0[0:nvr,jb] = ZIX0[js,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy
+            #
+            #(idx0_id,) = np.where( vBIDs0 == vids[jb])
+            #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
+            indv = xix0[0:nvr,jb].copy()
             #
             xx[0:nvr,jb]   =    vx0[indv]
             xy[0:nvr,jb]   =    vy0[indv]
