@@ -166,33 +166,45 @@ xbin_center_shr = np.round( xbin_center_shr, 6 )
 PDF_div = np.zeros(nBinsD)
 PDF_shr = np.zeros(nBinsS)
 
+nPd = nP
+nPs = nP
+
 for iP in range(nP):
     rdiv = Zdiv[iP]
-    jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
-    if not ( rdiv>=xbin_bounds_div[jf] and rdiv<xbin_bounds_div[jf+1] ):
-        print(' Binning error on divergence!')
-        print('  => divergence =',rdiv)
-        print('  => bounds =',xbin_bounds_div[jf],xbin_bounds_div[jf+1])
-        exit(0)
-    PDF_div[jf] = PDF_div[jf]+1
+
+    if abs(rdiv)> max_div:
+        nPd = nPd - 1
+        print(' * WARNING: excluding extreme value of Divergence: ',rdiv,'day^-1')
+    else:
+        jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
+        if not ( rdiv>=xbin_bounds_div[jf] and rdiv<xbin_bounds_div[jf+1] ):
+            print(' Binning error on divergence!')
+            print('  => divergence =',rdiv)
+            print('  => bounds =',xbin_bounds_div[jf],xbin_bounds_div[jf+1])
+            exit(0)
+        PDF_div[jf] = PDF_div[jf]+1
 
     rshr = Zshr[iP]
-    jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
-    if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
-        print(' Binning error on shear!')
-        print('  => shear =',rshr)
-        print('  => bounds =',xbin_bounds_shr[jf],xbin_bounds_shr[jf+1])
-        exit(0)
-    PDF_shr[jf] = PDF_shr[jf]+1
+    if rshr> max_shr or rshr<0.:
+        nPs = nPs - 1
+        print(' * WARNING: excluding extreme value of Shear: ',rshr,'day^-1')        
+    else:
+        jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
+        if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
+            print(' Binning error on shear!')
+            print('  => shear =',rshr)
+            print('  => bounds =',xbin_bounds_shr[jf],xbin_bounds_shr[jf+1])
+            exit(0)
+        PDF_shr[jf] = PDF_shr[jf]+1
 
 
 
-PDF_div[:] = PDF_div[:]/float(nP)
-PDF_shr[:] = PDF_shr[:]/float(nP)
+PDF_div[:] = PDF_div[:]/float(nPd)
+PDF_shr[:] = PDF_shr[:]/float(nPs)
 
-kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nP, name='Divergence', cfig='PDF_divergence.png',
+kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.png',
                      xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
 
-kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nP, name='Shear', cfig='PDF_shear.png',
+kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig='PDF_shear.png',
                      xrng=xshr_rng, wbin=wbin_shr, title='RGPS' )
 
