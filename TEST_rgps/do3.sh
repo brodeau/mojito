@@ -17,6 +17,7 @@ for dd in ${LIST_RES}; do
     echo
 
     for st in ${LIST_STREAM}; do
+        echo; echo; echo
 
         list=( `\ls npz/Q-mesh_S${st}*_*_${dd}km_*.npz` )
         nbf=`echo ${list[*]} | wc -w`
@@ -24,42 +25,47 @@ for dd in ${LIST_RES}; do
 
         echo " *** Number of files for Stream ${st} = ${nbf}"
 
-
         if [ "${nbf}" != "" ]; then
 
-            jf=0
-            while [ ${jf} -lt ${nbf} ]; do
+            for ff in ${list[*]}; do
+                date_ref=`echo ${ff} | cut -d_ -f3`
+                list_date_ref+=" ${date_ref}"
+            done
+            list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+
+            echo; echo " *** List of reference dates for Stream${st}:"; echo "${list_date_ref}"; echo
+
+            for dr in ${list_date_ref}; do
                 echo
+                lst=(`\ls npz/Q-mesh_S${st}_${dr}_*_${dd}km_*.npz`) ; # echo ${lst[*]}
+                nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+                if [ ${nf} -eq 2 ]; then
 
-                jfp1=`expr ${jf} + 1`
+                    fQ1=${lst[0]}
+                    fQ2=${lst[1]}
+                    echo " ==> will use:"; echo "     * ${fQ1}"; echo "     * ${fQ2}"
 
-                fQ1=${list[${jf}]}
-                fQ2=${list[${jfp1}]}
+                    flog=`basename ${fQ1}`
+                    flog=`echo ${flog} | sed -e s/".npz"/""/g`
 
-                echo " ==> will use:"; echo "     * ${fQ1}"; echo "     * ${fQ2}"
+                    ijob=$((ijob+1))
 
-                ijob=$((ijob+1))
-
-                flog=`basename ${fQ1}`
-                flog=`echo ${flog} | sed -e s/".npz"/".out"/g`
-                
-                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
-                echo "  ==> ${CMD}"; echo
-                ${CMD} > ${flog} &
-                echo; echo; echo
-                
-                if [ $((ijob%NJPAR)) -eq 0 ]; then
-                    echo "Waiting! (ijob = ${ijob})...."
-                    wait
+                    CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+                    echo "  ==> ${CMD}"; echo
+                    ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
                     echo; echo
+
+                    if [ $((ijob%NJPAR)) -eq 0 ]; then
+                        echo "Waiting! (ijob = ${ijob})...."
+                        wait
+                        echo; echo
+                    fi
+
                 fi
-                
-                jf=`expr ${jf} + 1`
 
             done
 
         fi
-
 
     done
 
