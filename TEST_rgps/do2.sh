@@ -2,10 +2,12 @@
 
 . ./conf.bash
 
-i_do_def=0 ; # computes deformations or not...
 
-EXE1="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
-EXE2="${MOJITO_DIR}/deformation.py"
+EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
+
+mkdir -p logs
+
+ijob=0
 
 
 for dd in ${LIST_RES}; do
@@ -39,12 +41,14 @@ for dd in ${LIST_RES}; do
             cfQ1="npz/Q-mesh_S${st}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
             cfQ2="npz/Q-mesh_S${st}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
             #
+            cflog="logs/out_S${st}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
             
             if [ ! -f ${cfQ1} ] || [ ! -f ${cfQ2} ]; then
+                ijob=$((ijob+1))
                 echo " *** Construction of Quadrangles"
-                CMD="${EXE1} ${fref},${ftst} ${dd}"
+                CMD="${EXE} ${fref},${ftst} ${dd}"
                 echo "  ==> ${CMD}"; echo
-                ${CMD}
+                ${CMD} > ${cflog} &
                 echo; echo
             else
                 echo; echo
@@ -52,24 +56,12 @@ for dd in ${LIST_RES}; do
                 echo; echo
             fi
 
-            if [ ${i_do_def} -eq 1 ]; then
-
-                echo " *** Computing deformations"
-                if [ -f ./${cfQ1} ] && [ -f ./${cfQ2} ]; then
-                    echo " *** Computation of deformartions"
-                    CMD="${EXE2} ./${cfQ1} ./${cfQ2}"
-                    echo "  ==> ${CMD}"; echo
-                    ${CMD}
-                    echo; echo
-                else
-                    echo "PROBLEM: missing Quad files:"
-                    echo " ./${cfQ1}  or  ./${cfQ2} "
-                    echo
-                    exit
-                fi
-
+            if [ $((ijob%NJPAR)) -eq 0 ]; then
+                echo "Waiting! (ijob = ${ijob})...."
+                wait
+                echo; echo
             fi
-
+            
         done
 
 
@@ -77,3 +69,9 @@ for dd in ${LIST_RES}; do
 
 
 done
+
+wait
+
+echo
+echo " *** `date` ALL done!"
+echo
