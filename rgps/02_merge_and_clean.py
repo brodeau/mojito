@@ -24,6 +24,7 @@ cd_in = argv[1]
 
 # Gathering all dates available from the files found:
 vdtf   = []
+vtime  = []
 vdates = []
 listnpz = glob(cd_in+'/SELECTION_buoys_RGPS*.npz')
 for ff in listnpz:
@@ -34,15 +35,19 @@ for ff in listnpz:
     vdtf.append(cdtf)
     
     with np.load(ff) as data:
+        itime =      data['itime']
         cdate = str( data['date'] )
     print(' file: '+ff+' => date = '+cdate,', from file name =',cdtf)
+    vtime.append(itime)
     vdates.append(cdate)
 
+vtime  = np.array(vtime,  dtype=int)
 vdates = np.array(vdates, dtype="U16")
 vdtf   = np.array(vdtf  , dtype="U16")
 nD0 = len(vdates)
 
 vdates_u, idxu = np.unique(vdates, return_index=True )
+vtime_u        = vtime[idxu]
 vdtf_u         = vdtf[idxu]
 
 nDu = len(vdates_u)
@@ -55,8 +60,12 @@ print(nD0-nDu,'files should be mergeable!\n')
 #exit(0)
 
 # Now, for each date, going to merge the data from several files to one:
+jt = 0
 for cdate in vdtf_u:
-    print('    +++ date = ', cdate)
+
+    idate_ref = vtime_u[jt]
+    
+    print('    +++ date = ', cdate, epoch2clock(idate_ref))
     listnpz = np.sort( glob(cd_in+'/SELECTION_buoys_RGPS*_'+cdate+'.npz') )
     nbf = len(listnpz)
     print('       '+str(nbf)+' files =>',listnpz)
@@ -65,7 +74,7 @@ for cdate in vdtf_u:
         cf_out = cd_in+'/merged_selection_'+cdate+'.npz'
         print('         => will merge these '+str(nbf)+'!')
         
-        kk = mjt.mergeNPZ( listnpz, cf_out, iverbose=idebug )
+        kk = mjt.mergeNPZ( listnpz, idate_ref, cf_out=cf_out, iverbose=idebug )
 
         if idebug>0:
             # Plotting the results:
@@ -78,3 +87,4 @@ for cdate in vdtf_u:
             cfig =  str.replace( cf_out, '.npz', '.png' )
             mjt.ShowBuoysMap( itime, vlon, vlat, pvIDs=[], cfig=cfig, ms=5, ralpha=0.5 )
 
+    jt=jt+1

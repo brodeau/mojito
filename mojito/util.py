@@ -385,9 +385,10 @@ def SortIndicesCCW(xcoor):
 
 
 
-def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
+def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
     '''
        Merge several npz files of the "considered identical" date into a single one!
+        * t_ref: reference time for these files (epoch UNIX) [s]
     '''
     from climporn import epoch2clock
 
@@ -404,9 +405,9 @@ def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
         if iverbose>0: print('  '+cf+' => time ='+epoch2clock(it)+' | '+str(npf)+' points!')
     #
     # For merged file:
-    it = int( round(np.mean(vit),0) )
+    itime_mean = int( round(np.mean(vit),0) )
     nP = np.sum(vNbP)
-    if iverbose>0: print(' vNbP =', vNbP,'=>',nP,'points in total!, time =',epoch2clock(it))
+    if iverbose>0: print(' vNbP =', vNbP,'=>',nP,'points in total!, time =',epoch2clock(itime_mean))
 
     vtime  = np.zeros(nP)
     vx, vy = np.zeros(nP), np.zeros(nP)
@@ -437,26 +438,28 @@ def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
     
     if len(vids_u) < nP:
         print(' WARNING: [util.mergeNPZ] => some IDs are identical :(',nP-len(vids_u),'of them...')
-        # indices of buoys that were removed by `unique`:
-        idxD = np.setdiff1d( np.arange(nP), idxvu ); # keep the values of `np.arange(nP)` that are not in `idxvu`
-        print('indices remove =',idxD, ' => ', len(idxD))
-        # Analysis:
-        for ix in idxD:
-            ID = vids[ix]
-            (ilst,) = np.where(vids==ID)
-            print(' * ix, vids[ix], time for the multi occurences = ', ix, ID, [epoch2clock(vtime[ii]) for ii in ilst])
         
+        vids_ref = vids.copy()
+        vidx     = np.arange(nP)
         
-        
+        nP, zidx = SuppressMulitOccurences( vids, vtime, vids_ref, vidx, t_ref )
 
+        vids  = vids_ref[zidx]
+        vtime = vtime[zidx]
+        vx    = vx[zidx]
+        vy    = vy[zidx]
+        vlon  = vlon[zidx]
+        vlat  = vlat[zidx]
 
-        
-    exit(0)    
-        
+        del vids_ref, vidx, zidx
+
+    if epoch2clock(itime_mean) != epoch2clock(t_ref):
+        print(' WARNING: [util.mergeNPZ] => `epoch2clock(itime_mean) != epoch2clock(t_ref)` !!!')
+
     # Time to save in the new npz file:
     if iverbose>0: print('  [util.mergeNPZ] ==> saving merged files into '+cf_out+' !')
-    np.savez_compressed( cf_out, itime=it, vx=vx, vy=vy, vlon=vlon, vlat=vlat, vids=vids )
-
+    np.savez_compressed( cf_out, itime=itime_mean, date=epoch2clock(itime_mean), Npoints=nP, vids=vids,
+                         vtime=vtime, vx=vx, vy=vy, vlon=vlon, vlat=vlat,  )    
     return 0
 
 
@@ -541,10 +544,7 @@ def StdDev( pmean, pX ):
 
 
 
-
-
-
-def SupressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
+def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
     ''' 
          For many possible reasons the same buoy ID can exist more than once in `pIDs`,
          => we need to keep only one occurence of the location index of these points,
@@ -564,9 +564,9 @@ def SupressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
     '''
     Nok0 = len(pIDs)
     if len(ptime)!=Nok0:
-        print('ERROR [SupressMulitOccurences]: `len(ptime)!=len(pIDs)`!'); exit(0)
+        print('ERROR [SuppressMulitOccurences]: `len(ptime)!=len(pIDs)`!'); exit(0)
     if len(pidx)!=Nok0:
-        print('ERROR [SupressMulitOccurences]: `len(pidx)!=len(pIDs)`!'); exit(0)    
+        print('ERROR [SuppressMulitOccurences]: `len(pidx)!=len(pIDs)`!'); exit(0)    
     #
     _, idxU = np.unique(pIDs, return_index=True)
     NokU = len(idxU) ; # NokU is the number of buoys once the doublons are removed!    
@@ -607,7 +607,7 @@ def SupressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
         Nok0 = len(pidx)
         #
     else:
-        print('    |SMO|  => no supression to perform ! :D\n')
+        print('    |SMO|  => no suppression to perform ! :D\n')
     #
     return Nok0, pidx
 

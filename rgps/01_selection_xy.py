@@ -185,7 +185,7 @@ if __name__ == '__main__':
                 # and so also in `zIDsOK0`!
                 # => we need to keep only one occurence of these points, based on
                 #    the date (closest to center of bin `rTc`)
-                Nok0, idxOK0 = mjt.SupressMulitOccurences( zIDsOK0, ztimOK0, vBIDs0, idxOK0, rTc )
+                Nok0, idxOK0 = mjt.SuppressMulitOccurences( zIDsOK0, ztimOK0, vBIDs0, idxOK0, rTc )
                 del zIDsOK0, ztimOK0
                 
                 #RM double check:
@@ -477,7 +477,7 @@ if __name__ == '__main__':
         #              +' hours away from reference time...')
         #        #(idw,) = np.where(idt>dt_bin/2.)
         #        #print(idw)
-        #        #print(' ==> supressing '+str(len(idw))+' values!')
+        #        #print(' ==> suppressing '+str(len(idw))+' values!')
         #        #xmsk[idw,jb] = 0
 
 
