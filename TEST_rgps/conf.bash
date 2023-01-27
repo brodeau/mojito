@@ -28,27 +28,27 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
-        DT_BINS_H=24  ; # width of a bin for time sampling [hours]
+        YEAR="2008"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #FILIN="RGPS_${YEAR}.nc4"
         LIST_STREAM="000 001"
         DATE1="${YEAR}0101"
-        DATE2="${YEAR}0201"
+        DATE2="${YEAR}0330"
         ;;
     "frazilo")
         export DATA_DIR="/data"
         #
         #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
-        DT_BINS_H=48  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=48  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=24  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         LIST_STREAM="000 001 002 003 004 005 006 007 008 010 011 012 013 014 015 016 017 018 019 020"
         #DATE1="$((YEAR-1))1230"
         #DATE2="${YEAR}0315"
         #
         DATE1="${YEAR}0101"
-        DATE2="${YEAR}0201"
+        #DATE2="${YEAR}0115"
+        DATE2="${YEAR}0301"
         ;;
     *)
         echo "Unsupported host: ${host} !"
