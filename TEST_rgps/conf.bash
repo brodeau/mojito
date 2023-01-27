@@ -17,6 +17,9 @@ FILIN="RGPS_${YEAR}.nc4"
 
 LIST_STREAM="000 001 002 003 004 005 006 007 008"
 
+
+NJPAR=4 ; # number of jobs we can launch in //
+
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
@@ -37,6 +40,8 @@ case ${host} in
         ;;
     "frazilo")
         export DATA_DIR="/data"
+        #
+        NJPAR=24
         #
         #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
