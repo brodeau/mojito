@@ -387,7 +387,7 @@ def SortIndicesCCW(xcoor):
 
 def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
     '''
-       Merge several npz files of the same date into a single one!
+       Merge several npz files of the "considered identical" date into a single one!
     '''
     from climporn import epoch2clock
 
@@ -408,26 +408,51 @@ def mergeNPZ( list_npz_files, cf_out='merged_file.npz', iverbose=0 ):
     nP = np.sum(vNbP)
     if iverbose>0: print(' vNbP =', vNbP,'=>',nP,'points in total!, time =',epoch2clock(it))
 
+    vtime  = np.zeros(nP)
     vx, vy = np.zeros(nP), np.zeros(nP)
     vlon, vlat = np.zeros(nP), np.zeros(nP)
     vids   = np.zeros(nP, dtype=int)
 
+    nPmax = np.max(vNbP)
+    xids   = np.zeros((nbf,nPmax),dtype=int) - 999
+    
     jf=0
     i1, i2 = 0, 0
     for cf in list_npz_files:
         npf = vNbP[jf]
         i2=i2+npf
         with np.load(cf) as data:
+            vtime[i1:i2]         = data['vtime']
             vx[i1:i2], vy[i1:i2] = data['vx'], data['vy']
             vlon[i1:i2], vlat[i1:i2] = data['vlon'], data['vlat']
             vids[i1:i2]          = data['vids']
         #
+        xids[jf,:npf] = vids[i1:i2]
+        #
         i1=i1+npf
         jf=jf+1
 
-    if len(np.unique(vids)) < nP:
-        print(' ERROR: [util.mergeNPZ] => some IDs are identical :('); exit(0)
+    # There might be IDs present more than once (that should not happen if initial scrips was good?)
+    vids_u, idxvu = np.unique(vids, return_index=True )
+    
+    if len(vids_u) < nP:
+        print(' WARNING: [util.mergeNPZ] => some IDs are identical :(',nP-len(vids_u),'of them...')
+        # indices of buoys that were removed by `unique`:
+        idxD = np.setdiff1d( np.arange(nP), idxvu ); # keep the values of `np.arange(nP)` that are not in `idxvu`
+        print('indices remove =',idxD, ' => ', len(idxD))
+        # Analysis:
+        for ix in idxD:
+            ID = vids[ix]
+            (ilst,) = np.where(vids==ID)
+            print(' * ix, vids[ix], time for the multi occurences = ', ix, ID, [epoch2clock(vtime[ii]) for ii in ilst])
+        
+        
+        
 
+
+        
+    exit(0)    
+        
     # Time to save in the new npz file:
     if iverbose>0: print('  [util.mergeNPZ] ==> saving merged files into '+cf_out+' !')
     np.savez_compressed( cf_out, itime=it, vx=vx, vy=vy, vlon=vlon, vlat=vlat, vids=vids )
@@ -516,4 +541,73 @@ def StdDev( pmean, pX ):
 
 
 
+
+
+
+def SupressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
+    ''' 
+         For many possible reasons the same buoy ID can exist more than once in `pIDs`,
+         => we need to keep only one occurence of the location index of these points,
+            based on the date (closest to center of bin `rTc`)
+    INPUT:
+            * pIDs     : 1D array of integers containing buoy IDs with muli-occurence of certain IDs
+            * ptime    : 1D array of real containing epoch time date [s] associated to each buoy
+            * pIDsRef0 : 1D array of integers containing buoy IDs the "0" reference
+            * pidx     : 1D array of integers containing indices that do this: pIDs == pIDsRef0[pidx]
+            * rtime    : the  epoch time date [s] we want to select upon! (we keep the buoy which time is closest to this `rtime`)
+
+    RETURN: 
+            Updated (or not) `pidx` and its length
+    
+            `pIDs`, `ptime` and `pidx` have the same length!
+
+    '''
+    Nok0 = len(pIDs)
+    if len(ptime)!=Nok0:
+        print('ERROR [SupressMulitOccurences]: `len(ptime)!=len(pIDs)`!'); exit(0)
+    if len(pidx)!=Nok0:
+        print('ERROR [SupressMulitOccurences]: `len(pidx)!=len(pIDs)`!'); exit(0)    
+    #
+    _, idxU = np.unique(pIDs, return_index=True)
+    NokU = len(idxU) ; # NokU is the number of buoys once the doublons are removed!    
+    np2rm  = Nok0-NokU
+    print('    |SMO|  => we have ',NokU,'unique buoy IDs in an array that contains',Nok0,' buoy IDs!')
+    if np2rm>0:
+        print('    |SMO|  => we need to suppress',np2rm,' points!')
+        #
+        idxOKU = pidx[idxU] ; # because `idxU` are indices in the `pIDs` world, not in the original `pIDsRef0` world...
+        # Indices of the doublons:
+        idxD = np.setdiff1d( pidx, idxOKU ) ; # keep the values of `pidx` that are not in `idxOKU`
+        del idxOKU
+        zIDsD = pIDsRef0[idxD] ; # IDs of the buoys that exist more than once in current time bin...
+        print('    |SMO|    ==> some buoys exist more than once in the current date range selection!')
+        print('    |SMO|       (keeping 1 unique occurence (based on time) leads to a removal of ',np2rm,' points!)')
+        #print('    |SMO|    ==> these buoys are: ',zIDsD)
+        # Analysis:
+        idxRMall = []
+        for jID in zIDsD:                        
+            (idxMlt,) = np.where(pIDs==jID)
+            #print('|SMO|    => buoy with ID '+str(jID)+', ==> loc indices in pIDs:',idxMlt)
+            #print('    |SMO|  ==> time for each buoy:',[ epoch2clock(ptime[ii]) for ii in idxMlt ],' (center bin:'+epoch2clock(rtime)+')')
+            # We keep the point that has the time the nearest to the center of the bin:
+            idx = np.argmin(np.abs(ptime[idxMlt]-rtime))
+            idxKeep = idxMlt[idx]
+            #print('    |SMO|  ==> idx position of the occurence nearest to center of bin =',idx,', time =',epoch2clock(ptime[idxKeep]))
+            idxRM = np.setdiff1d( idxMlt, [idxKeep] ) ; # keep the values of `idxMlt` that are not in `[idxMlt[idx]]`
+            #print('    |SMO|  ==> indices to remove are: ',idxRM,'\n')
+            idxRM = pidx[idxRM]; # translate in the `pidx` frame!!!! IMPORTANT !!!!
+            for ix in idxRM: idxRMall.append(ix)
+        #
+        idxRMall = np.array(idxRMall, dtype=int)
+        #print('|SMO|   +++ After loop, list of indices to remove =',idxRMall)
+        if len(idxRMall)!=np2rm: print('|SMO| WARNING: FU#2!!!', len(idxRMall), np2rm)
+        # Finally, update `pidx`:
+        pidx = np.setdiff1d( pidx, idxRMall ) ; # keep the values of `pidx` that are not in `idxRM`
+        del idxRM, idxKeep, idxRMall
+        Nok0 = len(pidx)
+        #
+    else:
+        print('    |SMO|  => no supression to perform ! :D\n')
+    #
+    return Nok0, pidx
 

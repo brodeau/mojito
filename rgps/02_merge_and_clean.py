@@ -23,19 +23,39 @@ if not len(argv) in [2]:
 cd_in = argv[1]
 
 # Gathering all dates available from the files found:
+vdtf   = []
 vdates = []
 listnpz = glob(cd_in+'/SELECTION_buoys_RGPS*.npz')
 for ff in listnpz:
+    #
+    # File date:
+    vf = split('_|\.',ff)
+    cdtf = vf[-3]+'_'+vf[-2]
+    vdtf.append(cdtf)
+    
     with np.load(ff) as data:
         cdate = str( data['date'] )
-    print(' file: '+ff+' => date = '+cdate)
+    print(' file: '+ff+' => date = '+cdate,', from file name =',cdtf)
     vdates.append(cdate)
 
-vdates = np.unique(vdates)
-print('\n *** Dates available:',vdates[:],'\n')
+vdates = np.array(vdates, dtype="U16")
+vdtf   = np.array(vdtf  , dtype="U16")
+nD0 = len(vdates)
+
+vdates_u, idxu = np.unique(vdates, return_index=True )
+vdtf_u         = vdtf[idxu]
+
+nDu = len(vdates_u)
+print('\n *** Dates available:',vdates_u[:],'\n')
+
+print(nD0-nDu,'files should be mergeable!\n')
+
+
+
+#exit(0)
 
 # Now, for each date, going to merge the data from several files to one:
-for cdate in vdates:
+for cdate in vdtf_u:
     print('    +++ date = ', cdate)
     listnpz = np.sort( glob(cd_in+'/SELECTION_buoys_RGPS*_'+cdate+'.npz') )
     nbf = len(listnpz)
