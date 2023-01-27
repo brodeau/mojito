@@ -6,7 +6,7 @@ if [ "$1" = "2" ]; then
 
 elif [ "$1" = "3" ]; then
 
-    rm -f figs/z[dst]_* npz/DEFORMATIONS_z_*
+    rm -f figs/z[dst]_* npz/DEFORMATIONS_z* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
 
 else
     # All!

@@ -16,7 +16,7 @@ for dd in ${LIST_RES}; do
     #if [ ${dd} -eq 10 ]; then csuff="NoSample"; fi
 
     for st in ${LIST_STREAM}; do
-
+        echo; echo; echo
 
         vlist=( `\ls npz/SELECTION_buoys_RGPS_stream${st}*.npz` )
 

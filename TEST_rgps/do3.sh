@@ -26,7 +26,7 @@ for dd in ${LIST_RES}; do
         echo " *** Number of files for Stream ${st} = ${nbf}"
 
         if [ "${nbf}" != "" ]; then
-
+            list_date_ref=""            
             for ff in ${list[*]}; do
                 date_ref=`echo ${ff} | cut -d_ -f3`
                 list_date_ref+=" ${date_ref}"
