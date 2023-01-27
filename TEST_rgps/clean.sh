@@ -7,8 +7,11 @@ if [ "$1" = "2" ]; then
 elif [ "$1" = "3" ]; then
 
     rm -f figs/z[dst]_* npz/DEFORMATIONS_z* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
+    
+elif [ "$1" = "all" ]; then
+    rm -rf figs npz logs *.png
 
 else
-    # All!
-    rm -rf figs npz *.png
+    echo "Tell me something!"
+
 fi
