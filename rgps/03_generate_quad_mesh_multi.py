@@ -245,20 +245,18 @@ if __name__ == '__main__':
             
                         if l_force_min_scale:
                             rdev_old = rdev
-                            #rdev = rl_average_side - rd_spacing
-                            rdev = rl_average_scal - rd_spacing
-                            #print('LOLO:  abs(rdev), rtol=',abs(rdev), rtol)
-                            l_happy = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
+                            rdev     = rl_average_scal - rd_spacing
+                            l_happy  = ( abs(rdev) < rtol ) ; # average quadrangle side is close to expected nominal scale
 
-                            # If we are at the nominal scale:
-                            l_happy = ( int(rd_spacing) == int(rd_nom_data) and itt>4 )
-                            
-                            if not l_happy and itt==8:
-                                # We give up after 5 itterations!
-                                print(' +++++ WE GIVE UP !!! ++++++')
-                                l_happy = True
-                            
+                            # Surrender block:
                             if not l_happy:
+                                # If we are at the nominal scale:
+                                l_happy = ( int(rd_spacing) == int(rd_nom_data) and itt>4 )
+                            if not l_happy:
+                                l_happy = (itt>7)
+
+                            # Refining:
+                            if not l_happy:                                
                                 # Linear fit of actual correction as a function of `rd_spacing`
                                 #rfc = 0.008*rd_spacing + 0.56
                                 #rfc = 0.008*rd_spacing + 0.7
