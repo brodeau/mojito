@@ -41,7 +41,7 @@ from scipy import interpolate
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
-idebug = 1
+idebug = 0
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -63,9 +63,7 @@ Nb_min_buoys = min_nb_buoys_in_stream ; # minimum number of buoys necessary to k
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
-interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
-
-
+#================================================================================================
 
 def __summary__( pNBini, pTcini, pIDs, pNRc ):
     (Nstrm,NbMax) = np.shape(pIDs)
@@ -144,7 +142,7 @@ if __name__ == '__main__':
     # * Nb: number of different buoys that exist for at least 1 record during specified date range aka whole period (WP)
     # * vIDsWP : array(Nb) list (unique) of IDs for these buoys
     
-    if not path.exists(cf_npz_intrmdt):
+    if not path.exists(cf_npz_intrmdt) or idebug>0:
 
         # Arrays along streams and buoys:
         # In the following, both Ns_max & Nb are excessive upper bound values....
@@ -153,22 +151,22 @@ if __name__ == '__main__':
         XIDs    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores buoys IDs in use in a given stream
         XNRc    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
         Xmsk    = np.zeros((Ns_max, Nb), dtype=int)       ; # tells if given buoy of given stream is alive (1) or dead (0)
-        XIX0   = np.zeros((Ns_max, Nb, NrB_max), dtype=int) - 999 ;
+        XIX0    = np.zeros((Ns_max, Nb, NrB_max), dtype=int) - 999 ;
 
-        IDX_in_use_G = []  ; # keeps memory of points (indices) that have already been used by previous streams
+        IDXtakenG = []  ; # keeps memory of points (indices) that have already been used by previous streams
 
         istream        = -1
         for jt in range(NTbin):
             #
             rTc = vTbin[jt,0] ; # center of the current time bin
-            rTa = vTbin[jt,1] ; # begining of time bin
+            rTa = vTbin[jt,1] ; # begining of the current time bin
             #
             print("\n *** Selecting point indices that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
             (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
             zIDsOK0 = vBIDs0[idxOK0]
             ztimOK0 = vtime0[idxOK0]
             
-            # For some reasons this can select an ID=0 or maybe worse? <0?!
+            # For some unknown reasons, sometimes, the ID=0 exists in zIDsOK0, fixing this...
             if np.any(zIDsOK0<=0):
                 _,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only indices of `zIDsOK0` that exist in `vIDsWP`
                 idxOK0  = idxOK0[idx]
@@ -188,16 +186,8 @@ if __name__ == '__main__':
                 Nok0, idxOK0 = mjt.SuppressMulitOccurences( zIDsOK0, ztimOK0, vBIDs0, idxOK0, rTc )
                 del zIDsOK0, ztimOK0
                 
-                #RM double check:
-                #zIDsOK0 = vBIDs0[idxOK0]
-                #_,idxU = np.unique(zIDsOK0, return_index=True)
-                #Nok1 = len(idxU)
-                #print('     => DOUBLE CHECK we have ',len(zIDsOK0),'such indices for ',Nok1,' unique buoys!')
-                #del zIDsOK0, idxU, Nok1
-                #RM.
-                
                 # Exclude points if index has already been used:
-                idxT  = np.setdiff1d( idxOK0, np.array(IDX_in_use_G)) ; # keep values of `idxOK0` that are not in `IDX_in_use_G`
+                idxT  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
                 vIDsT = vBIDs0[idxT] ; # the buoys IDs we work with
                 Nok = len(vIDsT)
                 #
@@ -208,13 +198,11 @@ if __name__ == '__main__':
                         print('ERROR: the IDs of '+str(len(vOUT))+' buoys involved in this date range bin are not refenced in `vIDsWP` !!!')
                         print(' ==>', vOUT)
                         exit(0)
-                    #
                     print('     => '+str(Nok)+' buoys still in the game! ('+str(Nok0-Nok)+' removed because index already in use...)')
-
-
                 
+
                 Nbuoys_stream = 0
-                IDX_in_use_l  = []  ; # keeps memory of buoys that are already been included, but only at this stream level
+                IDXtakenl  = []  ; # keeps memory of buoys that are already been included, but only at the stream level
                 
                 if Nok >= min_nb_buoys_in_stream:
                     
@@ -227,12 +215,14 @@ if __name__ == '__main__':
                         #
                         jID = vBIDs0[jidx]
                         #
-                        # #fixme: I have the feeling that `IDX_in_use_l` is unecessary???
-                        if (not jidx in IDX_in_use_G) and (not jidx in IDX_in_use_l):
+                        if (jidx in IDXtakenl): print('LOLO! ERROR ZY!'); exit(0)
+                            
+                        # #fixme: I have the feeling that `IDXtakenl` is unecessary???
+                        if (not jidx in IDXtakenG) and (not jidx in IDXtakenl):
 
                             jb = jb + 1
 
-                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, jID, vtime0, vBIDs0, np.array(IDX_in_use_G),
+                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, jID, vtime0, vBIDs0, np.array(IDXtakenG),
                                                                                  dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
                             # * nbRecOK : number of valid consecutive records for this buoy
                             # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
@@ -247,9 +237,9 @@ if __name__ == '__main__':
                                 it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 if rd_ini > MinDistFromLand:
-                                    #IDX_in_use_l.append(jidx)                  ; # point for first record of buoy `jID`!
-                                    for ii in idx0_id: IDX_in_use_l.append(ii) ; # points for following records of `jID
-                                    if not (jidx in IDX_in_use_l): print('ERROR: `not (jidx in IDX_in_use_l)`!'); exit(0)
+                                    #IDXtakenl.append(jidx)                  ; # point for first record of buoy `jID`!
+                                    for ii in idx0_id: IDXtakenl.append(ii) ; # points for following records of `jID
+                                    if not (jidx in IDXtakenl): print('ERROR: `not (jidx in IDXtakenl)`!'); exit(0)
                                     #
                                     Nbuoys_stream = Nbuoys_stream + 1   ; # this is another valid buoy for this stream
                                     Xmsk[istream,jb] = 1                ; # flag for valid point
@@ -259,15 +249,15 @@ if __name__ == '__main__':
                                     
                                 ### if rd_ini > MinDistFromLand
                             ### if nbRecOK >= Nb_min_cnsctv
-                        ### if (not jidx in IDX_in_use_G) and (not jidx in IDX_in_use_l)
+                        ### if (not jidx in IDXtakenG) and (not jidx in IDXtakenl)
                     ### for jidx in idxT
 
                     if Nbuoys_stream >= min_nb_buoys_in_stream:
                         print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(Nbuoys_stream)+' buoys!')
                         VNB_ini[istream] = Nbuoys_stream
                         VTc_ini[istream] = rTc
-                        # Only now can we register the points indices we used into `IDX_in_use_G`:
-                        for jidx in IDX_in_use_l: IDX_in_use_G.append(jidx)
+                        # Only now can we register the points indices we used into `IDXtakenG`:
+                        for jidx in IDXtakenl: IDXtakenG.append(jidx)
                     else:
                         print('  * Well, this stream did not make it through the selection process... :(')
                         Xmsk[istream,:] = 0
