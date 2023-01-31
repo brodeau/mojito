@@ -223,7 +223,7 @@ if __name__ == '__main__':
 
                             jb = jb + 1
 
-                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, jID, vtime0, vBIDs0, np.array(IDXtakenG),
+                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, vtime0, vBIDs0, np.array(IDXtakenG),
                                                                                  dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
                             # * nbRecOK : number of valid consecutive records for this buoy
                             # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
@@ -278,11 +278,14 @@ if __name__ == '__main__':
             
         ### for jt in range(NTbin)
 
+
+        
         Nstreams   = istream+1
         Nbuoys_max = np.max(VNB_ini)
         Ncsrec_max = np.max(XNRc) ; # maximum number of valid consecutive records for a buoy
         
 
+        
         
         # Now that we know how many streams and what is the maximum possible number of buoys into a stream,
         # we can reduce the arrays:

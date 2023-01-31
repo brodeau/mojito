@@ -35,9 +35,10 @@ case ${host} in
         export DATA_DIR="/data/gcm_setup"
         YEAR="2008"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        LIST_STREAM="000 001"
+        LIST_STREAM="000"
         DATE1="${YEAR}0101"
-        DATE2="${YEAR}0330"
+        DATE2="${YEAR}0201"
+        DT_BINS_H=$((3*24))  ; # width of a bin for time sampling [hours]
         ;;
     "frazilo")
         export DATA_DIR="/data"
