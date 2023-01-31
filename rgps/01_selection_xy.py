@@ -51,7 +51,7 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 dt_buoy_Nmnl = 3*24*3600     ; # the expected nominal time step of the input data, ~ 3 days [s]
 max_dev_from_dt_buoy_Nmnl =  12.*3600. ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
 
-Ns_max  =  100 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
+Ns_max  =  150 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
 NrB_max =  50  ; # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
 
 min_nb_buoys_in_stream = 200 ; # minimum number of buoys for considering a stream a stream!
