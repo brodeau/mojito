@@ -28,7 +28,8 @@ case ${host} in
         #FILIN="RGPS_${YEAR}.nc4"
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #DATE1="$((YEAR-1))1230"        
-        DATE2="${YEAR}0301"
+        DATE2="${YEAR}0201"
+        #LIST_RES="20"
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"

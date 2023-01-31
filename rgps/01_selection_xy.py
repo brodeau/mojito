@@ -42,6 +42,7 @@ from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 idebug = 0
+iplot  = 1
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -471,9 +472,9 @@ if __name__ == '__main__':
         #        #xmsk[idw,jb] = 0
 
 
-        if idebug>0:
+        if iplot>0:
             # Stream time evolution on Arctic map:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_stream'+'%3.3i'%(js),
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_S'+'%3.3i'%(js),
                                         clock_res='d', NminPnts=Nb_min_buoys )
         #del vtim
 
@@ -488,8 +489,6 @@ if __name__ == '__main__':
             idate_strM =         int(vtim[jr])
             cdate_strM = epoch2clock(vtim[jr])
 
-            print(' LOLO: cdate_binC , cdate_strM =', cdate_binC , cdate_strM )
-
             if Nbuoys >= Nb_min_buoys:
                 ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
                 cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.npz'
@@ -501,9 +500,9 @@ if __name__ == '__main__':
                 np.savez_compressed( cf_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vids[indV],
                                      vtime=xtim[jr,indV], vx=xx[jr,indV], vy=xy[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
-                if idebug>1:
+                if iplot>1:
                     # Plot on cartesian coordinates (km):
-                    cfpng = './figs/SELECTION/xy_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.png'
+                    cfpng = './figs/SELECTION/xy_buoys_RGPS_S'+'%3.3i'%(js)+'_'+ctr+'.png'
                     if jr==0:
                         zrx = [ np.min(xx[jr,indV])-100. , np.max(xx[jr,indV])+100. ]
                         zry = [ np.min(xy[jr,indV])-100. , np.max(xy[jr,indV])+100. ]

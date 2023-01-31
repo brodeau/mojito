@@ -299,7 +299,7 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
     for jQ in range(nQ0):
         l_Survived = True
         idQuad = zQids_0[jQ]
-        print('\n --- Quad #'+str(jQ)+' with ID '+str(idQuad)+':')
+        if iverbose>0: print('\n --- Quad #'+str(jQ)+' with ID '+str(idQuad)+':')
     
         # Indices & IDs of the 4 points involved in this Quad:
         v4Pind = zQVids_0[jQ,:]
@@ -308,8 +308,9 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
         # If any of the 4 points involved in this Quad does not exist in current cloud point:
         for jid in v4Pids:
             if not jid in pIDs:
-                print('     => point with ID '+str(jid)+' does not exist anymore in this record')
-                print('     ===> quad with ID '+str(idQuad)+' is forgotten...')
+                if iverbose>0:
+                    print('     => point with ID '+str(jid)+' does not exist anymore in this record')
+                    print('     ===> quad with ID '+str(idQuad)+' is forgotten...')
                 l_Survived = False
                 break
     

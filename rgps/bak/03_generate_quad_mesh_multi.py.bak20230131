@@ -56,8 +56,7 @@ if __name__ == '__main__':
         rd_spacing = float(argv[2])
         #if rd_spacing <= rd_nom_data:
         if rd_spacing < rd_nom_data:
-            print('WARNING: we wont downsample the cloud because `rd_spacing < rd_nom_data` !!!')
-            print('         => we use the nominal scale of '+rd_nom_data+' km for `rd_spacing`, without downsampling!')
+            print('WARNING: we wont sample the cloud because `rd_spacing < rd_nom_data` !!!')
             rd_spacing = rd_nom_data
             l_force_min_scale = False
             
@@ -179,7 +178,7 @@ if __name__ == '__main__':
             
                 l_happy = False
                 itt     = 0
-                rfcorr  = 0.7
+                rfcorr  = 1.
                 rdev    = 1.
                 
                 while not l_happy:
@@ -189,17 +188,10 @@ if __name__ == '__main__':
                     if l_force_min_scale:
 
                         # SUB-SAMPLING
-                        #  From experience we have to pick a scale significantly smaller that that of the desired
-                        #  quadrangles in order to obtain quadrangle of the correct size!
-
-                        if   rd_spacing==10.:
-                            rd_ss = 5.2
-                        elif rd_spacing==20.:
-                            rd_ss = 15.1
-                        else:
-                            rd_ss = rfcorr * rd_spacing ; # Correct `rd_spacing` to get closer to requested radius (based on QUADs to be generated)
+                        
+                        rd_ss = rfcorr * rd_spacing ; # Correct `rd_spacing` to get closer to requested radius (based on QUADs to be generated)
         
-                        print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km')                
+                        print('\n *** Applying spatial sub-sampling! Threshold radius: '+str(round(rd_ss,2))+'km')                
                         NbPss, zCoor, zIDs, ztime, zPnam = mjt.SubSampCloud( rd_ss, xCoor, vIDs, vtime,  pNames=vPnam )
                                             
                     else:
@@ -250,7 +242,6 @@ if __name__ == '__main__':
                         print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
                         print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
                         del zareas, zsides
-                        #exit(0); #lolo
             
                         if l_force_min_scale:
                             rdev_old = rdev
@@ -388,6 +379,8 @@ if __name__ == '__main__':
 
     ### for jf in range(NbF)
     ########################
+
+    print('\n *** `rfcorr` was:',rfcorr)
 
     if not l_someQuads:
         print('\n *** NO QUADs could be built!!!   :(\n')
