@@ -56,7 +56,7 @@ case ${host} in
         #
         DATE1="${YEAR}0101"
         #DATE2="${YEAR}0115"
-        DATE2="${YEAR}0201"
+        DATE2="${YEAR}0401"
         ;;
     *)
         echo "Unsupported host: ${host} !"
