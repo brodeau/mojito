@@ -460,23 +460,10 @@ if __name__ == '__main__':
             VT[i] = vTbin[idx,0]
             i=i+1
 
-        # Are there buoys which are too far from this reference time ? #fixme
-        #for jb in range(NvB):
-        #    idt = np.abs(xtim[:,jb] - VT[:])
-        #    if np.any(idt>dt_bin/2.):
-        #        print('WOW, buoy #'+str(vids[jb])+' is more than '+str(int(dt_bin/2./3600))
-        #              +' hours away from reference time...')
-        #        #(idw,) = np.where(idt>dt_bin/2.)
-        #        #print(idw)
-        #        #print(' ==> suppressing '+str(len(idw))+' values!')
-        #        #xmsk[idw,jb] = 0
-
-
         if iplot>0:
             # Stream time evolution on Arctic map:
             kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_S'+'%3.3i'%(js),
                                         clock_res='d', NminPnts=Nb_min_buoys )
-        #del vtim
 
         # Saving 1 file per stream and per record:
         for jr in range(NCRmax):
