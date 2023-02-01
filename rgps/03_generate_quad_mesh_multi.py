@@ -30,9 +30,6 @@ rQang_min =  45.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 135.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.7 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-#rcAtol = 0.3 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
-rcAtol = 0.75 ; # coefficient of tolerance for the acceptation of the area of the quadrangles
-
 #rtol        = 0.25 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rtol        = 0.5 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rd_nom_data = 10. ; # default/nominal point spacing in [km] of the data
@@ -86,12 +83,29 @@ if __name__ == '__main__':
     for ff in list_npz: print('       * '+ff)
     print('\n *** Scale we are going to use is: `rd_spacing` = ',str(rd_spacing)+'km')
 
-    rA_nom = rd_spacing*rd_spacing ; # expected nominal area of the quadrangles [km^2]
-    rf1 , rf2 = 1.-rcAtol , 1.+rcAtol
-    rQarea_min = rf1*rA_nom  ; # min area allowed for Quadrangle [km^2]
-    rQarea_max = rf2*rA_nom  ; # max area allowed for Quadrangle [km^2]
 
-    print('    => tolerance on the QUADs is: +-'+str(round(rcAtol*100.,2))+'%')
+    rA_nom = rd_spacing*rd_spacing ; # expected nominal area of the quadrangles [km^2]
+
+    if   rd_spacing = 10.:
+        rsqr_A_max = 15.
+        rsqr_A_min = 5.
+        #
+    elif rd_spacing = 20.:
+        rsqr_A_max = 30.
+        rsqr_A_min = 15.01
+
+    elif rd_spacing = 40.:
+        rsqr_A_max = 60.
+        rsqr_A_min = 30.01
+        #
+    else:
+        print('Fix me! rd_spacing>40!!!')
+        exit(0)
+
+    rQarea_min = rsqr_A_min*rsqr_A_min  ; # min area allowed for Quadrangle [km^2]
+    rQarea_max = rsqr_A_max*rsqr_A_max  ; # max area allowed for Quadrangle [km^2]
+
+    print('    => tolerance on the QUADs is:')
     print('    ==> '+str(rA_nom)+'km^2 ('+str(rQarea_min)+'km^2 < A < '+str(rQarea_max)+'km^2)')
     print('**********************************************************************\n')
 
