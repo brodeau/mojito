@@ -25,7 +25,8 @@ if [ ! -f ${fQ1} ] && [ ! -f ${fQ1} ]; then
     echo
     echo " *** About to launch:"; echo "     ${CMD}"; echo
     ${CMD}
-    
+
+    exit;#lolo
 fi
     
 

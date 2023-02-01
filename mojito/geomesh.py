@@ -589,7 +589,7 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
 
 
 
-def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY ):
+def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime ):
     '''
         RETURNS: shrinked version of input arrays
                  => all elements corresponding to points where
@@ -608,13 +608,16 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY ):
     if nP!=nBi or nd!=2: 
         print(cEM+' shape problem => `nP!=nBi or nd!=2` !!!'); exit(0)
     if np.shape(pXY)!=np.shape(pGC):
-        print(cEM+' shape problem => `np.shape(pXY)!=np.shape(pGC)` !!!'); exit(0)
+        print(cEM+' shape problem => `shape(pXY)!=shape(pGC)` !!!'); exit(0)
+    if np.shape(ptime)!=(nP,nrec):
+        print(cEM+' shape problem => `shape(ptime)!=(nP,nrec)` !!!'); exit(0)
 
     nBo  = np.sum(pmask) ; # number of points to keep
     zIDs = np.zeros( nBo, dtype=int  )
     zNam = np.zeros( nBo, dtype='U32')
     zGC  = np.zeros((nBo,2,nrec))
     zXY  = np.zeros((nBo,2,nrec))
+    ztim = np.zeros((nBo,nrec))
 
     jBo = -1
     for jB in range(nBi):
@@ -623,10 +626,11 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY ):
             zNam[jBo] = pNam[jB]            
             zIDs[jBo] = pIDs[jB]
             for jr in range(nrec):
-                zGC[jBo,:,jr] =  pGC[jB,:,jr]
-                zXY[jBo,:,jr] =  pXY[jB,:,jr]
+                zGC[jBo,:,jr] = pGC[jB,:,jr]
+                zXY[jBo,:,jr] = pXY[jB,:,jr]
+                ztim[jBo,jr]  = ptime[jB,jr]
     
-    return zNam, zIDs, zGC, zXY
+    return zNam, zIDs, zGC, zXY, ztim
 
 
 

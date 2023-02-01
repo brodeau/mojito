@@ -21,14 +21,14 @@ idebug=0
 # Selection of appropriate quadrangles:
 #rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
 #rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
-rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 150. ; # maximum angle tolerable in a triangle [degree]
+rTang_min =   5. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
 #
 #rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
 #rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
-rQang_min =  45.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 135.  ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.7 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
+rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
 #rtol        = 0.25 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!
 rtol        = 0.5 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!!

@@ -131,6 +131,12 @@ if __name__ == '__main__':
 
     (NbP0,Nrtot) = np.shape(xIDs)
 
+
+    #xtime=np.zeros((NbP0,Nrtot))
+    #for jp in range(NbP0):
+    #    xtime[jp,:] = vtime[:]
+    
+    
     # Disapearing buoys along the specified records?
     idxBok = np.arange(NbP0) ; # default: they are all fine!
     if np.any(xIDs[:,vRec]<1):
@@ -159,6 +165,7 @@ if __name__ == '__main__':
     xIDs = np.zeros((NbP0,Nrec), dtype=int)
     xJIs = np.zeros((NbP0,Nrec), dtype=int)
     xJJs = np.zeros((NbP0,Nrec), dtype=int)
+    vtim = np.zeros(Nrec)
     mask = np.zeros( NbP0      , dtype=int) + 1  ; # Mask to for "deleted" points (to cancel)
 
     #############################
@@ -169,12 +176,18 @@ if __name__ == '__main__':
             xIDs[:,jr] = data['IDs'][idxBok,jrec]
             xJIs[:,jr] = data['JIs'][idxBok,jrec]
             xJJs[:,jr] = data['JJs'][idxBok,jrec]
+            vtim[jr]   = data['time'][jrec]
             jr = jr+1
 
     zGC  = np.zeros((NbP0,2,Nrec))
     zXY  = np.zeros((NbP0,2,Nrec))
+    ztim = np.zeros((NbP0,Nrec))
     zPnm = np.array( [ str(i) for i in xIDs[:,0] ], dtype='U32' ) ; # Name for each point, based on 1st record...
 
+    for jp in range(NbP0):
+        ztim[jp,:] = vtim[:]
+    del vtim
+            
     for jr in range(Nrec):
         print('\n   * Record #'+str(vRec[jr])+':')
 
@@ -195,14 +208,14 @@ if __name__ == '__main__':
             print(' Fuck Up!!!! => `xIDs` not consistent along the records!!!' ); exit(0)
     del xIDs
 
-    zPnm, zPntIDs, zGC, zXY = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY )
+    zPnm, zPntIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY, ztim )
 
     if idebug>1:
         for jr in range(Nrec):
             print('\n  DEBUG *** Record #'+str(vRec[jr])+':')
             for jc in range(NbP):
                 print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zPntIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
-                       ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr] )
+                       ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',epoch2clock(ztim[jc,jr]) )
                 if str(zPntIDs[jc])!=zPnm[jc]:
                     print(' Fuck Up!!!! => zPntIDs[jc], zPnm[jc] =',zPntIDs[jc], zPnm[jc] ); exit(0)
         print('')
@@ -253,7 +266,7 @@ if __name__ == '__main__':
                     mask[ind2keep] = 1
                     if np.sum(mask) != NbPnew:
                         print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
-                    zPnm, zPntIDs, zGC, zXY = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY )
+                    zPnm, zPntIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY, ztim )
                     del zPntIdx0, mask, ind2keep
                     NbP = NbPnew
                     print('      => done! Only '+str(NbP)+' points left in the game...')
@@ -264,13 +277,13 @@ if __name__ == '__main__':
             print('\n *** We have '+str(NbT)+' triangles!')
 
             # Conversion to the `Triangle` class:
-            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, zPnm )
+            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, ztim, zPnm )
             del xTpnts, xNeighborIDs, TRI
 
             # Merge triangles into quadrangles:
-            xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
-                                                         ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                         areaR=(rQarea_min,rQarea_max), idbglev=idebug )
+            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
+                                                                ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                                areaR=(rQarea_min,rQarea_max), idbglev=idebug )
             if len(xQpnts)<=0: exit(0)
 
             (NbQ,_) = np.shape(xQpnts)
@@ -298,7 +311,7 @@ if __name__ == '__main__':
                                      TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
                                      rangeX=vrngX, rangeY=vrngY )
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam, date=cdats )
+            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats )
 
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q' )
