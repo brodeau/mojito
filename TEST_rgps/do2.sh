@@ -20,7 +20,9 @@ for dd in ${LIST_RES}; do
               
         echo; echo; echo
 
-        vlist=( `\ls npz/SELECTION_buoys_RGPS_S${istr}*.npz` )
+        cstr=`printf "%03d" ${istr}`
+
+        vlist=( `\ls npz/SELECTION_buoys_RGPS_S${cstr}*.npz` )
 
         #echo "${vlist[*]}"; echo
         nf=`echo "${vlist[*]}" | wc -w`
@@ -40,10 +42,10 @@ for dd in ${LIST_RES}; do
             chr2=`echo ${cf2} | cut -d_ -f6`
 
             # The two quadrangle files to be generated:
-            cfQ1="npz/Q-mesh_S${istr}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
-            cfQ2="npz/Q-mesh_S${istr}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
+            cfQ1="npz/Q-mesh_S${cstr}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
+            cfQ2="npz/Q-mesh_S${cstr}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
             #
-            cflog="logs/out_S${istr}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
+            cflog="logs/out_S${cstr}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
             
             if [ ! -f ${cfQ1} ] || [ ! -f ${cfQ2} ]; then
                 ijob=$((ijob+1))

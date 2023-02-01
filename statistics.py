@@ -202,9 +202,9 @@ for iP in range(nP):
 PDF_div[:] = PDF_div[:]/float(nPd)
 PDF_shr[:] = PDF_shr[:]/float(nPs)
 
-kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.png',
+kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.svg',
                      xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
 
-kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig='PDF_shear.png',
+kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig='PDF_shear.svg',
                      xrng=xshr_rng, wbin=wbin_shr, title='RGPS' )
 
