@@ -481,7 +481,7 @@ if __name__ == '__main__':
 
             if Nbuoys >= Nb_min_buoys:
                 ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
-                cf_out = './npz/SELECTION_buoys_RGPS_stream'+'%3.3i'%(js)+'_'+ctr+'.npz'
+                cf_out = './npz/SELECTION_buoys_RGPS_S'+'%3.3i'%(js)+'_'+ctr+'.npz'
 
                 vmsk = xmsk[jr,:]
                 (indV,) = np.where(vmsk==1) ; # index of valid points

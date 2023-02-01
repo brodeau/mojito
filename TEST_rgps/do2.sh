@@ -15,10 +15,12 @@ for dd in ${LIST_RES}; do
     csuff="Sampled"
     #if [ ${dd} -eq 10 ]; then csuff="NoSample"; fi
 
-    for st in ${LIST_STREAM}; do
+    istr=${NSTREAMA}
+    while [ ${istr} -le ${NSTREAMB} ]; do
+              
         echo; echo; echo
 
-        vlist=( `\ls npz/SELECTION_buoys_RGPS_stream${st}*.npz` )
+        vlist=( `\ls npz/SELECTION_buoys_RGPS_S${istr}*.npz` )
 
         #echo "${vlist[*]}"; echo
         nf=`echo "${vlist[*]}" | wc -w`
@@ -38,10 +40,10 @@ for dd in ${LIST_RES}; do
             chr2=`echo ${cf2} | cut -d_ -f6`
 
             # The two quadrangle files to be generated:
-            cfQ1="npz/Q-mesh_S${st}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
-            cfQ2="npz/Q-mesh_S${st}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
+            cfQ1="npz/Q-mesh_S${istr}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
+            cfQ2="npz/Q-mesh_S${istr}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
             #
-            cflog="logs/out_S${st}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
+            cflog="logs/out_S${istr}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
             
             if [ ! -f ${cfQ1} ] || [ ! -f ${cfQ2} ]; then
                 ijob=$((ijob+1))
@@ -64,10 +66,8 @@ for dd in ${LIST_RES}; do
             
         done
 
-
+        istr=`expr ${istr} + 1`
     done
-
-
 done
 
 wait
