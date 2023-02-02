@@ -29,14 +29,15 @@ from netCDF4 import Dataset
 from climporn import chck4f, epoch2clock
 import mojito   as mjt
 
-idebug=1
+idebug=0
+l_plot = False ; # Create figures to see what we are doing...
 
 #l_box_restriction=True
 l_box_restriction=False
 
 l_debug_plot = False
 
-l_plot = True ; # Create figures to see what we are doing...
+
 
 if l_box_restriction:
     vrngX = [-400.,400.]
