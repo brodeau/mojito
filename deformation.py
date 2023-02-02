@@ -21,12 +21,17 @@ idebug=0
 l_accurate_time=True
 
 
-def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed ):
+def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
     '''
         * kF: file number
         * QD: Quad class loaded from file `kF`
     '''
     print('\n *** In file #'+str(kF)+':')
+    if len(np.shape(QD.PointTime))>1: print('ERROR: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime)); exit(0)
+    #if iverbose>1:
+    #    print('      Time array (',np.shape(QD.PointTime),'):')
+    #for rt in QD.PointTime[:]: print( '       '+epoch2clock(int(rt)))
+    #print('')
     print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
     rTmean = np.mean(QD.PointTime)
     cTmean = epoch2clock(rTmean)
@@ -66,8 +71,8 @@ if __name__ == '__main__':
     #idt2 = clock2epoch(cdt2)
         
     # Debug have a look at the times of all points and get the actual mean time for each file:
-    rT1 = CheckTimeSanityQuad(1, QUA1, time_dev_max)
-    rT2 = CheckTimeSanityQuad(2, QUA2, time_dev_max)
+    rT1 = CheckTimeSanityQuad(1, QUA1, time_dev_max, iverbose=idebug)
+    rT2 = CheckTimeSanityQuad(2, QUA2, time_dev_max, iverbose=idebug)
 
     rtimeC = 0.5*(rT1+rT2)
     ctimeC = epoch2clock(rtimeC)
@@ -95,6 +100,8 @@ if __name__ == '__main__':
     print('\n *** Number of points in the two records:',QUA1.nP,QUA2.nP)
     print('\n *** Number of quads in the two records:',QUA1.nQ,QUA2.nQ)
     
+
+
     
     
     

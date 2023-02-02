@@ -18,15 +18,12 @@ fQ2="./npz/Q-mesh_${cprf}_${dt2}.npz"
 if [ ! -f ${fQ1} ] && [ ! -f ${fQ1} ]; then
 
 
-    ln -sf ${MESH_MASK} .
-
     CMD="${EXE1} ${FILIN} ${MESH_MASK} 0,1"
 
     echo
     echo " *** About to launch:"; echo "     ${CMD}"; echo
     ${CMD}
 
-    exit;#lolo
 fi
     
 
@@ -36,9 +33,9 @@ if [ ! -f ${fQ1} ] && [ ! -f ${fQ1} ]; then
 fi
 
 
-echo
+echo; echo
 echo " *** Computation of deformartions"
-CMD="${EXE2} ${fQ1} ${fQ2} ${SIZE_MOSAIC}"
+CMD="${EXE2} ${fQ1} ${fQ2} 0" ; # time deviation has to be `0` because model output !!!
 echo "  ==> ${CMD}"; echo
 ${CMD}
 echo; echo

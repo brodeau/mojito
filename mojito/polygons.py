@@ -41,6 +41,11 @@ class Triangle:
             print(cEM+' problem in the shape of neighbor array!'); exit(0)
         if (nP,) != np.shape(vPnames):
             print(cEM+' problem in the length of point names!'); exit(0)
+        if np.shape(vPIDs)!=(nP,):
+            print(cEM+' wrong shape for `vPIDs`! we want ('+str(nP)+',) and we have:', np.shape(vPIDs)); exit(0)            
+        if np.shape(vPtime)!=(nP,):
+            print(cEM+' wrong shape for `vPtime`! we want ('+str(nP)+',) and we have:', np.shape(vPtime)); exit(0)
+
             
         zvPntIdx = np.unique( xTPntIdx.flatten() ) ; # Populate all the points (IDs) involved
         if len(zvPntIdx) != nP:

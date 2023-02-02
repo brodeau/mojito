@@ -440,11 +440,6 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
         zU = np.array( [ pXY2[:,k,0] - pXY1[:,k,0] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
         zV = np.array( [ pXY2[:,k,1] - pXY1[:,k,1] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
 
-    if iverbose>1:
-        print('')
-        for jQ in range(0,nq,100):
-            print('  areas =',np.round(zA[jQ],3),'km^2, U =',np.round(zU[jQ,:],5),'m/s, V =',np.round(zV[jQ,:],5),'m/s')
-
     # Positions of the 4 vertices of each quad at center of time interval:
     zX , zY = np.zeros((nq,4)) , np.zeros((nq,4))
     zX = 0.5*( pXY1[:,:,0] + pXY2[:,:,0] )
@@ -453,7 +448,11 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
     # Area of quadrangles at center of time interval:
     zA = np.zeros(nq) - 999.
     zA[:] = 0.5*( pA1 + pA2 ) ; #* 1.e6 ; # 1.e6 => from km^2 to m^2
-
+    if iverbose>1:
+        print('')
+        for jQ in range(0,nq,100):
+            print('  areas =',np.round(zA[jQ],3),'km^2, U =',np.round(zU[jQ,:],5),'m/s, V =',np.round(zV[jQ,:],5),'m/s')
+    
     # Partial derivatives:
     #  --- the fact that units for coordinates was km and for area km^2 has no importance because it cancels out,
     #      we are looking to something in [s-1]
@@ -468,8 +467,8 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
 
     if iverbose>1:
         for jQ in range(0,nq,100):
-            print('  dU/dx =',zdUdxy[jQ,0],'1/s, dU/dy =',zdUdy[jQ,1],'1/s')
-            print('  dV/dx =',zdVdxy[jQ,0],'1/s, dV/dy =',zdVdy[jQ,1],'1/s\n')
+            print('  dU/dx =',zdUdxy[jQ,0],'1/s, dU/dy =',zdUdxy[jQ,1],'1/s')
+            print('  dV/dx =',zdVdxy[jQ,0],'1/s, dV/dy =',zdVdxy[jQ,1],'1/s\n')
 
     return zX, zY, zU, zV, zdUdxy, zdVdxy
 

@@ -9,8 +9,6 @@ NEMOCONF="NANUK4"
 HSS=1
 TSS=72
 
-SIZE_MOSAIC=900
-
 #LIST_RES="10 20 30"
 #LIST_RES="10"
 #LIST_STREAM="000 001"
@@ -20,17 +18,14 @@ case ${host} in
     "merlat")
         DATA_DIR="/MEDIA/data"
         HSS=5
-        SIZE_MOSAIC=1000
         ;;
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
         HSS=5
-        SIZE_MOSAIC=1000
         ;;
     "frazilo")
         DATA_DIR="/data"
         HSS=5
-        SIZE_MOSAIC=30
         ;;
     *)
         echo "Unsupported host: ${host} !"
