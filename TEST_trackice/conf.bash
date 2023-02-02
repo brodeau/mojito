@@ -6,10 +6,8 @@ MOJITO_DIR="${HOME}/DEV/mojito"
 
 NEMOCONF="NANUK4"
 
-HSS=1
+HSS=1 ; RESOL0=12 ; MARKER_SIZE=100 ; # NANUK4
 TSS=72
-
-MARKER_SIZE=100
 
 #LIST_RES="10 20 30"
 #LIST_RES="10"
@@ -19,15 +17,15 @@ host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         DATA_DIR="/MEDIA/data"
-        HSS=5
+        HSS=5 ; RESOL0=60 ; MARKER_SIZE=250 ; # NANUK4 with sub-samp of 5 !
         ;;
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
-        HSS=5
+        HSS=5 ; RESOL0=60 ; MARKER_SIZE=250 ; # NANUK4 with sub-samp of 5 !
         ;;
     "frazilo")
         DATA_DIR="/data"
-        HSS=1 ; MARKER_SIZE=70
+        HSS=1 ; RESOL0=12; MARKER_SIZE=70 ; # NANUK4 no subsampling
         ;;
     *)
         echo "Unsupported host: ${host} !"

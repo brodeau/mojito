@@ -61,11 +61,6 @@ rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-rQarea_min =  50. ; # min area allowed for Quadrangle [km^2]
-rQarea_max = 200. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
-#rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
-#rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
-
 rzoom_fig = 4
 
 if __name__ == '__main__':
@@ -75,13 +70,14 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    if len(argv) != 4:
-        print('Usage: '+argv[0]+' <file_trj.npz> <LSM_file> <records to use (C), comma-separated>')
+    if len(argv) != 5:
+        print('Usage: '+argv[0]+' <file_trj.npz> <LSM_file> <records to use (C), comma-separated> <basic_res_km>')
         exit(0)
 
     cf_npz = argv[1]
     cf_lsm = argv[2]
     lstrec = argv[3]
+    resol0 = float(argv[4])
 
     vcrec = split(',',lstrec)
     Nrec  = len(vcrec)
@@ -97,6 +93,24 @@ if __name__ == '__main__':
 
     #########################################################################################################
 
+
+    if resol0>7.5 and resol0<12.5:
+        rQarea_min =  60. ; # min area allowed for Quadrangle [km^2]
+        rQarea_max = 200. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
+        #
+    elif resol0>50 and resol0<70:
+        rQarea_min = 2000.
+        rQarea_max = 5000.        
+        #
+    else:
+        print('ERROR: we do not know what to do with resolution `resol0` =', resol0) ; exit(0)
+        #
+        #rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
+        
+        
+
+
+    
     # Getting time info and time step from input npz file which is should look like NEMO output file:
     vfi   = split('_|\.', path.basename(cf_npz))
     cfstr = vfi[0]+'_'+vfi[1]+'_'+vfi[2]+'_'+vfi[5]+'_'+vfi[6]

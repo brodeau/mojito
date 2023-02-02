@@ -2,6 +2,7 @@
 In recycle quadrangles: maybe add constraint on quadrangle Area??? Cause it can increas a lot in 3 days...
 
 
+Retain mainly the constraint on quadrangle area in selection (be uber tolerant on H/L ration and min and max angle...)
 
 
 

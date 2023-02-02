@@ -17,8 +17,7 @@ fQ2="./npz/Q-mesh_${cprf}_${dt2}.npz"
 
 if [ ! -f ${fQ1} ] && [ ! -f ${fQ1} ]; then
 
-
-    CMD="${EXE1} ${FILIN} ${MESH_MASK} 0,1"
+    CMD="${EXE1} ${FILIN} ${MESH_MASK} 0,1 ${RESOL0}"
 
     echo
     echo " *** About to launch:"; echo "     ${CMD}"; echo
