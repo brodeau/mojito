@@ -122,7 +122,11 @@ class Quadrangle:
             print(cEM+' we expected 2nd axis to have length 4, not:',nd4,' in the Quad array!'); exit(0)
         if (nQ,) != np.shape(vQnames):
             print(cEM+' problem in the length of point names!', nP, np.shape(vQnames)); exit(0)
-
+        if np.shape(vPIDs)!=(nP,):
+            print(cEM+' wrong shape for `vPIDs`! we want ('+str(nP)+',) and we have:', np.shape(vPIDs)); exit(0)            
+        if np.shape(vPtime)!=(nP,):
+            print(cEM+' wrong shape for `vPtime`! we want ('+str(nP)+',) and we have:', np.shape(vPtime)); exit(0)
+            
         zvPntIdx = np.unique( xQPntIdx.flatten() ) ; # Populate all the points (IDs) involved
         if len(zvPntIdx) != nP:
             print(cEM+' problem with the number of points at play deduced from `xQPntIdx`: ',len(zvPntIdx),nP); exit(0)
@@ -284,10 +288,13 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
         => Returns: all arrays necessary to define the new Quad class based on the new location of the points
     '''
     cEM = 'ERROR: [polygons.RecycleQuads] =>'
-    
+
+
     nP0     = pQDS.nP
     nQ0     = pQDS.nQ
 
+    if np.shape(pTime) != np.shape(pIDs): print(cEM+' `shape(pTime) != shape(pIDs)` !'); exit(0)
+    
     zQVids_0 = pQDS.MeshVrtcPntIdx.copy() ; # (nQ,4)
     zPids_0  = pQDS.PointIDs.copy()       ; # (nP) All point IDs involved in initial polpulation of Quads
     zQnms_0  = pQDS.QuadNames.copy()      ; # (nQ)
