@@ -25,7 +25,7 @@ case ${host} in
         ;;
     "frazilo")
         DATA_DIR="/data"
-        HSS=5
+        HSS=1
         ;;
     *)
         echo "Unsupported host: ${host} !"
