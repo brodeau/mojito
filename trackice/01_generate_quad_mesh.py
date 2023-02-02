@@ -99,11 +99,11 @@ if __name__ == '__main__':
     # Need some calendar info:
     with np.load(cf_npz) as data:
         NbRec = data['NbRec']
-        vtime = data['time']
+        vtime0 = data['time']
 
-    NbDays = int( (vtime[-1] - vtime[0]) / (3600.*24.) )
-    cdt1 = epoch2clock(vtime[0] )
-    cdt2 = epoch2clock(vtime[-1])
+    NbDays = int( (vtime0[-1] - vtime0[0]) / (3600.*24.) )
+    cdt1 = epoch2clock(vtime0[0] )
+    cdt2 = epoch2clock(vtime0[-1])
 
     print('\n *** Trajectories contain '+str(NbRec)+' records...')
     print('    *  start and End dates => '+cdt1+' -- '+cdt2)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     #xtime=np.zeros((NbP0,Nrtot))
     #for jp in range(NbP0):
-    #    xtime[jp,:] = vtime[:]
+    #    xtime[jp,:] = vtime0[:]
     
     
     # Disapearing buoys along the specified records?
@@ -226,8 +226,8 @@ if __name__ == '__main__':
 
         print('\n\n *** QUAD-MESH GENERATION => record #'+str(jrec)+': record = '+str(jr))
 
-        cdats  = epoch2clock(vtime[jrec])
-        cdate  = str.replace( epoch2clock(vtime[jrec], precision='D'), '-', '')
+        cdats  = epoch2clock(vtime0[jrec])
+        cdate  = str.replace( epoch2clock(vtime0[jrec], precision='D'), '-', '')
         cfbase = cfstr+'_'+cdate
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)
 
@@ -277,7 +277,7 @@ if __name__ == '__main__':
             print('\n *** We have '+str(NbT)+' triangles!')
 
             # Conversion to the `Triangle` class:
-            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, ztim, zPnm )
+            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, ztim[:,jr], zPnm )
             del xTpnts, xNeighborIDs, TRI
 
             # Merge triangles into quadrangles:
@@ -324,11 +324,11 @@ if __name__ == '__main__':
 
             print('\n *** Quad recycling for jr=',jr)
 
-            # Recycling Quads found at 1st record (QUADS0):
-            xQcoor, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], zPntIDs, QUADS0,  iverbose=idebug )
+            # Recycling Quads found at 1st record (QUADS0): lilo
+            xQcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], zPntIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vQnam, vQIDs=vQIDs, date=cdats )
+            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats )
 
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
