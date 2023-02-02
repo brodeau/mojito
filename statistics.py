@@ -28,7 +28,7 @@ rconv = 24.*3600.
 #wbin_div = 0.0025 ; # day^-1
 #wbin_div = 0.001 ; # day^-1
 #wbin_div = 0.0005 ; # day^-1
-wbin_div = 0.00025 ; # day^-1
+wbin_div = 0.0005 ; # day^-1
 #wbin_div = 0.0001 ; # day^-1
 max_div = 0.5  ; # day^-1
 xdiv_rng=[-0.04,0.04] ; # x-range we want on the x-axis of the plot
@@ -37,10 +37,10 @@ xdiv_rng=[-0.04,0.04] ; # x-range we want on the x-axis of the plot
 #wbin_shr = 0.0025 ; # day^-1
 #wbin_shr = 0.001 ; # day^-1
 #wbin_shr = 0.0005 ; # day^-1
-wbin_shr = 0.00025 ; # day^-1
+wbin_shr = 0.0005 ; # day^-1
 #wbin_shr = 0.0001 ; # day^-1
 max_shr = 1. ; # day^-1
-xshr_rng=[0.,0.1] ; # x-range we want on the x-axis of the plot
+xshr_rng=[0.,0.08] ; # x-range we want on the x-axis of the plot
 
 if not len(argv) in [2]:
     print('Usage: '+argv[0]+' <directory_input_npz_files>')
