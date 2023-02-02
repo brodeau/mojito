@@ -29,37 +29,43 @@ from netCDF4 import Dataset
 from climporn import chck4f, epoch2clock
 import mojito   as mjt
 
-
 idebug=1
+
+l_box_restriction=True
 
 l_debug_plot = False
 
 l_plot = True ; # Create figures to see what we are doing...
-vrngX = [-2200.,1600.]
-vrngY = [-1000.,1800.]
+
+if l_box_restriction:
+    vrngX = [-300.,300.]
+    vrngY = [-300.,300.]
+else:
+    vrngX = [-2200.,1600.]
+    vrngY = [-1000.,1800.]
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
 # Selection of appropriate quadrangles:
-rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
+#rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
+#rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
+rTang_min =   5. ; # minimum angle tolerable in a triangle [degree]
+rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
 #
-rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.7 ; # value that `1 - abs(L/H)` should not overshoot!
-rQarea_min =  0. ; # min area allowed for Quadrangle [km^2]
-#rQarea_max = 200. ; # max area allowed for Quadrangle [km^2]
-#
-#rzoom_fig = 10
+#rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
+#rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
+rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
+rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
+rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-
-#rQarea_max = 500. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
-rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
+rQarea_min =  50. ; # min area allowed for Quadrangle [km^2]
+rQarea_max = 200. ; rzoom_fig = 10 ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
+#rQarea_max = 7000. ; rzoom_fig = 4  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:5
 #rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
 
-
+rzoom_fig = 4
 
 if __name__ == '__main__':
 
@@ -198,9 +204,18 @@ if __name__ == '__main__':
         mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
     # How many points left after elimination of buoys that get too close to land (at any record):
-    NbP = np.sum(mask)
-    print('\n *** '+str(NbP)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP)+' points to delete!')
+    NbP1 = np.sum(mask)
+    print('\n *** '+str(NbP1)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP1)+' points to delete!')
 
+    NbP = NbP1
+    if l_box_restriction:
+        # Restriction to a smaller box for debugging purposes:
+        idxban = np.where( zGC[:,1,0] < 87.5 ) ; # keep only points north of 85.degN
+        mask[idxban] = 0
+        NbP = np.sum(mask)
+        print('\n *** '+str(NbP)+' / '+str(NbP1)+' points survived the box test => ', str(NbP1-NbP)+' points to delete!')
+
+    
     # We do not need to keep a record dimension for IDs, but first ensure there's no fuck-up...
     zPntIDs = xIDs[:,0].copy()
     for jr in range(Nrec):
@@ -349,7 +364,8 @@ if __name__ == '__main__':
             kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
                                  ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
                                  pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
-                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
+                                 lGeoCoor=False, zoom=rzoom_fig,
+                                 rangeX=vrngX, rangeY=vrngY )
             ## Show only points composing the quadrangles:
             #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
             #                     ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )

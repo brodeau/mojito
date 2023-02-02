@@ -47,14 +47,16 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        NJPAR=24
+        NJPAR=28
         #
         #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=48  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=24  ; # width of a bin for time sampling [hours]
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
-        NSTREAMB="136"
+        #
+        NSTREAMB="1"        
+        #NSTREAMB="136"
         #DATE1="$((YEAR-1))1230"
         #DATE2="${YEAR}0315"
         #

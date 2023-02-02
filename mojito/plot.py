@@ -65,7 +65,7 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     #
     mpl.rcParams.update(params)
     #
-    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
+    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(16.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(23.*fntzoom), 'color':color_top }
@@ -379,7 +379,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
 
 
 def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
-                     pFmin=-1., pFmax=1., rangeX=None, rangeY=None ):
+                     pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -414,13 +414,12 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
     
-    #if lGeoCoor:         
-    #    ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj)
-    #    ax.stock_img()
-    #    ax.set_extent([-15, 30, 32, 65], crs=Proj) ; #fixme
-    #else:
     ddx = dx*Ly/Lx
-    ax   = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')        
+    if unit:
+        ax = plt.axes([1.25*ddx/Lx, 1.4*1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2.2*dy)/Ly], facecolor='0.75')
+    else:
+        ax = plt.axes([1.25*ddx/Lx,     1.25*dy/Ly, (Lx-2*ddx)/Lx,   (Ly-2*dy)/Ly], facecolor='0.75')
+        
     plt.axis([ xA,xB , yA,yB ])
 
     # Pixel size:
@@ -433,6 +432,13 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #plt.plot( pX, pY, '.', ms=marker_size, color=clPoints, zorder=200) ; #, alpha=0.5)
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )
 
+
+    if unit:
+        # => triggers the colorbar! lilo
+        ax2 = plt.axes([0.18,0.03,0.7,0.02])
+        #clb = mpl.colorbar.ColorbarBase(ax=ax2, ticks=fa.vc_fld_powlog, cmap=pal_fld, norm=norm_fld, orientation='horizontal', extend='neither')
+        clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
+        clb.set_label(unit, **cfont_clb)
     
     # Adding quadrangles:
     #if len(QuadMesh)>0:
