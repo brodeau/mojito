@@ -25,7 +25,7 @@ case ${host} in
         ;;
     "frazilo")
         DATA_DIR="/data"
-        HSS=1 ; RESOL0=12; MARKER_SIZE=70 ; # NANUK4 no subsampling
+        HSS=1 ; RESOL0=12; MARKER_SIZE=5 ; # NANUK4 no subsampling
         ;;
     *)
         echo "Unsupported host: ${host} !"
