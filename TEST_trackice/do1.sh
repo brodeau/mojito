@@ -35,7 +35,7 @@ fi
 
 echo; echo
 echo " *** Computation of deformartions"
-CMD="${EXE2} ${fQ1} ${fQ2} 0" ; # time deviation has to be `0` because model output !!!
+CMD="${EXE2} ${fQ1} ${fQ2} 0 ${MARKER_SIZE}" ; # time deviation has to be `0` because model output !!!
 echo "  ==> ${CMD}"; echo
 ${CMD}
 echo; echo

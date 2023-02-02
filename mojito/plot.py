@@ -379,7 +379,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
 
 
 def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
-                     pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None ):
+                     pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None, marker_size=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -423,10 +423,11 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     plt.axis([ xA,xB , yA,yB ])
 
     # Pixel size:
-    marker_size = 500.
-    if rangeX and rangeY:
-        rrm = int( max( abs(rangeX[1]-rangeX[0]) , abs(rangeY[1]-rangeY[0]) ) )
-        marker_size = 1710000./rrm
+    if not marker_size:
+        marker_size = 500.
+        if rangeX and rangeY:
+            rrm = int( max( abs(rangeX[1]-rangeX[0]) , abs(rangeY[1]-rangeY[0]) ) )
+            marker_size = 1710000./rrm
     
     # Showing points:
     #plt.plot( pX, pY, '.', ms=marker_size, color=clPoints, zorder=200) ; #, alpha=0.5)

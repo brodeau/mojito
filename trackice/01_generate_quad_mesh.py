@@ -31,15 +31,16 @@ import mojito   as mjt
 
 idebug=1
 
-l_box_restriction=True
+#l_box_restriction=True
+l_box_restriction=False
 
 l_debug_plot = False
 
 l_plot = True ; # Create figures to see what we are doing...
 
 if l_box_restriction:
-    vrngX = [-300.,300.]
-    vrngY = [-300.,300.]
+    vrngX = [-400.,400.]
+    vrngY = [-400.,400.]
 else:
     vrngX = [-2200.,1600.]
     vrngY = [-1000.,1800.]
@@ -210,7 +211,7 @@ if __name__ == '__main__':
     NbP = NbP1
     if l_box_restriction:
         # Restriction to a smaller box for debugging purposes:
-        idxban = np.where( zGC[:,1,0] < 87.5 ) ; # keep only points north of 85.degN
+        idxban = np.where( zGC[:,1,0] < 85. ) ; # keep only points north of 85.degN
         mask[idxban] = 0
         NbP = np.sum(mask)
         print('\n *** '+str(NbP)+' / '+str(NbP1)+' points survived the box test => ', str(NbP1-NbP)+' points to delete!')
