@@ -16,7 +16,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
-idebug=1
+idebug=0
 
 l_accurate_time=True
 
@@ -58,12 +58,14 @@ def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
 
 if __name__ == '__main__':
 
-    if not len(argv) in [4]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)>')
+    if not len(argv) in [4,5]:
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> (<idebug>)')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
     time_dev_max= float(argv[3])
+    if len(argv) == 5:
+        idebug = int(argv[4])
 
     # Reading the quad meshes in both npz files:
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
