@@ -1,3 +1,25 @@
+
+In recycle quadrangles: maybe add constraint on quadrangle Area??? Cause it can increas a lot in 3 days...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 In `Tri2Quad()` remove the `pnam` argument and instead use the names of points defined in the class!!! (that might be strings of the point indices if explicit names given) !!!
 => so in the classes add the possibility to provide the vector of names: shape = (nP) of string
 
