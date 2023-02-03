@@ -25,22 +25,13 @@ rconv = 24.*3600.
 
 
 # Bin widths for pdfs
-#wbin_div = 0.0025 ; # day^-1
-#wbin_div = 0.001 ; # day^-1
-#wbin_div = 0.0005 ; # day^-1
 wbin_div = 0.0005 ; # day^-1
-#wbin_div = 0.0001 ; # day^-1
-max_div = 0.5  ; # day^-1
-xdiv_rng=[-0.04,0.04] ; # x-range we want on the x-axis of the plot
+#wbin_div = 0.005 ; # day^-1
+max_div  = 0.5    ; # day^-1
 
-
-#wbin_shr = 0.0025 ; # day^-1
-#wbin_shr = 0.001 ; # day^-1
-#wbin_shr = 0.0005 ; # day^-1
 wbin_shr = 0.0005 ; # day^-1
-#wbin_shr = 0.0001 ; # day^-1
+#wbin_shr = 0.005 ; # day^-1
 max_shr = 1. ; # day^-1
-xshr_rng=[0.,0.08] ; # x-range we want on the x-axis of the plot
 
 if not len(argv) in [2]:
     print('Usage: '+argv[0]+' <directory_input_npz_files>')
@@ -120,23 +111,27 @@ if not max_div:
     print(' min & max for div:', div_min, div_max)
     max_div =  ( round( 1.25 * max(abs(div_min),abs(div_max)), 2 ) )
 print('    ==> x-axis max =',max_div,' day^-1')
-
-nBinsD = 2.*max_div / wbin_div
+#
+#nBinsD = 2.*max_div / wbin_div
+nBinsD = max_div / wbin_div - 1. ; # `-1` because we ignore first bin (too close too zero)
 if not nBinsD%1.==0.:
     print('ERROR: nBinsD is not an integer! nBinsD =',nBinsD); exit(0)
 nBinsD = int(nBinsD)
-#print('nBinsD =',nBinsD)
-
-xbin_bounds_div = [ -max_div + float(i)*wbin_div for i in range(nBinsD+1) ]
+#
+#xbin_bounds_div = [ -max_div + float(i)*wbin_div for i in range(nBinsD+1) ]
+xbin_bounds_div = [ float(i+1)*wbin_div for i in range(nBinsD+1) ]
 xbin_bounds_div = np.round( xbin_bounds_div, 6 )
-#print('xbin_bounds_div =',xbin_bounds_div)
-
-xbin_center_div = [ -max_div+0.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
+#xbin_center_div = [ -max_div+0.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
+xbin_center_div = [ 1.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
 xbin_center_div = np.round( xbin_center_div, 6 )
-#print('xbin_center_div =',xbin_center_div)
+min_div = np.min(xbin_bounds_div)
+if idebug>0:
+    print('\n *** we have '+str(nBinsD)+' bins for the divergence !')
+    print('xbin_bounds_div =',xbin_bounds_div,'\n')
+    print('xbin_center_div =',xbin_center_div)
+    print(' min value of divergence considered for PDF =',min_div)
 
-
-
+    
 # For the shear:
 if not max_shr:
     shr_max = np.max(Zshr)
@@ -144,23 +139,23 @@ if not max_shr:
     max_shr =  ( round(1.25*shr_max, 2) )
 print('    ==> x-axis max =',max_shr,' day^-1')
 
-nBinsS = max_shr / wbin_shr
+#nBinsS = max_shr / wbin_shr
+nBinsS = max_shr / wbin_shr - 1. ; # `-1` because we ignore first bin (too close too zero)
 if not nBinsS%1.==0.:
     print('ERROR: nBinsS is not an integer! nBinsS =',nBinsS); exit(0)
 nBinsS = int(nBinsS)
-#print('nBinsS =',nBinsS)
-
-xbin_bounds_shr = [  float(i)*wbin_shr for i in range(nBinsS+1) ]
+#
+xbin_bounds_shr = [  float(i+1)*wbin_shr for i in range(nBinsS+1) ]
 xbin_bounds_shr = np.round( xbin_bounds_shr, 6 )
-#print('xbin_bounds_shr =',xbin_bounds_shr)
-
-xbin_center_shr = [ 0.5*wbin_shr + float(i)*wbin_shr for i in range(nBinsS) ]
+xbin_center_shr = [ 1.5*wbin_shr + float(i)*wbin_shr for i in range(nBinsS) ]
 xbin_center_shr = np.round( xbin_center_shr, 6 )
-#print('xbin_center_shr =',xbin_center_shr)
-
-#exit(0)
-
-
+min_shr = np.min(xbin_bounds_shr)
+#
+if idebug>0:
+    print('\n *** we have '+str(nBinsS)+' bins for the shear !')
+    print('xbin_bounds_shr =',xbin_bounds_shr,'\n')
+    print('xbin_center_shr =',xbin_center_shr)
+    print(' min value of shrear considered for PDF =',min_shr)
 
 
 PDF_div = np.zeros(nBinsD)
@@ -170,11 +165,15 @@ nPd = nP
 nPs = nP
 
 for iP in range(nP):
-    rdiv = Zdiv[iP]
 
-    if abs(rdiv)> max_div:
+    rdiv = abs(Zdiv[iP]) ; # Yes! Absolute value of divergence, we want 1 single tail for the PDF...
+
+    if rdiv > max_div:
         nPd = nPd - 1
         print(' * WARNING: excluding extreme value of Divergence: ',rdiv,'day^-1')
+    elif rdiv <= min_div:
+        nPd = nPd - 1
+        #
     else:
         jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
         if not ( rdiv>xbin_bounds_div[jf] and rdiv<=xbin_bounds_div[jf+1] ):
@@ -188,6 +187,8 @@ for iP in range(nP):
     if rshr> max_shr or rshr<0.:
         nPs = nPs - 1
         print(' * WARNING: excluding extreme value of Shear: ',rshr,'day^-1')        
+    elif rshr <= min_shr:
+        nPd = nPd - 1
     else:
         jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
         if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
@@ -201,6 +202,11 @@ for iP in range(nP):
 
 PDF_div[:] = PDF_div[:]/float(nPd)
 PDF_shr[:] = PDF_shr[:]/float(nPs)
+
+
+xdiv_rng=[min_div,0.1] ; # x-range we want on the x-axis of the plot
+xshr_rng=[min_shr,0.1] ; # x-range we want on the x-axis of the plot
+
 
 kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.svg',
                      xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
