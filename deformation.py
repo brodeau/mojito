@@ -24,9 +24,9 @@ l_accurate_time=True
 rconv = 24.*3600.
 
 # For figures, in days^-1:
-div_max = 0.25
-shr_max = 0.5
-tot_max = 0.5
+div_max = 0.1
+shr_max = 0.1
+tot_max = 0.1
 
 zoom=2
 
