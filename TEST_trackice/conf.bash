@@ -14,6 +14,7 @@ TSS=72
 #LIST_RES="10"
 #LIST_STREAM="000 001"
 
+NbRec=11
 
 NJPAR=4 ; # number of jobs we can launch in //
 
@@ -30,7 +31,8 @@ case ${host} in
     "frazilo")
         DATA_DIR="/data"
         NJPAR=28
-        HSS=1 ; RESOL0=12; MARKER_SIZE=8 ; # NANUK4 no subsampling
+        #HSS=1 ; RESOL0=12; NbRec=11; MARKER_SIZE=8 ; # NANUK4 no subsampling
+        HSS=2 ; RESOL0=25; NbRec=30; MARKER_SIZE=24 ; # NANUK4 no subsampling
         ;;
     *)
         echo "Unsupported host: ${host} !"

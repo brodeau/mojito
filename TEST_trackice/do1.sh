@@ -1,7 +1,6 @@
 #!/bin/bash
 
 irec0=0
-Nrecs=11
 
 . ./conf.bash
 
@@ -18,7 +17,7 @@ mkdir -p ./logs
 ijob=0
 
 irec=${irec0}
-while [ ${irec} -lt ${Nrecs} ]; do
+while [ ${irec} -lt ${NbRec} ]; do
     
     irA=${irec}
     irB=$((irec+1))

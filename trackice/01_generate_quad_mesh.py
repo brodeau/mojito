@@ -99,6 +99,10 @@ if __name__ == '__main__':
         rQarea_min =  60. ; # min area allowed for Quadrangle [km^2]
         rQarea_max = 200. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
         #
+    elif resol0>20 and resol0<30:
+        rQarea_min = 350.
+        rQarea_max = 950.
+        #
     elif resol0>50 and resol0<70:
         rQarea_min = 2000.
         rQarea_max = 5000.        

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f mesh_mask*.nc
+rm -f mesh_mask*.nc *.svg
 
 . conf.bash
 
