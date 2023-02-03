@@ -19,6 +19,7 @@ FILIN="RGPS_${YEAR}.nc4"
 NSTREAMA="0"
 NSTREAMB="8"
 
+MARKER_SIZE=10
 
 NJPAR=4 ; # number of jobs we can launch in //
 
@@ -32,6 +33,7 @@ case ${host} in
         #DATE1="$((YEAR-1))1230"        
         DATE2="${YEAR}0201"
         #LIST_RES="20"
+        MARKER_SIZE=40
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
