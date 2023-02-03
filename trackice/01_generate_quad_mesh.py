@@ -103,6 +103,10 @@ if __name__ == '__main__':
         rQarea_min = 350.
         rQarea_max = 950.
         #
+    elif resol0>30 and resol0<40:
+        rQarea_min = 1000.
+        rQarea_max = 1450.
+        #
     elif resol0>50 and resol0<70:
         rQarea_min = 2000.
         rQarea_max = 5000.        

@@ -22,7 +22,7 @@ host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         DATA_DIR="/MEDIA/data"
-        HSS=5 ; RESOL0=60 ; MARKER_SIZE=250 ; # NANUK4 with sub-samp of 5 !
+        HSS=3 ; RESOL0=36 ; MARKER_SIZE=100 ; # NANUK4 with sub-samp of 5 !
         ;;
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
