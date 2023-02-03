@@ -471,7 +471,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     
 
 def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
-                xrng=None, wbin=None, title=None, forced_min=None ):
+                xrng=None, wbin=None, title=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
