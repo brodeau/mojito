@@ -116,8 +116,8 @@ if __name__ == '__main__':
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
     # Coordinates of the 4 points of quadrangles for the 2 consecutive records:
-    zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #* 1000.  ; # 1000 => from km to m
-    zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #* 1000.
+    zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #  km !
+    zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !
 
     # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
     if l_accurate_time:

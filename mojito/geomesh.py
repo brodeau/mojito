@@ -418,9 +418,14 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
         The velocity vector is constructed from the two consecutive X,Y positions
         given as `pXY1, pXY2`...
           --- `nq` is the number of quadrangles provided ---
-        * pdt : time interval between the 2 consecutive position time [s]
+        * pdt        : time interval between the 2 consecutive position time [s]
         * pXY1, pXY2 : shape=(nq,4,2), the two consecutive X,Y positions of the 4 vertices of each quad [km]
-        *  pA1,  pA2 : shape=(nq),     the two consecutive areas of each quad [km^2]
+        * pA1,  pA2  : shape=(nq),     the two consecutive areas of each quad [km^2]
+        * ( xtime1, xtime2 ): shape=(nq,4), time [s] for each point of each quadrangle
+
+       Note???: keeping calculated velocities in km/s rather is in theory not a problem because, since A is in km^2, 
+                in computation of strain rates these 2 cancel each other...
+
     '''
     #
     (nq,n4,n2) = np.shape(pXY1)
@@ -437,8 +442,8 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
         del zdt
     else:
         # Using provided `pdt` rather than exact time difference between points:
-        zU = np.array( [ pXY2[:,k,0] - pXY1[:,k,0] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
-        zV = np.array( [ pXY2[:,k,1] - pXY1[:,k,1] for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
+        zU = np.array( [  pXY2[:,k,0] - pXY1[:,k,0]           for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
+        zV = np.array( [  pXY2[:,k,1] - pXY1[:,k,1]           for k in range(4) ] ).T / pdt ; # 1000 because X,Y in km !!!
 
     # Positions of the 4 vertices of each quad at center of time interval:
     zX , zY = np.zeros((nq,4)) , np.zeros((nq,4))

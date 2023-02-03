@@ -30,12 +30,10 @@ from climporn import chck4f, epoch2clock
 import mojito   as mjt
 
 idebug=0
-l_plot = False ; # Create figures to see what we are doing...
+l_plot = True ; # Create figures to see what we are doing...
 
 #l_box_restriction=True
 l_box_restriction=False
-
-l_debug_plot = False
 
 
 
@@ -104,8 +102,8 @@ if __name__ == '__main__':
         rQarea_max = 950.
         #
     elif resol0>30 and resol0<40:
-        rQarea_min = 1000.
-        rQarea_max = 1450.
+        rQarea_min =  800.
+        rQarea_max = 1800.
         #
     elif resol0>50 and resol0<70:
         rQarea_min = 2000.
@@ -338,18 +336,21 @@ if __name__ == '__main__':
 
             # Plots only for jrec==0:
             if l_plot:
-                if l_debug_plot:
+                if idebug>1:
                     # Show all initial points (out of TrackIce):
                     print('\n *** Launching initial cloud point plot!')
                     kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfbase+'.png',
                                          ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
                                          rangeX=vrngX, rangeY=vrngY )
-                # Show triangles on a map:
-                print('\n *** Launching Triangle plot!')
-                kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
-                                     ppntIDs=TRIAS.PointIDs,
-                                     TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
-                                     rangeX=vrngX, rangeY=vrngY )
+                #
+                if idebug>0:
+                    # Show triangles on a map:
+                    print('\n *** Launching Triangle plot!')
+                    kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
+                                         ppntIDs=TRIAS.PointIDs,
+                                         TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
+                                         rangeX=vrngX, rangeY=vrngY )
+                    
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
             QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats )
 
@@ -384,13 +385,15 @@ if __name__ == '__main__':
             QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
-            # Show triangles together with the quadrangles on a map:
-            print('\n *** Launching Triangle+Quad plot!')
-            kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
-                                 ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
-                                 pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
-                                 lGeoCoor=False, zoom=rzoom_fig,
-                                 rangeX=vrngX, rangeY=vrngY )
+            if idebug>0:
+                # Show triangles together with the quadrangles on a map:
+                print('\n *** Launching Triangle+Quad plot!')
+                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
+                                     ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
+                                     pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
+                                     lGeoCoor=False, zoom=rzoom_fig,
+                                     rangeX=vrngX, rangeY=vrngY )
+                
             ## Show only points composing the quadrangles:
             #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
             #                     ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
