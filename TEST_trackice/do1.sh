@@ -5,8 +5,7 @@ Nrecs=11
 
 . ./conf.bash
 
-EXE1="${MOJITO_DIR}/trackice/01_generate_quad_mesh.py"
-EXE2="${MOJITO_DIR}/deformation.py"
+EXE="${MOJITO_DIR}/trackice/01_generate_quad_mesh.py"
 
 fin=`basename ${FILIN} | cut -d '.' -f1`
 cprf=`echo ${fin} | cut -d '_' -f1-3`_`echo ${fin} | cut -d '_' -f6-7`
@@ -27,7 +26,7 @@ while [ ${irec} -lt ${Nrecs} ]; do
 
     flogprf="${cprf}_recs_${irA}-${irB}"
     
-    CMD="${EXE1} ${FILIN} ${MESH_MASK} ${irA},${irB} ${RESOL0}"
+    CMD="${EXE} ${FILIN} ${MESH_MASK} ${irA},${irB} ${RESOL0}"
     
     echo ; echo " *** About to launch:"; echo "     ${CMD}"; echo
     
@@ -44,18 +43,7 @@ while [ ${irec} -lt ${Nrecs} ]; do
     irec=$((irec+1))
     
 done
-
-exit
-
-if [ ! -f ${fQ1} ] && [ ! -f ${fQ1} ]; then
-    echo "ERROR: cannot find ${fQ1} and/or ${fQ2} !"
-    exit
-fi
+echo
 
 
-echo; echo
-echo " *** Computation of deformartions"
-CMD="${EXE2} ${fQ1} ${fQ2} 0 ${MARKER_SIZE}" ; # time deviation has to be `0` because model output !!!
-echo "  ==> ${CMD}"; echo
-${CMD}
-echo; echo
+
