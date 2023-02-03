@@ -475,7 +475,7 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
             print('  dU/dx =',zdUdxy[jQ,0],'1/s, dU/dy =',zdUdxy[jQ,1],'1/s')
             print('  dV/dx =',zdVdxy[jQ,0],'1/s, dV/dy =',zdVdxy[jQ,1],'1/s\n')
 
-    return zX, zY, zU, zV, zdUdxy, zdVdxy
+    return zX, zY, 1000.*zU, 1000.*zV, zdUdxy, zdVdxy
 
 
 def DivPDV( pdUdxy, pdVdxy ):

@@ -16,7 +16,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
-idebug=0
+idebug=2
 
 l_accurate_time=True
 
@@ -148,9 +148,9 @@ if __name__ == '__main__':
         zzv = zV.flatten()
         #
         mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/zvU4_'+cfnm+'_'+cres+'.png', cwhat='U4',
-                             pFmin=-1e-4, pFmax=1.e-4, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size )
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/zvV4_'+cfnm+'_'+cres+'.png', cwhat='V4',
-                             pFmin=-1e-4, pFmax=1.e-4, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size )
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zzx, zzy, zzu, zzv
 
@@ -164,9 +164,9 @@ if __name__ == '__main__':
         zVc = np.mean( zV[:,:], axis=1 )
         #
         mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/zvUc_'+cfnm+'_'+cres+'.png', cwhat='Uc',
-                             pFmin=-1e-4, pFmax=1.e-4, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size )
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/zvVc_'+cfnm+'_'+cres+'.png', cwhat='Vc',
-                             pFmin=-1e-4, pFmax=1.e-4, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size )
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zUc, zVc
 

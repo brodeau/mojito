@@ -86,15 +86,15 @@ if __name__ == '__main__':
 
     rA_nom = rd_spacing*rd_spacing ; # expected nominal area of the quadrangles [km^2]
 
-    if   rd_spacing = 10.:
+    if   rd_spacing == 10.:
         rsqr_A_max = 15.
         rsqr_A_min = 5.
         #
-    elif rd_spacing = 20.:
+    elif rd_spacing == 20.:
         rsqr_A_max = 30.
         rsqr_A_min = 15.01
 
-    elif rd_spacing = 40.:
+    elif rd_spacing == 40.:
         rsqr_A_max = 60.
         rsqr_A_min = 30.01
         #
