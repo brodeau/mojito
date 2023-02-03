@@ -13,6 +13,9 @@ TSS=72
 #LIST_RES="10"
 #LIST_STREAM="000 001"
 
+
+NJPAR=4 ; # number of jobs we can launch in //
+
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
@@ -25,6 +28,7 @@ case ${host} in
         ;;
     "frazilo")
         DATA_DIR="/data"
+        NJPAR=28
         HSS=1 ; RESOL0=12; MARKER_SIZE=5 ; # NANUK4 no subsampling
         ;;
     *)

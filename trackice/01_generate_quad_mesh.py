@@ -131,6 +131,9 @@ if __name__ == '__main__':
     print('    *  start and End dates => '+cdt1+' -- '+cdt2)
     print('        ==> nb of days =', NbDays)
 
+    if np.any(vRec>=NbRec):
+        print('ERROR: some of the specified records # are >= '+str(NbRec)+'  !'); exit(0)
+
 
     # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
     print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
@@ -153,12 +156,6 @@ if __name__ == '__main__':
 
     (NbP0,Nrtot) = np.shape(xIDs)
 
-
-    #xtime=np.zeros((NbP0,Nrtot))
-    #for jp in range(NbP0):
-    #    xtime[jp,:] = vtime0[:]
-    
-    
     # Disapearing buoys along the specified records?
     idxBok = np.arange(NbP0) ; # default: they are all fine!
     if np.any(xIDs[:,vRec]<1):
@@ -252,6 +249,9 @@ if __name__ == '__main__':
         print('')
 
 
+    
+    cdate0  = str.replace( epoch2clock(vtime0[vRec[0]], precision='D'), '-', '')
+    
     for jr in range(Nrec):
         jrec = vRec[jr]
 
@@ -259,12 +259,13 @@ if __name__ == '__main__':
 
         cdats  = epoch2clock(vtime0[jrec])
         cdate  = str.replace( epoch2clock(vtime0[jrec], precision='D'), '-', '')
-        cfbase = cfstr+'_'+cdate
+
+        cfbase = cfstr+'_'+cdate0+'t0_'+cdate
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)
 
         cf_npzQ = './npz/Q-mesh_'+cfbase+'.npz'
-
-
+        #print(' cf_npzQ =', cf_npzQ); exit(0)
+        
         if jr == 0:
 
             print('\n *** Delaunay triangulation for 1st record!')

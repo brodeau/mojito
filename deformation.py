@@ -7,7 +7,7 @@
 
 
 from sys import argv, exit
-from os import path
+from os import path, mkdir
 import numpy as np
 from re import split
 
