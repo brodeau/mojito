@@ -27,11 +27,11 @@ rconv = 24.*3600.
 # Bin widths for pdfs
 wbin_div = 0.0005 ; # day^-1
 #wbin_div = 0.005 ; # day^-1
-max_div  = 0.5    ; # day^-1
+max_div  = 5.    ; # day^-1
 
 wbin_shr = 0.0005 ; # day^-1
 #wbin_shr = 0.005 ; # day^-1
-max_shr = 1. ; # day^-1
+max_shr = 5. ; # day^-1
 
 if not len(argv) in [2]:
     print('Usage: '+argv[0]+' <directory_input_npz_files>')
