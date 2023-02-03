@@ -177,7 +177,7 @@ for iP in range(nP):
         print(' * WARNING: excluding extreme value of Divergence: ',rdiv,'day^-1')
     else:
         jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
-        if not ( rdiv>=xbin_bounds_div[jf] and rdiv<xbin_bounds_div[jf+1] ):
+        if not ( rdiv>xbin_bounds_div[jf] and rdiv<=xbin_bounds_div[jf+1] ):
             print(' Binning error on divergence!')
             print('  => divergence =',rdiv)
             print('  => bounds =',xbin_bounds_div[jf],xbin_bounds_div[jf+1])
