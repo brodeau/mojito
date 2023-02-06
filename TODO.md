@@ -1,4 +1,10 @@
 
+* coder le trajectory (et son seeding initial a n'importe quelle location) direct from scratch
+ 
+* utiliser l'interpolation en temps pour RGPS (et seeder le modele avec donnees interpolees au 1er janvier)
+
+
+
 In recycle quadrangles: maybe add constraint on quadrangle Area??? Cause it can increas a lot in 3 days...
 
 
