@@ -1,4 +1,6 @@
 
+* trouver pourquoi dans `deformation.py` le `UM4` ne resemble pas au `UMc`, cela devrait seulement etre une moyenne spatiale !!!
+
 * coder le trajectory (et son seeding initial a n'importe quelle location) direct from scratch
  
 * utiliser l'interpolation en temps pour RGPS (et seeder le modele avec donnees interpolees au 1er janvier)
