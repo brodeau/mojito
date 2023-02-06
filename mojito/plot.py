@@ -399,6 +399,8 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
         cm = plt.cm.get_cmap('viridis')
     elif   cwhat=='tot':
         cm = plt.cm.get_cmap('inferno')
+    elif   cwhat=='UMc':
+        cm = plt.cm.get_cmap('plasma')
     else:
         cm = plt.cm.get_cmap('RdBu')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)

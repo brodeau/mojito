@@ -28,7 +28,7 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         DATA_DIR="/data/gcm_setup"
-        HSS=5 ; RESOL0=60 ; MARKER_SIZE=250 ; # NANUK4 with sub-samp of 5 !
+        HSS=2 ; RESOL0=25 ; MARKER_SIZE=20 ; # NANUK4 with sub-samp of 5 !
         ;;
     "frazilo")
         DATA_DIR="/data"

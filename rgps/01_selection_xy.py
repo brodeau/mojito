@@ -431,7 +431,7 @@ if __name__ == '__main__':
         ifd = 0
         for jr in range(NCRmax):
             xcoor = np.array([ xx[jr,:], xy[jr,:] ]).T
-            idx_clones = mjt.idx_suppress_xy_copies( xcoor, rmask_val=-9999. )
+            idx_clones = mjt.IndXYClones( xcoor, rmask_val=-9999. )
             if len(idx_clones) > 0:
                 # There are doublons!
                 ifd = ifd + len(idx_clones) ; # another hit

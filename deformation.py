@@ -132,8 +132,8 @@ if __name__ == '__main__':
         zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
                                                          iverbose=idebug )
 
-    # zX, zY => positions at center of time interval!
-    # zU, zV => velocities at center of time interval!
+    # zX, zY => positions  of the 4 vertices at center of time interval!
+    # zU, zV => velocities of the 4 vertices at center of time interval!
 
     zrx = [ np.min(zX)-25. , np.max(zX)+25. ]
     zry = [ np.min(zY)-25. , np.max(zY)+25. ]
@@ -147,9 +147,20 @@ if __name__ == '__main__':
         zzu = zU.flatten()
         zzv = zV.flatten()
         #
+        zcoor0 = np.array([ zzx, zzy ]).T        
+        _,idx_uniq = np.unique(zcoor0, axis=0, return_index=True) ; # index location to get rid of clones...
+        del zcoor0
+
+        zzx = zzx[idx_uniq]
+        zzy = zzy[idx_uniq]
+        zzu = zzu[idx_uniq]
+        zzv = zzv[idx_uniq]
+        #
         mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/zvU4_'+cfnm+'_'+cres+'.png', cwhat='U4',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/zvV4_'+cfnm+'_'+cres+'.png', cwhat='V4',
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
+        mjt.ShowDeformation( zzx, zzy, np.sqrt(zzu*zzu+zzv*zzv), cfig='./figs/zUM4_'+cfnm+'_'+cres+'.png', cwhat='UMc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zzx, zzy, zzu, zzv
@@ -167,6 +178,8 @@ if __name__ == '__main__':
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/zvVc_'+cfnm+'_'+cres+'.png', cwhat='Vc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
+        mjt.ShowDeformation( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig='./figs/zUMc_'+cfnm+'_'+cres+'.png', cwhat='UMc',
+                             pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zUc, zVc
 

@@ -438,34 +438,61 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
     return 0
 
 
-def idx_suppress_xy_copies( X, rmask_val=-999. ):
+def IndXYClones( pXY, rmask_val=-999. ):
     '''
-         Input: `X` is a 2D array of float containing x,y coordinates for Np points => shape=(Np,2)
+         Input: `pXY` is a 2D array of float containing x,y coordinates for Np points => shape=(Np,2)
 
              ==> will return the 1D integer vector containing row (points) indices (along Np)
                  corresponding to the location of points that already exist once, so the can be
                  suppresses or masked later on... (only a single occurence of a point coord. is
                  kept). While ignoring masked values flagged with `rmask_val`
     '''
-    _,nc = np.shape(X)
+    (_,nc) = np.shape(pXY)
     if (nc !=2 ):
-        print('ERROR [idx_suppress_xy_copies]: second dimmension of X must be 2! (coordinates)')
+        print('ERROR [IndXYClones]: second dimmension of pXY must be 2! (coordinates)')
+        exit(0)
 
     # Row indices that exclude masked points:
-    (Ix,_) = np.where( X != [rmask_val,rmask_val] )
-    Ix = Ix[::2]
+    (IXvalid,_) = np.where( pXY != [rmask_val,rmask_val] )
+    IXvalid = IXvalid[::2]
 
     # Row indices that select masked points:
-    (Iz,_) = np.where( X == [rmask_val,rmask_val] )
-    Iz = Iz[::2]
+    (IXmaskd,_) = np.where( pXY == [rmask_val,rmask_val] )
+    IXmaskd = IXmaskd[::2]
 
-    _,Iu = np.unique( X, axis=0, return_index=True )
+    _,Iunq = np.unique( pXY, axis=0, return_index=True )
+    
+    # keep the values of `Iunq` that are not in `IXmaskd`:
+    IXokunq = np.setdiff1d( Iunq, IXmaskd ) ;
 
-    # keep the values of `Iu` that are not in `Iz`:
-    Ic = np.setdiff1d( Iu, Iz ) ;
+    # keep the values of `IXvalid` that are not in `IXokunq`:
+    # => that's the indices of points that could be removed to shrink `pXY` !
+    return np.setdiff1d( IXvalid, IXokunq )
 
-    # keep the values of `Ix` that are not in `Ic`:
-    return np.setdiff1d( Ix, Ic )
+
+def GetRidOfXYClones( pXY, rmask_val=-999. ):
+    '''
+         Input: `pXY` is a 2D array of float containing x,y coordinates for Np points => shape=(Np,2)
+
+             ==> will return updated version of coordinates array `pXY`, rid of points already existing (clones)
+    '''
+    (_,nc) = np.shape(pXY)
+    if (nc !=2 ):
+        print('ERROR [GetRidOfXYClones]: second dimmension of pXY must be 2! (coordinates)')
+        exit(0)
+
+    # Row indices that select masked points:
+    (IXmaskd,_) = np.where( pXY == [rmask_val,rmask_val] )
+    IXmaskd = IXmaskd[::2]
+    
+    _,Iunq = np.unique( pXY, axis=0, return_index=True )
+
+    # keep the values of `Iunq` that are not in `IXmaskd`:
+    IXokunq = np.setdiff1d( Iunq, IXmaskd ) ;
+
+    # keep the values of `IXvalid` that are not in `IXokunq`:
+    # => that's the indices of points that could be removed to shrink `pXY` !
+    return pXY()
 
 
 
