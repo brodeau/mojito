@@ -148,7 +148,7 @@ if __name__ == '__main__':
         zzv = zV.flatten()
         #
         zcoor0 = np.array([ zzx, zzy ]).T        
-        _,idx_uniq = np.unique(zcoor0, axis=0, return_index=True) ; # index location to get rid of clones...
+        _,idx_uniq = np.unique(zcoor0, axis=0, return_index=True) ; # index location to get rid of clones... (because lot of the same points are used by the same quads)
         del zcoor0
 
         zzx = zzx[idx_uniq]
