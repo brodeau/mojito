@@ -181,7 +181,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
     else:
         ct = ''
 
-    print('\n *** [ShowBuoysMap] plotting for time = '+ct)
+    if lShowDate:  print('\n *** [ShowBuoysMap] plotting for time = '+ct)
     if cnmfig:
         cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
