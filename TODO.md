@@ -1,3 +1,4 @@
+* pour la conversion degree-> km => utiliser uniquement fonction and util !!!
 
 * trouver pourquoi dans `deformation.py` le `UM4` ne resemble pas au `UMc`, cela devrait seulement etre une moyenne spatiale !!!
 
