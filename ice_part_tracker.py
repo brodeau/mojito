@@ -52,16 +52,16 @@ if __name__ == '__main__':
     
     ################################################################################################
     ###                                     S E E D I N G                                        ###
-    if idebug>1: Xseed0 = debugSeeding()
+    if idebug>1: Xseed0G = debugSeeding()
             
-    print('\n shape of Xseed0 =',np.shape(Xseed0))
+    print('\n shape of Xseed0G =',np.shape(Xseed0G))
 
-    (nP,_) = np.shape(Xseed0)
+    (nP,_) = np.shape(Xseed0G)
     IDs    = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
 
     if idebug>2:
         # Show buoys on the map at initial position (as seeded):
-        mjt.ShowBuoysMap( 0, Xseed0[:,0], Xseed0[:,1], pvIDs=IDs, cfig='fig_initPos_seeded.png',
+        mjt.ShowBuoysMap( 0, Xseed0G[:,0], Xseed0G[:,1], pvIDs=IDs, cfig='fig_initPos_seeded.png',
                           cnmfig=None, ms=10, ralpha=1., lShowDate=False )
         
     ################################################################################################
@@ -99,6 +99,10 @@ if __name__ == '__main__':
     xXf = np.zeros((Nj,Ni))
     xYf = np.zeros((Nj,Ni))
 
+    xUu = np.zeros((Nj,Ni))
+    xVv = np.zeros((Nj,Ni))
+
+
 
     # NPS projection (Cartesian, in km):
     xXt[:,:], xYt[:,:] = mjt.ConvertGeotoCartesianNPS(xlonT, xlatT)
@@ -109,7 +113,7 @@ if __name__ == '__main__':
         ii = dump_2d_field( 'xXf.nc', xXf, xlon=xlonF, xlat=xlatF, name='xXf', unit='km' )
 
     # Xseed0 
-    zx,zy = mjt.ConvertGeotoCartesianNPS(Xseed0[:,0], Xseed0[:,1]) 
+    zx,zy = mjt.ConvertGeotoCartesianNPS(Xseed0G[:,0], Xseed0G[:,1]) 
         
     Xseed0C = np.array([zx,zy]).T
 
@@ -151,26 +155,23 @@ if __name__ == '__main__':
 
     for jt in range(Nt):
 
-        print('\n *** Reading record #'+str(jt)+' in SI3 file...')
-
         rtime = id_uv.variables['time_counter'][jt]
-
-        print('     ==> date = ', epoch2clock(int(rtime)))
+        print('\n *** Reading record #'+str(jt)+' in SI3 file ==> date = ', epoch2clock(int(rtime)))
         
-        xUu   = id_uv.variables['u_ice'][jt,:,:]
-        xVv   = id_uv.variables['v_ice'][jt,:,:]
+        xUu[:,:]   = id_uv.variables['u_ice'][jt,:,:]
+        xVv[:,:]   = id_uv.variables['v_ice'][jt,:,:]
     
-        print(' * We have '+str(nP)+' seeded buoys to follow!')
+        print('   *   current number of buoys to follow: '+str(nP))
         
         JInrstF = np.zeros((nP,2), dtype=int)
         xrjiF   = np.zeros((nP,2))
     
         for jP in range(nP):
     
-            rlon, rlat =  Xseed0[jP,0],  Xseed0[jP,1] ; # degrees!
+            rlon, rlat = Xseed0G[jP,0], Xseed0G[jP,1] ; # degrees!
             rx  , ry   = Xseed0C[jP,0], Xseed0C[jP,1] ; # km !
 
-            if idebug>0: print('\n *** New buoy (#'+str(jP)+'): lat, lon =', rlat, rlon )
+            if idebug>0: print('\n    * buoy (#'+str(IDs[jP])+'): lat, lon =', rlat, rlon )
     
     
             # 1/ find nearest F-point on NEMO grid:
@@ -180,17 +181,14 @@ if __name__ == '__main__':
             JInrstF[jP,:] = [ jnF, inF ]
             #
             if idebug>1:
-                print('     ==> nearest point on NEMO grid:', jnF, inF)
-                print('          ==> double check:', xlatF[jnF,inF], xlonF[jnF,inF])
+                print('     ==> nearest F-point on NEMO grid:', jnF, inF, '==> lat,lon:',
+                      round(xlatF[jnF,inF],3), round(xlonF[jnF,inF],3))
     
     
             #      o--o           x--o            o--x            o--o
             # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
             #      x--o           o--o            o--o            o--x
             iq = gz.Iquadran( (rlat,rlon), xlatF, xlonF, jnF, inF, k_ew_per=-1, lforceHD=True )
-            print(' *** iq = ',iq)
-
-
             if not iq in [1,2,3,4]:
                 print('PROBLEM: Fuck up for this point `iq`! `iq` = ',iq); exit(0)
             
@@ -203,7 +201,8 @@ if __name__ == '__main__':
                 jnT,inT = jnF  ,inF
             elif iq==4:
                 jnT,inT = jnF+1,inF
-            print('  =>> coord of center of mesh (T-point) => lat,lon =',xlatT[jnT,inT], xlonT[jnT,inT])
+            print('     =>> coord of center of mesh (T-point) => lat,lon =',
+                  round(xlatT[jnT,inT],3), round(xlonT[jnT,inT],3), '(iq =',iq,')')
             
             # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
             #  starting with the nearest point
@@ -212,19 +211,14 @@ if __name__ == '__main__':
             
             [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = JIsSurroundMesh[:,:]
     
-            if idebug>0: print('     ==> vIDsrcMsh =\n', [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ])
-    
-
-            
             if idebug>0:
-                
+                print('     ==> vIDsrcMsh =', [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ])
                 MeshCell = Polygon( [ (xYf[j1,i1],xXf[j1,i1]) , (xYf[j2,i2],xXf[j2,i2]) ,
                                       (xYf[j3,i3],xXf[j3,i3]) , (xYf[j4,i4],xXf[j4,i4]) ] )
-
                 # Buoy location:
                 pointB   = Point(ry,rx)
                 if not MeshCell.contains(pointB):
-                    print('\nPROBLEM: point `rx,ry` is not inside the expected mesh!!!')
+                    print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
                     print([(xYf[j1,i1],xXf[j1,i1]), (xYf[j2,i2],xXf[j2,i2]), (xYf[j3,i3],xXf[j3,i3]), (xYf[j4,i4],xXf[j4,i4])])
                     exit(0)
                 #
@@ -240,10 +234,9 @@ if __name__ == '__main__':
 
 
 
-            exit(0)
+            #exit(0)
 
-
-            [w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
+            #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
     
 
 
