@@ -26,7 +26,7 @@ import mojito   as mjt
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
-
+from math import atan2,pi
 
 idebug=2
 
@@ -39,8 +39,9 @@ rdt = 3600. ; # time step
 
 def debugSeeding():
     xz = np.array([
-        [ 20.,84.],
-        [ 50.,89.]  ])    
+        [ 20.,84.]  ])
+        #[ 20.,84.],
+        #[ 50.,89.],
         #[100.,89.],
         #[200.,83.],
         #[300.,85.],
@@ -176,10 +177,10 @@ if __name__ == '__main__':
     Nt = id_uv.dimensions['time_counter'].size
 
 
-    xPosX = np.zeros((Nt,nP)) ; # x-position of buoy along the Nt records [km]
-    xPosY = np.zeros((Nt,nP)) ; # y-position of buoy along the Nt records [km]
-    xPosLon = np.zeros((Nt,nP))
-    xPosLat = np.zeros((Nt,nP))
+    xPosXX = np.zeros((Nt,nP)) ; # x-position of buoy along the Nt records [km]
+    xPosYY = np.zeros((Nt,nP)) ; # y-position of buoy along the Nt records [km]
+    xPosLo = np.zeros((Nt,nP))
+    xPosLa = np.zeros((Nt,nP))
 
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
 
@@ -189,13 +190,84 @@ if __name__ == '__main__':
     #                                 # (was the nearest point when we searched for nearest point,
     #                                 #  as buoys move moves within the cell, it might not be the nearest point)
 
-    vQuads = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
-    vCorners = np.zeros((nP,8), dtype=int)
-    
+    vCELLs = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
+    VERTICES_i = np.zeros((nP,4), dtype=int)
+    VERTICES_j = np.zeros((nP,4), dtype=int)
+
+    JIsSurroundMesh = np.zeros((nP,4,2), dtype=int)
     
     print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
     
+
+
+
     
+    # Initialization, seeding:
+    for jP in range(nP):
+        
+        rlon, rlat = Xseed0G[jP,0], Xseed0G[jP,1] ; # degrees!
+        rx  , ry   = Xseed0C[jP,0], Xseed0C[jP,1] ; # km !
+        xPosLo[0,jP], xPosLa[0,jP] = rlon, rlat
+        xPosXX[0,jP], xPosYY[0,jP] =  rx ,  ry
+
+
+        # 1/ Nearest F-point on NEMO grid:
+        [jnF, inF] = gz.NearestPoint( (rlat,rlon), xlatF, xlonF, rd_found_km=5., j_prv=0, i_prv=0 )
+        vjnF[jP], vinF[jP] = jnF, inF
+    
+        if idebug>1:
+            print('     ==> nearest F-point for ',rlat,rlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
+                  round(xlatF[jnF,inF],3), round(xlonF[jnF,inF],3))
+
+        #      o--o           x--o            o--x            o--o
+        # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
+        #      x--o           o--o            o--o            o--x
+        iq = gz.Iquadran( (rlat,rlon), xlatF, xlonF, jnF, inF, k_ew_per=-1, lforceHD=True )
+        #iq = gz.Iquadran( (ry,rx), xYf, xXf, jnF, inF, k_ew_per=-1, lforceHD=True )
+        if not iq in [1,2,3,4]:
+            print('PROBLEM (init): Fuck up for this point `iq`! `iq` = ',iq); exit(0)
+        
+        # Indices of the T-point in the center of the mesh ():
+        if   iq==1:
+            jnT,inT = jnF+1,inF+1
+        elif iq==2:
+            jnT,inT = jnF  ,inF+1
+        elif iq==3:
+            jnT,inT = jnF  ,inF
+        elif iq==4:
+            jnT,inT = jnF+1,inF
+        print('     =>> coord of center of mesh (T-point) => lat,lon =',
+              round(xlatT[jnT,inT],3), round(xlonT[jnT,inT],3), '(iq =',iq,')')
+        
+        # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
+        #  starting with the nearest point
+        zJI4vertices = gz.IDSourceMesh( (rlat,rlon), xlatF, xlonF, jnF, inF, iquadran=iq,
+                                                   k_ew_per=-1, lforceHD=True )
+
+        [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = zJI4vertices
+        # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
+
+        # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
+        if   iq==1:
+            VERTICES_i[jP,:] = [ i1, i2, i3, i4 ]
+            VERTICES_j[jP,:] = [ j1, j2, j3, j4 ]
+        elif iq==2:
+            VERTICES_i[jP,:] = [ i2, i3, i4, i1 ]
+            VERTICES_j[jP,:] = [ j2, j3, j4, j1 ]
+        elif iq==3:
+            VERTICES_i[jP,:] = [ i3, i4, i1, i2 ]
+            VERTICES_j[jP,:] = [ j3, j4, j1, j2 ]
+        elif iq==4:
+            VERTICES_i[jP,:] = [ i4, i1, i2, i3 ]
+            VERTICES_j[jP,:] = [ j4, j1, j2, j3 ]
+
+
+
+    ### for jP in range(nP)
+
+    ilolorm=0
+
+    #exit(0)
 
     for jt in range(Nt-1):
 
@@ -207,106 +279,55 @@ if __name__ == '__main__':
     
         print('   *   current number of buoys to follow: '+str(nP))
         
-        JInrstF = np.zeros((nP,2), dtype=int)
-        xrjiF   = np.zeros((nP,2))
-    
         for jP in range(nP):
 
-            if jt==0:
-                lStillIn[jP] = False ; #fixme: not needed!
-                rlon, rlat = Xseed0G[jP,0], Xseed0G[jP,1] ; # degrees!
-                rx  , ry   = Xseed0C[jP,0], Xseed0C[jP,1] ; # km !
-                xPosLon[jt,jP], xPosLat[jt,jP] = rlon, rlat
-                xPosX[jt,jP] , xPosY[jt,jP] = rx  , ry
-            else:
-                rx  , ry   = xPosX[jt,jP] , xPosY[jt,jP] ; # km !
-                rlon, rlat = xPosLon[jt,jP], xPosLat[jt,jP] ; # km !
+            rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
+            rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
 
             if idebug>0:
-                print('\n    * buoy (#'+str(IDs[jP])+'), jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
+                print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
 
             if not lStillIn[jP]:
-            #if 1==1:
-                print('    ++++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' ++++')
+                print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
                 
-                # We have to (re-) identify the model mesh/cell that includes current position `rlon, rlat` !
+                [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
+                [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
                 
-                # 1/ Nearest F-point on NEMO grid:
-                #jnF,inF = 0,0
-                #[jnF, inF] = gz.NearestPoint( (rlat,rlon), xlatF, xlonF, rd_found_km=50., j_prv=vjnF[jP], i_prv=vinF[jP] )
-                [jnF, inF] = gz.NearestPoint( (rlat,rlon), xlatF, xlonF, rd_found_km=5., j_prv=0, i_prv=0 )
-                vjnF[jP], vinF[jP] = jnF, inF
-                #[jnF, inF] = gz.NearestPoint( (ry,rx), xYf, xXf, rd_found_km=50., j_prv=jnF, i_prv=inF )
-                JInrstF[jP,:] = [ jnF, inF ]
-                if idebug>1:
-                    print('     ==> nearest F-point for ',rlat,rlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
-                          round(xlatF[jnF,inF],3), round(xlonF[jnF,inF],3))
-            
-                #      o--o           x--o            o--x            o--o
-                # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
-                #      x--o           o--o            o--o            o--x
-                iq = gz.Iquadran( (rlat,rlon), xlatF, xlonF, jnF, inF, k_ew_per=-1, lforceHD=True )
-                #iq = gz.Iquadran( (ry,rx), xYf, xXf, jnF, inF, k_ew_per=-1, lforceHD=True )
-                if not iq in [1,2,3,4]:
-                    print('PROBLEM: Fuck up for this point `iq`! `iq` = ',iq); exit(0)
-                
-                # Indices of the T-point in the center of the mesh ():
-                if   iq==1:
-                    jnT,inT = jnF+1,inF+1
-                elif iq==2:
-                    jnT,inT = jnF  ,inF+1
-                elif iq==3:
-                    jnT,inT = jnF  ,inF
-                elif iq==4:
-                    jnT,inT = jnF+1,inF
-                print('     =>> coord of center of mesh (T-point) => lat,lon =',
-                      round(xlatT[jnT,inT],3), round(xlonT[jnT,inT],3), '(iq =',iq,')')
-                
-                # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
-                #  starting with the nearest point
-                JIsSurroundMesh = gz.IDSourceMesh( (rlat,rlon), xlatF, xlonF, jnF, inF, iquadran=iq, k_ew_per=-1, lforceHD=True )
-                #JIsSurroundMesh = gz.IDSourceMesh( (ry,rx), xYf, xXf, jnF, inF, iquadran=iq, k_ew_per=-1, lforceHD=True )
-    
-                [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = JIsSurroundMesh[:,:]
-                # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
-    
                 # The current mesh/cell as a shapely polygon object:
-                MeshCell = Polygon( [ (xYf[j1,i1],xXf[j1,i1]) , (xYf[j2,i2],xXf[j2,i2]) ,
-                                      (xYf[j3,i3],xXf[j3,i3]) , (xYf[j4,i4],xXf[j4,i4]) ] )                
-                vQuads[jP] = MeshCell ; # store it for each buoy...
+                MeshCell = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
+                                      (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )                
+                vCELLs[jP] = MeshCell ; # store it for each buoy...
                 
                 if idebug>0:
-                    print('     ==> vIDsrcMsh =', [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ])
+                    print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
+                          [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
                     # Buoy location:
                     if not IsInsideCell(rx, ry, MeshCell):
                         print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
-                        print([(xYf[j1,i1],xXf[j1,i1]), (xYf[j2,i2],xXf[j2,i2]), (xYf[j3,i3],xXf[j3,i3]), (xYf[j4,i4],xXf[j4,i4])])
+                        print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
+                               (xYf[jul,iul],xXf[jul,iul])])
                         exit(0)
                     #
                     # T-point @ center of mesh ?
                     if not IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], MeshCell):
                         print('\nPROBLEM: T-point is not inside the expected mesh!!!')
-                        print([(xYf[j1,i1],xXf[j1,i1]), (xYf[j2,i2],xXf[j2,i2]), (xYf[j3,i3],xXf[j3,i3]), (xYf[j4,i4],xXf[j4,i4])])
+                        print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
+                               (xYf[jul,iul],xXf[jul,iul])])
                         exit(0)
                         
+                    print('     +++ control of location of point inside selected cell successfuly passed! :D')   
                 del MeshCell
+
+                #exit(0)
+                if ilolorm==1: exit(0)
+                
                 # The 4 weights for bi-linear interpolation within this cell:
                 #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
                                 
-                # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
-                if   iq==1:
-                    vCorners[jP,:] = [ j1,i1, j2,i2, j3,i3, j4,i4 ]
-                elif iq==2:
-                    vCorners[jP,:] = [ j2,i2, j3,i3, j4,i4, j1,i1 ]
-                elif iq==3:
-                    vCorners[jP,:] = [ j3,i3, j4,i4, j1,i1, j2,i2 ]
-                elif iq==4:
-                    vCorners[jP,:] = [ j4,i4, j1,i1, j2,i2, j3,i3 ]
-
-
-            [ jbl,ibl, jbr,ibr, jur,iur, jul,iul ] = vCorners[jP,:]                        
-            print(' * lic =',jbl,ibl, jbr,ibr, jur,iur, jul,iul)
-                
+                    
+            jur = VERTICES_j[jP,2] ; # f-point is upper-right, so at 3rd position
+            iur = VERTICES_j[jP,2]
+            
             # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
             zU, zV = xUu[jur,iur], xVv[jur,iur] ; # because the F-point is the upper-right corner
             print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
@@ -316,27 +337,101 @@ if __name__ == '__main__':
             dy = zV*rdt
             print('      ==> displacement during `dt`: dx,dy =',dx,dy, 'm')
 
-            # => position [km] of buoy at next time step will be:
-            rx_nxt = rx + dx/1000.
-            ry_nxt = ry + dy/1000.
+            # => position [km] of buoy after this time step will be:
+            rx_nxt = rx + dx/1000. ; # [km]
+            ry_nxt = ry + dy/1000. ; # [km]
 
-            xPosX[jt+1,jP] = rx_nxt
-            xPosY[jt+1,jP] = ry_nxt
+            xPosXX[jt+1,jP] = rx_nxt
+            xPosYY[jt+1,jP] = ry_nxt
             
             # Is it still inside our mesh:
-            lStillIn[jP] = IsInsideCell(rx_nxt, ry_nxt, vQuads[jP])
-            print('      ==> Still inside the same mesh???',lStillIn[jP])
+            lSI = IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])            
+            lStillIn[jP] = lSI
+            print('      ==> Still inside the same mesh???',lSI)
+
+            if not lSI:
+                print('      ... need to find which wall was crossed...')
+                print('   dx, dy=',dx, dy)
+                [[rlon1,rlon2],[rlat1,rlat2]] = mjt.ConvertCartesianNPSkm2Geo( np.array([rx , rx_nxt]) , np.array([ry, ry_nxt]) )
+                print("Present & upcomming coordinates:",rlat1,rlon1,'&',rlat2,rlon2)
+                #rhdg = gz.Heading( rlat1,rlon1, rlat2,rlon2 )
+
+                z4lat = xlatF[VERTICES_j[jP,:],VERTICES_i[jP,:]]
+                z4lon = xlonF[VERTICES_j[jP,:],VERTICES_i[jP,:]]
+
+                print(' z4lat =',z4lat)
+                print(' z4lon =',z4lon)
+                
+                idir,cdir = gz.IQH( rlat1,rlon1, rlat2,rlon2, z4lat, z4lon )
+
+                print('   ==> heading '+cdir+'! => idir =',idir)
+
+                rangle_xy = atan2((ry_nxt-ry),(rx_nxt-rx))
+
+                print('   ==> `atan2` on distances says the angle is',rangle_xy/pi,'*Pi rad')
+
+                if rangle_xy<0. and rangle_xy>-pi/2.:
+                    print('3 possible adjacent meshes: right, right+below (diag), or below! ')
+                    
+                    # Angles from bottom left corner mesh vertex to new location of point:
+                    jrs, irs = VERTICES_j[jP,1],VERTICES_i[jP,1]                    
+                    ra_rs    = atan2((ry_nxt-xYf[jrs,irs]),(rx_nxt-xYf[jrs,irs])) ; # with right side
+                    print('      => angle from bottom left corner to point is',ra_rs/pi,'*Pi rad')
+                    # Angles from bottom left corner mesh vertex of mesh to the right to new location of point:
+                    jrsp1, irsp1 = VERTICES_j[jP,1],VERTICES_i[jP,1]                    
+                    ra_rsp1    = atan2((ry_nxt-xYf[jrsp1,irsp1+1]),(rx_nxt-xYf[jrsp1,irsp1+1])) ; # with right side
+                    print('      => angle from bottom left corner of next mesh to the right to point is',ra_rsp1/pi,'*Pi rad')
+                    
+                    
+                    
+                    #exit(0)
+                idir=14
+                
+                [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = JIsSurroundMesh[jP,:,:]
+                
+                if   idir==1:
+                    # went down:
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                elif idir==2:
+                    # went to the right
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                elif idir==21:
+                    # went right + down
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                elif idir==23:
+                    # went right + up
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1                    
+                elif idir==3:
+                    # went up:
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                elif idir==4:
+                    # went to the left
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                else:
+                    print('ERROR: unknown direction, idir=',idir)
+                    exit(0)
+
+                ilolorm=1
+                #lSIx = IsInsideCell(rx_nxt, ry,     vCELLs[jP]) ; # effect of just applying dx...
+                #lSIy = IsInsideCell(rx_nxt    , ry_nxt, vCELLs[jP]) ; # effect of just applying dx...
+                #print('lSIx, lSIy=',lSIx, lSIy)
+
+                #exit(0)
             #if not lStillIn[jP]: exit(0)
             
-            
+
+            print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  # 
+            #exit(0)
         ### for jP in range(nP)
 
         # Updating in terms of lon,lat for all the buoys
-        xPosLon[jt+1,:], xPosLat[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosX[jt+1,:] , xPosY[jt+1,:] )
+        xPosLo[jt+1,:], xPosLa[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosXX[jt+1,:] , xPosYY[jt+1,:] )
 
         #print('LOLO present and next lon, lat pos:')
-        #print(xPosLon[jt,:], xPosLat[jt,:],'\n')
-        #print(xPosLon[jt+1,:], xPosLat[jt+1,:],'\n')
+        #print(xPosLo[jt,:], xPosLa[jt,:],'\n')
+        #print(xPosLo[jt+1,:], xPosLa[jt+1,:],'\n')
             
         print('\n\n')
 
