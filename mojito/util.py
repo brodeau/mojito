@@ -617,7 +617,7 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
 
 
 
-def ConvertGeotoCartesianNPS(xlon, xlat):
+def ConvertGeo2CartesianNPSkm(xlon, xlat):
     ''' 
          => from Geo coor. (lon,lat)[degrees] to cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj!
     '''
@@ -635,4 +635,26 @@ def ConvertGeotoCartesianNPS(xlon, xlat):
         zx,zy = zx.T, zy.T
         #
     return zx/1000.,zy/1000.
+
+
+
+
+def ConvertCartesianNPSkm2Geo(xX, xY):
+    ''' 
+         => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
+    '''
+    #
+    from cartopy.crs import PlateCarree, NorthPolarStereo
+    #
+    crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)    
+    #
+    ndim = len(np.shape(xX))
+    #
+    zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*xX, 1000.*xY).T
+    #
+    if ndim==2:
+        zlon,zlat = zlon.T, zlat.T
+        #
+    return zlon,zlat
 
