@@ -17,8 +17,6 @@ import gonzag as gz
 from climporn import dump_2d_field, epoch2clock, clock2epoch
 import mojito   as mjt
 
-
-
 idebug=2
 
 
@@ -29,22 +27,16 @@ if idebug>0:
 
 
 
-# Debug seeding
-
-Xseed0 = np.array([
-                    [ 20.,84.],
-                    [ 50.,89.],    
-                    [100.,89.],
-                    [200.,83.],
-                    [300.,85.],
-                   ])
-
-(nP,_) = np.shape(Xseed0)
-
-IDs    = np.array( range(nP), dtype=int) + 1
-
-Nt_stop = 240 ; #DEBUG only reading 240 snapshots (10 days in NEMO file!)
-
+def debugSeeding():
+    xz = np.array([
+        [ 20.,84.],
+        [ 50.,89.],    
+        [100.,89.],
+        [200.,83.],
+        [300.,85.],
+    ])
+    return xz
+    
 
 
 if __name__ == '__main__':
@@ -56,13 +48,24 @@ if __name__ == '__main__':
     cf_uv = argv[1]
     cf_mm = argv[2]
 
+
+    
+    ################################################################################################
+    ###                                     S E E D I N G                                        ###
+    if idebug>1: Xseed0 = debugSeeding()
+            
     print('\n shape of Xseed0 =',np.shape(Xseed0))
 
+    (nP,_) = np.shape(Xseed0)
+    IDs    = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
 
     if idebug>2:
         # Show buoys on the map at initial position (as seeded):
-        mjt.ShowBuoysMap( 0, Xseed0[:,0], Xseed0[:,1], pvIDs=IDs, cfig='fig_initPos_seeded.png', cnmfig=None, ms=10, ralpha=1., lShowDate=False )
-
+        mjt.ShowBuoysMap( 0, Xseed0[:,0], Xseed0[:,1], pvIDs=IDs, cfig='fig_initPos_seeded.png',
+                          cnmfig=None, ms=10, ralpha=1., lShowDate=False )
+        
+    ################################################################################################
+        
 
     # Reading mesh metrics into mesh-mask file:
     with Dataset(cf_mm) as id_mm:
@@ -134,14 +137,21 @@ if __name__ == '__main__':
 
     
 
+    #######################
+    # Input SI3 data file #
+    #######################
     
-
     id_uv = Dataset(cf_uv)
 
-    for jt in range(Nt_stop):
+    Nt = id_uv.dimensions['time_counter'].size
 
+    print('\n\n *** '+str(Nt)+' records in input SI3 file!')
+    
+    
 
-        print('\n\n *** Reading record #'+str(jt)+' in SI3 file...')
+    for jt in range(Nt):
+
+        print('\n *** Reading record #'+str(jt)+' in SI3 file...')
 
         rtime = id_uv.variables['time_counter'][jt]
 
@@ -149,18 +159,9 @@ if __name__ == '__main__':
         
         xUu   = id_uv.variables['u_ice'][jt,:,:]
         xVv   = id_uv.variables['v_ice'][jt,:,:]
-
-
-        #exit(0)
-
-        #####################################
-        
-    
-
     
         print(' * We have '+str(nP)+' seeded buoys to follow!')
-    
-    
+        
         JInrstF = np.zeros((nP,2), dtype=int)
         xrjiF   = np.zeros((nP,2))
     
@@ -216,15 +217,26 @@ if __name__ == '__main__':
 
             
             if idebug>0:
-                point   = Point(ry,rx)
-                polygon = Polygon([(xYf[j1,i1],xXf[j1,i1]), (xYf[j2,i2],xXf[j2,i2]), (xYf[j3,i3],xXf[j3,i3]), (xYf[j4,i4],xXf[j4,i4])])
-                if not polygon.contains(point):
+                
+                MeshCell = Polygon( [ (xYf[j1,i1],xXf[j1,i1]) , (xYf[j2,i2],xXf[j2,i2]) ,
+                                      (xYf[j3,i3],xXf[j3,i3]) , (xYf[j4,i4],xXf[j4,i4]) ] )
+
+                # Buoy location:
+                pointB   = Point(ry,rx)
+                if not MeshCell.contains(pointB):
                     print('\nPROBLEM: point `rx,ry` is not inside the expected mesh!!!')
                     print([(xYf[j1,i1],xXf[j1,i1]), (xYf[j2,i2],xXf[j2,i2]), (xYf[j3,i3],xXf[j3,i3]), (xYf[j4,i4],xXf[j4,i4])])
                     exit(0)
-                #else:
-                #    print('\n    OK, point `rx,ry` is inside the expected mesh!!!')
-                # ==> de la meme facon, verifier que le point T avec lequel on va travailler est bien entouré des 4 points F !!!!
+                #
+                # T-point @ center of mesh:
+                ryT,rxT = xYt[jnT,inT],xXt[jnT,inT]
+                pointT   = Point(ryT,rxT)
+                if not MeshCell.contains(pointT):
+                    print('\nPROBLEM: T-point is not inside the expected mesh!!!')
+                    print([(xYf[j1,i1],xXf[j1,i1]), (xYf[j2,i2],xXf[j2,i2]), (xYf[j3,i3],xXf[j3,i3]), (xYf[j4,i4],xXf[j4,i4])])
+                    exit(0)
+                #
+                del pointB, pointT
 
 
 
