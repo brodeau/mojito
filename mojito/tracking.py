@@ -32,15 +32,15 @@ def intersect2Seg( pcA, pcB, pcC, pcD ):
     return ( ccw(pcA,pcC,pcD) != ccw(pcB,pcC,pcD) ) and ( ccw(pcA,pcB,pcC) != ccw(pcA,pcB,pcD) )
 
 
-def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0):
+def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
     '''
         * pP1    : point 1 as [y1,x1]
         * pP2    : point 2 as [y2,x2]
         * j4vert : vector of length 4, containg the 4 j-indices of the 4 vertices of the mesh
         * i4vert : vector of length 4, containg the 4 i-indices of the 4 vertices of the mesh
     '''
-    [ jbl, jbr, jur, jul ] = j4vert[:]
     [ ibl, ibr, iur, iul ] = i4vert[:]
+    [ jbl, jbr, jur, jul ] = j4vert[:]
     #
     for kk in range(4):
         kp1 = (kk+1)%4
@@ -56,4 +56,57 @@ def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0):
         vdir = ['bottom', 'right-hand', 'upper', 'left-hand']
         print('    [CrossedEdge()]: particle is crossing the '+vdir[kk]+' edge of the mesh!')
     return kk+1
+
+
+
+
+def NewHostCell( icrss, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
+    '''
+       Find in which adjacent cell, the point has moved into !
+       
+       * icrss : integer describing which (old) cell edge the point has crossed
+
+       In rare cases, the buoy could possibly move into diagonally adjacent cells
+       (not only bottom,right,upper,left cells...)
+       These "diagonally-adjacent" meshes yields output: 5,6,7,8
+    '''
+    #
+    [ jbl, jbr, jur, jul ] = j4vert[:]
+    [ ibl, ibr, iur, iul ] = i4vert[:]
+    #
+    inc = icrss
+    if  icrss==1:
+        # Crosses the bottom edge:
+        if   intersect2Seg( pP1, pP2, [pY[jbl,ibl],pX[jbl,ibl]], [pY[jbl-1,ibl],pX[jbl-1,ibl]] ):
+            inc=5 ; # bottom left diagonal
+        elif intersect2Seg( pP1, pP2, [pY[jbr,ibr],pX[jbr,ibr]], [pY[jbr-1,ibr],pX[jbr-1,ibr]] ):
+            inc=6 ; # bottom right diagonal
+        #
+    elif icrss==2:
+        # Crosses the RHS edge:
+        if   intersect2Seg( pP1, pP2, [pY[jbr,ibr],pX[jbr,ibr]], [pY[jbr,ibr+1],pX[jbr,ibr+1]] ):
+            inc=6 ; # bottom right diagonal
+        elif intersect2Seg( pP1, pP2, [pY[jur,iur],pX[jur,iur]], [pY[jur,iur+1],pX[jur,iur+1]] ):
+            inc=7 ; # bottom right diagonal
+        #
+    elif icrss==3:
+        # Crosses the upper edge:
+        if   intersect2Seg( pP1, pP2, [pY[jul,iul],pX[jul,iul]], [pY[jul+1,iul],pX[jul+1,iul]] ):
+            inc=8 ; # upper left diagonal
+        elif intersect2Seg( pP1, pP2, [pY[jur,iur],pX[jur,iur]], [pY[jur+1,iur],pX[jur+1,iur]] ):
+            inc=7 ; # bottom right diagonal
+        #
+    elif icrss==4:
+        # Crosses the LHS edge:
+        if   intersect2Seg( pP1, pP2, [pY[jul,iul],pX[jul,iul]], [pY[jul,iul-1],pX[jul,iul-1]] ):
+            inc=8 ; # upper left diagonal
+        elif intersect2Seg( pP1, pP2, [pY[jbl,ibl],pX[jbl,ibl]], [pY[jbl,ibl-1],pX[jbl,ibl-1]] ):
+            inc=5 ; # bottom left diagonal
+    #
+    if iverbose>0:
+        vdir = ['bottom', 'RHS', 'upper', 'LHS', 'bottom-LHS', 'bottom-RHS', 'upper-RHS', 'upper-LHS' ]
+        print('    *** Particle is moving into the '+vdir[inc-1]+' mesh !')
+    #
+    return inc
+
 

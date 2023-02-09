@@ -37,8 +37,6 @@ toDegrees = 180./pi
 isubsamp_fig = 24 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
 
-
-#         [ 20.,84.]  ])
 def debugSeeding():
     xz = np.array([
         [ 20.,84.],
@@ -58,8 +56,6 @@ def debugSeeding1():
         [190.,75.],
                  ])
     return xz
-
-
 
 
 
@@ -345,92 +341,60 @@ if __name__ == '__main__':
                 if idebug>0: print('      ==> Still inside the same mesh???',lSI)
     
                 if not lSI:
-                    # We mneed to find which wall was crossed...
+                    
+                    # Tells which of the 4 cell walls the point has crossed:
                     icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
+
+                    # Tells in which adjacent cell the point has moved:
+                    inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf,  iverbose=idebug )
+                        
     
-                    # Now, in rare cases, the buoy could possibly move into diagonally adjacent cells (not only bottom,right,upper,left cells...)
-                    [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
-                    [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
-                    idir = icross
-                    if  icross==1:
-                        # Crosses the bottom edge:
-                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
-                            idir=5 ; # bottom left diagonal
-                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
-                            idir=6 ; # bottom right diagonal
-                        #
-                    elif icross==2:
-                        # Crosses the RHS edge:
-                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
-                            idir=6 ; # bottom right diagonal
-                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
-                            idir=7 ; # bottom right diagonal
-                        #
-                    elif icross==3:
-                        # Crosses the upper edge:
-                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
-                            idir=8 ; # upper left diagonal
-                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
-                            idir=7 ; # bottom right diagonal
-                        #
-                    elif icross==4:
-                        # Crosses the LHS edge:
-                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
-                            idir=8 ; # upper left diagonal
-                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
-                            idir=5 ; # bottom left diagonal
-    
-                    if idebug>0:
-                        vdir = ['bottom', 'RHS', 'upper', 'LHS', 'bottom-LHS', 'bottom-RHS', 'upper-RHS', 'upper-LHS' ]
-                        print('    *** Particle is moving into the '+vdir[idir-1]+' mesh !')
-    
-    
-                    if   idir==1:
+                    if   inhc==1:
                         # went down:
                         VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
                         jnT = jnT-1
-                    elif idir==5:
+                    elif inhc==5:
                         print('LOLO: WE HAVE A 5 !!!!')
                         # went left + down
                         VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
                         VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
                         inT = inT-1
                         jnT = jnT-1
-                    elif idir==6:
+                    elif inhc==6:
                         print('LOLO: WE HAVE A 6 !!!!')
                         # went right + down
                         VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
                         VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
                         inT = inT+1
                         jnT = jnT-1                    
-                    elif idir==2:
+                    elif inhc==2:
                         # went to the right
                         VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
                         inT = inT+1
-                    elif idir==3:
+                    elif inhc==3:
                         # went up:
                         VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                         jnT = jnT+1
-                    elif idir==7:
+                    elif inhc==7:
                         print('LOLO: WE HAVE A 7 !!!!')
                         # went right + up
                         VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
                         VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                         inT = inT+1
                         jnT = jnT+1
-                    elif idir==8:
+                    elif inhc==8:
                         print('LOLO: WE HAVE A 8 !!!!')
                         # went right + up
                         VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
                         VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                         inT = inT-1
                         jnT = jnT+1
-                    elif idir==4:
+                    elif inhc==4:
                         # went to the left
                         VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
                         inT = inT-1
                     else:
-                        print('ERROR: unknown direction, idir=',idir)
+                        print('ERROR: unknown direction, inhc=',inhc)
                         exit(0)
                     #
                     vinT[jP] = inT
