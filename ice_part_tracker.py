@@ -261,8 +261,6 @@ if __name__ == '__main__':
             VERTICES_i[jP,:] = [ i4, i1, i2, i3 ]
             VERTICES_j[jP,:] = [ j4, j1, j2, j3 ]
 
-
-
     ### for jP in range(nP)
 
     ilolorm=0
@@ -331,11 +329,16 @@ if __name__ == '__main__':
 
             if idebug>1:
                 zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+
+                cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32') 
+
                 print(' zisrc_msh =',zisrc_msh)
                 # We can have a look:
-                mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh,fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
+                              fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                               pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
-                mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, fig_name='mesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
+                              fig_name='mesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                               pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
                 
             
