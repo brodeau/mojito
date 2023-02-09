@@ -304,12 +304,7 @@ if __name__ == '__main__':
     
                 # The 4 weights for bi-linear interpolation within this cell:
                 #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
-    
-    
-                jur = VERTICES_j[jP,2] ; # f-point is upper-right, so at 3rd position
-                iur = VERTICES_j[jP,2]
-    
-    
+
                 if idebug>2:
                     # We can have a look:
                     zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
@@ -321,10 +316,16 @@ if __name__ == '__main__':
                                   fig_name='mesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                                   pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
     
+                
+                # j,i indices of the cell we are dealing with = that of the upper-right F-point!!!
+                jM = VERTICES_j[jP,2]
+                iM = VERTICES_i[jP,2]
     
                 # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
-                zU, zV = xUu[jur,iur], xVv[jur,iur] ; # because the F-point is the upper-right corner
-                print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
+                zU, zV = xUu[jM,iM], xVv[jM,iM] ; # because the F-point is the upper-right corner
+                if idebug>0:
+                    print('    =>> read velocity at ji,jj=',iM,jM)
+                    print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
     
                 # Displacement during the upcomming time step:
                 dx = zU*rdt
