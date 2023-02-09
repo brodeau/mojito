@@ -28,13 +28,13 @@ from shapely.geometry.polygon import Polygon
 
 from math import atan2,pi
 
-idebug=2
+idebug=3
 
 rdt = 3600. ; # time step
 
 toDegrees = 180./pi
 
-
+isubsamp_fig = 24 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
 
 def debugSeeding():
@@ -129,11 +129,6 @@ if __name__ == '__main__':
 
     (nP,_) = np.shape(Xseed0G)
     IDs    = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
-
-    if idebug>2:
-        # Show buoys on the map at initial position (as seeded):
-        mjt.ShowBuoysMap( 0, Xseed0G[:,0], Xseed0G[:,1], pvIDs=IDs, cfig='fig_initPos_seeded.png',
-                          cnmfig=None, ms=10, ralpha=1., lShowDate=False )
 
     ################################################################################################
 
@@ -262,7 +257,6 @@ if __name__ == '__main__':
         xPosLo[0,jP], xPosLa[0,jP] = rlon, rlat
         xPosXX[0,jP], xPosYY[0,jP] =  rx ,  ry
 
-
         # 1/ Nearest F-point on NEMO grid:
         [jnF, inF] = gz.NearestPoint( (rlat,rlon), xlatF, xlonF, rd_found_km=5., j_prv=0, i_prv=0 )
         vjnF[jP], vinF[jP] = jnF, inF
@@ -318,9 +312,9 @@ if __name__ == '__main__':
 
     for jt in range(Nt-1):
         rtmod = id_uv.variables['time_counter'][jt] ; # time of model data (center of the average period which should = rdt)
-        rtime = rtmod - rdt/2. #; velocitie is average under the whole rdt, at the center!
+        itime = int(rtmod - rdt/2.) ; # velocitie is average under the whole rdt, at the center!
         print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
-              epoch2clock(int(rtime)),'(model:'+epoch2clock(int(rtmod))+')')
+              epoch2clock(itime),'(model:'+epoch2clock(int(rtmod))+')')
 
         xUu[:,:]   = id_uv.variables['u_ice'][jt,:,:]
         xVv[:,:]   = id_uv.variables['v_ice'][jt,:,:]
@@ -336,6 +330,10 @@ if __name__ == '__main__':
                 print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
 
 
+
+
+
+                
 
             ######################### N E W   M E S H   R E L O C A T I O N #################################
             if not lStillIn[jP]:
@@ -363,7 +361,7 @@ if __name__ == '__main__':
                     #    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
                     #                  fig_name='zmesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                     #                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
-
+                    #
                     # Buoy location:
                     if not IsInsideCell(rx, ry, vCELLs[jP]):
                         print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
@@ -392,7 +390,7 @@ if __name__ == '__main__':
             iur = VERTICES_j[jP,2]
 
 
-            if idebug>1:
+            if idebug>2:
                 # We can have a look:
                 zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
                 cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
@@ -508,47 +506,22 @@ if __name__ == '__main__':
 
             ### if not lSI
 
-
-            #print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  #
-
         ### for jP in range(nP)
 
         # Updating in terms of lon,lat for all the buoys at once:
         xPosLo[jt+1,:], xPosLa[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosXX[jt+1,:] , xPosYY[jt+1,:] )
 
-        #print('LOLO present and next lon, lat pos:')
-        #print(xPosLo[jt,:], xPosLa[jt,:],'\n')
-        #print(xPosLo[jt+1,:], xPosLa[jt+1,:],'\n')
+
+        for jP in range(nP):
+
+            if idebug>2 and jt%isubsamp_fig==0:
+                # Show buoys on the map:
+                mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='Pos_buoys_'+'%4.4i'%(jt)+'.png',
+                                  cnmfig=None, ms=10, ralpha=1., lShowDate=True )
 
         print('\n\n')
-
-
-
-
-exit(0)
-
-if idebug>3:
-    #       dxU
-    #     F------F
-    #     !      !
-    # dyL !  T.  ! dyR
-    #     !      !
-    #     F------F
-    #       dxD
-    dlonU = xlonF[jur,iur]-xlonF[jul,iul]
-    dlonD = xlonF[jbr,ibr]-xlonF[jbl,ibl]
-    dlatL = xlatF[jul,iul]-xlatF[jbl,ibl]
-    dlatR = xlatF[jur,iur]-xlatF[jbr,ibr]
-    print(' dlonD, dlonU =',dlonD, dlonU, )
-    print(' dlatL, dlatR =',dlatL, dlatR)
-
-
-    print('    * buoy position known from proj on rlat,rlon: ry,rx =',ry,rx)
-    ry_intrpl = w1*xYf[j1,i1] + w2*xYf[j2,i2] + w3*xYf[j3,i3] + w4*xYf[j4,i4]
-    rx_intrpl = w1*xXf[j1,i1] + w2*xXf[j2,i2] + w3*xXf[j3,i3] + w4*xXf[j4,i4]
-    print('    * buoy position known from interpolation from the 4 sur. F-points: ry,rx =',ry_intrpl,rx_intrpl)
-
-#
+        
+    ### for jt in range(Nt-1)
 
 
 
@@ -556,15 +529,4 @@ if idebug>3:
 
 
 
-#exit(0)
-
-
-# Interpolation rather than trigonometry:
-#rlat_e = w1*xlatF[j1,i1] + w2*xlatF[j2,i2] + w3*xlatF[j3,i3] + w4*xlatF[j4,i4]
-#rlon_e = w1*xlonF[j1,i1] + w2*xlonF[j2,i2] + w3*xlonF[j3,i3] + w4*xlonF[j4,i4]
-
-# In terms of jj,ji:
-#xrjiF[jP,0] =  w1*float(j1) + w2*float(j2) + w3*float(j3) + w4*float(j4) ; # rjj
-#xrjiF[jP,1] =  w1*float(i1) + w2*float(i2) + w3*float(i3) + w4*float(i4) ; # rji
-#print('     ==> location in terms of j,i =',xrjiF[jP,:])
-
+#print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  #
