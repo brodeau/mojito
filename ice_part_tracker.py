@@ -69,7 +69,7 @@ def ccw( pcA, pcB, pcC ):
 def intersect2Seg( pcA, pcB, pcC, pcD ):
     '''
      Return true if line segments AB and CD intersect
-    
+
         * pcA: coordinates of point A => [y_A,x_A]
         * etc...
     '''
@@ -101,7 +101,7 @@ def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0):
         vdir = ['bottom', 'right-hand', 'upper', 'left-hand']
         print('    [CrossedEdge()]: particle is crossing the '+vdir[kk]+' edge of the mesh!')
     return kk+1
-    
+
 
 
 
@@ -117,9 +117,9 @@ if __name__ == '__main__':
 
 
     #print( intersect2Seg( [-1.,0.], [1.,3.], [-2.,3.], [2.,1] ) )
-    #print( intersect2Seg( [-1.,0.], [1.,3.], [-2.,6.], [2.,4] ) )    
+    #print( intersect2Seg( [-1.,0.], [1.,3.], [-2.,6.], [2.,4] ) )
     #exit(0)
-    
+
 
     ################################################################################################
     ###                                     S E E D I N G                                        ###
@@ -314,12 +314,13 @@ if __name__ == '__main__':
 
     ### for jP in range(nP)
 
-    
+
 
     for jt in range(Nt-1):
-
-        rtime = id_uv.variables['time_counter'][jt]
-        print('\n *** Reading record #'+str(jt)+' in SI3 file ==> date = ', epoch2clock(int(rtime)))
+        rtmod = id_uv.variables['time_counter'][jt] ; # time of model data (center of the average period which should = rdt)
+        rtime = rtmod - rdt/2. #; velocitie is average under the whole rdt, at the center!
+        print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
+              epoch2clock(int(rtime)),'(model:'+epoch2clock(int(rtmod))+')')
 
         xUu[:,:]   = id_uv.variables['u_ice'][jt,:,:]
         xVv[:,:]   = id_uv.variables['v_ice'][jt,:,:]
@@ -427,7 +428,7 @@ if __name__ == '__main__':
             if not lSI:
                 # We mneed to find which wall was crossed...
                 icross = CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
-                
+
                 # Now, in rare cases, the buoy could possibly move into diagonally adjacent cells (not only bottom,right,upper,left cells...)
                 [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
                 [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
@@ -435,31 +436,31 @@ if __name__ == '__main__':
                 if  icross==1:
                     # Crosses the bottom edge:
                     if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
-                        idir=5 ; # bottom left diagonal                                                                      
+                        idir=5 ; # bottom left diagonal
                     elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
-                        idir=6 ; # bottom right diagonal                                                                     
-                    #                                                                                                         
-                elif icross==2:                                                                                               
-                    # Crosses the RHS edge:                                                                                   
+                        idir=6 ; # bottom right diagonal
+                    #
+                elif icross==2:
+                    # Crosses the RHS edge:
                     if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
-                        idir=6 ; # bottom right diagonal                                                                     
+                        idir=6 ; # bottom right diagonal
                     elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
-                        idir=7 ; # bottom right diagonal                                                                     
-                    #                                                                                                         
-                elif icross==3:                                                                                               
-                    # Crosses the upper edge:                                                                                 
+                        idir=7 ; # bottom right diagonal
+                    #
+                elif icross==3:
+                    # Crosses the upper edge:
                     if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
-                        idir=8 ; # upper left diagonal                                                                       
+                        idir=8 ; # upper left diagonal
                     elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
-                        idir=7 ; # bottom right diagonal                                                                     
-                    #                                                                                                         
-                elif icross==4:                                                                                               
-                    # Crosses the LHS edge:                                                                                   
+                        idir=7 ; # bottom right diagonal
+                    #
+                elif icross==4:
+                    # Crosses the LHS edge:
                     if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
-                        idir=8 ; # upper left diagonal                                                                       
+                        idir=8 ; # upper left diagonal
                     elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
                         idir=5 ; # bottom left diagonal
-                    
+
                 if idebug>0:
                     vdir = ['bottom', 'RHS', 'upper', 'LHS', 'bottom-LHS', 'bottom-RHS', 'upper-RHS', 'upper-LHS' ]
                     print('    *** Particle is moving into the '+vdir[idir-1]+' mesh !')
@@ -491,12 +492,12 @@ if __name__ == '__main__':
                     print('LOLO: WE HAVE A 7 !!!!')
                     # went right + up
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1                    
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                 elif idir==8:
                     print('LOLO: WE HAVE A 8 !!!!')
                     # went right + up
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1                    
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                 elif idir==4:
                     # went to the left
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
