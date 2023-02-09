@@ -327,6 +327,14 @@ if __name__ == '__main__':
                     
             jur = VERTICES_j[jP,2] ; # f-point is upper-right, so at 3rd position
             iur = VERTICES_j[jP,2]
+
+
+            if idebug>1:
+                zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+                print(' zisrc_msh =',zisrc_msh)
+                # We can have a look:
+                mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png')
+
             
             # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
             zU, zV = xUu[jur,iur], xVv[jur,iur] ; # because the F-point is the upper-right corner

@@ -557,3 +557,47 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     plt.close(1)
 
     return 0
+
+
+
+
+
+def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, fig_name='mesh.png', pcoor_extra=(-999.,-999.) ):
+    '''
+    isrc_msh: 2D integer array of shape (4,2)
+    wghts:    1D real array of shape (4,)
+    pcoor_extra: just an extra point to show on the figure....
+    '''
+    (yT,xT)                             = pcoor_trg
+    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
+    #
+    fig = plt.figure(num = 1, figsize=[7,5], facecolor='w', edgecolor='k')
+    ax1 = plt.axes([0.09, 0.07, 0.6, 0.9])
+
+    # Lines to see the mesh:
+    for i in range(4):
+        [ja,ia] = isrc_msh[i,:]
+        [jb,ib] = isrc_msh[(i+1)%4,:]
+        plt.plot( [ Xs[ja,ia],Xs[jb,ib] ], [ Ys[ja,ia],Ys[jb,ib] ], linestyle='-', color='k', marker=None, ms=10, label=None)
+    
+
+    
+    plt.plot( [     xT    ], [     yT    ], marker='o', ms=15, color='k', label='target point' ) ; # target point !
+    plt.plot( [ Xs[j1,i1] ], [ Ys[j1,i1] ], marker='o', ms=10, label='P1')
+    plt.plot( [ Xs[j2,i2] ], [ Ys[j2,i2] ], marker='o', ms=10, label='P2')
+    plt.plot( [ Xs[j3,i3] ], [ Ys[j3,i3] ], marker='o', ms=10, label='P3')
+    plt.plot( [ Xs[j4,i4] ], [ Ys[j4,i4] ], marker='o', ms=10, label='P4')
+
+
+
+
+
+    
+    if pcoor_extra!=(-999.,-999.):
+        (yE,xE) = pcoor_extra
+        plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label='extra' ) ; # target point !
+
+
+    ax1.legend(loc='center left', bbox_to_anchor=(1.07, 0.5), fancybox=True)
+    plt.savefig(fig_name, dpi=100, transparent=False)
+    plt.close(1)
