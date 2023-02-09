@@ -487,7 +487,7 @@ if __name__ == '__main__':
                 elif idir==3:
                     # went up:
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                    jnT = jnT-1
+                    jnT = jnT+1
                 elif idir==7:
                     print('LOLO: WE HAVE A 7 !!!!')
                     # went right + up
