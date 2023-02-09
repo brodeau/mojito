@@ -32,7 +32,7 @@ idebug=2
 
 rdt = 3600. ; # time step
 
-
+toDegrees = 180./pi
 
 
 
@@ -69,8 +69,38 @@ def ccw( pcA, pcB, pcC ):
 def intersect2Seg( pcA, pcB, pcC, pcD ):
     '''
      Return true if line segments AB and CD intersect
+    
+        * pcA: coordinates of point A => [y_A,x_A]
+        * etc...
     '''
     return ( ccw(pcA,pcC,pcD) != ccw(pcB,pcC,pcD) ) and ( ccw(pcA,pcB,pcC) != ccw(pcA,pcB,pcD) )
+
+
+#   CrossedEdge( VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf )
+def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX):
+    '''
+        * pP1    : point 1 as [y1,x1]
+        * pP2    : point 2 as [y2,x2]
+        * j4vert : vector of length 4, containg the 4 j-indices of the 4 vertices of the mesh
+        * i4vert : vector of length 4, containg the 4 i-indices of the 4 vertices of the mesh
+    '''
+    [ jbl, jbr, jur, jul ] = j4vert[:]
+    [ ibl, ibr, iur, iul ] = i4vert[:]
+    #
+    for kk in range(4):
+        print(' kk =',kk)
+        kp1 = (kk+1)%4
+        j1 = j4vert[kk]
+        i1 = i4vert[kk]
+        j2 = j4vert[kp1]
+        i2 = i4vert[kp1]
+        #
+        ll = intersect2Seg( pP1, pP2,  [pY[j1,i1],pX[j1,i1]], [pY[j2,i2],pX[j2,i2]] )
+        if ll: break
+        #
+    return kk+1
+    
+    
 
 
 
@@ -283,9 +313,7 @@ if __name__ == '__main__':
 
     ### for jP in range(nP)
 
-    ilolorm=0
-
-    #exit(0)
+    
 
     for jt in range(Nt-1):
 
@@ -399,68 +427,91 @@ if __name__ == '__main__':
                 print('      ... need to find which wall was crossed...')
                 print('   dx, dy=',dx, dy)
                 [rlon1,rlon2], [rlat1,rlat2] = mjt.ConvertCartesianNPSkm2Geo( np.array([rx , rx_nxt]) , np.array([ry, ry_nxt]) )
-                print("Present & upcomming coordinates:",rlat1,rlon1,'&',rlat2,rlon2)
+                print('   present & upcomming coordinates:',rlat1,rlon1,'&',rlat2,rlon2)
 
-                rangle_xy = atan2((ry_nxt-ry),(rx_nxt-rx))
+                #rangle_xy = atan2((ry_nxt-ry),(rx_nxt-rx))
+                #print('   ==> `atan2` on distances says the angle is',(toDegrees*rangle_xy)%360.,' degrees.')
+                #if rangle_xy<0. and rangle_xy>-pi/2.:
+                #    print('3 possible adjacent meshes: right, right+below (diag), or below! ')
+                #    # Angles from bottom left corner mesh vertex to new location of point:
+                #    jrs, irs = VERTICES_j[jP,1],VERTICES_i[jP,1]
+                #    ra_rs    = atan2((ry_nxt-xYf[jrs,irs]),(rx_nxt-xYf[jrs,irs])) ; # with right side
+                #    print('      => angle from bottom left corner to point is',(toDegrees*ra_rs)%360.,' degrees.')
+                #    # Angles from bottom left corner mesh vertex of mesh to the right to new location of point:
+                #    jrsp1, irsp1 = VERTICES_j[jP,1],VERTICES_i[jP,1]
+                #    ra_rsp1    = atan2((ry_nxt-xYf[jrsp1,irsp1+1]),(rx_nxt-xYf[jrsp1,irsp1+1])) ; # with right side
+                #    print('      => angle from bottom left corner of next mesh to the right to point is',(toDegrees*ra_rsp1)%360.,' degrees.')
 
-                print('   ==> `atan2` on distances says the angle is',rangle_xy/pi,'*Pi rad')
-
-                if rangle_xy<0. and rangle_xy>-pi/2.:
-                    print('3 possible adjacent meshes: right, right+below (diag), or below! ')
-
-                    # Angles from bottom left corner mesh vertex to new location of point:
-                    jrs, irs = VERTICES_j[jP,1],VERTICES_i[jP,1]
-                    ra_rs    = atan2((ry_nxt-xYf[jrs,irs]),(rx_nxt-xYf[jrs,irs])) ; # with right side
-                    print('      => angle from bottom left corner to point is',ra_rs/pi,'*Pi rad')
-                    # Angles from bottom left corner mesh vertex of mesh to the right to new location of point:
-                    jrsp1, irsp1 = VERTICES_j[jP,1],VERTICES_i[jP,1]
-                    ra_rsp1    = atan2((ry_nxt-xYf[jrsp1,irsp1+1]),(rx_nxt-xYf[jrsp1,irsp1+1])) ; # with right side
-                    print('      => angle from bottom left corner of next mesh to the right to point is',ra_rsp1/pi,'*Pi rad')
-
-
-
-                    #exit(0)
-                idir=1
-
-
-                [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
+                icross = CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf )
+                print('icross = ',icross)
+                
+                
+                # Now, in rare cases, the buoy could possibly move into diagonally adjacent cells (not only bottom,right,upper,left cells...)
                 [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
-                
-                #ll = intersect2Seg( pcA, pcB, pcC, pcD )
-                # Intersect bottom edge?
-                llb = intersect2Seg( [ry,rx], [ry_nxt,rx_nxt],  [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbr,ibr],xXf[jbr,ibr]] )
-                print(' LOLO: llb =', llb)                                                                        
-                llr = intersect2Seg( [ry,rx], [ry_nxt,rx_nxt],  [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jur,iur],xXf[jur,iur]] )
-                print(' LOLO: llr =', llr)                                                                        
-                llu = intersect2Seg( [ry,rx], [ry_nxt,rx_nxt],  [xYf[jur,iur],xXf[jur,iur]], [xYf[jul,iul],xXf[jul,iul]] )
-                print(' LOLO: llu =', llu)                                                                        
-                lll = intersect2Seg( [ry,rx], [ry_nxt,rx_nxt],  [xYf[jul,iul],xXf[jul,iul]], [xYf[jbl,ibl],xXf[jbl,ibl]] )
-                print(' LOLO: lll =', lll)
-
-                
-                exit(0)
-                [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = JIsSurroundMesh[jP,:,:]
+                [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
+                idir = icross
+                if  icross==1:
+                    # Crosses the bottom edge:
+                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
+                        idir=14 ; # bottom left diagonal                                                                      
+                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
+                        idir=12 ; # bottom right diagonal                                                                     
+                    #                                                                                                         
+                elif icross==3:                                                                                               
+                    # Crosses the upper edge:                                                                                 
+                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
+                        idir=34 ; # upper left diagonal                                                                       
+                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
+                        idir=32 ; # bottom right diagonal                                                                     
+                    #                                                                                                         
+                elif icross==2:                                                                                               
+                    # Crosses the RHS edge:                                                                                   
+                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
+                        idir=12 ; # bottom right diagonal                                                                     
+                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
+                        idir=32 ; # bottom right diagonal                                                                     
+                    #                                                                                                         
+                elif icross==4:                                                                                               
+                    # Crosses the LHS edge:                                                                                   
+                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
+                        idir=34 ; # upper left diagonal                                                                       
+                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
+                        idir=14 ; # bottom left diagonal
+                    
+                print(' idir = ',idir)
 
                 if   idir==1:
                     # went down:
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
                     jnT = jnT-1
+                elif idir==14:
+                    print('LOLO: WE HAVE A 14 !!!!')
+                    # went right + down
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                elif idir==12:
+                    print('LOLO: WE HAVE A 12 !!!!')
+                    # went right + down
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
                 elif idir==2:
                     # went to the right
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
                     inT = inT+1
-                elif idir==21:
-                    # went right + down
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                elif idir==23:
-                    # went right + up
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                 elif idir==3:
                     # went up:
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
                     jnT = jnT-1
+                elif idir==32:
+                    print('LOLO: WE HAVE A 32 !!!!')
+                    # went right + up
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1                    
+                elif idir==32:
+                    print('LOLO: WE HAVE A 34 !!!!')
+                    # went right + up
+                    VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1                    
                 elif idir==4:
                     # went to the left
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
@@ -469,17 +520,11 @@ if __name__ == '__main__':
                     print('ERROR: unknown direction, idir=',idir)
                     exit(0)
 
-                ilolorm=1
-                #lSIx = IsInsideCell(rx_nxt, ry,     vCELLs[jP]) ; # effect of just applying dx...
-                #lSIy = IsInsideCell(rx_nxt    , ry_nxt, vCELLs[jP]) ; # effect of just applying dx...
-                #print('lSIx, lSIy=',lSIx, lSIy)
-
-                #exit(0)
-            #if not lStillIn[jP]: exit(0)
+            ### if not lSI
 
 
-            print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  #
-            #exit(0)
+            #print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  #
+
         ### for jP in range(nP)
 
         # Updating in terms of lon,lat for all the buoys at once:
