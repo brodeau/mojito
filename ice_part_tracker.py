@@ -36,8 +36,9 @@ toDegrees = 180./pi
 
 isubsamp_fig = 24 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-#         [ 20.,84.]  ])
 
+
+#         [ 20.,84.]  ])
 def debugSeeding():
     xz = np.array([
         [ 20.,84.],
@@ -49,62 +50,6 @@ def debugSeeding():
     return xz
 #         [ 20.,84.]  ])
 
-def IsInsideCell( px, py, CellPolygon ):
-    '''
-         * px, py     : global (not local to the cell) x,y position [m] or [km]
-         * CellPolygon: shapely polygon object of a quadrangle mesh constructed with same unit as px and py
-    '''
-    pnt  = Point(py,px)
-    return CellPolygon.contains(pnt)
-
-
-def ccw( pcA, pcB, pcC ):
-    '''
-        * pcA: coordinates of point A => [y_A,x_A]
-        * etc...
-    '''
-    return (pcC[0]-pcA[0])*(pcB[1]-pcA[1]) > (pcB[0]-pcA[0])*(pcC[1]-pcA[1])
-
-
-def intersect2Seg( pcA, pcB, pcC, pcD ):
-    '''
-     Return true if line segments AB and CD intersect
-
-        * pcA: coordinates of point A => [y_A,x_A]
-        * etc...
-    '''
-    return ( ccw(pcA,pcC,pcD) != ccw(pcB,pcC,pcD) ) and ( ccw(pcA,pcB,pcC) != ccw(pcA,pcB,pcD) )
-
-
-#   CrossedEdge( VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf )
-def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0):
-    '''
-        * pP1    : point 1 as [y1,x1]
-        * pP2    : point 2 as [y2,x2]
-        * j4vert : vector of length 4, containg the 4 j-indices of the 4 vertices of the mesh
-        * i4vert : vector of length 4, containg the 4 i-indices of the 4 vertices of the mesh
-    '''
-    [ jbl, jbr, jur, jul ] = j4vert[:]
-    [ ibl, ibr, iur, iul ] = i4vert[:]
-    #
-    for kk in range(4):
-        kp1 = (kk+1)%4
-        j1 = j4vert[kk]
-        i1 = i4vert[kk]
-        j2 = j4vert[kp1]
-        i2 = i4vert[kp1]
-        #
-        ll = intersect2Seg( pP1, pP2,  [pY[j1,i1],pX[j1,i1]], [pY[j2,i2],pX[j2,i2]] )
-        if ll: break
-        #
-    if iverbose>0:
-        vdir = ['bottom', 'right-hand', 'upper', 'left-hand']
-        print('    [CrossedEdge()]: particle is crossing the '+vdir[kk]+' edge of the mesh!')
-    return kk+1
-
-
-
-
 
 if __name__ == '__main__':
 
@@ -114,11 +59,6 @@ if __name__ == '__main__':
 
     cf_uv = argv[1]
     cf_mm = argv[2]
-
-
-    #print( intersect2Seg( [-1.,0.], [1.,3.], [-2.,3.], [2.,1] ) )
-    #print( intersect2Seg( [-1.,0.], [1.,3.], [-2.,6.], [2.,4] ) )
-    #exit(0)
 
 
     ################################################################################################
@@ -138,17 +78,10 @@ if __name__ == '__main__':
         imaskt = id_mm.variables['tmask'][0,0,:,:]
         imasku = id_mm.variables['umask'][0,0,:,:]
         imaskv = id_mm.variables['vmask'][0,0,:,:]
-
         xlonF  = id_mm.variables['glamf'][0,:,:]
         xlatF  = id_mm.variables['gphif'][0,:,:]
         xlonT  = id_mm.variables['glamt'][0,:,:]
         xlatT  = id_mm.variables['gphit'][0,:,:]
-
-        #xlatU  = id_mm.variables['gphiu'][0,:,:]
-        #xlatV  = id_mm.variables['gphiv'][0,:,:]
-
-        #xe1v   = id_mm.variables['e1v'][0,:,:] / 1000. ; # km !
-        #xe1t   = id_mm.variables['e1t'][0,:,:] / 1000. ; # km !
 
     (Nj,Ni) = np.shape(imaskt)
 
@@ -156,16 +89,13 @@ if __name__ == '__main__':
     imasku = np.array(imasku, dtype=int)
     imaskv = np.array(imaskv, dtype=int)
 
-
     xlonF = np.mod( xlonF, 360. )
     xlonT = np.mod( xlonT, 360. )
-
 
     xXt = np.zeros((Nj,Ni))
     xYt = np.zeros((Nj,Ni))
     xXf = np.zeros((Nj,Ni))
     xYf = np.zeros((Nj,Ni))
-
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
 
@@ -183,9 +113,7 @@ if __name__ == '__main__':
     Xseed0C = np.array([zx,zy]).T
     del zx,zy
 
-
     print('\n shape of XseedC =',np.shape(Xseed0C))
-
 
 
 
@@ -196,7 +124,6 @@ if __name__ == '__main__':
     id_uv = Dataset(cf_uv)
 
     Nt = id_uv.dimensions['time_counter'].size
-
 
     xPosXX = np.zeros((Nt,nP)) ; # x-position of buoy along the Nt records [km]
     xPosYY = np.zeros((Nt,nP)) ; # y-position of buoy along the Nt records [km]
@@ -341,7 +268,7 @@ if __name__ == '__main__':
                     #                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
                     #
                     # Buoy location:
-                    if not IsInsideCell(rx, ry, vCELLs[jP]):
+                    if not mjt.IsInsideCell(rx, ry, vCELLs[jP]):
                         print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
                         print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                (xYf[jul,iul],xXf[jul,iul])])
@@ -349,7 +276,7 @@ if __name__ == '__main__':
                         exit(0)
                     #
                     # T-point @ center of mesh ?
-                    if not IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
+                    if not mjt.IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
                         print('\nPROBLEM: T-point is not inside the expected mesh!!!')
                         print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                (xYf[jul,iul],xXf[jul,iul])])
@@ -397,13 +324,13 @@ if __name__ == '__main__':
             xPosYY[jt+1,jP] = ry_nxt
 
             # Is it still inside our mesh:
-            lSI = IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])
+            lSI = mjt.IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])
             lStillIn[jP] = lSI
             if idebug>0: print('      ==> Still inside the same mesh???',lSI)
 
             if not lSI:
                 # We mneed to find which wall was crossed...
-                icross = CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
+                icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
 
                 # Now, in rare cases, the buoy could possibly move into diagonally adjacent cells (not only bottom,right,upper,left cells...)
                 [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
@@ -411,30 +338,30 @@ if __name__ == '__main__':
                 idir = icross
                 if  icross==1:
                     # Crosses the bottom edge:
-                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
+                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
                         idir=5 ; # bottom left diagonal
-                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
+                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
                         idir=6 ; # bottom right diagonal
                     #
                 elif icross==2:
                     # Crosses the RHS edge:
-                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
+                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
                         idir=6 ; # bottom right diagonal
-                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
+                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
                         idir=7 ; # bottom right diagonal
                     #
                 elif icross==3:
                     # Crosses the upper edge:
-                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
+                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
                         idir=8 ; # upper left diagonal
-                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
+                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
                         idir=7 ; # bottom right diagonal
                     #
                 elif icross==4:
                     # Crosses the LHS edge:
-                    if   intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
+                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
                         idir=8 ; # upper left diagonal
-                    elif intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
+                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
                         idir=5 ; # bottom left diagonal
 
                 if idebug>0:
@@ -510,7 +437,7 @@ if __name__ == '__main__':
     ### for jt in range(Nt-1)
 
 
-
+    id_uv.close()
 
 
 
