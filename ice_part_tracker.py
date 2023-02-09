@@ -28,7 +28,7 @@ from shapely.geometry.polygon import Polygon
 
 from math import atan2,pi
 
-idebug=2
+idebug=3
 
 rdt = 3600. ; # time step
 
@@ -47,11 +47,20 @@ def debugSeeding():
         [100.,89.],
         [180.,79.],
         [190.,75.],
+        [210.,75.],        
         [200.,83.],
         [300.,85.],
                  ])
     return xz
-#         [ 20.,84.]  ])
+
+def debugSeeding1():
+    xz = np.array([
+        [190.,75.],
+                 ])
+    return xz
+
+
+
 
 
 if __name__ == '__main__':
@@ -66,7 +75,8 @@ if __name__ == '__main__':
 
     ################################################################################################
     ###                                     S E E D I N G                                        ###
-    if idebug>1: Xseed0G = debugSeeding()
+    if idebug in [0,1,2]: Xseed0G = debugSeeding()
+    if idebug in [3]:     Xseed0G = debugSeeding1()
 
     print('\n shape of Xseed0G =',np.shape(Xseed0G))
 
@@ -134,7 +144,7 @@ if __name__ == '__main__':
     xPosLa = np.zeros((Nt,nP))
 
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
-
+    IsAlive  = np.zeros(nP, dtype=int)+1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
 
     vinF = np.zeros(nP, dtype=int)
     vjnF = np.zeros(nP, dtype=int)  ; # j,i indices of the F-point that defines the current mesh/cell
@@ -235,196 +245,200 @@ if __name__ == '__main__':
         
         for jP in range(nP):
 
-            rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
-            rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
-
-            inT, jnT = vinT[jP] , vjnT[jP] 
+            if IsAlive[jP]==1:
             
-            if idebug>0:
-                print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
-
-            ######################### N E W   M E S H   R E L O C A T I O N #################################
-            if not lStillIn[jP]:
-                print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
-
-                [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
-                [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
-                if idebug>0:
-                    print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
-                          [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
-
-                # The current mesh/cell as a shapely polygon object:
-                vCELLs[jP] = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
-                                        (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
+                rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
+                rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
+    
+                inT, jnT = vinT[jP] , vjnT[jP] 
                 
                 if idebug>0:
-                    #if idebug>1 and jt>0:
-                    #    # We can have a look:
-                    #    #zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
-                    #    zisrc_msh = np.array([  [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
-                    #    cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
-                    #    mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
-                    #                  fig_name='zmesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
-                    #                  pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
-                    #    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
-                    #                  fig_name='zmesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
-                    #                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
-                    #
-                    # Buoy location:
-                    if not mjt.IsInsideCell(rx, ry, vCELLs[jP]):
-                        print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
-                        print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
-                               (xYf[jul,iul],xXf[jul,iul])])
-                        #print('==> distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry,rx)))
+                    print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
+    
+                ######################### N E W   M E S H   R E L O C A T I O N #################################
+                if not lStillIn[jP]:
+                    print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
+    
+                    [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
+                    [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
+                    if idebug>0:
+                        print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
+                              [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
+    
+                    # The current mesh/cell as a shapely polygon object:
+                    vCELLs[jP] = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
+                                            (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
+                    
+                    if idebug>0:
+                        #if idebug>1 and jt>0:
+                        #    # We can have a look:
+                        #    #zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+                        #    zisrc_msh = np.array([  [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
+                        #    cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
+                        #    mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
+                        #                  fig_name='zmesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                        #                  pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
+                        #    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
+                        #                  fig_name='zmesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                        #                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
+                        #
+                        # Buoy location:
+                        if not mjt.IsInsideCell(rx, ry, vCELLs[jP]):
+                            print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
+                            print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
+                                   (xYf[jul,iul],xXf[jul,iul])])
+                            #print('==> distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry,rx)))
+                            exit(0)
+                        #
+                        # T-point @ center of mesh ?
+                        if not mjt.IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
+                            print('\nPROBLEM: T-point is not inside the expected mesh!!!')
+                            print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
+                                   (xYf[jul,iul],xXf[jul,iul])])
+                            exit(0)
+    
+                        print('     +++ control of location of point inside selected cell successfuly passed! :D')
+                        #if jt>0: exit(0); #fixme rm!
+                ### if not lStillIn[jP]
+                ###########################################################################################################################
+    
+                # The 4 weights for bi-linear interpolation within this cell:
+                #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
+    
+    
+                jur = VERTICES_j[jP,2] ; # f-point is upper-right, so at 3rd position
+                iur = VERTICES_j[jP,2]
+    
+    
+                if idebug>2:
+                    # We can have a look:
+                    zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+                    cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
+                    #mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
+                    #              fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                    #              pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
+                    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
+                                  fig_name='mesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
+    
+    
+                # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
+                zU, zV = xUu[jur,iur], xVv[jur,iur] ; # because the F-point is the upper-right corner
+                print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
+    
+                # Displacement during the upcomming time step:
+                dx = zU*rdt
+                dy = zV*rdt
+                print('      ==> displacement during `dt`: dx,dy =',dx,dy, 'm')
+    
+                # => position [km] of buoy after this time step will be:
+                rx_nxt = rx + dx/1000. ; # [km]
+                ry_nxt = ry + dy/1000. ; # [km]
+    
+                xPosXX[jt+1,jP] = rx_nxt
+                xPosYY[jt+1,jP] = ry_nxt
+    
+                # Is it still inside our mesh:
+                lSI = mjt.IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])
+                lStillIn[jP] = lSI
+                if idebug>0: print('      ==> Still inside the same mesh???',lSI)
+    
+                if not lSI:
+                    # We mneed to find which wall was crossed...
+                    icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
+    
+                    # Now, in rare cases, the buoy could possibly move into diagonally adjacent cells (not only bottom,right,upper,left cells...)
+                    [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
+                    [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
+                    idir = icross
+                    if  icross==1:
+                        # Crosses the bottom edge:
+                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
+                            idir=5 ; # bottom left diagonal
+                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
+                            idir=6 ; # bottom right diagonal
+                        #
+                    elif icross==2:
+                        # Crosses the RHS edge:
+                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
+                            idir=6 ; # bottom right diagonal
+                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
+                            idir=7 ; # bottom right diagonal
+                        #
+                    elif icross==3:
+                        # Crosses the upper edge:
+                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
+                            idir=8 ; # upper left diagonal
+                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
+                            idir=7 ; # bottom right diagonal
+                        #
+                    elif icross==4:
+                        # Crosses the LHS edge:
+                        if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
+                            idir=8 ; # upper left diagonal
+                        elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
+                            idir=5 ; # bottom left diagonal
+    
+                    if idebug>0:
+                        vdir = ['bottom', 'RHS', 'upper', 'LHS', 'bottom-LHS', 'bottom-RHS', 'upper-RHS', 'upper-LHS' ]
+                        print('    *** Particle is moving into the '+vdir[idir-1]+' mesh !')
+    
+    
+                    if   idir==1:
+                        # went down:
+                        VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                        jnT = jnT-1
+                    elif idir==5:
+                        print('LOLO: WE HAVE A 5 !!!!')
+                        # went left + down
+                        VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                        VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                        inT = inT-1
+                        jnT = jnT-1
+                    elif idir==6:
+                        print('LOLO: WE HAVE A 6 !!!!')
+                        # went right + down
+                        VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                        VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                        inT = inT+1
+                        jnT = jnT-1                    
+                    elif idir==2:
+                        # went to the right
+                        VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                        inT = inT+1
+                    elif idir==3:
+                        # went up:
+                        VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                        jnT = jnT+1
+                    elif idir==7:
+                        print('LOLO: WE HAVE A 7 !!!!')
+                        # went right + up
+                        VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                        VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                        inT = inT+1
+                        jnT = jnT+1
+                    elif idir==8:
+                        print('LOLO: WE HAVE A 8 !!!!')
+                        # went right + up
+                        VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                        VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                        inT = inT-1
+                        jnT = jnT+1
+                    elif idir==4:
+                        # went to the left
+                        VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                        inT = inT-1
+                    else:
+                        print('ERROR: unknown direction, idir=',idir)
                         exit(0)
                     #
-                    # T-point @ center of mesh ?
-                    if not mjt.IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
-                        print('\nPROBLEM: T-point is not inside the expected mesh!!!')
-                        print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
-                               (xYf[jul,iul],xXf[jul,iul])])
-                        exit(0)
+                    vinT[jP] = inT
+                    vjnT[jP] = jnT
+    
+                ### if not lSI
 
-                    print('     +++ control of location of point inside selected cell successfuly passed! :D')
-                    #if jt>0: exit(0); #fixme rm!
-            ### if not lStillIn[jP]
-            ###########################################################################################################################
-
-            # The 4 weights for bi-linear interpolation within this cell:
-            #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
-
-
-            jur = VERTICES_j[jP,2] ; # f-point is upper-right, so at 3rd position
-            iur = VERTICES_j[jP,2]
-
-
-            if idebug>2:
-                # We can have a look:
-                zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
-                cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
-                #mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
-                #              fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
-                #              pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
-                mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
-                              fig_name='mesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
-                              pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
-
-
-            # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
-            zU, zV = xUu[jur,iur], xVv[jur,iur] ; # because the F-point is the upper-right corner
-            print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
-
-            # Displacement during the upcomming time step:
-            dx = zU*rdt
-            dy = zV*rdt
-            print('      ==> displacement during `dt`: dx,dy =',dx,dy, 'm')
-
-            # => position [km] of buoy after this time step will be:
-            rx_nxt = rx + dx/1000. ; # [km]
-            ry_nxt = ry + dy/1000. ; # [km]
-
-            xPosXX[jt+1,jP] = rx_nxt
-            xPosYY[jt+1,jP] = ry_nxt
-
-            # Is it still inside our mesh:
-            lSI = mjt.IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])
-            lStillIn[jP] = lSI
-            if idebug>0: print('      ==> Still inside the same mesh???',lSI)
-
-            if not lSI:
-                # We mneed to find which wall was crossed...
-                icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
-
-                # Now, in rare cases, the buoy could possibly move into diagonally adjacent cells (not only bottom,right,upper,left cells...)
-                [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
-                [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
-                idir = icross
-                if  icross==1:
-                    # Crosses the bottom edge:
-                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl-1,ibl],xXf[jbl-1,ibl]] ):
-                        idir=5 ; # bottom left diagonal
-                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr-1,ibr],xXf[jbr-1,ibr]] ):
-                        idir=6 ; # bottom right diagonal
-                    #
-                elif icross==2:
-                    # Crosses the RHS edge:
-                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbr,ibr],xXf[jbr,ibr]], [xYf[jbr,ibr+1],xXf[jbr,ibr+1]] ):
-                        idir=6 ; # bottom right diagonal
-                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur,iur+1],xXf[jur,iur+1]] ):
-                        idir=7 ; # bottom right diagonal
-                    #
-                elif icross==3:
-                    # Crosses the upper edge:
-                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul+1,iul],xXf[jul+1,iul]] ):
-                        idir=8 ; # upper left diagonal
-                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jur,iur],xXf[jur,iur]], [xYf[jur+1,iur],xXf[jur+1,iur]] ):
-                        idir=7 ; # bottom right diagonal
-                    #
-                elif icross==4:
-                    # Crosses the LHS edge:
-                    if   mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jul,iul],xXf[jul,iul]], [xYf[jul,iul-1],xXf[jul,iul-1]] ):
-                        idir=8 ; # upper left diagonal
-                    elif mjt.intersect2Seg( [ry,rx], [ry_nxt,rx_nxt], [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbl,ibl-1],xXf[jbl,ibl-1]] ):
-                        idir=5 ; # bottom left diagonal
-
-                if idebug>0:
-                    vdir = ['bottom', 'RHS', 'upper', 'LHS', 'bottom-LHS', 'bottom-RHS', 'upper-RHS', 'upper-LHS' ]
-                    print('    *** Particle is moving into the '+vdir[idir-1]+' mesh !')
-
-
-                if   idir==1:
-                    # went down:
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                    jnT = jnT-1
-                elif idir==5:
-                    print('LOLO: WE HAVE A 5 !!!!')
-                    # went left + down
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                    inT = inT-1
-                    jnT = jnT-1
-                elif idir==6:
-                    print('LOLO: WE HAVE A 6 !!!!')
-                    # went right + down
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                    inT = inT+1
-                    jnT = jnT-1                    
-                elif idir==2:
-                    # went to the right
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                    inT = inT+1
-                elif idir==3:
-                    # went up:
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                    jnT = jnT+1
-                elif idir==7:
-                    print('LOLO: WE HAVE A 7 !!!!')
-                    # went right + up
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                    inT = inT+1
-                    jnT = jnT+1
-                elif idir==8:
-                    print('LOLO: WE HAVE A 8 !!!!')
-                    # went right + up
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                    VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                    inT = inT-1
-                    jnT = jnT+1
-                elif idir==4:
-                    # went to the left
-                    VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                    inT = inT-1
-                else:
-                    print('ERROR: unknown direction, idir=',idir)
-                    exit(0)
-                #
-                vinT[jP] = inT
-                vjnT[jP] = jnT
-
-            ### if not lSI
-
+            ### if IsAlive[jP]==1
+                
         ### for jP in range(nP)
 
         # Updating in terms of lon,lat for all the buoys at once:
