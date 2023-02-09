@@ -152,8 +152,8 @@ if __name__ == '__main__':
 
     
     vCELLs = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
-    VERTICES_i = np.zeros((nP,4), dtype=int)
-    VERTICES_j = np.zeros((nP,4), dtype=int)
+    VRTCS_i = np.zeros((nP,4), dtype=int)
+    VRTCS_j = np.zeros((nP,4), dtype=int)
 
     JIsSurroundMesh = np.zeros((nP,4,2), dtype=int)
 
@@ -211,17 +211,17 @@ if __name__ == '__main__':
 
         # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
         if   iq==1:
-            VERTICES_i[jP,:] = [ i1, i2, i3, i4 ]
-            VERTICES_j[jP,:] = [ j1, j2, j3, j4 ]
+            VRTCS_i[jP,:] = [ i1, i2, i3, i4 ]
+            VRTCS_j[jP,:] = [ j1, j2, j3, j4 ]
         elif iq==2:
-            VERTICES_i[jP,:] = [ i2, i3, i4, i1 ]
-            VERTICES_j[jP,:] = [ j2, j3, j4, j1 ]
+            VRTCS_i[jP,:] = [ i2, i3, i4, i1 ]
+            VRTCS_j[jP,:] = [ j2, j3, j4, j1 ]
         elif iq==3:
-            VERTICES_i[jP,:] = [ i3, i4, i1, i2 ]
-            VERTICES_j[jP,:] = [ j3, j4, j1, j2 ]
+            VRTCS_i[jP,:] = [ i3, i4, i1, i2 ]
+            VRTCS_j[jP,:] = [ j3, j4, j1, j2 ]
         elif iq==4:
-            VERTICES_i[jP,:] = [ i4, i1, i2, i3 ]
-            VERTICES_j[jP,:] = [ j4, j1, j2, j3 ]
+            VRTCS_i[jP,:] = [ i4, i1, i2, i3 ]
+            VRTCS_j[jP,:] = [ j4, j1, j2, j3 ]
 
     ### for jP in range(nP)
 
@@ -255,8 +255,8 @@ if __name__ == '__main__':
                 if not lStillIn[jP]:
                     print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
     
-                    [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
-                    [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
+                    [ ibl, ibr, iur, iul ] = VRTCS_i[jP,:]
+                    [ jbl, jbr, jur, jul ] = VRTCS_j[jP,:]
                     if idebug>0:
                         print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
                               [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
@@ -268,9 +268,9 @@ if __name__ == '__main__':
                     if idebug>0:
                         #if idebug>1 and jt>0:
                         #    # We can have a look:
-                        #    #zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+                        #    #zisrc_msh = np.array([ [VRTCS_j[jP,i],VRTCS_i[jP,i]] for i in range(4) ])
                         #    zisrc_msh = np.array([  [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
-                        #    cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
+                        #    cnames    = np.array([ 'P'+str(i+1)+': '+str(VRTCS_j[jP,i])+','+str(VRTCS_i[jP,i]) for i in range(4) ], dtype='U32')
                         #    mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
                         #                  fig_name='zmesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                         #                  pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
@@ -303,8 +303,8 @@ if __name__ == '__main__':
 
                 if idebug>2:
                     # We can have a look:
-                    zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
-                    cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')
+                    zisrc_msh = np.array([ [VRTCS_j[jP,i],VRTCS_i[jP,i]] for i in range(4) ])
+                    cnames    = np.array([ 'P'+str(i+1)+': '+str(VRTCS_j[jP,i])+','+str(VRTCS_i[jP,i]) for i in range(4) ], dtype='U32')
                     #mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
                     #              fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                     #              pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
@@ -314,8 +314,8 @@ if __name__ == '__main__':
     
                 
                 # j,i indices of the cell we are dealing with = that of the upper-right F-point!!!
-                jM = VERTICES_j[jP,2]
-                iM = VERTICES_i[jP,2]
+                jM = VRTCS_j[jP,2]
+                iM = VRTCS_i[jP,2]
     
                 # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
                 zU, zV = xUu[jM,iM], xVv[jM,iM] ; # because the F-point is the upper-right corner
@@ -340,66 +340,16 @@ if __name__ == '__main__':
                 lStillIn[jP] = lSI
                 if idebug>0: print('      ==> Still inside the same mesh???',lSI)
     
-                if not lSI:
-                    
+                if not lSI:                    
                     # Tells which of the 4 cell walls the point has crossed:
-                    icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf, iverbose=idebug )
+                    icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VRTCS_j[jP,:], VRTCS_i[jP,:], xYf, xXf, iverbose=idebug )
 
                     # Tells in which adjacent cell the point has moved:
-                    inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VERTICES_j[jP,:], VERTICES_i[jP,:], xYf, xXf,  iverbose=idebug )
-                        
-    
-                    if   inhc==1:
-                        # went down:
-                        VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                        jnT = jnT-1
-                    elif inhc==5:
-                        print('LOLO: WE HAVE A 5 !!!!')
-                        # went left + down
-                        VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                        VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                        inT = inT-1
-                        jnT = jnT-1
-                    elif inhc==6:
-                        print('LOLO: WE HAVE A 6 !!!!')
-                        # went right + down
-                        VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                        VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
-                        inT = inT+1
-                        jnT = jnT-1                    
-                    elif inhc==2:
-                        # went to the right
-                        VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                        inT = inT+1
-                    elif inhc==3:
-                        # went up:
-                        VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                        jnT = jnT+1
-                    elif inhc==7:
-                        print('LOLO: WE HAVE A 7 !!!!')
-                        # went right + up
-                        VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
-                        VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                        inT = inT+1
-                        jnT = jnT+1
-                    elif inhc==8:
-                        print('LOLO: WE HAVE A 8 !!!!')
-                        # went right + up
-                        VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                        VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
-                        inT = inT-1
-                        jnT = jnT+1
-                    elif inhc==4:
-                        # went to the left
-                        VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
-                        inT = inT-1
-                    else:
-                        print('ERROR: unknown direction, inhc=',inhc)
-                        exit(0)
-                    #
-                    vinT[jP] = inT
-                    vjnT[jP] = jnT
-    
+                    inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VRTCS_j[jP,:], VRTCS_i[jP,:], xYf, xXf,  iverbose=idebug )
+
+                    # Update the mesh indices according to the new host cell:
+                    VRTCS_j[jP,:],VRTCS_i[jP,:],vjnT[jP],vinT[jP] = mjt.UpdtInd4NewCell( inhc, VRTCS_j[jP,:], VRTCS_i[jP,:], jnT, inT )
+
                 ### if not lSI
 
             ### if IsAlive[jP]==1

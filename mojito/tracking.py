@@ -60,11 +60,11 @@ def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
 
 
 
-def NewHostCell( icrss, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
+def NewHostCell( kcross, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
     '''
        Find in which adjacent cell, the point has moved into !
        
-       * icrss : integer describing which (old) cell edge the point has crossed
+       * kcross : integer describing which (old) cell edge the point has crossed
 
        In rare cases, the buoy could possibly move into diagonally adjacent cells
        (not only bottom,right,upper,left cells...)
@@ -74,39 +74,92 @@ def NewHostCell( icrss, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
     [ jbl, jbr, jur, jul ] = j4vert[:]
     [ ibl, ibr, iur, iul ] = i4vert[:]
     #
-    inc = icrss
-    if  icrss==1:
+    knhc = kcross
+    if  kcross==1:
         # Crosses the bottom edge:
         if   intersect2Seg( pP1, pP2, [pY[jbl,ibl],pX[jbl,ibl]], [pY[jbl-1,ibl],pX[jbl-1,ibl]] ):
-            inc=5 ; # bottom left diagonal
+            knhc=5 ; # bottom left diagonal
         elif intersect2Seg( pP1, pP2, [pY[jbr,ibr],pX[jbr,ibr]], [pY[jbr-1,ibr],pX[jbr-1,ibr]] ):
-            inc=6 ; # bottom right diagonal
+            knhc=6 ; # bottom right diagonal
         #
-    elif icrss==2:
+    elif kcross==2:
         # Crosses the RHS edge:
         if   intersect2Seg( pP1, pP2, [pY[jbr,ibr],pX[jbr,ibr]], [pY[jbr,ibr+1],pX[jbr,ibr+1]] ):
-            inc=6 ; # bottom right diagonal
+            knhc=6 ; # bottom right diagonal
         elif intersect2Seg( pP1, pP2, [pY[jur,iur],pX[jur,iur]], [pY[jur,iur+1],pX[jur,iur+1]] ):
-            inc=7 ; # bottom right diagonal
+            knhc=7 ; # bottom right diagonal
         #
-    elif icrss==3:
+    elif kcross==3:
         # Crosses the upper edge:
         if   intersect2Seg( pP1, pP2, [pY[jul,iul],pX[jul,iul]], [pY[jul+1,iul],pX[jul+1,iul]] ):
-            inc=8 ; # upper left diagonal
+            knhc=8 ; # upper left diagonal
         elif intersect2Seg( pP1, pP2, [pY[jur,iur],pX[jur,iur]], [pY[jur+1,iur],pX[jur+1,iur]] ):
-            inc=7 ; # bottom right diagonal
+            knhc=7 ; # bottom right diagonal
         #
-    elif icrss==4:
+    elif kcross==4:
         # Crosses the LHS edge:
         if   intersect2Seg( pP1, pP2, [pY[jul,iul],pX[jul,iul]], [pY[jul,iul-1],pX[jul,iul-1]] ):
-            inc=8 ; # upper left diagonal
+            knhc=8 ; # upper left diagonal
         elif intersect2Seg( pP1, pP2, [pY[jbl,ibl],pX[jbl,ibl]], [pY[jbl,ibl-1],pX[jbl,ibl-1]] ):
-            inc=5 ; # bottom left diagonal
+            knhc=5 ; # bottom left diagonal
     #
     if iverbose>0:
         vdir = ['bottom', 'RHS', 'upper', 'LHS', 'bottom-LHS', 'bottom-RHS', 'upper-RHS', 'upper-LHS' ]
-        print('    *** Particle is moving into the '+vdir[inc-1]+' mesh !')
+        print('    *** Particle is moving into the '+vdir[knhc-1]+' mesh !')
     #
-    return inc
+    return knhc
 
+
+
+def UpdtInd4NewCell( knhc, j4vert, i4vert, kjT, kiT ):
+    
+    if   knhc==1:
+        # went down:
+        j4vert[:] = j4vert[:] - 1
+        kjT = kjT-1
+    elif knhc==5:
+        print('LOLO: WE HAVE A 5 !!!!')
+        # went left + down
+        i4vert[:] = i4vert[:] - 1
+        j4vert[:] = j4vert[:] - 1
+        kiT = kiT-1
+        kjT = kjT-1
+    elif knhc==6:
+        print('LOLO: WE HAVE A 6 !!!!')
+        # went right + down
+        i4vert[:] = i4vert[:] + 1
+        j4vert[:] = j4vert[:] - 1
+        kiT = kiT+1
+        kjT = kjT-1                    
+    elif knhc==2:
+        # went to the right
+        i4vert[:] = i4vert[:] + 1
+        kiT = kiT+1
+    elif knhc==3:
+        # went up:
+        j4vert[:] = j4vert[:] + 1
+        kjT = kjT+1
+    elif knhc==7:
+        print('LOLO: WE HAVE A 7 !!!!')
+        # went right + up
+        i4vert[:] = i4vert[:] + 1
+        j4vert[:] = j4vert[:] + 1
+        kiT = kiT+1
+        kjT = kjT+1
+    elif knhc==8:
+        print('LOLO: WE HAVE A 8 !!!!')
+        # went right + up
+        i4vert[:] = i4vert[:] - 1
+        j4vert[:] = j4vert[:] + 1
+        kiT = kiT-1
+        kjT = kjT+1
+    elif knhc==4:
+        # went to the left
+        i4vert[:] = i4vert[:] - 1
+        kiT = kiT-1
+    else:
+        print('ERROR: unknown direction, knhc=',knhc)
+        exit(0)
+
+    return j4vert, i4vert, kjT, kiT
 
