@@ -433,7 +433,7 @@ if __name__ == '__main__':
         if idebug>1 and jt%isubsamp_fig==0:
             # Show buoys on the map:
             mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='Pos_buoys_'+'%4.4i'%(jt)+'.png',
-                              cnmfig=None, ms=10, ralpha=1., lShowDate=True )
+                              cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
             
         print('\n\n')
         
