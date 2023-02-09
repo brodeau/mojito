@@ -28,7 +28,7 @@ from shapely.geometry.polygon import Polygon
 
 from math import atan2,pi
 
-idebug=3
+idebug=2
 
 rdt = 3600. ; # time step
 
