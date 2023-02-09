@@ -28,7 +28,7 @@ from shapely.geometry.polygon import Polygon
 
 from math import atan2,pi
 
-idebug=3
+idebug=2
 
 rdt = 3600. ; # time step
 
@@ -36,18 +36,18 @@ toDegrees = 180./pi
 
 isubsamp_fig = 24 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
+#         [ 20.,84.]  ])
 
 def debugSeeding():
     xz = np.array([
-        [ 20.,84.]  ])
-        #[ 20.,84.],
-        #[ 50.,89.],
-        #[100.,89.],
-        #[200.,83.],
-        #[300.,85.],
-        # ])
+        [ 20.,84.],
+        [ 50.,89.],
+        [100.,89.],
+        [200.,83.],
+        [300.,85.],
+                 ])
     return xz
-
+#         [ 20.,84.]  ])
 
 def IsInsideCell( px, py, CellPolygon ):
     '''
@@ -184,33 +184,7 @@ if __name__ == '__main__':
     del zx,zy
 
 
-    #if idebug>1:
-    #    print('\n Xseed0G =',Xseed0G)
-    #    zlon,zlat = mjt.ConvertCartesianNPSkm2Geo(Xseed0C[:,0], Xseed0C[:,1])
-    #    ZZ = np.array([zlon,zlat]).T
-    #    print('\n ZZ =',ZZ)
-    #exit(0)
-
     print('\n shape of XseedC =',np.shape(Xseed0C))
-    #exit(0)
-    # Recherche du pont le plus proche du pole Nord:
-    #iif = np.where(xlatF>89.9)
-    #print(' F-point: ',iif,'=>',xlatF[iif])
-    #iit = np.where(xlatT>89.9)
-    #print(' T-point: ',iit,'=>',xlatT[iit])
-    #iiu = np.where(xlatU>89.98)
-    #print(' U-point: ',iiu,'=>',xlatU[iiu])
-    #iiv = np.where(xlatV>89.9)
-    #print(' V-point: ',iiv,'=>',xlatV[iiv])
-    #([jNPu],[iNPu]) = iiu
-    #print(' * North Pole U-point?: xlatU[jNPu,iNPu]=',xlatU[jNPu,iNPu])
-    #xXu = np.zeros((Nj,Ni))
-    #xYu = np.zeros((Nj,Ni))
-
-
-
-
-    #exit(0)
 
 
 
@@ -237,6 +211,10 @@ if __name__ == '__main__':
     #                                 # (was the nearest point when we searched for nearest point,
     #                                 #  as buoys move moves within the cell, it might not be the nearest point)
 
+    vinT = np.zeros(nP, dtype=int)
+    vjnT = np.zeros(nP, dtype=int)
+
+    
     vCELLs = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
     VERTICES_i = np.zeros((nP,4), dtype=int)
     VERTICES_j = np.zeros((nP,4), dtype=int)
@@ -284,6 +262,9 @@ if __name__ == '__main__':
         print('     =>> coord of center of mesh (T-point) => lat,lon =',
               round(xlatT[jnT,inT],3), round(xlonT[jnT,inT],3), '(iq =',iq,')')
 
+        vinT[jP] = inT
+        vjnT[jP] = jnT
+                
         # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
         #  starting with the nearest point
         zJI4vertices = gz.IDSourceMesh( (rlat,rlon), xlatF, xlonF, jnF, inF, iquadran=iq,
@@ -321,19 +302,16 @@ if __name__ == '__main__':
 
         print('   *   current number of buoys to follow: '+str(nP))
 
+        
         for jP in range(nP):
 
             rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
             rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
 
+            inT, jnT = vinT[jP] , vjnT[jP] 
+            
             if idebug>0:
                 print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
-
-
-
-
-
-                
 
             ######################### N E W   M E S H   R E L O C A T I O N #################################
             if not lStillIn[jP]:
@@ -348,7 +326,7 @@ if __name__ == '__main__':
                 # The current mesh/cell as a shapely polygon object:
                 vCELLs[jP] = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
                                         (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
-
+                
                 if idebug>0:
                     #if idebug>1 and jt>0:
                     #    # We can have a look:
@@ -470,14 +448,18 @@ if __name__ == '__main__':
                     jnT = jnT-1
                 elif idir==5:
                     print('LOLO: WE HAVE A 5 !!!!')
-                    # went right + down
+                    # went left + down
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                    inT = inT-1
+                    jnT = jnT-1
                 elif idir==6:
                     print('LOLO: WE HAVE A 6 !!!!')
                     # went right + down
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                    inT = inT+1
+                    jnT = jnT-1                    
                 elif idir==2:
                     # went to the right
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
@@ -491,11 +473,15 @@ if __name__ == '__main__':
                     # went right + up
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                    inT = inT+1
+                    jnT = jnT+1
                 elif idir==8:
                     print('LOLO: WE HAVE A 8 !!!!')
                     # went right + up
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                    inT = inT-1
+                    jnT = jnT+1
                 elif idir==4:
                     # went to the left
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
@@ -503,6 +489,9 @@ if __name__ == '__main__':
                 else:
                     print('ERROR: unknown direction, idir=',idir)
                     exit(0)
+                #
+                vinT[jP] = inT
+                vjnT[jP] = jnT
 
             ### if not lSI
 
@@ -511,14 +500,11 @@ if __name__ == '__main__':
         # Updating in terms of lon,lat for all the buoys at once:
         xPosLo[jt+1,:], xPosLa[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosXX[jt+1,:] , xPosYY[jt+1,:] )
 
-
-        for jP in range(nP):
-
-            if idebug>2 and jt%isubsamp_fig==0:
-                # Show buoys on the map:
-                mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='Pos_buoys_'+'%4.4i'%(jt)+'.png',
-                                  cnmfig=None, ms=10, ralpha=1., lShowDate=True )
-
+        if idebug>1 and jt%isubsamp_fig==0:
+            # Show buoys on the map:
+            mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='Pos_buoys_'+'%4.4i'%(jt)+'.png',
+                              cnmfig=None, ms=10, ralpha=1., lShowDate=True )
+            
         print('\n\n')
         
     ### for jt in range(Nt-1)
