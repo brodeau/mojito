@@ -562,7 +562,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 
-def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, fig_name='mesh.png', pcoor_extra=(-999.,-999.) ):
+def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, fig_name='mesh.png', pcoor_extra=(-999.,-999.), label_extra=None ):
     '''
     isrc_msh: 2D integer array of shape (4,2)
     wghts:    1D real array of shape (4,)
@@ -595,7 +595,7 @@ def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, fig_name='mesh.png', pcoor_extra=(-99
     
     if pcoor_extra!=(-999.,-999.):
         (yE,xE) = pcoor_extra
-        plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label='extra' ) ; # target point !
+        plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label=label_extra ) ; # target point !
 
 
     ax1.legend(loc='center left', bbox_to_anchor=(1.07, 0.5), fancybox=True)
