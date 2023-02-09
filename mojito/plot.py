@@ -571,7 +571,7 @@ def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_nam
     (yT,xT)                             = pcoor_trg
     [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
     #
-    fig = plt.figure(num = 1, figsize=[7,5], facecolor='w', edgecolor='k')
+    fig = plt.figure(num = 1, figsize=[14,10], facecolor='w', edgecolor='k')
     ax1 = plt.axes([0.09, 0.07, 0.6, 0.9])
 
     plt.plot( [     xT    ], [     yT    ], marker='o', ms=15, color='k', label='target point' ) ; # target point !

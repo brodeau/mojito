@@ -634,7 +634,7 @@ def ConvertGeo2CartesianNPSkm(xlon, xlat):
     if ndim==2:
         zx,zy = zx.T, zy.T
         #
-    return zx/1000.,zy/1000.
+    return zx/1000., zy/1000.
 
 
 
@@ -656,5 +656,5 @@ def ConvertCartesianNPSkm2Geo(xX, xY):
     if ndim==2:
         zlon,zlat = zlon.T, zlat.T
         #
-    return zlon,zlat
+    return zlon, zlat
 

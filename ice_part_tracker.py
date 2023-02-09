@@ -127,7 +127,7 @@ if __name__ == '__main__':
     xXt[:,:], xYt[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonT, xlatT)
     xXf[:,:], xYf[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonF, xlatF)
     
-    if idebug>1:
+    if idebug>2:
         ii = dump_2d_field( 'xXt.nc', xXt, xlon=xlonT, xlat=xlatT, name='xXt', unit='km' )
         ii = dump_2d_field( 'xXf.nc', xXf, xlon=xlonF, xlat=xlatF, name='xXf', unit='km' )
 
@@ -285,42 +285,57 @@ if __name__ == '__main__':
             if idebug>0:
                 print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
 
+
+                
+            ######################### N E W   M E S H   R E L O C A T I O N #################################
             if not lStillIn[jP]:
                 print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
                 
                 [ ibl, ibr, iur, iul ] = VERTICES_i[jP,:]
                 [ jbl, jbr, jur, jul ] = VERTICES_j[jP,:]
-                
-                # The current mesh/cell as a shapely polygon object:
-                MeshCell = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
-                                      (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )                
-                vCELLs[jP] = MeshCell ; # store it for each buoy...
-                
                 if idebug>0:
                     print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
                           [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
+                
+                # The current mesh/cell as a shapely polygon object:
+                vCELLs[jP] = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
+                                        (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )                
+                
+                if idebug>0:
+                    #if idebug>1 and jt>0:
+                    #    # We can have a look:
+                    #    #zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+                    #    zisrc_msh = np.array([  [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])                        
+                    #    cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')         
+                    #    mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
+                    #                  fig_name='zmesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                    #                  pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
+                    #    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
+                    #                  fig_name='zmesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
+                    #                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
+                    
                     # Buoy location:
-                    if not IsInsideCell(rx, ry, MeshCell):
+                    if not IsInsideCell(rx, ry, vCELLs[jP]):
                         print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
                         print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                (xYf[jul,iul],xXf[jul,iul])])
+                        #print('==> distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry,rx)))                        
                         exit(0)
                     #
                     # T-point @ center of mesh ?
-                    if not IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], MeshCell):
+                    if not IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
                         print('\nPROBLEM: T-point is not inside the expected mesh!!!')
                         print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                (xYf[jul,iul],xXf[jul,iul])])
                         exit(0)
                         
                     print('     +++ control of location of point inside selected cell successfuly passed! :D')   
-                del MeshCell
-
-                #exit(0)
-                if ilolorm==1: exit(0)
+                    #if jt>0: exit(0); #fixme rm!
+            ### if not lStillIn[jP]
+            ###########################################################################################################################
                 
-                # The 4 weights for bi-linear interpolation within this cell:
-                #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
+            # The 4 weights for bi-linear interpolation within this cell:
+            #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
                                 
                     
             jur = VERTICES_j[jP,2] ; # f-point is upper-right, so at 3rd position
@@ -328,12 +343,9 @@ if __name__ == '__main__':
 
 
             if idebug>1:
-                zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
-
-                cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32') 
-
-                print(' zisrc_msh =',zisrc_msh)
                 # We can have a look:
+                zisrc_msh = np.array([ [VERTICES_j[jP,i],VERTICES_i[jP,i]] for i in range(4) ])
+                cnames    = np.array([ 'P'+str(i+1)+': '+str(VERTICES_j[jP,i])+','+str(VERTICES_i[jP,i]) for i in range(4) ], dtype='U32')                                 
                 mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
                               fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                               pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
@@ -357,7 +369,7 @@ if __name__ == '__main__':
 
             xPosXX[jt+1,jP] = rx_nxt
             xPosYY[jt+1,jP] = ry_nxt
-            
+                        
             # Is it still inside our mesh:
             lSI = IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])            
             lStillIn[jP] = lSI
@@ -366,7 +378,7 @@ if __name__ == '__main__':
             if not lSI:
                 print('      ... need to find which wall was crossed...')
                 print('   dx, dy=',dx, dy)
-                [[rlon1,rlon2],[rlat1,rlat2]] = mjt.ConvertCartesianNPSkm2Geo( np.array([rx , rx_nxt]) , np.array([ry, ry_nxt]) )
+                [rlon1,rlon2], [rlat1,rlat2] = mjt.ConvertCartesianNPSkm2Geo( np.array([rx , rx_nxt]) , np.array([ry, ry_nxt]) )
                 print("Present & upcomming coordinates:",rlat1,rlon1,'&',rlat2,rlon2)
                 #rhdg = gz.Heading( rlat1,rlon1, rlat2,rlon2 )
 
@@ -399,16 +411,18 @@ if __name__ == '__main__':
                     
                     
                     #exit(0)
-                idir=14
+                idir=1
                 
                 [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = JIsSurroundMesh[jP,:,:]
                 
                 if   idir==1:
                     # went down:
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] - 1
+                    jnT = jnT-1
                 elif idir==2:
                     # went to the right
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
+                    inT = inT+1
                 elif idir==21:
                     # went right + down
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] + 1
@@ -420,9 +434,11 @@ if __name__ == '__main__':
                 elif idir==3:
                     # went up:
                     VERTICES_j[jP,:] = VERTICES_j[jP,:] + 1
+                    jnT = jnT-1
                 elif idir==4:
                     # went to the left
                     VERTICES_i[jP,:] = VERTICES_i[jP,:] - 1
+                    inT = inT-1
                 else:
                     print('ERROR: unknown direction, idir=',idir)
                     exit(0)
@@ -440,9 +456,9 @@ if __name__ == '__main__':
             #exit(0)
         ### for jP in range(nP)
 
-        # Updating in terms of lon,lat for all the buoys
+        # Updating in terms of lon,lat for all the buoys at once:
         xPosLo[jt+1,:], xPosLa[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosXX[jt+1,:] , xPosYY[jt+1,:] )
-
+        
         #print('LOLO present and next lon, lat pos:')
         #print(xPosLo[jt,:], xPosLa[jt,:],'\n')
         #print(xPosLo[jt+1,:], xPosLa[jt+1,:],'\n')
