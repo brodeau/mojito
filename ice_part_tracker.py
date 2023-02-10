@@ -36,8 +36,8 @@ toDegrees = 180./pi
 
 isubsamp_fig = 48 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-#seeding_type='nemo_Tpoint'
-seeding_type='debug'
+seeding_type='nemo_Tpoint' ; iHSS=5
+#seeding_type='debug'
 
 def debugSeeding():
     zLatLon = np.array([
@@ -64,34 +64,42 @@ def debugSeeding1():
 
 def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=None ):
 
-    (Nj,Ni) = np.shape(pmskT[::khss,::khss])
-    ztmp = np.zeros((Nj,Ni))
+    zmsk = pmskT[::khss,::khss]
+    zlat = platT[::khss,::khss]
+    zlon = plonT[::khss,::khss]
 
-    if fmsk_rstrct:
-        with Dataset(fmsk_rstrct) as id_mr:
-            maskR = id_mr.variables['mask'][::khss,::khss]
-            if np.shape(maskR) != (Nj,Ni):
-                print('ERROR [nemoSeed()]: restricted area mask does not agree in shape with model output!'); exit(0)
+    (Nj,Ni) = np.shape(zmsk)
+    ztmp = np.zeros((Nj,Ni))
+    
+    #if fmsk_rstrct:
+    #    with Dataset(fmsk_rstrct) as id_mr:
+    #        maskR = id_mr.variables['mask'][::khss,::khss]
+    #        if np.shape(maskR) != (Nj,Ni):
+    #            print('ERROR [nemoSeed()]: restricted area mask does not agree in shape with model output!'); exit(0)
     
     msk_T = np.zeros((Nj,Ni), dtype='i1')
 
-    msk_T[:,:] = pmskT[::khss,::khss]
+    msk_T[:,:] = zmsk[:,:]
 
+    # Only north of ...
+    msk_T[np.where(zlat < 55.)] = 0
+        
     # Only over a decent concentration of ice:
     ztmp[:,:] = pIC[::khss,::khss]
     msk_T[np.where(ztmp < 0.9)] = 0
 
-    (idy_keep, idx_keep) = np.where( msk_T[:,:]==1 )
-
+    (idy_keep, idx_keep) = np.where( msk_T==1 )
     NbIPt = len(idy_keep)
-
-    zLatLon = np.zeros(NbIPt,2)
-
-    for jp in range(NbIPt):
-        zLatLon[jp,:] = [ ]
-
+    zLatLon = np.zeros((NbIPt,2))
     
-
+    for jp in range(NbIPt):
+        jj = idy_keep[jp]
+        ji = idx_keep[jp]
+        zLatLon[jp,:] = [ zlat[jj,ji],zlon[jj,ji] ]
+        
+    del zmsk,zlat,zlon
+        
+    return zLatLon
 
 
 if __name__ == '__main__':
@@ -181,9 +189,8 @@ if __name__ == '__main__':
     ################################################################################################
     ###                                     S E E D I N G                                        ###
     if seeding_type=='nemo_Tpoint':
-        nemoSeed( imaskt, xlatT, xlonT, xIC, khss=3, fmsk_rstrct=None )
-        print('lolo nemo seeding...')
-        exit(0)
+        Xseed0G = nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
+        #
     elif seeding_type=='debug':
         if idebug in [0,1,2]: Xseed0G = debugSeeding()
         if idebug in [3]:     Xseed0G = debugSeeding1()
