@@ -1,6 +1,9 @@
 #
+import numpy as np
+#
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
+
 
 #from math import atan2,pi
 
@@ -37,11 +40,36 @@ def intersect2Seg( pcA, pcB, pcC, pcD ):
     return ( _ccw_(pcA,pcC,pcD) != _ccw_(pcB,pcC,pcD) ) and ( _ccw_(pcA,pcB,pcC) != _ccw_(pcA,pcB,pcD) )
 
 
+
+def Survive( kID, kjT, kiT, pmskT, pIceC=[],  iverbose=0 ):
+    '''
+        Suite of tests to decide whether a buoy should be killed or not...
+    '''    
+    ikill = 0
+    
+    # Test on land-sea mask / continent:
+    zmt = pmskT[kjT,kiT] + pmskT[kjT,kiT+1]+pmskT[kjT+1,kiT]+pmskT[kjT,kiT-1]+pmskT[kjT-1,kiT-1]
+    if zmt < 5:
+        ikill = ikill+1
+        if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (too close to or over the land-sea mask)')
+
+    # Test on sea-ice concentration:
+    if ikill==0:
+        if len(np.shape(pIceC))==2:
+            zic = 0.2*(pIceC[kjT,kiT] + pIceC[kjT,kiT+1]+pIceC[kjT+1,kiT]+pIceC[kjT,kiT-1]+pIceC[kjT-1,kiT-1])
+            if iverbose>1: print('     =>> 5P sea-ice concentration =',zic)
+        if zic < rmin_conc:
+            ikill = ikill+1
+            if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (mean 5P ice concentration at T-point of the cell =',zic,')')
+    #
+    return ikill
+
+
+
 def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[], iverbose=0 ):
     '''
 
     '''
-    import numpy as np
     from gonzag import NearestPoint
     #
     (nP,n2) = np.shape(pSG)
@@ -74,31 +102,16 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
 
         if jT<0 or iT<0:
             ialive[jP] = 0
-            if iverbose>1: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO nearest T-point found for ',zlat,zlon,')')
+            if iverbose>0: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO nearest T-point found for ',zlat,zlon,')')
                             
         if ialive[jP] == 1:            
             # Ok a nearest point was found!    
-            if iverbose>1:
+            if iverbose>0:
                 print('     ==> nearest T-point for ',zlat,zlon,' on NEMO grid:', jT, iT, '==> lat,lon:',
                       round(platT[jT,iT],3), round(plonT[jT,iT],3))
-            #
-            # Test on land-sea mask:
-            zmt = maskT[jT,iT] + maskT[jT,iT+1]+maskT[jT+1,iT]+maskT[jT,iT-1]+maskT[jT-1,iT-1]
-            if zmt < 5:
-                ialive[jP] = 0
-                if iverbose>1: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (too close to or over the land-sea mask)')
-
-        if ialive[jP] == 1:            
-            # Test on sea-ice concentration:
-            if len(np.shape(xIceConc))==2:
-                #zic = xIceConc[jT,iT]
-                zic = 0.2*(xIceConc[jT,iT] + xIceConc[jT,iT+1]+xIceConc[jT+1,iT]+xIceConc[jT,iT-1]+xIceConc[jT-1,iT-1])
-                if iverbose>1:
-                    #print('     =>> sea-ice concentration =',zic)
-                    print('     =>> 5P sea-ice concentration =',zic)
-            if zic < rmin_conc:
-                ialive[jP] = 0
-                if iverbose>1: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (mean 5P ice concentration at T-point of the cell =',zic,')')
+            # Tests for canceling buoy or not:
+            icncl = Survive( pIDs[jP], jT, iT, maskT, pIceC=xIceConc, iverbose=iverbose )
+            if icncl>0: ialive[jP] = 0
             
         if ialive[jP] == 1:
             # Everything is okay, final work...

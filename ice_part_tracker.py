@@ -48,7 +48,8 @@ def debugSeeding():
         [ 46.,76.], # No ice, Barents Sea
         [190.,75.],
         [-15.,85.2], # Too close to land
-        [210.,75.],        
+        [210.,75.],
+        [-72.,75.], # Baffin bay
         [200.,83.],
         [-42.,79.], # over mask (Greenland!)
         [300.,85.],
