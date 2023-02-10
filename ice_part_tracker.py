@@ -182,10 +182,10 @@ if __name__ == '__main__':
         idxKeep = np.arange(nP,dtype=int)
 
     # Allocation for nP buoys:
-    xPosXX = np.zeros((Nt,nP)) ; # x-position of buoy along the Nt records [km]
-    xPosYY = np.zeros((Nt,nP)) ; # y-position of buoy along the Nt records [km]
-    xPosLo = np.zeros((Nt,nP))
-    xPosLa = np.zeros((Nt,nP))
+    xPosXX = np.zeros((Nt+1,nP)) ; # x-position of buoy along the Nt records [km]
+    xPosYY = np.zeros((Nt+1,nP)) ; # y-position of buoy along the Nt records [km]
+    xPosLo = np.zeros((Nt+1,nP))
+    xPosLa = np.zeros((Nt+1,nP))
     
     vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     # Loop along model data time records #
     ######################################
 
-    for jt in range(Nt-1):
+    for jt in range(Nt):
         rtmod = id_uv.variables['time_counter'][jt] ; # time of model data (center of the average period which should = rdt)
         itime = int(rtmod - rdt/2.) ; # velocitie is average under the whole rdt, at the center!
         print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
@@ -278,12 +278,14 @@ if __name__ == '__main__':
     
 
                 # j,i indices of the cell we are dealing with = that of the F-point aka the upper-right point !!!
-                [jM,iM] = VRTCS[jP,:,2]
+                [jT,iT] = vJInT[jP,:]
                 
                 # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
-                zU, zV = xUu[jM,iM], xVv[jM,iM] ; # because the F-point is the upper-right corner
+                # zU, zV = xUu[jT,iT], xVv[jT,iT] ; # because the F-point is the upper-right corner
+                zU = 0.5*(xUu[jT,iT]+xUu[jT,iT-1])
+                zV = 0.5*(xVv[jT,iT]+xVv[jT-1,iT])                
                 if idebug>0:
-                    print('    =>> read velocity at ji,jj=',iM,jM)
+                    print('    =>> read velocity at ji,jj=',iT,jT)
                     print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
     
                 # Displacement during the upcomming time step:
