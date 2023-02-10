@@ -41,22 +41,32 @@ def intersect2Seg( pcA, pcB, pcC, pcD ):
 
 
 
-def Survive( kID, kjT, kiT, pmskT, pIceC=[],  iverbose=0 ):
+def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
     '''
         Suite of tests to decide whether a buoy should be killed or not...
-    '''    
-    ikill = 0
+    '''
+    (Nj,Ni) = np.shape(pmskT) ; # shape of the NEMO domain...
+    
+    [jT,iT] = kjiT
+    ikill   = 0
+
+    # Test: too close to NEMO domain boundaries:
+    if ikill==0:
+        if jT in [0,1,Nj-2,Nj-1] or iT in [0,1,Ni-2,Ni-1]:
+            ikill = ikill+1
+            if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (reaching NEMO domain boundaries)')
     
     # Test on land-sea mask / continent:
-    zmt = pmskT[kjT,kiT] + pmskT[kjT,kiT+1]+pmskT[kjT+1,kiT]+pmskT[kjT,kiT-1]+pmskT[kjT-1,kiT-1]
-    if zmt < 5:
-        ikill = ikill+1
-        if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (too close to or over the land-sea mask)')
+    if ikill==0:
+        zmt = pmskT[jT,iT] + pmskT[jT,iT+1]+pmskT[jT+1,iT]+pmskT[jT,iT-1]+pmskT[jT-1,iT-1]
+        if zmt < 5:
+            ikill = ikill+1
+            if iverbose>0: print('        ===> I CANCEL buoy '+str(kID)+'!!! (too close to or over the land-sea mask)')
 
     # Test on sea-ice concentration:
     if ikill==0:
         if len(np.shape(pIceC))==2:
-            zic = 0.2*(pIceC[kjT,kiT] + pIceC[kjT,kiT+1]+pIceC[kjT+1,kiT]+pIceC[kjT,kiT-1]+pIceC[kjT-1,kiT-1])
+            zic = 0.2*(pIceC[jT,iT] + pIceC[jT,iT+1]+pIceC[jT+1,iT]+pIceC[jT,iT-1]+pIceC[jT-1,iT-1])
             if iverbose>1: print('     =>> 5P sea-ice concentration =',zic)
         if zic < rmin_conc:
             ikill = ikill+1
@@ -110,7 +120,7 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
                 print('     ==> nearest T-point for ',zlat,zlon,' on NEMO grid:', jT, iT, '==> lat,lon:',
                       round(platT[jT,iT],3), round(plonT[jT,iT],3))
             # Tests for canceling buoy or not:
-            icncl = Survive( pIDs[jP], jT, iT, maskT, pIceC=xIceConc, iverbose=iverbose )
+            icncl = Survive( pIDs[jP], [jT,iT] , maskT, pIceC=xIceConc, iverbose=iverbose )
             if icncl>0: ialive[jP] = 0
             
         if ialive[jP] == 1:

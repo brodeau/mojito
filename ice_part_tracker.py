@@ -183,10 +183,10 @@ if __name__ == '__main__':
         idxKeep = np.arange(nP,dtype=int)
 
     # Allocation for nP buoys:
-    xPosXX = np.zeros((Nt+1,nP)) ; # x-position of buoy along the Nt records [km]
-    xPosYY = np.zeros((Nt+1,nP)) ; # y-position of buoy along the Nt records [km]
-    xPosLo = np.zeros((Nt+1,nP))
-    xPosLa = np.zeros((Nt+1,nP))
+    xPosXX = np.zeros((Nt+1,nP)) -9999. ; # x-position of buoy along the Nt records [km]
+    xPosYY = np.zeros((Nt+1,nP)) -9999. ; # y-position of buoy along the Nt records [km]
+    xPosLo = np.zeros((Nt+1,nP)) -9999.
+    xPosLa = np.zeros((Nt+1,nP)) -9999.
     
     vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
@@ -212,8 +212,9 @@ if __name__ == '__main__':
         print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
               epoch2clock(itime),'(model:'+epoch2clock(int(rtmod))+')')
 
-        xUu[:,:]   = id_uv.variables['u_ice'][jt,:,:]
-        xVv[:,:]   = id_uv.variables['v_ice'][jt,:,:]
+        xIC[:,:] = id_uv.variables['siconc'][jt,:,:]
+        xUu[:,:] = id_uv.variables['u_ice'][jt,:,:]
+        xVv[:,:] = id_uv.variables['v_ice'][jt,:,:]
 
         print('   *   current number of buoys to follow: '+str(nP))
         
@@ -306,7 +307,9 @@ if __name__ == '__main__':
                 lStillIn[jP] = lSI
                 if idebug>0: print('      ==> Still inside the same mesh???',lSI)
     
-                if not lSI:                    
+                if not lSI:
+                    # => point is exiting the current cell!
+                    
                     # Tells which of the 4 cell walls the point has crossed:
                     icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VRTCS[jP,:,:], xYf, xXf, iverbose=idebug )
                     
@@ -316,6 +319,10 @@ if __name__ == '__main__':
                     # Update the mesh indices according to the new host cell:
                     VRTCS[jP,:,:],vJInT[jP,:] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:,:], vJInT[jP,:] )
 
+                    # Based on updated new indices, some buoys might get killed:
+                    icncl = mjt.Survive( IDs[jP], vJInT[jP,:], imaskt, pIceC=xIC,  iverbose=idebug )
+                    if icncl>0: IsAlive[jP]=0
+                    
                 ### if not lSI
 
             ### if IsAlive[jP]==1
