@@ -72,6 +72,8 @@ if __name__ == '__main__':
         print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask>')
         exit(0)
 
+    
+        
     cf_uv = argv[1]
     cf_mm = argv[2]
 
@@ -183,8 +185,9 @@ if __name__ == '__main__':
         idxKeep = np.arange(nP,dtype=int)
 
     # Allocation for nP buoys:
-    xPosXX = np.zeros((Nt+1,nP)) -9999. ; # x-position of buoy along the Nt records [km]
-    xPosYY = np.zeros((Nt+1,nP)) -9999. ; # y-position of buoy along the Nt records [km]
+    vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
+    xPosXX = np.zeros((Nt+1,nP)) -9999.  ; # x-position of buoy along the Nt records [km]
+    xPosYY = np.zeros((Nt+1,nP)) -9999.  ; # y-position of buoy along the Nt records [km]
     xPosLo = np.zeros((Nt+1,nP)) -9999.
     xPosLa = np.zeros((Nt+1,nP)) -9999.
     
@@ -198,7 +201,8 @@ if __name__ == '__main__':
     del Xseed0G, Xseed0C, idxKeep
 
     if idebug>1:
-        mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
+        if not path.exists('./figs'): mkdir('./figs')
+        mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=15, ralpha=1., lShowDate=False, zoom=1.2 )
 
     
@@ -211,7 +215,9 @@ if __name__ == '__main__':
         itime = int(rtmod - rdt/2.) ; # velocitie is average under the whole rdt, at the center!
         print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
               epoch2clock(itime),'(model:'+epoch2clock(int(rtmod))+')')
+        vTime[jt] = itime
 
+        
         xIC[:,:] = id_uv.variables['siconc'][jt,:,:]
         xUu[:,:] = id_uv.variables['u_ice'][jt,:,:]
         xVv[:,:] = id_uv.variables['v_ice'][jt,:,:]
@@ -334,17 +340,25 @@ if __name__ == '__main__':
 
         if idebug>1 and jt%isubsamp_fig==0:
             # Show buoys on the map:
-            mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='Pos_buoys_'+'%4.4i'%(jt)+'.png',
+            mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
                               cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
             
         print('\n\n')
         
     ### for jt in range(Nt-1)
 
-
     id_uv.close()
 
+    vTime[Nt] = vTime[Nt-1] + int(rdt)
 
 
+    if idebug>1:
+        # Final position
+        mjt.ShowBuoysMap( vTime[Nt],  xPosLo[Nt,:], xPosLa[Nt,:], pvIDs=IDs, cfig='./figs/ZEND_Pos_buoys_'+'%4.4i'%(jt)+'.png',
+                              cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
+    
+    # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
+
+    
 
 #print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  #
