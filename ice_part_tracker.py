@@ -152,8 +152,8 @@ if __name__ == '__main__':
 
 
     # Initialization, seeding:
-    vjnT, vinT, VRTCS_j, VRTCS_i = mjt.SeedInit( Xseed0G, Xseed0C, xlatF, xlonF, xlatT, xlonT, iverbose=idebug )
-
+    vJInT, VRTCS = mjt.SeedInit( Xseed0G, Xseed0C, xlatF, xlonF, xlatT, xlonT, iverbose=idebug )
+    
     xPosLo[0,:], xPosLa[0,:] = Xseed0G[:,0], Xseed0G[:,1] ; # degrees!
     xPosXX[0,:], xPosYY[0,:] = Xseed0C[:,0], Xseed0C[:,1] ; # km !
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                 rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
                 rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
     
-                inT, jnT = vinT[jP] , vjnT[jP] 
+                [jnT,inT] = vJInT[jP,:]; # indices for T-point at center of current cell
                 
                 if idebug>0:
                     print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
@@ -189,8 +189,8 @@ if __name__ == '__main__':
                 if not lStillIn[jP]:
                     print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
     
-                    [ ibl, ibr, iur, iul ] = VRTCS_i[jP,:]
-                    [ jbl, jbr, jur, jul ] = VRTCS_j[jP,:]
+                    [ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = VRTCS[jP,:,:]
+
                     if idebug>0:
                         print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
                               [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
@@ -200,27 +200,15 @@ if __name__ == '__main__':
                                             (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
                     
                     if idebug>0:
-                        #if idebug>1 and jt>0:
-                        #    # We can have a look:
-                        #    #zisrc_msh = np.array([ [VRTCS_j[jP,i],VRTCS_i[jP,i]] for i in range(4) ])
-                        #    zisrc_msh = np.array([  [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
-                        #    cnames    = np.array([ 'P'+str(i+1)+': '+str(VRTCS_j[jP,i])+','+str(VRTCS_i[jP,i]) for i in range(4) ], dtype='U32')
-                        #    mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
-                        #                  fig_name='zmesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
-                        #                  pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
-                        #    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
-                        #                  fig_name='zmesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
-                        #                  pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
-                        #
-                        # Buoy location:
+                        # Control if we are dealing with the proper cell/mesh
+                        #   * buoy location ?
                         if not mjt.IsInsideCell(rx, ry, vCELLs[jP]):
                             print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
                             print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                    (xYf[jul,iul],xXf[jul,iul])])
-                            #print('==> distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry,rx)))
                             exit(0)
                         #
-                        # T-point @ center of mesh ?
+                        #    * T-point @ center of mesh ?
                         if not mjt.IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
                             print('\nPROBLEM: T-point is not inside the expected mesh!!!')
                             print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
@@ -236,21 +224,19 @@ if __name__ == '__main__':
                 #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
 
                 if idebug>2:
-                    # We can have a look:
-                    zisrc_msh = np.array([ [VRTCS_j[jP,i],VRTCS_i[jP,i]] for i in range(4) ])
-                    cnames    = np.array([ 'P'+str(i+1)+': '+str(VRTCS_j[jP,i])+','+str(VRTCS_i[jP,i]) for i in range(4) ], dtype='U32')
-                    #mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, zisrc_msh, vnames=cnames,
+                    # We can have a look in the mesh:
+                    cnames    = np.array([ 'P'+str(i+1)+': '+str(VRTCS[jP,0,i])+','+str(VRTCS[jP,1,i]) for i in range(4) ], dtype='U32')
+                    #mjt.PlotMesh( (rlat,rlon), xlatF, xlonF, VRTCS[jP,:,:].T, vnames=cnames,
                     #              fig_name='mesh_lon-lat_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                     #              pcoor_extra=(xlatT[jnT,inT],xlonT[jnT,inT]), label_extra='T-point' )
-                    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  zisrc_msh, vnames=cnames,
+                    mjt.PlotMesh( ( ry , rx ),  xYf ,  xXf,  VRTCS[jP,:,:].T, vnames=cnames,
                                   fig_name='mesh_X-Y_buoy'+'%3.3i'%(jP)+'_jt'+'%4.4i'%(jt)+'.png',
                                   pcoor_extra=(xYt[jnT,inT],xXt[jnT,inT]), label_extra='T-point' )
     
+
+                # j,i indices of the cell we are dealing with = that of the F-point aka the upper-right point !!!
+                [jM,iM] = VRTCS[jP,:,2]
                 
-                # j,i indices of the cell we are dealing with = that of the upper-right F-point!!!
-                jM = VRTCS_j[jP,2]
-                iM = VRTCS_i[jP,2]
-    
                 # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
                 zU, zV = xUu[jM,iM], xVv[jM,iM] ; # because the F-point is the upper-right corner
                 if idebug>0:
@@ -261,7 +247,7 @@ if __name__ == '__main__':
                 dx = zU*rdt
                 dy = zV*rdt
                 print('      ==> displacement during `dt`: dx,dy =',dx,dy, 'm')
-    
+
                 # => position [km] of buoy after this time step will be:
                 rx_nxt = rx + dx/1000. ; # [km]
                 ry_nxt = ry + dy/1000. ; # [km]
@@ -276,13 +262,13 @@ if __name__ == '__main__':
     
                 if not lSI:                    
                     # Tells which of the 4 cell walls the point has crossed:
-                    icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VRTCS_j[jP,:], VRTCS_i[jP,:], xYf, xXf, iverbose=idebug )
-
+                    icross = mjt.CrossedEdge( [ry,rx], [ry_nxt,rx_nxt], VRTCS[jP,:,:], xYf, xXf, iverbose=idebug )
+                    
                     # Tells in which adjacent cell the point has moved:
-                    inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VRTCS_j[jP,:], VRTCS_i[jP,:], xYf, xXf,  iverbose=idebug )
-
+                    inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VRTCS[jP,:,:], xYf, xXf,  iverbose=idebug )
+                    
                     # Update the mesh indices according to the new host cell:
-                    VRTCS_j[jP,:],VRTCS_i[jP,:],vjnT[jP],vinT[jP] = mjt.UpdtInd4NewCell( inhc, VRTCS_j[jP,:], VRTCS_i[jP,:], jnT, inT )
+                    VRTCS[jP,:],vJInT[jP] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:], vJInT[jP] )
 
                 ### if not lSI
 

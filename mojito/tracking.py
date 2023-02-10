@@ -23,10 +23,8 @@ def SeedInit( pSG, pSC, platF, plonF, platT, plonT, iverbose=0 ):
     #                  jnF,inF:       # j,i indices of the F-point that defines the current mesh/cell
     #                                 # (was the nearest point when we searched for nearest point,
     #                                 #  as buoys move moves within the cell, it might not be the nearest point)
-    zjnT    = np.zeros( nP,    dtype=int)
-    zinT    = np.zeros( nP,    dtype=int)
-    zIvrtcs = np.zeros((nP,4), dtype=int)
-    zJvrtcs = np.zeros((nP,4), dtype=int)
+    zjinT    = np.zeros((nP,2),   dtype=int)
+    zJIvrtcs = np.zeros((nP,2,4), dtype=int)
 
     for jP in range(nP):
 
@@ -49,18 +47,18 @@ def SeedInit( pSG, pSC, platF, plonF, platT, plonT, iverbose=0 ):
 
         # Indices of the T-point in the center of the mesh ():
         if   iq==1:
-            jnT,inT = jnF+1,inF+1
+            zjinT[jP,:] = [jnF+1,inF+1]
         elif iq==2:
-            jnT,inT = jnF  ,inF+1
+            zjinT[jP,:] = [jnF  ,inF+1]
         elif iq==3:
-            jnT,inT = jnF  ,inF
+            zjinT[jP,:] = [jnF  ,inF]
         elif iq==4:
-            jnT,inT = jnF+1,inF
-        print('     =>> coord of center of mesh (T-point) => lat,lon =',
-              round(platT[jnT,inT],3), round(plonT[jnT,inT],3), '(iq =',iq,')')
-
-        zinT[jP] = inT
-        zjnT[jP] = jnT
+            zjinT[jP,:] = [jnF+1,inF]
+        #
+        if iverbose>1:
+            [j,i] = zjinT[jP,:]
+            print('     =>> coord of center of mesh (T-point) => lat,lon =',
+                  round(platT[j,i],3), round(plonT[j,i],3), '(iq =',iq,')')
 
         # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
         #  starting with the nearest point
@@ -70,20 +68,17 @@ def SeedInit( pSG, pSC, platF, plonF, platT, plonT, iverbose=0 ):
 
         # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
         if   iq==1:
-            zIvrtcs[jP,:] = [ i1, i2, i3, i4 ]
-            zJvrtcs[jP,:] = [ j1, j2, j3, j4 ]
+            zJIvrtcs[jP,:,:] = [ [ j1, j2, j3, j4 ], [ i1, i2, i3, i4 ] ]
         elif iq==2:
-            zIvrtcs[jP,:] = [ i2, i3, i4, i1 ]
-            zJvrtcs[jP,:] = [ j2, j3, j4, j1 ]
+            zJIvrtcs[jP,:,:] = [ [ j2, j3, j4, j1 ], [ i2, i3, i4, i1 ] ]
         elif iq==3:
-            zIvrtcs[jP,:] = [ i3, i4, i1, i2 ]
-            zJvrtcs[jP,:] = [ j3, j4, j1, j2 ]
+            zJIvrtcs[jP,:,:] = [ [ j3, j4, j1, j2 ], [ i3, i4, i1, i2 ] ]
         elif iq==4:
-            zIvrtcs[jP,:] = [ i4, i1, i2, i3 ]
-            zJvrtcs[jP,:] = [ j4, j1, j2, j3 ]
+            zJIvrtcs[jP,:,:] = [ [ j4, j1, j2, j3 ], [ i4, i1, i2, i3 ] ]
+        #
     ### for jP in range(nP)
 
-    return  zjnT, zinT, zJvrtcs, zIvrtcs
+    return  zjinT, zJIvrtcs
 
 
 
@@ -121,22 +116,17 @@ def intersect2Seg( pcA, pcB, pcC, pcD ):
     return ( ccw(pcA,pcC,pcD) != ccw(pcB,pcC,pcD) ) and ( ccw(pcA,pcB,pcC) != ccw(pcA,pcB,pcD) )
 
 
-def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
+def CrossedEdge( pP1, pP2, ji4vert, pY, pX,  iverbose=0 ):
     '''
         * pP1    : point 1 as [y1,x1]
         * pP2    : point 2 as [y2,x2]
-        * j4vert : vector of length 4, containg the 4 j-indices of the 4 vertices of the mesh
-        * i4vert : vector of length 4, containg the 4 i-indices of the 4 vertices of the mesh
+        * ji4vert : array(2,4), containg the 4 j,i indices of the 4 vertices of the mesh
     '''
-    [ ibl, ibr, iur, iul ] = i4vert[:]
-    [ jbl, jbr, jur, jul ] = j4vert[:]
     #
     for kk in range(4):
         kp1 = (kk+1)%4
-        j1 = j4vert[kk]
-        i1 = i4vert[kk]
-        j2 = j4vert[kp1]
-        i2 = i4vert[kp1]
+        [j1,i1] = ji4vert[:,kk]
+        [j2,i2] = ji4vert[:,kp1]
         #
         ll = intersect2Seg( pP1, pP2,  [pY[j1,i1],pX[j1,i1]], [pY[j2,i2],pX[j2,i2]] )
         if ll: break
@@ -149,7 +139,7 @@ def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
 
 
 
-def NewHostCell( kcross, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
+def NewHostCell( kcross, pP1, pP2, ji4vert, pY, pX,  iverbose=0 ):
     '''
        Find in which adjacent cell, the point has moved into !
 
@@ -160,8 +150,7 @@ def NewHostCell( kcross, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
        These "diagonally-adjacent" meshes yields output: 5,6,7,8
     '''
     #
-    [ jbl, jbr, jur, jul ] = j4vert[:]
-    [ ibl, ibr, iur, iul ] = i4vert[:]
+    [ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = ji4vert[:,:]
     #
     knhc = kcross
     if  kcross==1:
@@ -200,57 +189,59 @@ def NewHostCell( kcross, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
 
 
 
-def UpdtInd4NewCell( knhc, j4vert, i4vert, kjT, kiT ):
-
+def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
+    '''
+        Update the mesh indices according to the new host cell
+    '''
     if   knhc==1:
         # went down:
-        j4vert[:] = j4vert[:] - 1
-        kjT = kjT-1
+        ji4vert[0,:] = ji4vert[0,:] - 1
+        kjiT[0] = kjiT[0]-1
     elif knhc==5:
         print('LOLO: WE HAVE A 5 !!!!')
         # went left + down
-        i4vert[:] = i4vert[:] - 1
-        j4vert[:] = j4vert[:] - 1
-        kiT = kiT-1
-        kjT = kjT-1
+        ji4vert[1,:] = ji4vert[1,:] - 1
+        ji4vert[0,:] = ji4vert[0,:] - 1
+        kjiT[1] = kjiT[1]-1
+        kjiT[0] = kjiT[0]-1
     elif knhc==6:
         print('LOLO: WE HAVE A 6 !!!!')
         # went right + down
-        i4vert[:] = i4vert[:] + 1
-        j4vert[:] = j4vert[:] - 1
-        kiT = kiT+1
-        kjT = kjT-1
+        ji4vert[1,:] = ji4vert[1,:] + 1
+        ji4vert[0,:] = ji4vert[0,:] - 1
+        kjiT[1] = kjiT[1]+1
+        kjiT[0] = kjiT[0]-1
     elif knhc==2:
         # went to the right
-        i4vert[:] = i4vert[:] + 1
-        kiT = kiT+1
+        ji4vert[1,:] = ji4vert[1,:] + 1
+        kjiT[1] = kjiT[1]+1
     elif knhc==3:
         # went up:
-        j4vert[:] = j4vert[:] + 1
-        kjT = kjT+1
+        ji4vert[0,:] = ji4vert[0,:] + 1
+        kjiT[0] = kjiT[0]+1
     elif knhc==7:
         print('LOLO: WE HAVE A 7 !!!!')
         # went right + up
-        i4vert[:] = i4vert[:] + 1
-        j4vert[:] = j4vert[:] + 1
-        kiT = kiT+1
-        kjT = kjT+1
+        ji4vert[1,:] = ji4vert[1,:] + 1
+        ji4vert[0,:] = ji4vert[0,:] + 1
+        kjiT[1] = kjiT[1]+1
+        kjiT[0] = kjiT[0]+1
     elif knhc==8:
         print('LOLO: WE HAVE A 8 !!!!')
         # went right + up
-        i4vert[:] = i4vert[:] - 1
-        j4vert[:] = j4vert[:] + 1
-        kiT = kiT-1
-        kjT = kjT+1
+        ji4vert[1,:] = ji4vert[1,:] - 1
+        ji4vert[0,:] = ji4vert[0,:] + 1
+        kjiT[1] = kjiT[1]-1
+        kjiT[0] = kjiT[0]+1
     elif knhc==4:
         # went to the left
-        i4vert[:] = i4vert[:] - 1
-        kiT = kiT-1
+        ji4vert[1,:] = ji4vert[1,:] - 1
+        kjiT[1] = kjiT[1]-1
     else:
         print('ERROR: unknown direction, knhc=',knhc)
         exit(0)
 
-    return j4vert, i4vert, kjT, kiT
+    return ji4vert, kjiT
 
 
 
