@@ -34,7 +34,7 @@ rdt = 3600. ; # time step
 
 toDegrees = 180./pi
 
-isubsamp_fig = 24 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
+isubsamp_fig = 48 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
 
 def debugSeeding():
@@ -56,6 +56,8 @@ def debugSeeding1():
         [190.,75.],
                  ])
     return xz
+
+
 
 
 
@@ -84,19 +86,19 @@ if __name__ == '__main__':
 
     # Reading mesh metrics into mesh-mask file:
     with Dataset(cf_mm) as id_mm:
-        imaskt = id_mm.variables['tmask'][0,0,:,:]
-        imasku = id_mm.variables['umask'][0,0,:,:]
-        imaskv = id_mm.variables['vmask'][0,0,:,:]
+        #imaskt = id_mm.variables['tmask'][0,0,:,:]
+        #imasku = id_mm.variables['umask'][0,0,:,:]
+        #imaskv = id_mm.variables['vmask'][0,0,:,:]
         xlonF  = id_mm.variables['glamf'][0,:,:]
         xlatF  = id_mm.variables['gphif'][0,:,:]
         xlonT  = id_mm.variables['glamt'][0,:,:]
         xlatT  = id_mm.variables['gphit'][0,:,:]
 
-    (Nj,Ni) = np.shape(imaskt)
+    (Nj,Ni) = np.shape(xlonT)
 
-    imaskt = np.array(imaskt, dtype=int)
-    imasku = np.array(imasku, dtype=int)
-    imaskv = np.array(imaskv, dtype=int)
+    #imaskt = np.array(imaskt, dtype=int)
+    #imasku = np.array(imasku, dtype=int)
+    #imaskv = np.array(imaskv, dtype=int)
 
     xlonF = np.mod( xlonF, 360. )
     xlonT = np.mod( xlonT, 360. )
@@ -109,20 +111,19 @@ if __name__ == '__main__':
     xVv = np.zeros((Nj,Ni))
 
 
-    # NPS projection (Cartesian, in km):
+    # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
+    #  ==> same North-Polar-Stereographic projection as RGPS data...
     xXt[:,:], xYt[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonT, xlatT)
     xXf[:,:], xYf[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonF, xlatF)
-
-    if idebug>2:
-        ii = dump_2d_field( 'xXt.nc', xXt, xlon=xlonT, xlat=xlatT, name='xXt', unit='km' )
-        ii = dump_2d_field( 'xXf.nc', xXf, xlon=xlonF, xlat=xlatF, name='xXf', unit='km' )
-
-    # Xseed0C: Xseed0G converted to position in km:
+    
+    # same for seeded initial positions, Xseed0G->Xseed0C:
     zx,zy = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
     Xseed0C = np.array([zx,zy]).T
     del zx,zy
 
-    print('\n shape of XseedC =',np.shape(Xseed0C))
+    #if idebug>2:
+    #    ii = dump_2d_field( 'xXt.nc', xXt, xlon=xlonT, xlat=xlatT, name='xXt', unit='km' )
+    #    ii = dump_2d_field( 'xXf.nc', xXf, xlon=xlonF, xlat=xlatF, name='xXf', unit='km' )
 
 
 
@@ -141,19 +142,8 @@ if __name__ == '__main__':
 
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
     IsAlive  = np.zeros(nP, dtype=int)+1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
-
-    vinF = np.zeros(nP, dtype=int)
-    vjnF = np.zeros(nP, dtype=int)  ; # j,i indices of the F-point that defines the current mesh/cell
-    #                                 # (was the nearest point when we searched for nearest point,
-    #                                 #  as buoys move moves within the cell, it might not be the nearest point)
-
-    vinT = np.zeros(nP, dtype=int)
-    vjnT = np.zeros(nP, dtype=int)
-
     
     vCELLs = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
-    VRTCS_i = np.zeros((nP,4), dtype=int)
-    VRTCS_j = np.zeros((nP,4), dtype=int)
 
     JIsSurroundMesh = np.zeros((nP,4,2), dtype=int)
 
@@ -161,71 +151,16 @@ if __name__ == '__main__':
 
 
 
-
-
     # Initialization, seeding:
-    for jP in range(nP):
+    vjnT, vinT, VRTCS_j, VRTCS_i = mjt.SeedInit( Xseed0G, Xseed0C, xlatF, xlonF, xlatT, xlonT, iverbose=idebug )
 
-        rlon, rlat = Xseed0G[jP,0], Xseed0G[jP,1] ; # degrees!
-        rx  , ry   = Xseed0C[jP,0], Xseed0C[jP,1] ; # km !
-        xPosLo[0,jP], xPosLa[0,jP] = rlon, rlat
-        xPosXX[0,jP], xPosYY[0,jP] =  rx ,  ry
-
-        # 1/ Nearest F-point on NEMO grid:
-        [jnF, inF] = gz.NearestPoint( (rlat,rlon), xlatF, xlonF, rd_found_km=5., j_prv=0, i_prv=0 )
-        vjnF[jP], vinF[jP] = jnF, inF
-
-        if idebug>1:
-            print('     ==> nearest F-point for ',rlat,rlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
-                  round(xlatF[jnF,inF],3), round(xlonF[jnF,inF],3))
-
-        #      o--o           x--o            o--x            o--o
-        # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
-        #      x--o           o--o            o--o            o--x
-        iq = gz.Iquadran( (rlat,rlon), xlatF, xlonF, jnF, inF, k_ew_per=-1, lforceHD=True )
-        if not iq in [1,2,3,4]:
-            print('PROBLEM (init): Fuck up for this point `iq`! `iq` = ',iq); exit(0)
-
-        # Indices of the T-point in the center of the mesh ():
-        if   iq==1:
-            jnT,inT = jnF+1,inF+1
-        elif iq==2:
-            jnT,inT = jnF  ,inF+1
-        elif iq==3:
-            jnT,inT = jnF  ,inF
-        elif iq==4:
-            jnT,inT = jnF+1,inF
-        print('     =>> coord of center of mesh (T-point) => lat,lon =',
-              round(xlatT[jnT,inT],3), round(xlonT[jnT,inT],3), '(iq =',iq,')')
-
-        vinT[jP] = inT
-        vjnT[jP] = jnT
-                
-        # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
-        #  starting with the nearest point
-        zJI4vertices = gz.IDSourceMesh( (rlat,rlon), xlatF, xlonF, jnF, inF, iquadran=iq,
-                                                   k_ew_per=-1, lforceHD=True )
-
-        [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = zJI4vertices
-        # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
-
-        # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
-        if   iq==1:
-            VRTCS_i[jP,:] = [ i1, i2, i3, i4 ]
-            VRTCS_j[jP,:] = [ j1, j2, j3, j4 ]
-        elif iq==2:
-            VRTCS_i[jP,:] = [ i2, i3, i4, i1 ]
-            VRTCS_j[jP,:] = [ j2, j3, j4, j1 ]
-        elif iq==3:
-            VRTCS_i[jP,:] = [ i3, i4, i1, i2 ]
-            VRTCS_j[jP,:] = [ j3, j4, j1, j2 ]
-        elif iq==4:
-            VRTCS_i[jP,:] = [ i4, i1, i2, i3 ]
-            VRTCS_j[jP,:] = [ j4, j1, j2, j3 ]
-
-    ### for jP in range(nP)
+    xPosLo[0,:], xPosLa[0,:] = Xseed0G[:,0], Xseed0G[:,1] ; # degrees!
+    xPosXX[0,:], xPosYY[0,:] = Xseed0C[:,0], Xseed0C[:,1] ; # km !
 
 
+    ######################################
+    # Loop along model data time records #
+    ######################################
 
     for jt in range(Nt-1):
         rtmod = id_uv.variables['time_counter'][jt] ; # time of model data (center of the average period which should = rdt)
@@ -237,7 +172,6 @@ if __name__ == '__main__':
         xVv[:,:]   = id_uv.variables['v_ice'][jt,:,:]
 
         print('   *   current number of buoys to follow: '+str(nP))
-
         
         for jP in range(nP):
 

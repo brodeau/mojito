@@ -1,8 +1,97 @@
-#import numpy as np
+#
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
 #from math import atan2,pi
+
+
+
+def SeedInit( pSG, pSC, platF, plonF, platT, plonT, iverbose=0 ):
+    '''
+
+    '''
+    import numpy as np
+    from gonzag import NearestPoint, Iquadran, IDSourceMesh
+    #
+    (nP,n2) = np.shape(pSG)
+    #
+    if np.shape(pSC)!=(nP,n2):
+        print('ERROR [SeedInit]: shape disagreement for `pSG` and `pSC`!'); exit(0)
+    if n2!=2:
+        print('ERROR [SeedInit]: wrong shape for `pSG` and `pSC`!'); exit(0)
+    #
+    #                  jnF,inF:       # j,i indices of the F-point that defines the current mesh/cell
+    #                                 # (was the nearest point when we searched for nearest point,
+    #                                 #  as buoys move moves within the cell, it might not be the nearest point)
+    zjnT    = np.zeros( nP,    dtype=int)
+    zinT    = np.zeros( nP,    dtype=int)
+    zIvrtcs = np.zeros((nP,4), dtype=int)
+    zJvrtcs = np.zeros((nP,4), dtype=int)
+
+    for jP in range(nP):
+
+        zlon, zlat = pSG[jP,0], pSG[jP,1] ; # degrees!
+        zx  , zy   = pSC[jP,0], pSC[jP,1] ; # km !
+
+        # 1/ Nearest F-point on NEMO grid:
+        [jnF, inF] = NearestPoint( (zlat,zlon), platF, plonF, rd_found_km=5., j_prv=0, i_prv=0 )
+
+        if iverbose>1:
+            print('     ==> nearest F-point for ',zlat,zlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
+                  round(platF[jnF,inF],3), round(plonF[jnF,inF],3))
+
+        #      o--o           x--o            o--x            o--o
+        # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
+        #      x--o           o--o            o--o            o--x
+        iq = Iquadran( (zlat,zlon), platF, plonF, jnF, inF, k_ew_per=-1, lforceHD=True )
+        if not iq in [1,2,3,4]:
+            print('PROBLEM (init): Fuck up for this point `iq`! `iq` = ',iq); exit(0)
+
+        # Indices of the T-point in the center of the mesh ():
+        if   iq==1:
+            jnT,inT = jnF+1,inF+1
+        elif iq==2:
+            jnT,inT = jnF  ,inF+1
+        elif iq==3:
+            jnT,inT = jnF  ,inF
+        elif iq==4:
+            jnT,inT = jnF+1,inF
+        print('     =>> coord of center of mesh (T-point) => lat,lon =',
+              round(platT[jnT,inT],3), round(plonT[jnT,inT],3), '(iq =',iq,')')
+
+        zinT[jP] = inT
+        zjnT[jP] = jnT
+
+        # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
+        #  starting with the nearest point
+        zJI4vrtc = IDSourceMesh( (zlat,zlon), platF, plonF, jnF, inF, iquadran=iq, k_ew_per=-1, lforceHD=True )
+        [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = zJI4vrtc
+        # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
+
+        # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
+        if   iq==1:
+            zIvrtcs[jP,:] = [ i1, i2, i3, i4 ]
+            zJvrtcs[jP,:] = [ j1, j2, j3, j4 ]
+        elif iq==2:
+            zIvrtcs[jP,:] = [ i2, i3, i4, i1 ]
+            zJvrtcs[jP,:] = [ j2, j3, j4, j1 ]
+        elif iq==3:
+            zIvrtcs[jP,:] = [ i3, i4, i1, i2 ]
+            zJvrtcs[jP,:] = [ j3, j4, j1, j2 ]
+        elif iq==4:
+            zIvrtcs[jP,:] = [ i4, i1, i2, i3 ]
+            zJvrtcs[jP,:] = [ j4, j1, j2, j3 ]
+    ### for jP in range(nP)
+
+    return  zjnT, zinT, zJvrtcs, zIvrtcs
+
+
+
+
+
+
+
+
 
 
 def IsInsideCell( px, py, CellPolygon ):
@@ -63,7 +152,7 @@ def CrossedEdge( pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
 def NewHostCell( kcross, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
     '''
        Find in which adjacent cell, the point has moved into !
-       
+
        * kcross : integer describing which (old) cell edge the point has crossed
 
        In rare cases, the buoy could possibly move into diagonally adjacent cells
@@ -112,7 +201,7 @@ def NewHostCell( kcross, pP1, pP2, j4vert, i4vert, pY, pX,  iverbose=0 ):
 
 
 def UpdtInd4NewCell( knhc, j4vert, i4vert, kjT, kiT ):
-    
+
     if   knhc==1:
         # went down:
         j4vert[:] = j4vert[:] - 1
@@ -130,7 +219,7 @@ def UpdtInd4NewCell( knhc, j4vert, i4vert, kjT, kiT ):
         i4vert[:] = i4vert[:] + 1
         j4vert[:] = j4vert[:] - 1
         kiT = kiT+1
-        kjT = kjT-1                    
+        kjT = kjT-1
     elif knhc==2:
         # went to the right
         i4vert[:] = i4vert[:] + 1
@@ -162,4 +251,6 @@ def UpdtInd4NewCell( knhc, j4vert, i4vert, kjT, kiT ):
         exit(0)
 
     return j4vert, i4vert, kjT, kiT
+
+
 
