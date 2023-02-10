@@ -19,7 +19,7 @@ def IsInsideCell( py, px, CellPolygon ):
     return CellPolygon.contains(pnt)
 
 
-def _ccw_( pcA, pcB, pcC ):
+def ccw( pcA, pcB, pcC ):
     '''
         * pcA: coordinates of point A => [y_A,x_A]
         * etc...
@@ -34,15 +34,20 @@ def intersect2Seg( pcA, pcB, pcC, pcD ):
         * pcA: coordinates of point A => [y_A,x_A]
         * etc...
     '''
-    return ( _ccw_(pcA,pcC,pcD) != _ccw_(pcB,pcC,pcD) ) and ( _ccw_(pcA,pcB,pcC) != _ccw_(pcA,pcB,pcD) )
+    return ( ccw(pcA,pcC,pcD) != ccw(pcB,pcC,pcD) ) and ( ccw(pcA,pcB,pcC) != ccw(pcA,pcB,pcD) )
 
 
-def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[], iverbose=0 ):
+
+
+
+
+
+def SeedInit( pSG, pSC, platF, plonF, platT, plonT, ialive, maskT, xIceConc=[], iverbose=0 ):
     '''
 
     '''
     import numpy as np
-    from gonzag import NearestPoint
+    from gonzag import NearestPoint, Iquadran, IDSourceMesh
     #
     (nP,n2) = np.shape(pSG)
     #
@@ -51,19 +56,130 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
     if n2!=2:
         print('ERROR [SeedInit]: wrong shape for `pSG` and `pSC`!'); exit(0)
     #
+    #                  jnF,inF:       # j,i indices of the F-point that defines the current mesh/cell
+    #                                 # (was the nearest point when we searched for nearest point,
+    #                                 #  as buoys move moves within the cell, it might not be the nearest point)
+    zjinT    = np.zeros((nP,2),   dtype=int)
+    zJIvrtcs = np.zeros((nP,2,4), dtype=int)
+
+    for jP in range(nP):
+
+        if iverbose>1:
+            print('   * [SeedInit()]: focus on buoy #'+str(jP))
+        
+        zlon, zlat = pSG[jP,0], pSG[jP,1] ; # degrees!
+        zx  , zy   = pSC[jP,0], pSC[jP,1] ; # km !
+        zic = 1.
+        # 1/ Nearest F-point on NEMO grid:
+        [jnF, inF] = NearestPoint( (zlat,zlon), platF, plonF, rd_found_km=rFoundKM, j_prv=0, i_prv=0 )
+
+        #lOK = (jnF>0 and inF>0) ; # a nearest point was found!
+        if jnF<0 or inF<0:
+            ialive[jP] = 0
+            if iverbose>1: print('        ===> I CANCEL this buoy!!! (NO nearest F-point for ',zlat,zlon,')')
+                            
+        if ialive[jP] == 1:            
+            # Ok a nearest point was found!    
+            if iverbose>1:
+                print('     ==> nearest F-point for ',zlat,zlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
+                      round(platF[jnF,inF],3), round(plonF[jnF,inF],3))
+    
+            #      o--o           x--o            o--x            o--o
+            # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
+            #      x--o           o--o            o--o            o--x
+            iq = Iquadran( (zlat,zlon), platF, plonF, jnF, inF, k_ew_per=-1, lforceHD=True )
+            if not iq in [1,2,3,4]:                
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (iQuadran Fuck Up)')
+                    
+        if ialive[jP] == 1:            
+            # Indices of the T-point in the center of the mesh ():
+            if   iq==1:
+                zjinT[jP,:] = [jnF+1,inF+1]
+            elif iq==2:
+                zjinT[jP,:] = [jnF  ,inF+1]
+            elif iq==3:
+                zjinT[jP,:] = [jnF  ,inF]
+            elif iq==4:
+                zjinT[jP,:] = [jnF+1,inF]
+            #
+            [jT,iT] = zjinT[jP,:]
+
+            if iverbose>1:                
+                print('     =>> coord of center of mesh (T-point) => lat,lon =',
+                      round(platT[jT,iT],3), round(plonT[jT,iT],3), '(iq =',iq,')')
+
+            # Test on land-sea mask:
+            zmt = maskT[jT,iT] + maskT[jT,iT+1]+maskT[jT+1,iT]+maskT[jT,iT-1]+maskT[jT-1,iT-1]
+            if zmt < 5:
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (too close to or over the land-sea mask)')
+            
+            # Test on sea-ice concentration:
+            if len(np.shape(xIceConc))==2:
+                #zic = xIceConc[jT,iT]
+                zic = 0.2*(xIceConc[jT,iT] + xIceConc[jT,iT+1]+xIceConc[jT+1,iT]+xIceConc[jT,iT-1]+xIceConc[jT-1,iT-1])
+                if iverbose>1:
+                    #print('     =>> sea-ice concentration =',zic)
+                    print('     =>> 5P sea-ice concentration =',zic)
+            if zic < rmin_conc:
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (mean 5P ice concentration at T-point of the cell =',zic,')')
+
+        if ialive[jP] == 1:
+            # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
+            #  starting with the nearest point
+            zJI4vrtc = IDSourceMesh( (zlat,zlon), platF, plonF, jnF, inF, iquadran=iq, k_ew_per=-1, lforceHD=True )
+            [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = zJI4vrtc
+            # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
+    
+            # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
+            if   iq==1:
+                zJIvrtcs[jP,:,:] = [ [ j1, j2, j3, j4 ], [ i1, i2, i3, i4 ] ]
+            elif iq==2:
+                zJIvrtcs[jP,:,:] = [ [ j2, j3, j4, j1 ], [ i2, i3, i4, i1 ] ]
+            elif iq==3:
+                zJIvrtcs[jP,:,:] = [ [ j3, j4, j1, j2 ], [ i3, i4, i1, i2 ] ]
+            elif iq==4:
+                zJIvrtcs[jP,:,:] = [ [ j4, j1, j2, j3 ], [ i4, i1, i2, i3 ] ]
+                        
+    ### for jP in range(nP)
+
+    return  zjinT, zJIvrtcs
+
+
+
+
+
+
+
+
+
+
+def SeedInitTc( pSG, pSC, platF, plonF, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[], iverbose=0 ):
+    '''
+
+    '''
+    import numpy as np
+    from gonzag import NearestPoint, Iquadran, IDSourceMesh
+    #
+    (nP,n2) = np.shape(pSG)
+    #
+    if np.shape(pSC)!=(nP,n2):
+        print('ERROR [SeedInitTc]: shape disagreement for `pSG` and `pSC`!'); exit(0)
+    if n2!=2:
+        print('ERROR [SeedInitTc]: wrong shape for `pSG` and `pSC`!'); exit(0)
+    #
     #                  jF,iF:       # j,i indices of the F-point that defines the current mesh/cell
     #                                 # (was the nearest point when we searched for nearest point,
     #                                 #  as buoys move moves within the cell, it might not be the nearest point)
     zjiT     = np.zeros((nP,2),   dtype=int)
     zJIvrtcs = np.zeros((nP,2,4), dtype=int)
 
-    if np.sum(ialive) != nP:
-        print('ERROR [SeedInit]: we should begin with a `ialive` filled with 1s!'); exit(0)
-    
     for jP in range(nP):
 
-        if iverbose>0:
-            print('   * [SeedInit()]: focus on buoy with ID:'+str(pIDs[jP]))
+        if iverbose>1:
+            print('   * [SeedInitTc()]: focus on buoy #'+str(jP))
 
         # Initial position of the buoy:
         zlon, zlat = pSG[jP,0], pSG[jP,1] ; # degrees!
@@ -74,34 +190,14 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
 
         if jT<0 or iT<0:
             ialive[jP] = 0
-            if iverbose>1: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO nearest T-point found for ',zlat,zlon,')')
+            if iverbose>1: print('        ===> I CANCEL this buoy!!! (NO nearest T-point found for ',zlat,zlon,')')
                             
         if ialive[jP] == 1:            
             # Ok a nearest point was found!    
             if iverbose>1:
                 print('     ==> nearest T-point for ',zlat,zlon,' on NEMO grid:', jT, iT, '==> lat,lon:',
                       round(platT[jT,iT],3), round(plonT[jT,iT],3))
-            #
-            # Test on land-sea mask:
-            zmt = maskT[jT,iT] + maskT[jT,iT+1]+maskT[jT+1,iT]+maskT[jT,iT-1]+maskT[jT-1,iT-1]
-            if zmt < 5:
-                ialive[jP] = 0
-                if iverbose>1: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (too close to or over the land-sea mask)')
 
-        if ialive[jP] == 1:            
-            # Test on sea-ice concentration:
-            if len(np.shape(xIceConc))==2:
-                #zic = xIceConc[jT,iT]
-                zic = 0.2*(xIceConc[jT,iT] + xIceConc[jT,iT+1]+xIceConc[jT+1,iT]+xIceConc[jT,iT-1]+xIceConc[jT-1,iT-1])
-                if iverbose>1:
-                    #print('     =>> sea-ice concentration =',zic)
-                    print('     =>> 5P sea-ice concentration =',zic)
-            if zic < rmin_conc:
-                ialive[jP] = 0
-                if iverbose>1: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (mean 5P ice concentration at T-point of the cell =',zic,')')
-            
-        if ialive[jP] == 1:
-            # Everything is okay, final work...
             zjiT[jP,:] = [jT,iT]
                 
             # Normally, based on this nearest T-point, the point should belong
@@ -111,11 +207,30 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
             
             PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
                               (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
+
             lPin = IsInsideCell(zy, zx, PolF)
             if not lPin:
-                print('ERROR [SeedInit()]: F-point cell not the one expected!!!'); sys.exit(0)
+                print('ERROR [SeedInitTc()]: F-point cell not the one expected!!!'); sys.exit(0)
             
-            # => indexing is anti-clockwize, starting from bottom left F-point
+            # Test on land-sea mask:
+            zmt = maskT[jT,iT] + maskT[jT,iT+1]+maskT[jT+1,iT]+maskT[jT,iT-1]+maskT[jT-1,iT-1]
+            if zmt < 5:
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (too close to or over the land-sea mask)')
+            
+            # Test on sea-ice concentration:
+            if len(np.shape(xIceConc))==2:
+                #zic = xIceConc[jT,iT]
+                zic = 0.2*(xIceConc[jT,iT] + xIceConc[jT,iT+1]+xIceConc[jT+1,iT]+xIceConc[jT,iT-1]+xIceConc[jT-1,iT-1])
+                if iverbose>1:
+                    #print('     =>> sea-ice concentration =',zic)
+                    print('     =>> 5P sea-ice concentration =',zic)
+            if zic < rmin_conc:
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (mean 5P ice concentration at T-point of the cell =',zic,')')
+
+        if ialive[jP] == 1:
+            # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
             zJIvrtcs[jP,:,:] = [ [ jf1, jf2, jf3, jf4 ], [ if1, if2, if3, if4 ] ]
                         
     ### for jP in range(nP)

@@ -83,7 +83,7 @@ if __name__ == '__main__':
     print('\n shape of Xseed0G =',np.shape(Xseed0G))
 
     (nP,_) = np.shape(Xseed0G)
-    IDs    = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
+
 
     ################################################################################################
 
@@ -119,6 +119,7 @@ if __name__ == '__main__':
     #  ==> same North-Polar-Stereographic projection as RGPS data...
     xXt[:,:], xYt[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonT, xlatT)
     xXf[:,:], xYf[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonF, xlatF)
+    del xlatF, xlonF
     
     # same for seeded initial positions, Xseed0G->Xseed0C:
     zx,zy = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
@@ -139,44 +140,66 @@ if __name__ == '__main__':
 
     Nt = id_uv.dimensions['time_counter'].size
 
-    xPosXX = np.zeros((Nt,nP)) ; # x-position of buoy along the Nt records [km]
-    xPosYY = np.zeros((Nt,nP)) ; # y-position of buoy along the Nt records [km]
-    xPosLo = np.zeros((Nt,nP))
-    xPosLa = np.zeros((Nt,nP))
-
-    lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
-    IsAlive  = np.zeros(nP, dtype=int)+1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
-    
-    vCELLs = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
-
-    JIsSurroundMesh = np.zeros((nP,4,2), dtype=int)
-
     print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
+
+
+    
+
+
+
+
 
 
     ############################
     # Initialization / Seeding #
     ############################
-
+    
     # We need the sea-ice concentration at t=0 so we can cancel buoys if no ice:
     xIC[:,:] = id_uv.variables['siconc'][0,:,:]
+
+    # Vectors with initial number of buoys
+    IDs      = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
+    IsAlive  = np.zeros(       nP , dtype=int) + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
     
-    vJInT, VRTCS = mjt.SeedInit( Xseed0G, Xseed0C, xlatF, xlonF, xlatT, xlonT, IsAlive, imaskt,
+    vJInT, VRTCS = mjt.SeedInit( IDs, Xseed0G, Xseed0C, xlatT, xlonT, xYf, xXf, IsAlive, imaskt,
                                  xIceConc=xIC, iverbose=idebug )
 
-        
+    # Getting rid of useless seeded buoys
+    nPn = np.sum(IsAlive)
+    if nPn<nP:
+        (idxGone,) = np.where(IsAlive==0)
+        print('\n *** '+str(nP-nPn)+' "to-be-seeded" "buoys have been canceled by `SeedInit()`')
+        print('        => their IDs:',IDs[idxGone])
+        print('      ==> need to shrink some arrays, number of valid buoys is now',nPn)
+        (idxKeep,) = np.where(IsAlive==1)
+        IDs     = IDs[idxKeep]
+        IsAlive = np.zeros(nP,dtype=int) + 1
+        vJInT   = vJInT[idxKeep,:]
+        VRTCS   = VRTCS[idxKeep,:,:]
+        nP = nPn
+        del nPn,idxGone
+    else:
+        idxKeep = np.arange(nP,dtype=int)
 
+    # Allocation for nP buoys:
+    xPosXX = np.zeros((Nt,nP)) ; # x-position of buoy along the Nt records [km]
+    xPosYY = np.zeros((Nt,nP)) ; # y-position of buoy along the Nt records [km]
+    xPosLo = np.zeros((Nt,nP))
+    xPosLa = np.zeros((Nt,nP))
     
-    xPosLo[0,:], xPosLa[0,:] = Xseed0G[:,0], Xseed0G[:,1] ; # degrees!
-    xPosXX[0,:], xPosYY[0,:] = Xseed0C[:,0], Xseed0C[:,1] ; # km !
+    vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
+    lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
+    #-----------------------------------------------------------
+    
+    
+    xPosLo[0,:], xPosLa[0,:] = Xseed0G[idxKeep,0], Xseed0G[idxKeep,1] ; # degrees!
+    xPosXX[0,:], xPosYY[0,:] = Xseed0C[idxKeep,0], Xseed0C[idxKeep,1] ; # km !
+    del Xseed0G, Xseed0C, idxKeep
 
     if idebug>1:
-        print('\n *** `IsAlive` after seeding initialization:',IsAlive)
-        
         mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=15, ralpha=1., lShowDate=False, zoom=1.2 )
 
-    #exit(0)
     
     ######################################
     # Loop along model data time records #
@@ -203,11 +226,11 @@ if __name__ == '__main__':
                 [jnT,inT] = vJInT[jP,:]; # indices for T-point at center of current cell
                 
                 if idebug>0:
-                    print('\n    * BUOY #'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
+                    print('\n    * BUOY ID:'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
     
                 ######################### N E W   M E S H   R E L O C A T I O N #################################
                 if not lStillIn[jP]:
-                    print('      +++ RELOCATION NEEDED for buoy #'+str(IDs[jP])+' +++')
+                    print('      +++ RELOCATION NEEDED for buoy with ID:'+str(IDs[jP])+' +++')
     
                     [ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = VRTCS[jP,:,:]
 
@@ -222,14 +245,14 @@ if __name__ == '__main__':
                     if idebug>0:
                         # Control if we are dealing with the proper cell/mesh
                         #   * buoy location ?
-                        if not mjt.IsInsideCell(rx, ry, vCELLs[jP]):
+                        if not mjt.IsInsideCell(ry, rx, vCELLs[jP]):
                             print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
                             print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                    (xYf[jul,iul],xXf[jul,iul])])
                             exit(0)
                         #
                         #    * T-point @ center of mesh ?
-                        if not mjt.IsInsideCell( xXt[jnT,inT], xYt[jnT,inT], vCELLs[jP]):
+                        if not mjt.IsInsideCell( xYt[jnT,inT], xXt[jnT,inT], vCELLs[jP]):
                             print('\nPROBLEM: T-point is not inside the expected mesh!!!')
                             print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
                                    (xYf[jul,iul],xXf[jul,iul])])
@@ -276,7 +299,7 @@ if __name__ == '__main__':
                 xPosYY[jt+1,jP] = ry_nxt
     
                 # Is it still inside our mesh:
-                lSI = mjt.IsInsideCell(rx_nxt, ry_nxt, vCELLs[jP])
+                lSI = mjt.IsInsideCell(ry_nxt, rx_nxt, vCELLs[jP])
                 lStillIn[jP] = lSI
                 if idebug>0: print('      ==> Still inside the same mesh???',lSI)
     
@@ -288,7 +311,7 @@ if __name__ == '__main__':
                     inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VRTCS[jP,:,:], xYf, xXf,  iverbose=idebug )
                     
                     # Update the mesh indices according to the new host cell:
-                    VRTCS[jP,:],vJInT[jP] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:], vJInT[jP] )
+                    VRTCS[jP,:,:],vJInT[jP,:] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:,:], vJInT[jP,:] )
 
                 ### if not lSI
 
