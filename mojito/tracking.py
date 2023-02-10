@@ -5,8 +5,11 @@ from shapely.geometry.polygon import Polygon
 #from math import atan2,pi
 
 
+rmin_conc = 0.6 ; # ice concentration below which we disregard the point...
 
-def SeedInit( pSG, pSC, platF, plonF, platT, plonT, iverbose=0 ):
+rFoundKM = 5.
+
+def SeedInit( pSG, pSC, platF, plonF, platT, plonT, ialive, maskT, xIceConc=[], iverbose=0 ):
     '''
 
     '''
@@ -28,54 +31,85 @@ def SeedInit( pSG, pSC, platF, plonF, platT, plonT, iverbose=0 ):
 
     for jP in range(nP):
 
+        if iverbose>1:
+            print('   * [SeedInit()]: focus on buoy #'+str(jP))
+        
         zlon, zlat = pSG[jP,0], pSG[jP,1] ; # degrees!
         zx  , zy   = pSC[jP,0], pSC[jP,1] ; # km !
-
+        zic = 1.
         # 1/ Nearest F-point on NEMO grid:
-        [jnF, inF] = NearestPoint( (zlat,zlon), platF, plonF, rd_found_km=5., j_prv=0, i_prv=0 )
+        [jnF, inF] = NearestPoint( (zlat,zlon), platF, plonF, rd_found_km=rFoundKM, j_prv=0, i_prv=0 )
 
-        if iverbose>1:
-            print('     ==> nearest F-point for ',zlat,zlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
-                  round(platF[jnF,inF],3), round(plonF[jnF,inF],3))
+        #lOK = (jnF>0 and inF>0) ; # a nearest point was found!
+        if jnF<0 or inF<0:
+            ialive[jP] = 0
+            if iverbose>1: print('        ===> I CANCEL this buoy!!! (NO nearest F-point for ',zlat,zlon,')')
+                            
+        if ialive[jP] == 1:            
+            # Ok a nearest point was found!    
+            if iverbose>1:
+                print('     ==> nearest F-point for ',zlat,zlon,' on NEMO grid:', jnF, inF, '==> lat,lon:',
+                      round(platF[jnF,inF],3), round(plonF[jnF,inF],3))
+    
+            #      o--o           x--o            o--x            o--o
+            # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
+            #      x--o           o--o            o--o            o--x
+            iq = Iquadran( (zlat,zlon), platF, plonF, jnF, inF, k_ew_per=-1, lforceHD=True )
+            if not iq in [1,2,3,4]:                
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (iQuadran Fuck Up)')
+                    
+        if ialive[jP] == 1:            
+            # Indices of the T-point in the center of the mesh ():
+            if   iq==1:
+                zjinT[jP,:] = [jnF+1,inF+1]
+            elif iq==2:
+                zjinT[jP,:] = [jnF  ,inF+1]
+            elif iq==3:
+                zjinT[jP,:] = [jnF  ,inF]
+            elif iq==4:
+                zjinT[jP,:] = [jnF+1,inF]
+            #
+            [jT,iT] = zjinT[jP,:]
 
-        #      o--o           x--o            o--x            o--o
-        # 1 => |  | NE   2 => |  | SE    3 => |  | SW    4 => |  | NW
-        #      x--o           o--o            o--o            o--x
-        iq = Iquadran( (zlat,zlon), platF, plonF, jnF, inF, k_ew_per=-1, lforceHD=True )
-        if not iq in [1,2,3,4]:
-            print('PROBLEM (init): Fuck up for this point `iq`! `iq` = ',iq); exit(0)
+            if iverbose>1:                
+                print('     =>> coord of center of mesh (T-point) => lat,lon =',
+                      round(platT[jT,iT],3), round(plonT[jT,iT],3), '(iq =',iq,')')
 
-        # Indices of the T-point in the center of the mesh ():
-        if   iq==1:
-            zjinT[jP,:] = [jnF+1,inF+1]
-        elif iq==2:
-            zjinT[jP,:] = [jnF  ,inF+1]
-        elif iq==3:
-            zjinT[jP,:] = [jnF  ,inF]
-        elif iq==4:
-            zjinT[jP,:] = [jnF+1,inF]
-        #
-        if iverbose>1:
-            [j,i] = zjinT[jP,:]
-            print('     =>> coord of center of mesh (T-point) => lat,lon =',
-                  round(platT[j,i],3), round(plonT[j,i],3), '(iq =',iq,')')
+            # Test on land-sea mask:
+            zmt = maskT[jT,iT] + maskT[jT,iT+1]+maskT[jT+1,iT]+maskT[jT,iT-1]+maskT[jT-1,iT-1]
+            if zmt < 5:
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (too close to or over the land-sea mask)')
+            
+            # Test on sea-ice concentration:
+            if len(np.shape(xIceConc))==2:
+                #zic = xIceConc[jT,iT]
+                zic = 0.2*(xIceConc[jT,iT] + xIceConc[jT,iT+1]+xIceConc[jT+1,iT]+xIceConc[jT,iT-1]+xIceConc[jT-1,iT-1])
+                if iverbose>1:
+                    #print('     =>> sea-ice concentration =',zic)
+                    print('     =>> 5P sea-ice concentration =',zic)
+            if zic < rmin_conc:
+                ialive[jP] = 0
+                if iverbose>1: print('        ===> I CANCEL this buoy!!! (mean 5P ice concentration at T-point of the cell =',zic,')')
 
-        # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
-        #  starting with the nearest point
-        zJI4vrtc = IDSourceMesh( (zlat,zlon), platF, plonF, jnF, inF, iquadran=iq, k_ew_per=-1, lforceHD=True )
-        [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = zJI4vrtc
-        # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
-
-        # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
-        if   iq==1:
-            zJIvrtcs[jP,:,:] = [ [ j1, j2, j3, j4 ], [ i1, i2, i3, i4 ] ]
-        elif iq==2:
-            zJIvrtcs[jP,:,:] = [ [ j2, j3, j4, j1 ], [ i2, i3, i4, i1 ] ]
-        elif iq==3:
-            zJIvrtcs[jP,:,:] = [ [ j3, j4, j1, j2 ], [ i3, i4, i1, i2 ] ]
-        elif iq==4:
-            zJIvrtcs[jP,:,:] = [ [ j4, j1, j2, j3 ], [ i4, i1, i2, i3 ] ]
-        #
+        if ialive[jP] == 1:
+            # Find the `j,i` indices of the 4 points composing the source mesh that includes the target point
+            #  starting with the nearest point
+            zJI4vrtc = IDSourceMesh( (zlat,zlon), platF, plonF, jnF, inF, iquadran=iq, k_ew_per=-1, lforceHD=True )
+            [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = zJI4vrtc
+            # => indexing is anti-clockwize with (j1,i1) beeing the F-point nearest to the buoy...
+    
+            # Identify the 4 corners (aka F-points) as bottom left, bottom right, upper right & and upper left
+            if   iq==1:
+                zJIvrtcs[jP,:,:] = [ [ j1, j2, j3, j4 ], [ i1, i2, i3, i4 ] ]
+            elif iq==2:
+                zJIvrtcs[jP,:,:] = [ [ j2, j3, j4, j1 ], [ i2, i3, i4, i1 ] ]
+            elif iq==3:
+                zJIvrtcs[jP,:,:] = [ [ j3, j4, j1, j2 ], [ i3, i4, i1, i2 ] ]
+            elif iq==4:
+                zJIvrtcs[jP,:,:] = [ [ j4, j1, j2, j3 ], [ i4, i1, i2, i3 ] ]
+                        
     ### for jP in range(nP)
 
     return  zjinT, zJIvrtcs

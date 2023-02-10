@@ -41,12 +41,16 @@ def debugSeeding():
     xz = np.array([
         [ 20.,84.],
         [ 50.,89.],
+        [-11.,63.], # point outside of domain
         [100.,85.],        
         [100.,89.],
         [180.,79.],
+        [ 46.,76.], # No ice, Barents Sea
         [190.,75.],
+        [-15.,85.2], # Too close to land
         [210.,75.],        
         [200.,83.],
+        [-42.,79.], # over mask (Greenland!)
         [300.,85.],
                  ])
     return xz
@@ -86,7 +90,7 @@ if __name__ == '__main__':
 
     # Reading mesh metrics into mesh-mask file:
     with Dataset(cf_mm) as id_mm:
-        #imaskt = id_mm.variables['tmask'][0,0,:,:]
+        imaskt = id_mm.variables['tmask'][0,0,:,:]
         #imasku = id_mm.variables['umask'][0,0,:,:]
         #imaskv = id_mm.variables['vmask'][0,0,:,:]
         xlonF  = id_mm.variables['glamf'][0,:,:]
@@ -96,7 +100,7 @@ if __name__ == '__main__':
 
     (Nj,Ni) = np.shape(xlonT)
 
-    #imaskt = np.array(imaskt, dtype=int)
+    imaskt = np.array(imaskt, dtype=int)
     #imasku = np.array(imasku, dtype=int)
     #imaskv = np.array(imaskv, dtype=int)
 
@@ -109,7 +113,7 @@ if __name__ == '__main__':
     xYf = np.zeros((Nj,Ni))
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
-
+    xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
 
     # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
     #  ==> same North-Polar-Stereographic projection as RGPS data...
@@ -150,14 +154,30 @@ if __name__ == '__main__':
     print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
 
 
+    ############################
+    # Initialization / Seeding #
+    ############################
 
-    # Initialization, seeding:
-    vJInT, VRTCS = mjt.SeedInit( Xseed0G, Xseed0C, xlatF, xlonF, xlatT, xlonT, iverbose=idebug )
+    # We need the sea-ice concentration at t=0 so we can cancel buoys if no ice:
+    xIC[:,:] = id_uv.variables['siconc'][0,:,:]
+    
+    vJInT, VRTCS = mjt.SeedInit( Xseed0G, Xseed0C, xlatF, xlonF, xlatT, xlonT, IsAlive, imaskt,
+                                 xIceConc=xIC, iverbose=idebug )
+
+        
+
     
     xPosLo[0,:], xPosLa[0,:] = Xseed0G[:,0], Xseed0G[:,1] ; # degrees!
     xPosXX[0,:], xPosYY[0,:] = Xseed0C[:,0], Xseed0C[:,1] ; # km !
 
+    if idebug>1:
+        print('\n *** `IsAlive` after seeding initialization:',IsAlive)
+        
+        mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
+                          cnmfig=None, ms=15, ralpha=1., lShowDate=False, zoom=1.2 )
 
+    #exit(0)
+    
     ######################################
     # Loop along model data time records #
     ######################################
