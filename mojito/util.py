@@ -617,7 +617,7 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
 
 
 
-def ConvertGeo2CartesianNPSkm(xlon, xlat):
+def ConvertGeo2CartesianNPSkm( plat, plon ):
     ''' 
          => from Geo coor. (lon,lat)[degrees] to cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj!
     '''
@@ -627,19 +627,18 @@ def ConvertGeo2CartesianNPSkm(xlon, xlat):
     crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)    
     crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     #
-    ndim = len(np.shape(xlon))
+    ndim = len(np.shape(plon))
     #
-    zx,zy,_ = crs_trg.transform_points(crs_src, xlon, xlat).T
+    zx,zy,_ = crs_trg.transform_points(crs_src, plon, plat).T
     #
     if ndim==2:
         zx,zy = zx.T, zy.T
         #
-    return zx/1000., zy/1000.
+    return zy/1000., zx/1000.
 
 
 
-
-def ConvertCartesianNPSkm2Geo(xX, xY):
+def ConvertCartesianNPSkm2Geo( pY, pX ):
     ''' 
          => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
     '''
@@ -649,12 +648,12 @@ def ConvertCartesianNPSkm2Geo(xX, xY):
     crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)    
     #
-    ndim = len(np.shape(xX))
+    ndim = len(np.shape(pX))
     #
-    zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*xX, 1000.*xY).T
+    zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*pX, 1000.*pY).T
     #
     if ndim==2:
         zlon,zlat = zlon.T, zlat.T
         #
-    return zlon, zlat
+    return zlat, zlon
 

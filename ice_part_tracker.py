@@ -36,33 +36,61 @@ toDegrees = 180./pi
 
 isubsamp_fig = 48 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
+#seeding_type='nemo_Tpoint'
+seeding_type='debug'
 
 def debugSeeding():
-    xz = np.array([
-        [ 20.,84.],
-        [ 50.,89.],
-        [-11.,63.], # point outside of domain
-        [100.,85.],        
-        [100.,89.],
-        [180.,79.],
-        [ 46.,76.], # No ice, Barents Sea
-        [190.,75.],
-        [-15.,85.2], # Too close to land
-        [210.,75.],
-        [-72.,75.], # Baffin bay
-        [200.,83.],
-        [-42.,79.], # over mask (Greenland!)
-        [300.,85.],
-                 ])
-    return xz
+    zLatLon = np.array([
+        [84. ,  20.],
+        [89. ,  50.],
+        [63. , -11.], # point outside of domain
+        [85. , 100.],        
+        [89. , 100.],
+        [79. , 180.],
+        [76. ,  46.], # No ice, Barents Sea
+        [75. , 190.],
+        [85.2, -15.], # Too close to land
+        [75. , 210.],
+        [75. , -72.], # Baffin bay
+        [83. , 200.],
+        [79. , -42.], # over mask (Greenland!)
+        [85. , 300.]  ])
+    return zLatLon
 
 def debugSeeding1():
-    xz = np.array([
-        [190.,75.],
-                 ])
-    return xz
+    zLatLon = np.array([ [75.,190.] ])
+    return zLatLon
 
 
+def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=None ):
+
+    (Nj,Ni) = np.shape(pmskT[::khss,::khss])
+    ztmp = np.zeros((Nj,Ni))
+
+    if fmsk_rstrct:
+        with Dataset(fmsk_rstrct) as id_mr:
+            maskR = id_mr.variables['mask'][::khss,::khss]
+            if np.shape(maskR) != (Nj,Ni):
+                print('ERROR [nemoSeed()]: restricted area mask does not agree in shape with model output!'); exit(0)
+    
+    msk_T = np.zeros((Nj,Ni), dtype='i1')
+
+    msk_T[:,:] = pmskT[::khss,::khss]
+
+    # Only over a decent concentration of ice:
+    ztmp[:,:] = pIC[::khss,::khss]
+    msk_T[np.where(ztmp < 0.9)] = 0
+
+    (idy_keep, idx_keep) = np.where( msk_T[:,:]==1 )
+
+    NbIPt = len(idy_keep)
+
+    zLatLon = np.zeros(NbIPt,2)
+
+    for jp in range(NbIPt):
+        zLatLon[jp,:] = [ ]
+
+    
 
 
 
@@ -78,17 +106,6 @@ if __name__ == '__main__':
     cf_mm = argv[2]
 
 
-    ################################################################################################
-    ###                                     S E E D I N G                                        ###
-    if idebug in [0,1,2]: Xseed0G = debugSeeding()
-    if idebug in [3]:     Xseed0G = debugSeeding1()
-
-    print('\n shape of Xseed0G =',np.shape(Xseed0G))
-
-    (nP,_) = np.shape(Xseed0G)
-
-
-    ################################################################################################
 
 
     # Reading mesh metrics into mesh-mask file:
@@ -120,14 +137,14 @@ if __name__ == '__main__':
 
     # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
     #  ==> same North-Polar-Stereographic projection as RGPS data...
-    xXt[:,:], xYt[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonT, xlatT)
-    xXf[:,:], xYf[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlonF, xlatF)
+    xYt[:,:], xXt[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlatT, xlonT)
+    xYf[:,:], xXf[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlatF, xlonF)
     del xlatF, xlonF
+
+
+
+
     
-    # same for seeded initial positions, Xseed0G->Xseed0C:
-    zx,zy = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
-    Xseed0C = np.array([zx,zy]).T
-    del zx,zy
 
     #if idebug>2:
     #    ii = dump_2d_field( 'xXt.nc', xXt, xlon=xlonT, xlat=xlatT, name='xXt', unit='km' )
@@ -160,6 +177,35 @@ if __name__ == '__main__':
     # We need the sea-ice concentration at t=0 so we can cancel buoys if no ice:
     xIC[:,:] = id_uv.variables['siconc'][0,:,:]
 
+
+    ################################################################################################
+    ###                                     S E E D I N G                                        ###
+    if seeding_type=='nemo_Tpoint':
+        nemoSeed( imaskt, xlatT, xlonT, xIC, khss=3, fmsk_rstrct=None )
+        print('lolo nemo seeding...')
+        exit(0)
+    elif seeding_type=='debug':
+        if idebug in [0,1,2]: Xseed0G = debugSeeding()
+        if idebug in [3]:     Xseed0G = debugSeeding1()
+
+    print('\n shape of Xseed0G =',np.shape(Xseed0G))
+
+    (nP,_) = np.shape(Xseed0G)
+
+    # same for seeded initial positions, Xseed0G->Xseed0C:
+    zy,zx = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
+    Xseed0C = np.array([zy,zx]).T
+    del zx,zy
+
+    #print('Xseed0G =',Xseed0G)
+    #print('Xseed0C =',Xseed0C)
+    #exit(0)
+    
+    ################################################################################################
+
+
+
+    
     # Vectors with initial number of buoys
     IDs      = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
     IsAlive  = np.zeros(       nP , dtype=int) + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
@@ -196,8 +242,8 @@ if __name__ == '__main__':
     #-----------------------------------------------------------
     
     
-    xPosLo[0,:], xPosLa[0,:] = Xseed0G[idxKeep,0], Xseed0G[idxKeep,1] ; # degrees!
-    xPosXX[0,:], xPosYY[0,:] = Xseed0C[idxKeep,0], Xseed0C[idxKeep,1] ; # km !
+    xPosLa[0,:], xPosLo[0,:] = Xseed0G[idxKeep,0], Xseed0G[idxKeep,1] ; # degrees!
+    xPosYY[0,:], xPosXX[0,:] = Xseed0C[idxKeep,0], Xseed0C[idxKeep,1] ; # km !
     del Xseed0G, Xseed0C, idxKeep
 
     if idebug>1:
@@ -336,7 +382,7 @@ if __name__ == '__main__':
         ### for jP in range(nP)
 
         # Updating in terms of lon,lat for all the buoys at once:
-        xPosLo[jt+1,:], xPosLa[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosXX[jt+1,:] , xPosYY[jt+1,:] )
+        xPosLa[jt+1,:], xPosLo[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosYY[jt+1,:], xPosXX[jt+1,:] )
 
         if idebug>1 and jt%isubsamp_fig==0:
             # Show buoys on the map:

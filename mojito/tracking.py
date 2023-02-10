@@ -104,8 +104,8 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
             print('   * [SeedInit()]: focus on buoy with ID:'+str(pIDs[jP]))
 
         # Initial position of the buoy:
-        zlon, zlat = pSG[jP,0], pSG[jP,1] ; # degrees!
-        zx  , zy   = pSC[jP,0], pSC[jP,1] ; # km !
+        zlat,zlon  = pSG[jP,0], pSG[jP,1] ; # degrees!
+        zy  ,zx    = pSC[jP,0], pSC[jP,1] ; # km !
         zic = 1.
         # 1/ Nearest T-point on NEMO grid:
         [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, j_prv=0, i_prv=0 )
