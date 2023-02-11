@@ -29,7 +29,7 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
         #FILIN="RGPS_${YEAR}.nc4"
-        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=24  ; # width of a bin for time sampling [hours]
         #DATE1="$((YEAR-1))1230"        
         DATE2="${YEAR}0201"
         #LIST_RES="20"
