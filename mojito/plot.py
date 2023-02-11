@@ -113,6 +113,9 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
             * pvIDs  => (OPTIONAL) vector of length Nb of buoys IDs (integer)
     '''
     #
+    NbnotMasked = None
+    if np.ma.isMaskedArray(pvlon): NbnotMasked = pvlon.count()
+    #
     fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor=col_bg)
 
@@ -147,6 +150,9 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     if cdate != '':
         ax.annotate('Date: '+cdate, xy=(0.6, 0.93), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
+    if NbnotMasked:
+        ax.annotate(' Nb. buoys = '+str(NbnotMasked), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
+
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
     plt.close(1)
@@ -162,11 +168,9 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
             * pvlat => 1D array (Nb) of  latitudes (float)
             * pvIDs => (OPTIONAL) vector of length Nb of buoys IDs (integer)
     '''
-    Nb = len(pvlon)
-
-    if len(pvlat) != Nb:
-        print('\n *** ERROR [ShowBuoysMap]: lon and lat vectors disagree in length!')
-        exit(0)
+    (Nb,) = np.shape(pvlon)
+    if np.shape(pvlat) != (Nb,):
+        print('\n *** ERROR [ShowBuoysMap]: lon and lat vectors disagree in shape!'); exit(0)
 
     if not path.exists('./figs'): mkdir('./figs')
 
