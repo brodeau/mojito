@@ -32,7 +32,7 @@ from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 
-Nrec_min_days = 3 ; # retain only buoys with a record length >= Nrec_min_days
+#Nrec_min_days = 3 ; # retain only buoys with a record length >= Nrec_min_days (starting from specified initial date)
 
 iplot = 1 ; # show the result in figures?
 l_drop_doublons = False
@@ -97,17 +97,14 @@ if __name__ == '__main__':
 
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
-    #print('      with buoys that do not pass '+cdtI+' canceled!')
-
-
     
     rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
     print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
     print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
 
-    rdtI = rdt1 + 3600*24*Nrec_min_days ; # minimum date for a buoy to reach
-    cdtI = epoch2clock(rdtI)
-    print('\n *** We shall not select buoys that do not make it to at least',cdtI)
+    #rdtI = rdt1 + 3600*24*Nrec_min_days ; # minimum date for a buoy to reach
+    rdtI = rdt1 + 0.5*dt_bin    
+    print('\n *** We shall not select buoys that do not make it to at least',epoch2clock(rdtI))
     
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
@@ -115,8 +112,6 @@ if __name__ == '__main__':
 
     # Important we want the bins to be centered on the specified dates, so:
     rdt1 = rdt1 - 0.5*dt_bin
-    rdt2 = rdt2 #- 0.5*dt_bin
-
     
     # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy_Nmnl)
     Nt, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=0 )
@@ -170,7 +165,7 @@ if __name__ == '__main__':
             if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (pops up after '+epoch2clock(rdt1)+'!)')
             vmask[jb] = 0
         if t2<rdtI:
-            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+cdtI+'!)')
+            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+epoch2clock(rdtI)+'!)')
             vmask[jb] = 0
 
         if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
