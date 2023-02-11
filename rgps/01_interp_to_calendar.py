@@ -24,6 +24,8 @@ from netCDF4 import Dataset
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
+
+iplot = 1 ; # show the result in figures?
 l_drop_doublons = False
 rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
@@ -394,3 +396,14 @@ if __name__ == '__main__':
     f_out.Author = 'Generated with `'+path.basename(argv[0])+'` (L. Brodeau, 2022)'
     f_out.close()
     print('      ===> '+cf_out+' saved!')
+
+
+    if iplot>0:
+
+        for jt in range(NTbin):
+            rt = vTbin[jt,0]
+            ct = epoch2clock(rt)
+            print(' Ploting for '+ct+'!')
+            cfig = './figs/SELECTION/t-interp_buoys_RGPS_'+ct+'.png'
+            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=[], cfig=cfig, cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1. )
+            print('')
