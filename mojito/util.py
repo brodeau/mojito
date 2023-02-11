@@ -7,23 +7,18 @@ from sys import exit
 #from os import path, mkdir
 import numpy as np
 
+def degE_to_degWE( X ):
+    '''
+    # From longitude in 0 -- 360 frame to -180 -- +180 frame...
+    '''
+    if np.shape( X ) == ():
+        # X is a scalar
+        from math import copysign
+        return     copysign(1., 180.-X)*        min(X,     abs(X-360.))
+    else:
+        # X is an array
+        return np.copysign(1., 180.-X)*np.minimum(X, np.abs(X-360.))
 
-
-def LoadDist2CoastNC( cNCfile, ivrbs=0 ):
-    from climporn import chck4f
-    from netCDF4  import Dataset
-    #
-    if ivrbs>0:
-        print('  +++ [util.LoadDist2CoastNC()] Loading "distance to coast" from file:')
-        print('       '+cNCfile)
-    chck4f(cNCfile)
-    with Dataset(cNCfile) as id_in:
-        vlon  = id_in.variables['lon'][:]
-        vlat  = id_in.variables['lat'][:]
-        xdist = id_in.variables['dist'][:,:]
-    if ivrbs>0: print('       => ok!\n')
-        #
-    return vlon, vlat, xdist
 
 
 def Dist2Coast( lon0, lat0, plon, plat, pdist2coat ):
@@ -344,7 +339,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
 
     nPmax = np.max(vNbP)
     xids   = np.zeros((nbf,nPmax),dtype=int) - 999
-    
+
     jf=0
     i1, i2 = 0, 0
     for cf in list_npz_files:
@@ -363,13 +358,13 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
 
     # There might be IDs present more than once (that should not happen if initial scrips was good?)
     vids_u, idxvu = np.unique(vids, return_index=True )
-    
+
     if len(vids_u) < nP:
         print(' WARNING: [util.mergeNPZ] => some IDs are identical :(',nP-len(vids_u),'of them...')
-        
+
         vids_ref = vids.copy()
         vidx     = np.arange(nP)
-        
+
         nP, zidx = SuppressMulitOccurences( vids, vtime, vids_ref, vidx, t_ref )
 
         vids  = vids_ref[zidx]
@@ -387,7 +382,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
     # Time to save in the new npz file:
     if iverbose>0: print('  [util.mergeNPZ] ==> saving merged files into '+cf_out+' !')
     np.savez_compressed( cf_out, itime=itime_mean, date=epoch2clock(itime_mean), Npoints=nP, vids=vids,
-                         vtime=vtime, vx=vx, vy=vy, vlon=vlon, vlat=vlat,  )    
+                         vtime=vtime, vx=vx, vy=vy, vlon=vlon, vlat=vlat,  )
     return 0
 
 
@@ -414,7 +409,7 @@ def IndXYClones( pXY, rmask_val=-999. ):
     IXmaskd = IXmaskd[::2]
 
     _,Iunq = np.unique( pXY, axis=0, return_index=True )
-    
+
     # keep the values of `Iunq` that are not in `IXmaskd`:
     IXokunq = np.setdiff1d( Iunq, IXmaskd ) ;
 
@@ -437,7 +432,7 @@ def GetRidOfXYClones( pXY, rmask_val=-999. ):
     # Row indices that select masked points:
     (IXmaskd,_) = np.where( pXY == [rmask_val,rmask_val] )
     IXmaskd = IXmaskd[::2]
-    
+
     _,Iunq = np.unique( pXY, axis=0, return_index=True )
 
     # keep the values of `Iunq` that are not in `IXmaskd`:
@@ -500,7 +495,7 @@ def StdDev( pmean, pX ):
 
 
 def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
-    ''' 
+    '''
          For many possible reasons the same buoy ID can exist more than once in `pIDs`,
          => we need to keep only one occurence of the location index of these points,
             based on the date (closest to center of bin `rTc`)
@@ -511,9 +506,9 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
             * pidx     : 1D array of integers containing indices that do this: pIDs == pIDsRef0[pidx]
             * rtime    : the  epoch time date [s] we want to select upon! (we keep the buoy which time is closest to this `rtime`)
 
-    RETURN: 
+    RETURN:
             Updated (or not) `pidx` and its length
-    
+
             `pIDs`, `ptime` and `pidx` have the same length!
 
     '''
@@ -521,10 +516,10 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
     if len(ptime)!=Nok0:
         print('ERROR [SuppressMulitOccurences]: `len(ptime)!=len(pIDs)`!'); exit(0)
     if len(pidx)!=Nok0:
-        print('ERROR [SuppressMulitOccurences]: `len(pidx)!=len(pIDs)`!'); exit(0)    
+        print('ERROR [SuppressMulitOccurences]: `len(pidx)!=len(pIDs)`!'); exit(0)
     #
     _, idxU = np.unique(pIDs, return_index=True)
-    NokU = len(idxU) ; # NokU is the number of buoys once the doublons are removed!    
+    NokU = len(idxU) ; # NokU is the number of buoys once the doublons are removed!
     np2rm  = Nok0-NokU
     print('    |SMO|  => we have ',NokU,'unique buoy IDs in an array that contains',Nok0,' buoy IDs!')
     if np2rm>0:
@@ -540,7 +535,7 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
         #print('    |SMO|    ==> these buoys are: ',zIDsD)
         # Analysis:
         idxRMall = []
-        for jID in zIDsD:                        
+        for jID in zIDsD:
             (idxMlt,) = np.where(pIDs==jID)
             #print('|SMO|    => buoy with ID '+str(jID)+', ==> loc indices in pIDs:',idxMlt)
             #print('    |SMO|  ==> time for each buoy:',[ epoch2clock(ptime[ii]) for ii in idxMlt ],' (center bin:'+epoch2clock(rtime)+')')
@@ -571,13 +566,13 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
 
 
 def ConvertGeo2CartesianNPSkm( plat, plon ):
-    ''' 
+    '''
          => from Geo coor. (lon,lat)[degrees] to cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj!
     '''
     #
     from cartopy.crs import PlateCarree, NorthPolarStereo
     #
-    crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)    
+    crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     #
     ndim = len(np.shape(plon))
@@ -592,14 +587,14 @@ def ConvertGeo2CartesianNPSkm( plat, plon ):
 
 
 def ConvertCartesianNPSkm2Geo( pY, pX ):
-    ''' 
+    '''
          => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
     '''
     #
     from cartopy.crs import PlateCarree, NorthPolarStereo
     #
     crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
-    crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)    
+    crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     #
     ndim = len(np.shape(pX))
     #

@@ -115,3 +115,17 @@ def ncSaveCloudBoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_defa
 
     return 0
 
+
+def LoadDist2CoastNC( cNCfile, iverbose=0 ):
+    #
+    if iverbose>0:
+        print('  +++ [util.LoadDist2CoastNC()] Loading "distance to coast" from file:')
+        print('       '+cNCfile)
+    chck4f(cNCfile)
+    with Dataset(cNCfile) as id_in:
+        vlon  = id_in.variables['lon'][:]
+        vlat  = id_in.variables['lat'][:]
+        xdist = id_in.variables['dist'][:,:]
+    if iverbose>0: print('       => ok!\n')
+        #
+    return vlon, vlat, xdist

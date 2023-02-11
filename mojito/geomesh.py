@@ -572,7 +572,7 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
             print('ERROR [MaskCoastal()]: shape problem => `len(mask)!=nB` !!!'); exit(0)        
         mask1d[:] = mask[:]
             
-    from .util import LoadDist2CoastNC, Dist2Coast
+    from .ncio import LoadDist2CoastNC, Dist2Coast
         
     vlon_dist, vlat_dist, xdist = LoadDist2CoastNC( fNCdist2coast ) ; # Load `distance to coast` data...
 

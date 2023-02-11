@@ -53,7 +53,8 @@ list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
 interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
 
-MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
+l_drop_coastal   = True ; # get rid of buoys to close to land
+MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
 
 
 
@@ -63,12 +64,7 @@ MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [
 
 if __name__ == '__main__':
 
-    cdata_dir = environ.get('DATA_DIR')
-    if cdata_dir==None:
-        print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-    fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
-
-    for cd in ['npz','figs']:
+    for cd in ['figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
     if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')
 
@@ -106,10 +102,6 @@ if __name__ == '__main__':
     rdtI = rdt1 + 0.5*dt_bin    
     print('\n *** We shall not select buoys that do not make it to at least',epoch2clock(rdtI))
     
-    # Load `distance to coast` data:
-    vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
-
-
     # Important we want the bins to be centered on the specified dates, so:
     rdt1 = rdt1 - 0.5*dt_bin
     
@@ -143,23 +135,20 @@ if __name__ == '__main__':
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # To mask IDs we cancel:
-    vmask     = np.zeros(Nb, dtype='i1') + 1
+    vmask = np.zeros(Nb, dtype='i1') + 1
 
     # For each buoy, getting date of earliest and latest snapshot
-    print('\n *** Scanning to study precise date range of this file...')
+    print('\n *** Scanning to retain buoys of interest, based on time range...')
 
     for jb in range(Nb):
         if jb%1000==0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
 
         jid = vIDs[jb]
 
-        idx = np.where( vBIDs0==jid )
+        (idx,) = np.where( vBIDs0==jid )
         vt  = vtime0[idx]
         t1, t2  = np.min(vt), np.max(vt)
 
-        #idx_keep = np.where((vt>=rdt1) & (vt<=rdtI))
-        
-        
         # Get rid of buoys that pop up for the 1st time after rdt1:
         if t1>rdt1:
             if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (pops up after '+epoch2clock(rdt1)+'!)')
@@ -171,20 +160,46 @@ if __name__ == '__main__':
         if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
 
 
-    NbR = np.sum(vmask)
-    print('\n *** Only '+str(NbR)+' buoys out of '+str(Nb)+' are remaining (time range)')
-
-    # Masking all destroyed buoys:
-    vIDs      =  np.ma.masked_where( vmask==0, vIDs      )
-
-
     # Dropping canceled (masked) buoys and updating number of valid buoys:
+    vIDs = np.ma.masked_where( vmask==0, vIDs      )
     vIDs = np.ma.MaskedArray.compressed(vIDs)
     Nb   = len(vIDs)
     print('\n *** UPDATE: based on date selection, there are now '+str(Nb)+' buoys to follow!')
 
 
+    if l_drop_coastal:
+        # For now, only at start time...        
+        cdata_dir = environ.get('DATA_DIR')
+        if cdata_dir==None:
+            print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
+        fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'        
+        vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc ) ; # load `distance to coast` data
+        #
+        vmask = np.zeros(Nb, dtype='i1') + 1
+        print('\n *** Scanning to get rid of buoys too close to land (<'+str(int(MinDistFromLand))+' km)')
+        for jb in range(Nb):
+            if jb%1000==0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
+            jid = vIDs[jb]
+            (idx,) = np.where( vBIDs0==jid )
+            vt  = vtime0[idx]            
+            ii = np.argmin( np.abs(vt - rdt1) ) ; # when we are closest to start time
+            zlat, zlon = vlat0[idx[ii]], vlon0[idx[ii]]
+            rd_ini = mjt.Dist2Coast( zlon, zlat, vlon_dist, vlat_dist, xdist )
+            if rd_ini < MinDistFromLand:
+                vmask[jb] = 0
+                if idebug>1:
+                    print('Buoy '+str(jid)+' too close to land ('+str(int(round(rd_ini,0)))+' km); Lat,Lon ='
+                          ,round(zlat,4),',',round(mjt.degE_to_degWE(zlon),4))
+            #
+        # Dropping canceled (masked) buoys and updating number of valid buoys:
+        vIDs = np.ma.masked_where( vmask==0, vIDs      )
+        vIDs = np.ma.MaskedArray.compressed(vIDs)
+        Nb   = len(vIDs)
+        print('\n *** UPDATE: based on minimum distance to nearest coast, there are now '+str(Nb)+' buoys to follow!')
+        #
+    ### if l_drop_coastal
 
+    
     # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
     xmsk = np.zeros((Nt,Nb), dtype='i1') + 1
     xlon = np.zeros((Nt,Nb))
@@ -196,7 +211,7 @@ if __name__ == '__main__':
     for jid in vIDs:
         ic = ic + 1
 
-        idx  = np.where( vBIDs0==jid )
+        (idx,) = np.where( vBIDs0==jid )
         vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
         Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
 
@@ -299,7 +314,6 @@ if __name__ == '__main__':
                             print(vIDs[ii])
     
                     vid_mask[(vidx_close,)] = 0
-
         
         # Alright, all IDs spotted via vid_mask should be cancelled in the 2D fields, at all time steps
         (idmsk,) = np.where(vid_mask==0)
