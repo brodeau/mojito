@@ -95,53 +95,6 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
     return nB, vTB, cTc
 
 
-def InspectLoadData( cfile, plistVar ):
-    '''
-       Open & inspect the RGPS NetCDF input file and load the raw data
-    '''
-    from netCDF4  import Dataset
-    from climporn import chck4f
-    #
-    ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
-    #
-    chck4f(cfile)
-    #
-    with Dataset(cfile) as id_in:
-
-        list_dim = list( id_in.dimensions.keys() )
-        if not 'points' in list_dim:
-            print(' ERROR: no dimensions `points` found into input file!'); exit(0)
-
-        list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
-        for cv in plistVar:
-            if not cv in list_var:
-                print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
-
-        nP = id_in.dimensions['points'].size
-        print('\n *** Total number of points in the file = ', nP)
-
-        # Time records:
-        ctunits = id_in.variables['time'].units
-        if not ctunits == ctunits_expected:
-            print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
-            exit(0)
-        ztime = id_in.variables['time'][:]
-
-        # Coordinates:
-        zx    = id_in.variables['x'][:]
-        zy    = id_in.variables['y'][:]
-        zlon  = id_in.variables['lon'][:]
-        zlat  = id_in.variables['lat'][:]
-
-        # Buoys' IDs:
-        kBIDs    = np.zeros(nP, dtype=int)
-        kBIDs[:] = id_in.variables['index'][:]
-
-    zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
-
-    return nP, ztime, zx, zy, zlon, zlat, kBIDs
-
-
 def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskVal=-99999. ):
     '''
        Only keep data of interest in 1D arrays (except time array), based on date1 and date2.

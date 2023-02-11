@@ -32,6 +32,8 @@ from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 
+Nrec_min_days = 3 ; # retain only buoys with a record length >= Nrec_min_days
+
 iplot = 1 ; # show the result in figures?
 l_drop_doublons = False
 rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
@@ -45,7 +47,7 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 #idebug = 2 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805 ] ; l_show_IDs_fig = True ; # Debug: pick a tiny selection of IDs to follow...
 #idebug = 1 ; vIDdbg = range(0,36000,100)
-idebug = 0
+idebug = 2
 
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
@@ -66,7 +68,7 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    for cd in ["npz","figs"]:
+    for cd in ['npz','figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
     if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')
 
@@ -93,79 +95,85 @@ if __name__ == '__main__':
     cf_out = 'RGPS_ice_drift_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
 
 
-    print("\n *** Date range to restrain data to:")
-    print(" ==> "+cdt1+" to "+cdt2 )
-    #print("      with buoys that do not pass "+cdtI+" canceled!")
+    print('\n *** Date range to restrain data to:')
+    print(' ==> '+cdt1+' to '+cdt2 )
+    #print('      with buoys that do not pass '+cdtI+' canceled!')
 
+
+    
     rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
-    print( "   ===> in epoch time: ", rdt1, "to", rdt2 )
-    print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
+    print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
+    print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
 
-    rdtI = 0.5*(rdt1+rdt2) ; cdtI = epoch2clock(rdtI)
+    rdtI = rdt1 + 3600*24*Nrec_min_days ; # minimum date for a buoy to reach
+    cdtI = epoch2clock(rdtI)
+    print('\n *** We shall not select buoys that do not make it to at least',cdtI)
     
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
-    # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy_Nmnl)
-    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=idebug-1 )    
-    #for jt in range(NTbin): print('   --- jt: '+str(jt)+' => ',vTbin[jt,0],' => ',cTbin[jt])
 
+    # Important we want the bins to be centered on the specified dates, so:
+    rdt1 = rdt1 - 0.5*dt_bin
+    rdt2 = rdt2 #- 0.5*dt_bin
+
+    
+    # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy_Nmnl)
+    Nt, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=0 )
+    if idebug>1:
+        for jt in range(Nt):
+            print('   --- jt: '+str(jt)+' => ',epoch2clock(vTbin[jt,0]),epoch2clock(vTbin[jt,1]),epoch2clock(vTbin[jt,2]))
+    
     # Open, inspect the input file and load raw data:
     Np0, vtime0, vx0, vy0, vlon0, vlat0, vBIDs0 = mjt.InspectLoadData( cf_in, list_expected_var )
 
 
-    rlat_min = np.min(vlat0)
-    print('     ==> Southernmost latitude = ', rlat_min)
-    rlat_max = np.max(vlat0)
-    print('     ==> Northernmost latitude = ', rlat_max)
-
-    
     if idebug>0:
-        vIDs = np.array(vIDdbg, dtype=int)
-        cbla = '[DEBUG] IDs =>'
-        for ii in vIDs: cbla = cbla+' '+str(ii)
-    else:
-        vIDs, idxUNQid = np.unique(vBIDs0, return_index=True )
+        rlat_min, rlat_max = np.min(vlat0), np.max(vlat0)
+        print('\n *** Southernmost & Northernmost latitudes in the dataset =>', rlat_min, rlat_max)
+    
+    #if idebug>0:
+    #    vIDs = np.array(vIDdbg, dtype=int)
+    #    cbla = '[DEBUG] IDs =>'
+    #    for ii in vIDs: cbla = cbla+' '+str(ii)
+    #else:
+    
+    vIDs, idxUNQid = np.unique(vBIDs0, return_index=True )
 
     Nb   = len(vIDs)
-    print('\n *** There are '+str(Nb)+' (unique) buoys to follow...')
+    print('\n *** We IDed '+str(Nb)+' (unique) buoys in this file...')
 
     
-
-    # First we are going to get rid of all buoys that are not fully spanning our defined period
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # First we are going to get rid of all buoys that are not ... our defined period
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # To mask IDs we cancel:
-    vmask = np.zeros(Nb, dtype='i1')
-    vmask[:] = 1
-
-    vt_earlst = np.zeros(Nb) ; ct_earlst = np.zeros(Nb, dtype='U20')
-    vt_latest = np.zeros(Nb) ; ct_latest = np.zeros(Nb, dtype='U20')
+    vmask     = np.zeros(Nb, dtype='i1') + 1
 
     # For each buoy, getting date of earliest and latest snapshot
     print('\n *** Scanning to study precise date range of this file...')
 
     for jb in range(Nb):
-        if jb%1000 == 0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
+        if jb%1000==0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
 
         jid = vIDs[jb]
 
         idx = np.where( vBIDs0==jid )
         vt  = vtime0[idx]
-        t1  = np.min(vt) ; ct1 = epoch2clock(t1)
-        t2  = np.max(vt) ; ct2 = epoch2clock(t2)
+        t1, t2  = np.min(vt), np.max(vt)
 
-        # Get rid of IDs that are seeded after rdt1:
+        #idx_keep = np.where((vt>=rdt1) & (vt<=rdtI))
+        
+        
+        # Get rid of buoys that pop up for the 1st time after rdt1:
         if t1>rdt1:
-            print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (pops up after '+cdt1+'!)')
+            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (pops up after '+epoch2clock(rdt1)+'!)')
             vmask[jb] = 0
-        if t2<=rdtI:
-            print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+cdtI+'!)')
+        if t2<rdtI:
+            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+cdtI+'!)')
             vmask[jb] = 0
 
-        if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+ct1+' ==> '+ct2)
-        vt_earlst[jb] = t1 ; ct_earlst[jb] = ct1 ;
-        vt_latest[jb] = t2 ; ct_latest[jb] = ct2 ;
+        if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
 
 
     NbR = np.sum(vmask)
@@ -173,62 +181,44 @@ if __name__ == '__main__':
 
     # Masking all destroyed buoys:
     vIDs      =  np.ma.masked_where( vmask==0, vIDs      )
-    vt_earlst =  np.ma.masked_where( vmask==0, vt_earlst )
-    vt_latest =  np.ma.masked_where( vmask==0, vt_latest )
-
-    if idebug>1:
-        rt1  = np.min(vt_earlst)
-        rt2  = np.max(vt_latest)
-        rt1l = np.max(vt_earlst)
-        rt2l = np.min(vt_latest)
-        print('  --- absolute earliest date is: '+epoch2clock(rt1))
-        print('  --- absolute   latest date is: '+epoch2clock(rt2))
-        print('  --- latest   of the earliests dates is: '+epoch2clock(rt1l))
-        print('  --- earliest of the   latest  dates is: '+epoch2clock(rt2l),'\n')
 
 
     # Dropping canceled (masked) buoys and updating number of valid buoys:
     vIDs = np.ma.MaskedArray.compressed(vIDs)
     Nb   = len(vIDs)
-    print('\n *** UPDATE: there are now '+str(Nb)+' buoys to follow!')
+    print('\n *** UPDATE: based on date selection, there are now '+str(Nb)+' buoys to follow!')
 
 
-    # Final arrays have 2 dimmensions Nb & NTbin (buoy ID & time record)
-    xmsk = np.zeros((NTbin,Nb), dtype=int)
-    xlon = np.zeros((NTbin,Nb))
-    xlat = np.zeros((NTbin,Nb))
-    xX   = np.zeros((NTbin,Nb))
-    xY   = np.zeros((NTbin,Nb))
 
-    xmsk[:,:] = 1
-
+    # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
+    xmsk = np.zeros((Nt,Nb), dtype='i1') + 1
+    xlon = np.zeros((Nt,Nb))
+    xlat = np.zeros((Nt,Nb))
+    xX   = np.zeros((Nt,Nb))
+    xY   = np.zeros((Nt,Nb))
+    
     ic = -1
     for jid in vIDs:
         ic = ic + 1
 
         idx  = np.where( vBIDs0==jid )
-        vt   = vtime0[idx] ; # that's the time axis of this particular buoy [epoch time]
-        Np   = len(vt)    ; # Mind that Np varies from 1 buoy to another...
+        vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
+        Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
 
-        for jp in range(1,Np):
-            if vt[jp]<=vt[jp-1]:
-                print('ERROR: time not increasing','\n   ==> jp =',jp, ' ==> ', vt[jp-1], ' -- ', vt[jp])
-                exit(0)
+        if np.any( vt[1:Np]-vt[0:Np-1] < 0.):
+            print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
+            exit(0)
 
-        Ntz = NTbin
+        Nt_b = Nt
 
         # Does this buoy survive beyond the fixed time range or not??? lilo
         rtend = np.max(vt)
         l_shorten = ( rtend < rdt2 )
         if l_shorten:
-            if idebug>1: print('    * buoy with ID: '+str(jid)+' does not make it to '+cdt2, '\n      => dies at '+epoch2clock(rtend))
-            for Ntz in range(NTbin):
-                rt = vTbin[Ntz,0]
-                if rt > rtend: break
-            if idebug>1: print('      ==> last index of vTbin to use is: '+str(Ntz-1)+' => '+epoch2clock(vTbin[Ntz-1,0]))
-
-        #f = interpolate.interp1d(vt, vlat) ; vintrp = f(vTbin)
-        #NUMPY: vintrp = np.interp(vTbin, vt, vlat) ; #, left=None, right=None, period=None)
+            if idebug>1: print('    * buoy with ID: '+str(jid)+' does not make it to '+epoch2clock(rdt2), '\n      => dies at '+epoch2clock(rtend))
+            for Nt_b in range(Nt):
+                if vTbin[Nt_b,0] > rtend: break
+            if idebug>1: print('      ==> last index of vTbin to use is: '+str(Nt_b-1)+' => '+epoch2clock(vTbin[Nt_b-1,0]))
 
         if   interp_1d==0:
             fG = interpolate.interp1d(           vt, vlat0[idx])
@@ -236,8 +226,8 @@ if __name__ == '__main__':
         elif interp_1d==1:
             fG = interpolate.Akima1DInterpolator(vt, vlat0[idx])
             fC = interpolate.Akima1DInterpolator(vt,   vy0[idx])
-        xlat[0:Ntz,ic] = fG(vTbin[0:Ntz,0])
-        xY[0:Ntz,ic]   = fC(vTbin[0:Ntz,0])
+        xlat[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
+        xY[0:Nt_b,ic]   = fC(vTbin[0:Nt_b,0])
         
         if   interp_1d==0:
             fG = interpolate.interp1d(           vt, vlon0[idx])
@@ -245,15 +235,15 @@ if __name__ == '__main__':
         elif interp_1d==1:
             fG = interpolate.Akima1DInterpolator(vt, vlon0[idx])
             fC = interpolate.Akima1DInterpolator(vt,   vx0[idx])
-        xlon[0:Ntz,ic] = fG(vTbin[0:Ntz,0])
-        xX[0:Ntz,ic]   = fC(vTbin[0:Ntz,0])
+        xlon[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
+        xX[0:Nt_b,ic]   = fC(vTbin[0:Nt_b,0])
         
-        if l_shorten: xmsk[Ntz:NTbin,ic] = 0
+        if l_shorten: xmsk[Nt_b:Nt,ic] = 0
 
         if idebug>1 and Nb<=20:
             # Visual control of interpolation:
-            lbr.plot_interp_series( jid, 'lat', vt, vTbin[0:Ntz,0], vlat0[idx], xlat[0:Ntz,ic] )
-            lbr.plot_interp_series( jid, 'lon', vt, vTbin[0:Ntz,0], vlon0[idx], xlon[0:Ntz,ic] )
+            lbr.plot_interp_series( jid, 'lat', vt, vTbin[0:Nt_b,0], vlat0[idx], xlat[0:Nt_b,ic] )
+            lbr.plot_interp_series( jid, 'lon', vt, vTbin[0:Nt_b,0], vlon0[idx], xlon[0:Nt_b,ic] )
 
 
     #
@@ -281,7 +271,7 @@ if __name__ == '__main__':
             if vid_mask[jb] == 1:
                 
                 jid = vIDs[jb]
-                if idebug>0: print('\n *** ""TOO CLOSE" scanning: Buoy #'+str(jb)+'=> ID ='+str(jid))
+                if idebug>0: print('\n *** "TOO CLOSE" scanning: Buoy #'+str(jb)+'=> ID ='+str(jid))
         
                 rlat = vlat[jb]
                 rlon = vlon[jb]
@@ -327,9 +317,9 @@ if __name__ == '__main__':
         print('\n *** UPDATE: after "too close" canceling, there are '+str(Nok)+' buoys left at t0!')
 
         # Need to compress arrays, didn't find an elegant way to do it so here is the following abomination:
-        xmsk2 = np.zeros((NTbin,Nok), dtype=int)
-        xlon2 = np.zeros((NTbin,Nok))
-        xlat2 = np.zeros((NTbin,Nok))
+        xmsk2 = np.zeros((Nt,Nok), dtype=int)
+        xlon2 = np.zeros((Nt,Nok))
+        xlat2 = np.zeros((Nt,Nok))
         ic = 0
         for jb in range(Nb):
             if xmsk[0,jb] == 1:
@@ -364,7 +354,7 @@ if __name__ == '__main__':
     
     if iplot>0:
 
-        for jt in range(NTbin):
+        for jt in range(Nt):
             rt = vTbin[jt,0]
             ct = epoch2clock(rt)
             print(' Ploting for '+ct+'!')
