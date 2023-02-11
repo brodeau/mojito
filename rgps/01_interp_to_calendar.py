@@ -12,6 +12,13 @@
 #SBATCH --mem=8000
 ##################################################################
 
+# TO DO:
+#   * Even with a Time bin of 3 days, we want the first date (for the result) to be at <YEAR>/01/01 00:00:00
+#     and not <YEAR>/01/02 12:00:00 !!!
+#     => intiate the search right before the early bin boundary!
+#
+#
+
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
@@ -198,8 +205,6 @@ if __name__ == '__main__':
     ic = -1
     for jid in vIDs:
         ic = ic + 1
-
-        #if vmask[ic] == 1:
 
         idx  = np.where( vBIDs0==jid )
         vt   = vtime0[idx] ; # that's the time axis of this particular buoy [epoch time]
