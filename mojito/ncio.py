@@ -64,14 +64,14 @@ def InspectLoadData( cfile, plistVar, iverbose=0 ):
 
 
 
-def ncSaveCloudBoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_default ):
+def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_default, fillVal=None ):
     '''
     '''
-    print('\n *** [ncSaveCloudBoys]: About to generate file: '+cf_out+' ...')
+    print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')
     (Nt,) = np.shape(ptime)
     (Nb,) = np.shape(pIDs)
     if np.shape(pY)!=(Nt,Nb) or np.shape(pX)!=(Nt,Nb) or np.shape(pLat)!=(Nt,Nb) or np.shape(pLon)!=(Nt,Nb):
-        print('ERROR [ncSaveCloudBoys]: one of the 2D arrays has a wrong shape!!!')
+        print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
         exit(0)
     
     f_out = Dataset(cf_out, 'w', format='NETCDF4')
@@ -86,10 +86,10 @@ def ncSaveCloudBoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_defa
     v_time  = f_out.createVariable(cd_time,     'i4',(cd_time,))
     v_buoy  = f_out.createVariable(cd_buoy,     'i4',(cd_buoy,))
     v_bid   = f_out.createVariable('id_buoy',   'i4',(cd_buoy,))
-    v_latb  = f_out.createVariable('latitude' , 'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-    v_lonb  = f_out.createVariable('longitude', 'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-    v_y     = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-    v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
+    v_latb  = f_out.createVariable('latitude' , 'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+    v_lonb  = f_out.createVariable('longitude', 'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+    v_y     = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+    v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
 
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'

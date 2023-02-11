@@ -28,7 +28,8 @@ from shapely.geometry.polygon import Polygon
 
 from math import atan2,pi
 
-idebug=2
+idebug=0
+iplot=1
 
 rdt = 3600. ; # time step
 
@@ -36,8 +37,11 @@ toDegrees = 180./pi
 
 isubsamp_fig = 48 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-seeding_type='nemo_Tpoint' ; iHSS=5
+seeding_type='nemo_Tpoint' ; iHSS=10
 #seeding_type='debug'
+
+ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
+
 
 def debugSeeding():
     zLatLon = np.array([
@@ -239,6 +243,7 @@ if __name__ == '__main__':
 
     # Allocation for nP buoys:
     vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
+    xmaskB = np.zeros((Nt+1,nP), dtype='i1')
     xPosXX = np.zeros((Nt+1,nP)) -9999.  ; # x-position of buoy along the Nt records [km]
     xPosYY = np.zeros((Nt+1,nP)) -9999.  ; # y-position of buoy along the Nt records [km]
     xPosLo = np.zeros((Nt+1,nP)) -9999.
@@ -251,9 +256,10 @@ if __name__ == '__main__':
     
     xPosLa[0,:], xPosLo[0,:] = Xseed0G[idxKeep,0], Xseed0G[idxKeep,1] ; # degrees!
     xPosYY[0,:], xPosXX[0,:] = Xseed0C[idxKeep,0], Xseed0C[idxKeep,1] ; # km !
+    xmaskB[0,:] = 1
     del Xseed0G, Xseed0C, idxKeep
 
-    if idebug>1:
+    if iplot>0:
         if not path.exists('./figs'): mkdir('./figs')
         mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=15, ralpha=1., lShowDate=False, zoom=1.2 )
@@ -291,7 +297,7 @@ if __name__ == '__main__':
     
                 ######################### N E W   M E S H   R E L O C A T I O N #################################
                 if not lStillIn[jP]:
-                    print('      +++ RELOCATION NEEDED for buoy with ID:'+str(IDs[jP])+' +++')
+                    if idebug>0: print('      +++ RELOCATION NEEDED for buoy with ID:'+str(IDs[jP])+' +++')
     
                     [ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = VRTCS[jP,:,:]
 
@@ -352,7 +358,7 @@ if __name__ == '__main__':
                 # Displacement during the upcomming time step:
                 dx = zU*rdt
                 dy = zV*rdt
-                print('      ==> displacement during `dt`: dx,dy =',dx,dy, 'm')
+                if idebug>0: print('      ==> displacement during `dt`: dx,dy =',dx,dy, 'm')
 
                 # => position [km] of buoy after this time step will be:
                 rx_nxt = rx + dx/1000. ; # [km]
@@ -360,7 +366,8 @@ if __name__ == '__main__':
     
                 xPosXX[jt+1,jP] = rx_nxt
                 xPosYY[jt+1,jP] = ry_nxt
-    
+                xmaskB[jt+1,jP] = 1
+                
                 # Is it still inside our mesh:
                 lSI = mjt.IsInsideCell(ry_nxt, rx_nxt, vCELLs[jP])
                 lStillIn[jP] = lSI
@@ -391,11 +398,6 @@ if __name__ == '__main__':
         # Updating in terms of lon,lat for all the buoys at once:
         xPosLa[jt+1,:], xPosLo[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosYY[jt+1,:], xPosXX[jt+1,:] )
 
-        if idebug>1 and jt%isubsamp_fig==0:
-            # Show buoys on the map:
-            mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
-                              cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
-            
         print('\n\n')
         
     ### for jt in range(Nt-1)
@@ -405,13 +407,18 @@ if __name__ == '__main__':
     vTime[Nt] = vTime[Nt-1] + int(rdt)
 
 
-    if idebug>1:
-        # Final position
-        mjt.ShowBuoysMap( vTime[Nt],  xPosLo[Nt,:], xPosLa[Nt,:], pvIDs=IDs, cfig='./figs/ZEND_Pos_buoys_'+'%4.4i'%(jt)+'.png',
-                              cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
+    # Masking arrays:
+    xPosLo = np.ma.masked_where( xmaskB==0, xPosLo )
+    xPosLa = np.ma.masked_where( xmaskB==0, xPosLa )
+    xPosXX = np.ma.masked_where( xmaskB==0, xPosXX )
+    xPosYY = np.ma.masked_where( xmaskB==0, xPosYY )
     
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
+    kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosYY, xPosXX, xPosLa, xPosLo, tunits=ctunits_expected, fillVal=-9999. )
 
-    
-
-#print('LOLO: distance to nearest wall:',vCELLs[jP].exterior.distance(Point(ry_nxt,rx_nxt)))  #
+    if iplot>0:
+        # Show on the map of the Arctic:
+        for jt in range(0,Nt,isubsamp_fig):
+            mjt.ShowBuoysMap( vTime[jt],  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
+                              cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
+            

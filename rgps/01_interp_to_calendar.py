@@ -351,16 +351,13 @@ if __name__ == '__main__':
         
     ### if l_drop_doublons
 
-    
     xY   = np.ma.masked_where( xmsk==0, xY )
     xX   = np.ma.masked_where( xmsk==0, xX )
     xlat = np.ma.masked_where( xmsk==0, xlat )
     xlon = np.ma.masked_where( xmsk==0, xlon )
-    
 
     # GENERATION OF COMPREHENSIVE NETCDF FILE:
-    kk = mjt.ncSaveCloudBoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, tunits=ctunits_expected )
-
+    kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, tunits=ctunits_expected, fillVal=-9999. )
     
     if iplot>0:
 
