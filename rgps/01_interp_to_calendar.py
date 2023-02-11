@@ -20,12 +20,11 @@ from re import split
 from scipy import interpolate
 
 from netCDF4 import Dataset
-from cartopy.crs import NorthPolarStereo
 
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
-l_drop_doublons = True
+l_drop_doublons = False
 rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
@@ -106,41 +105,10 @@ if __name__ == '__main__':
     Np0, vtime0, vx0, vy0, vlon0, vlat0, vBIDs0 = mjt.InspectLoadData( cf_in, list_expected_var )
 
 
-    
-    # Opening and inspecting input file
-    #cp.chck4f(cf_in)
-    #id_in    = Dataset(cf_in)
-    #
-    #list_dim = list( id_in.dimensions.keys() ) ; #print(' ==> dimensions: ', list_dim, '\n')
-    #if not 'points' in list_dim:
-    #    print(' ERROR: no dimensions `points` found into input file!'); exit(0)
-    ##
-    #list_var = list( id_in.variables.keys() ) ; print(' ==> variables: ', list_var, '\n')
-    #for cv in list_expected_var:
-    #    if not cv in list_var:
-    #        print(' ERROR: no variable `'+cv+'` found into input file!'); exit(0)
-    ##
-    #Np0 = id_in.dimensions['points'].size
-    #print(' *** Number of provided virtual buoys = ', Np0)
-    #vlon0  = id_in.variables['lon'][:]
-    #vlat0  = id_in.variables['lat'][:]
-
     rlat_min = np.min(vlat0)
     print('     ==> Southernmost latitude = ', rlat_min)
     rlat_max = np.max(vlat0)
     print('     ==> Northernmost latitude = ', rlat_max)
-
-    #ctunits = id_in.variables['time'].units
-    #if not ctunits == ctunits_expected:
-    #    print(' ERROR: we expect ''+ctunits_expected+'' as units for time variables, yet we have: '+ctunits)
-    #vtime = np.zeros(Np0, dtype=int)
-    #vtime = id_in.variables['time'][:]
-    #vindex = np.zeros(Np0, dtype=int)
-    #vindex[:] = id_in.variables['index'][:]
-    #id_in.close()
-    #vlon0[:] = np.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
-
-
 
     
     if idebug>0:
@@ -159,7 +127,7 @@ if __name__ == '__main__':
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # To mask IDs we cancel:
-    vmask = np.zeros(Nb, dtype=int)
+    vmask = np.zeros(Nb, dtype='i1')
     vmask[:] = 1
 
     vt_earlst = np.zeros(Nb) ; ct_earlst = np.zeros(Nb, dtype='U20')
@@ -220,6 +188,8 @@ if __name__ == '__main__':
     xmsk = np.zeros((NTbin,Nb), dtype=int)
     xlon = np.zeros((NTbin,Nb))
     xlat = np.zeros((NTbin,Nb))
+    xX   = np.zeros((NTbin,Nb))
+    xY   = np.zeros((NTbin,Nb))
 
     xmsk[:,:] = 1
 
@@ -254,17 +224,23 @@ if __name__ == '__main__':
         #NUMPY: vintrp = np.interp(vTbin, vt, vlat) ; #, left=None, right=None, period=None)
 
         if   interp_1d==0:
-            f = interpolate.interp1d(           vt, vlat0[idx])
+            fG = interpolate.interp1d(           vt, vlat0[idx])
+            fC = interpolate.interp1d(           vt,   vy0[idx])
         elif interp_1d==1:
-            f = interpolate.Akima1DInterpolator(vt, vlat0[idx])
-        xlat[0:Ntz,ic] = f(vTbin[0:Ntz,0])
-
+            fG = interpolate.Akima1DInterpolator(vt, vlat0[idx])
+            fC = interpolate.Akima1DInterpolator(vt,   vy0[idx])
+        xlat[0:Ntz,ic] = fG(vTbin[0:Ntz,0])
+        xY[0:Ntz,ic]   = fC(vTbin[0:Ntz,0])
+        
         if   interp_1d==0:
-            f = interpolate.interp1d(           vt, vlon0[idx])
+            fG = interpolate.interp1d(           vt, vlon0[idx])
+            fC = interpolate.interp1d(           vt,   vx0[idx])
         elif interp_1d==1:
-            f = interpolate.Akima1DInterpolator(vt, vlon0[idx])
-        xlon[0:Ntz,ic] = f(vTbin[0:Ntz,0])
-
+            fG = interpolate.Akima1DInterpolator(vt, vlon0[idx])
+            fC = interpolate.Akima1DInterpolator(vt,   vx0[idx])
+        xlon[0:Ntz,ic] = fG(vTbin[0:Ntz,0])
+        xX[0:Ntz,ic]   = fC(vTbin[0:Ntz,0])
+        
         if l_shorten: xmsk[Ntz:NTbin,ic] = 0
 
         if idebug>1 and Nb<=20:
@@ -276,13 +252,16 @@ if __name__ == '__main__':
     #
     xlat = np.ma.masked_where( xmsk==0, xlat )
     xlon = np.ma.masked_where( xmsk==0, xlon )
+    xX   = np.ma.masked_where( xmsk==0, xX   )
+    xY   = np.ma.masked_where( xmsk==0, xY )
 
     
     # Removing doublons:
     if l_drop_doublons:
+        # Use x,y !!! not lon,lat likebelow !!!
         from gonzag import Haversine
 
-        vid_mask = np.zeros(Nb, dtype=int)
+        vid_mask = np.zeros(Nb, dtype='i1')
         vid_mask[:] = 1
         
         # Based on first time step:
@@ -329,6 +308,7 @@ if __name__ == '__main__':
     
                     vid_mask[(vidx_close,)] = 0
 
+        
         # Alright, all IDs spotted via vid_mask should be cancelled in the 2D fields, at all time steps
         (idmsk,) = np.where(vid_mask==0)
         xmsk[:,idmsk] = 0
@@ -361,24 +341,14 @@ if __name__ == '__main__':
         #print('Shape of vIDs, xlat, xlon, xmsk =',vIDs.shape,xlat.shape,xlon.shape,xmsk.shape)
         #exit(0)
         
-    #endif l_drop_doublons
+    ### if l_drop_doublons
 
-    # convert to meters in neXtSIM projection    
-    srs_nextsim = NorthPolarStereo(central_longitude=-45, true_scale_latitude=60)
-    srs_rgps    = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
-    xpos,ypos,_ = srs_nextsim.transform_points(srs_rgps, xlon, xlat).T * 1000.
-
-    xp = xpos.T
-    yp = ypos.T
-    del xpos,ypos
-
-    yp   = np.ma.masked_where( xmsk==0, yp )
-    xp   = np.ma.masked_where( xmsk==0, xp )
+    
+    xY   = np.ma.masked_where( xmsk==0, xY )
+    xX   = np.ma.masked_where( xmsk==0, xX )
     xlat = np.ma.masked_where( xmsk==0, xlat )
     xlon = np.ma.masked_where( xmsk==0, xlon )
 
-    
-    
     
     # GENERATION OF COMPREHENSIVE NETCDF FILE
     #########################################
@@ -404,11 +374,11 @@ if __name__ == '__main__':
     v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
 
     v_time.units = ctunits_expected
-    v_bid.units   = 'ID of buoy'
+    v_bid.units  = 'ID of buoy'
     v_latb.units = 'degrees north'
     v_lonb.units = 'degrees south'
-    v_y.units    = 'm'
-    v_x.units    = 'm'
+    v_y.units    = 'km'
+    v_x.units    = 'km'
 
     v_buoy[:] = np.arange(Nb,dtype='i4')
     v_bid[:]  = vIDs[:]
@@ -417,8 +387,8 @@ if __name__ == '__main__':
         v_time[jt]   = vTbin[jt,0]
         v_latb[jt,:] =  xlat[jt,:]
         v_lonb[jt,:] =  xlon[jt,:]
-        v_y[jt,:]    =  yp[jt,:]
-        v_x[jt,:]    =  xp[jt,:]
+        v_y[jt,:]    =    xY[jt,:]
+        v_x[jt,:]    =    xX[jt,:]
 
     f_out.About  = 'RGPS sea-ice drift data (Kwok, 1998)'
     f_out.Author = 'Generated with `'+path.basename(argv[0])+'` (L. Brodeau, 2022)'
