@@ -353,51 +353,10 @@ if __name__ == '__main__':
 
     
     # GENERATION OF COMPREHENSIVE NETCDF FILE
-    #########################################
 
+    kk = mjt.ncSaveCloudBoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, tunits=ctunits_expected )
 
-    print('\n *** About to generate file: '+cf_out+' ...')
-
-    f_out = Dataset(cf_out, 'w', format='NETCDF4')
-
-    # Dimensions:
-    cd_time = 'time'
-    cd_buoy = 'buoy'
-    f_out.createDimension(cd_time, None)
-    f_out.createDimension(cd_buoy, Nb  )
-
-    # Variables:
-    v_time  = f_out.createVariable(cd_time,     'i4',(cd_time,))
-    v_buoy  = f_out.createVariable(cd_buoy,     'i4',(cd_buoy,))
-    v_bid   = f_out.createVariable('id_buoy',   'i4',(cd_buoy,))
-    v_latb  = f_out.createVariable('latitude' , 'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-    v_lonb  = f_out.createVariable('longitude', 'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-    v_y     = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-    v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), zlib=True, complevel=9)
-
-    v_time.units = ctunits_expected
-    v_bid.units  = 'ID of buoy'
-    v_latb.units = 'degrees north'
-    v_lonb.units = 'degrees south'
-    v_y.units    = 'km'
-    v_x.units    = 'km'
-
-    v_buoy[:] = np.arange(Nb,dtype='i4')
-    v_bid[:]  = vIDs[:]
-
-    for jt in range(NTbin):
-        v_time[jt]   = vTbin[jt,0]
-        v_latb[jt,:] =  xlat[jt,:]
-        v_lonb[jt,:] =  xlon[jt,:]
-        v_y[jt,:]    =    xY[jt,:]
-        v_x[jt,:]    =    xX[jt,:]
-
-    f_out.About  = 'RGPS sea-ice drift data (Kwok, 1998)'
-    f_out.Author = 'Generated with `'+path.basename(argv[0])+'` (L. Brodeau, 2022)'
-    f_out.close()
-    print('      ===> '+cf_out+' saved!')
-
-
+    
     if iplot>0:
 
         for jt in range(NTbin):
