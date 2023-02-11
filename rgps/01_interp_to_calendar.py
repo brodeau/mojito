@@ -47,7 +47,7 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 #idebug = 2 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805 ] ; l_show_IDs_fig = True ; # Debug: pick a tiny selection of IDs to follow...
 #idebug = 1 ; vIDdbg = range(0,36000,100)
-idebug = 2
+idebug = 0
 
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
