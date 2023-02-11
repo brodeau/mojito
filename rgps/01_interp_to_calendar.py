@@ -265,6 +265,8 @@ if __name__ == '__main__':
     
     # Removing doublons:
     if l_drop_doublons:
+        print(' #FIXME: l_drop_doublons !!!'); exit(0)
+        
         # Use x,y !!! not lon,lat likebelow !!!
         from gonzag import Haversine
 
