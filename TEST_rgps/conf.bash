@@ -27,9 +27,9 @@ host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
-        FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #FILIN="RGPS_${YEAR}.nc4"
-        #FILIN="RGPS_${YEAR}.nc4"
+        #FILIN="RGPS_${YEAR}LIGHT.nc4"
+        FILIN="RGPS_${YEAR}.nc4"
+        #
         #DT_BINS_H=24  ; # width of a bin for time sampling [hours]
         DT_BINS_H=72  ; # width of a bin for time sampling [hours]
         #DATE1="$((YEAR-1))1230"        
