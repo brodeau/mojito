@@ -286,11 +286,10 @@ if __name__ == '__main__':
     xmaskB[0,:] = 1
     del Xseed0G, Xseed0C, idxKeep
 
-    if iplot>0:
+    if iplot>0 and idebug>0:
         if not path.exists('./figs'): mkdir('./figs')
         mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1. )
-        #                 cnmfig=None, ms=15, ralpha=1., lShowDate=False, zoom=1.2 )
 
     
     ######################################
