@@ -112,7 +112,7 @@ if __name__ == '__main__':
             print('   --- jt: '+str(jt)+' => ',epoch2clock(vTbin[jt,0]),epoch2clock(vTbin[jt,1]),epoch2clock(vTbin[jt,2]))
     
     # Open, inspect the input file and load raw data:
-    Np0, vtime0, vx0, vy0, vlon0, vlat0, vBIDs0 = mjt.InspectLoadData( cf_in, list_expected_var )
+    Np0, vtime0, vy0, vx0, vlat0, vlon0, vBIDs0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
 
 
     if idebug>0:

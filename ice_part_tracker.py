@@ -37,8 +37,9 @@ toDegrees = 180./pi
 
 isubsamp_fig = 48 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-seeding_type='nemo_Tpoint' ; iHSS=10
+#seeding_type='nemo_Tpoint' ; iHSS=20
 #seeding_type='debug'
+seeding_type='mojitoNC' ; fNCseed = '/home/laurent/DEV/mojito/TEST_rgps/RGPS_ice_drift_1997-01-01_1997-02-01_lb.nc'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
@@ -198,20 +199,29 @@ if __name__ == '__main__':
     elif seeding_type=='debug':
         if idebug in [0,1,2]: Xseed0G = debugSeeding()
         if idebug in [3]:     Xseed0G = debugSeeding1()
-
+        #
+    elif seeding_type=='mojitoNC':
+        zt, zIDs, zlat, zlon, zy, zx = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
+        Xseed0G = np.array([zlat,zlon]).T
+        Xseed0C = np.array([zy,zx]).T
+        print(' *** Read seeding positions in '+fNCseed+' !')
+        print('     => date =',epoch2clock(zt))
+        #print(np.shape(Xseed0G), np.shape(Xseed0G))
+        del zt, zlat, zlon, zy, zx
+        #print('Xseed0G =',Xseed0G)
+        #print('Xseed0C =',Xseed0C)
+        #exit(0)
+        
     print('\n shape of Xseed0G =',np.shape(Xseed0G))
 
     (nP,_) = np.shape(Xseed0G)
 
-    # same for seeded initial positions, Xseed0G->Xseed0C:
-    zy,zx = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
-    Xseed0C = np.array([zy,zx]).T
-    del zx,zy
+    if seeding_type!='mojitoNC':
+        # same for seeded initial positions, Xseed0G->Xseed0C:
+        zy,zx = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
+        Xseed0C = np.array([zy,zx]).T
+        del zx,zy
 
-    #print('Xseed0G =',Xseed0G)
-    #print('Xseed0C =',Xseed0C)
-    #exit(0)
-    
     ################################################################################################
 
 
@@ -220,6 +230,10 @@ if __name__ == '__main__':
     # Vectors with initial number of buoys
     IDs      = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
     IsAlive  = np.zeros(       nP , dtype=int) + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
+
+    if seeding_type=='mojitoNC':
+        IDs[:] = zIDs[:]
+        del zIDs
     
     vJInT, VRTCS = mjt.SeedInit( IDs, Xseed0G, Xseed0C, xlatT, xlonT, xYf, xXf, IsAlive, imaskt,
                                  xIceConc=xIC, iverbose=idebug )

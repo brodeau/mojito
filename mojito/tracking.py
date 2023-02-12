@@ -136,10 +136,12 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
                               (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
             lPin = IsInsideCell(zy, zx, PolF)
             if not lPin:
-                print('ERROR [SeedInit()]: F-point cell not the one expected!!!'); sys.exit(0)
-            
-            # => indexing is anti-clockwize, starting from bottom left F-point
-            zJIvrtcs[jP,:,:] = [ [ jf1, jf2, jf3, jf4 ], [ if1, if2, if3, if4 ] ]
+                print('WARNING [SeedInit()]: F-point cell not the one expected!!!'); #exit(0)
+                print('        => when lookin for point:',zlat,zlon)
+                ialive[jP] = 0
+            else:
+                # Allright => indexing is anti-clockwize, starting from bottom left F-point
+                zJIvrtcs[jP,:,:] = [ [ jf1, jf2, jf3, jf4 ], [ if1, if2, if3, if4 ] ]
                         
     ### for jP in range(nP)
 
