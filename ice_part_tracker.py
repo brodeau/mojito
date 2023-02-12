@@ -35,7 +35,7 @@ rdt = 3600. ; # time step
 
 toDegrees = 180./pi
 
-isubsamp_fig = 48 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
+isubsamp_fig = 72 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
 #seeding_type='nemo_Tpoint' ; iHSS=20
 #seeding_type='debug'
