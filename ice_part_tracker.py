@@ -130,7 +130,10 @@ if __name__ == '__main__':
         xlatF  = id_mm.variables['gphif'][0,:,:]
         xlonT  = id_mm.variables['glamt'][0,:,:]
         xlatT  = id_mm.variables['gphit'][0,:,:]
-
+        xe1T  = id_mm.variables['e1t'][0,:,:] / 1000. ; # km
+        xe2T  = id_mm.variables['e2t'][0,:,:] / 1000. ; # km
+        
+        
     (Nj,Ni) = np.shape(xlonT)
 
     imaskt = np.array(imaskt, dtype=int)
@@ -147,6 +150,14 @@ if __name__ == '__main__':
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
     xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
+
+    # Local resolution in km (for ):
+    xResKM = np.zeros((Nj,Ni))
+    xResKM[:,:] = np.sqrt( xe1T*xe1T + xe2T*xe2T )
+    del xe1T, xe2T
+    #ii = dump_2d_field( 'res_km.nc', xResKM, xlon=xlonT, xlat=xlatT, name='resolution', unit='km' )
+    #exit(0)
+    
 
     # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
     #  ==> same North-Polar-Stereographic projection as RGPS data...
@@ -235,8 +246,10 @@ if __name__ == '__main__':
         IDs[:] = zIDs[:]
         del zIDs
     
-    vJInT, VRTCS = mjt.SeedInit( IDs, Xseed0G, Xseed0C, xlatT, xlonT, xYf, xXf, IsAlive, imaskt,
-                                 xIceConc=xIC, iverbose=idebug )
+    vJInT, VRTCS = mjt.SeedInit( IDs, Xseed0G, Xseed0C, xlatT, xlonT, xYf, xXf, xResKM,
+                                 IsAlive, imaskt, xIceConc=xIC, iverbose=idebug )
+
+    del xResKM
 
     # Getting rid of useless seeded buoys
     nPn = np.sum(IsAlive)

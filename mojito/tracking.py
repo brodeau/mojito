@@ -10,7 +10,7 @@ from shapely.geometry.polygon import Polygon
 
 rmin_conc = 0.6 ; # ice concentration below which we disregard the point...
 
-rFoundKM = 5.
+rFoundKM = 2.5
 
 
 def IsInsideCell( py, px, CellPolygon ):
@@ -76,7 +76,7 @@ def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
 
 
 
-def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[], iverbose=0 ):
+def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, xIceConc=[], iverbose=0 ):
     '''
 
     '''
@@ -108,7 +108,8 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, ialive, maskT, xIceConc=[]
         zy  ,zx    = pSC[jP,0], pSC[jP,1] ; # km !
         zic = 1.
         # 1/ Nearest T-point on NEMO grid:
-        [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, j_prv=0, i_prv=0 )
+        [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, resolkm=pResolKM, max_itr=10 )
+        #[jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM,  max_itr=10 )
 
         if jT<0 or iT<0:
             ialive[jP] = 0
