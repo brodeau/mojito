@@ -127,20 +127,40 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, x
         if ialive[jP] == 1:
             # Everything is okay, final work...
             zjiT[jP,:] = [jT,iT]
-                
-            # Normally, based on this nearest T-point, the point should belong
-            # to the polygon defined by the 4 following F-points:
-            [jf1,jf2,jf3,jf4] = [ jT-1, jT-1, jT, jT  ]
-            [if1,if2,if3,if4] = [ iT-1, iT,   iT, iT-1 ]
-            
-            PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
-                              (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
-            lPin = IsInsideCell(zy, zx, PolF)
+
+            lPin = False
+            kp=0             ; # pass counter
+            while (not lPin) and (kp<5):
+                kp = kp + 1
+                if iverbose>0 and kp>1: print('  * [SeedInit()] search for proper F-cell => test option #'+str(kp)+'!')
+                if   kp==1:
+                    jz,iz =jT,iT   ; # Normal case!!! 99% of all cases !!!
+                elif kp==2:
+                    jz,iz =jT,iT+1 ; # maybe F-cell is the one next to the right?
+                elif kp==3:
+                    jz,iz =jT+1,iT ; # maybe F-cell is the one next above?
+                elif kp==4:
+                    jz,iz =jT,iT-1 ; # maybe F-cell is the one next to the left?
+                elif kp==5:
+                    jz,iz =jT-1,iT ; # maybe F-cell is the one next below?
+                #
+                # Based on this nearest T-point (here `jz,iz`), the point should belong
+                # to the polygon defined by the 4 following F-points:
+                [jf1,jf2,jf3,jf4] = [ jz-1, jz-1, jz, jz  ]
+                [if1,if2,if3,if4] = [ iz-1, iz,   iz, iz-1 ]                    
+                #
+                PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
+                                  (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
+                lPin = IsInsideCell(zy, zx, PolF)
+                #
+            ### while (not lPin) and (kp<5)                
             if not lPin:
-                print('WARNING [SeedInit()]: F-point cell not the one expected!!!'); #exit(0)
-                print('        => when lookin for point:',zlat,zlon)
+                print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
+                print('         => when lookin for point:',zlat,zlon)
                 ialive[jP] = 0
+                if iverbose>0: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO proper F-point cell found)')
             else:
+                if iverbose>0 and kp>1: print('        => option #'+str(kp)+' did work!  :)')
                 # Allright => indexing is anti-clockwize, starting from bottom left F-point
                 zJIvrtcs[jP,:,:] = [ [ jf1, jf2, jf3, jf4 ], [ if1, if2, if3, if4 ] ]
                         
