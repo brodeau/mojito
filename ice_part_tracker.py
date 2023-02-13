@@ -239,8 +239,9 @@ if __name__ == '__main__':
     for jt in range(Nt):
         rtmod = id_uv.variables['time_counter'][jt] ; # time of model data (center of the average period which should = rdt)
         itime = int(rtmod - rdt/2.) ; # velocitie is average under the whole rdt, at the center!
+        ctime = epoch2clock(itime)
         print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
-              epoch2clock(itime),'(model:'+epoch2clock(int(rtmod))+')')
+              ctime,'(model:'+epoch2clock(int(rtmod))+')')
         vTime[jt] = itime
 
         
@@ -374,8 +375,16 @@ if __name__ == '__main__':
         # Updating in terms of lon,lat for all the buoys at once:
         xPosLa[jt+1,:], xPosLo[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosYY[jt+1,:], xPosXX[jt+1,:] )
 
-        print('\n\n')
-        
+
+        if iplot>0:
+            # Show on the map of the Arctic:
+            if jt%isubsamp_fig == 0:
+                mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs,
+                                  cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
+                                  cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
+                                  title='IceTracker + SI3 u,v fields' )
+                
+        print('\n')                
     ### for jt in range(Nt-1)
 
     id_uv.close()
@@ -392,10 +401,10 @@ if __name__ == '__main__':
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
     kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosYY, xPosXX, xPosLa, xPosLo, tunits=ctunits_expected, fillVal=-9999. )
 
-    if iplot>0:
-        # Show on the map of the Arctic:
-        for jt in range(0,Nt,isubsamp_fig):
-            mjt.ShowBuoysMap( vTime[jt],  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
-                              cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker + SI3 u,v fields' )
-                              #cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
+    #if iplot>0:
+    #    # Show on the map of the Arctic:
+    #    for jt in range(0,Nt,isubsamp_fig):
+    #        mjt.ShowBuoysMap( vTime[jt],  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
+    #                          cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker + SI3 u,v fields' )
+    #                          #cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
             
