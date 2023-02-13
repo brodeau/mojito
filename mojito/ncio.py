@@ -7,16 +7,10 @@ import numpy as np
 from netCDF4 import Dataset
 
 #from climporn import epoch2clock, clock2epoch
-#import mojito as mjt
+
+from .util import chck4f
 
 tunits_default = 'seconds since 1970-01-01 00:00:00'
-
-
-def chck4f( cf ):
-    if not path.exists(cf):
-        print(' ERROR [chck4f()]: file '+cf+' does not exist!')
-        exit(0)
-
 
 def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
     '''

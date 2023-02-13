@@ -4,8 +4,15 @@
 ##################################################################
 
 from sys import exit
-#from os import path, mkdir
+#from os import path ; #, mkdir
 import numpy as np
+
+
+def chck4f( cf ):
+    from os.path import exists
+    if not exists(cf):
+        print(' ERROR [chck4f()]: file '+cf+' does not exist!')
+        exit(0)
 
 def degE_to_degWE( X ):
     '''

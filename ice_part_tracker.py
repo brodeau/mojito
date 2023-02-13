@@ -37,26 +37,32 @@ toDegrees = 180./pi
 
 isubsamp_fig = 72 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-seeding_type='nemo_Tpoint' ; iHSS=20
-#seeding_type='debug'
-##seeding_type='mojitoNC' ; fNCseed = '/home/laurent/DEV/mojito/TEST_rgps/RGPS_ice_drift_1997-01-01_1997-02-01_lb.nc'
-#seeding_type='mojitoNC' ; fNCseed = '/home/laurent/DEV/mojito/TEST_rgps/RGPS_ice_drift_1997-01-01_1997-03-01_lb.nc'
-
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
+
+# `seeding_type` is overriden if a NC file is specified (3rd argument) when calling this script...
+seeding_type='nemo_Tpoint' ; iHSS=10
+#seeding_type='debug'
+
 
 
 
 if __name__ == '__main__':
 
-    if not len(argv) in [3]:
-        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask>')
+    if not len(argv) in [3,4]:
+        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> (<seeding_file.nc>)')
         exit(0)
-
-    
         
     cf_uv = argv[1]
     cf_mm = argv[2]
 
+    lSeedFromNCfile = ( len(argv)==4 )
+
+    if lSeedFromNCfile:
+        seeding_type='mojitoNC'
+        fNCseed = argv[3]
+        mjt.chck4f(fNCseed)
+        print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
+    
 
     # Reading mesh metrics into mesh-mask file:
     with Dataset(cf_mm) as id_mm:
@@ -150,8 +156,7 @@ if __name__ == '__main__':
         zt, zIDs, zlat, zlon, zy, zx = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
         Xseed0G = np.array([zlat,zlon]).T
         Xseed0C = np.array([zy,zx]).T
-        print(' *** Read seeding positions in '+fNCseed+' !')
-        print('     => date =',epoch2clock(zt))
+        print('     => data is read at date =',epoch2clock(zt))
         #print(np.shape(Xseed0G), np.shape(Xseed0G))
         del zt, zlat, zlon, zy, zx
         #print('Xseed0G =',Xseed0G)
