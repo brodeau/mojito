@@ -147,7 +147,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     BMProj.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
 
     if cdate != '':
-        ax.annotate('Date: '+cdate, xy=(0.6, 0.92), xycoords='figure fraction', **cp.fig_style.cfont_clck)
+        ax.annotate('Date: '+cdate, xy=(0.6, 0.925), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
     if NbnotMasked:
         ax.annotate(' Nb. buoys = '+str(NbnotMasked), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
