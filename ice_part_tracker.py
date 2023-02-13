@@ -229,7 +229,7 @@ if __name__ == '__main__':
     if iplot>0 and idebug>0:
         if not path.exists('./figs'): mkdir('./figs')
         mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
-                          cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1. )
+                          cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker: Init Seeding' )
 
     
     ######################################
@@ -396,6 +396,6 @@ if __name__ == '__main__':
         # Show on the map of the Arctic:
         for jt in range(0,Nt,isubsamp_fig):
             mjt.ShowBuoysMap( vTime[jt],  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
-                              cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1. )
+                              cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker + SI3 u,v fields' )
                               #cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
             
