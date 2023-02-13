@@ -366,5 +366,6 @@ if __name__ == '__main__':
             ct = epoch2clock(rt)
             print(' Ploting for '+ct+'!')
             cfig = './figs/SELECTION/t-interp_buoys_RGPS_'+ct+'.png'
-            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=[], cfig=cfig, cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1. )
+            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=[], cfig=cfig,
+                              ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='RGPS' )
             print('')
