@@ -3,6 +3,8 @@
 ##################################################################
 
 #TODO:
+#   make that the plot shows number of buoys with another method that the masked array....
+#
 #     * gz.NearestPoint should be used only at seeding time / jt==0
 #     Once we detect that a move makes the buoy leave the current mesh
 #     we should be able to give a number between 1 and 4 to tell
