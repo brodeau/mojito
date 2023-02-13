@@ -76,6 +76,61 @@ def Survive( kID, kjiT, pmskT, pIceC=[],  iverbose=0 ):
 
 
 
+
+def FindContainingCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
+    ''' 
+        Based on the nearest T-point, find the cell/mesh (defined as the polygon that
+        joins 4 neighbor F-points) that contains the target point.
+        
+        Mind: the indices of the T-point we return is that of the center of the
+              identified cell! And in very unusual cases, this is not the same
+              as the nearest T-point provided as an input...
+       Input:
+        * pyx      : (y,x) target point cartesian coordinates [km]
+        * kjiT     : (j,i) indices of nearest T-point to (y,x) that was found...
+        * pYf, pXf : 2D arrays of cartesian coordinates of the model F-point grid
+       Output:
+        * lPin    : success or not (boolean)
+        * [jT,iT] : actual T-point at the center of the identified cell
+        * [[jf1,jf2,jf3,jf4],[if1,if2,if3,if4]]: the 4 F-points that make the vertices
+                                                 of the identified cell (ConterClockwize starting from BLC)
+    '''
+    (zy,zx) = pyx
+    (kj,ki) = kjiT
+    #
+    lPin = False
+    kp=0             ; # pass counter
+    while (not lPin) and (kp<5):
+        kp = kp + 1
+        if iverbose>0 and kp>1: print('  * [SeedInit()] search for proper F-cell => test option #'+str(kp)+'!')
+        if   kp==1:
+            jT,iT =kj,ki   ; # Normal case!!! 99% of all cases !!!
+        elif kp==2:
+            jT,iT =kj,ki+1 ; # maybe F-cell is the one next to the right?
+        elif kp==3:
+            jT,iT =kj+1,ki ; # maybe F-cell is the one next above?
+        elif kp==4:
+            jT,iT =kj,ki-1 ; # maybe F-cell is the one next to the left?
+        elif kp==5:
+            jT,iT =kj-1,ki ; # maybe F-cell is the one next below?
+        #
+        # Based on this @center T-point (here `jT,iT`), the proper cell/mesh
+        # should be the polygon defined by the 4 following F-points:
+        # (indexing is anti-clockwize, starting from bottom left F-point)
+        [jf1,jf2,jf3,jf4] = [ jT-1, jT-1, jT, jT  ]
+        [if1,if2,if3,if4] = [ iT-1, iT,   iT, iT-1 ]                    
+        #
+        PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
+                          (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
+        lPin = IsInsideCell(zy, zx, PolF)
+        #
+    if iverbose>0:
+        if kp>1 and lPin: print('        => option #'+str(kp)+' did work!  :)')
+    #
+    return lPin, [jT,iT], [[jf1,jf2,jf3,jf4],[if1,if2,if3,if4]]
+
+
+
 def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, xIceConc=[], iverbose=0 ):
     '''
 
@@ -112,7 +167,6 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, x
         zic = 1.
         # 1/ Nearest T-point on NEMO grid:
         [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, resolkm=pResolKM, max_itr=10 )
-        #[jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM,  max_itr=10 )
 
         if jT<0 or iT<0:
             ialive[jP] = 0
@@ -128,44 +182,15 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, x
             if icncl>0: ialive[jP] = 0
             
         if ialive[jP] == 1:
-            # Everything is okay, final work...
-            zjiT[jP,:] = [jT,iT]
-
-            lPin = False
-            kp=0             ; # pass counter
-            while (not lPin) and (kp<5):
-                kp = kp + 1
-                if iverbose>0 and kp>1: print('  * [SeedInit()] search for proper F-cell => test option #'+str(kp)+'!')
-                if   kp==1:
-                    jz,iz =jT,iT   ; # Normal case!!! 99% of all cases !!!
-                elif kp==2:
-                    jz,iz =jT,iT+1 ; # maybe F-cell is the one next to the right?
-                elif kp==3:
-                    jz,iz =jT+1,iT ; # maybe F-cell is the one next above?
-                elif kp==4:
-                    jz,iz =jT,iT-1 ; # maybe F-cell is the one next to the left?
-                elif kp==5:
-                    jz,iz =jT-1,iT ; # maybe F-cell is the one next below?
-                #
-                # Based on this nearest T-point (here `jz,iz`), the point should belong
-                # to the polygon defined by the 4 following F-points:
-                [jf1,jf2,jf3,jf4] = [ jz-1, jz-1, jz, jz  ]
-                [if1,if2,if3,if4] = [ iz-1, iz,   iz, iz-1 ]                    
-                #
-                PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
-                                  (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
-                lPin = IsInsideCell(zy, zx, PolF)
-                #
-            ### while (not lPin) and (kp<5)                
+            # Everything is okay, now we locate the cell/mesh (polygon joining 4 F-points) that includes
+            # our target point (zy,zx)
+            lPin, zjiT[jP,:], zJIvrtcs[jP,:,:] = FindContainingCell( (zy,zx), (jT,iT), pYf, pXf, iverbose=iverbose )
+            #
             if not lPin:
                 print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
                 print('         => when lookin for point:',zlat,zlon)
                 ialive[jP] = 0
                 if iverbose>0: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO proper F-point cell found)')
-            else:
-                if iverbose>0 and kp>1: print('        => option #'+str(kp)+' did work!  :)')
-                # Allright => indexing is anti-clockwize, starting from bottom left F-point
-                zJIvrtcs[jP,:,:] = [ [ jf1, jf2, jf3, jf4 ], [ if1, if2, if3, if4 ] ]
                         
     ### for jP in range(nP)
 
