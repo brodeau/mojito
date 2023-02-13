@@ -20,7 +20,6 @@ DATE2="${YEAR}0430"
 #MARKER_SIZE=10
 #NJPAR=4 ; # number of jobs we can launch in //
 
-
 FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod.nc4"
 
 
@@ -32,15 +31,16 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
-        FILIN="RGPS_${YEAR}LIGHT.nc4"
-        FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-03-01_lb_LIGHT.nc"
         #
         DATE2="${YEAR}0301"
-        #FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
+        FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-03-01_lb_LIGHT.nc"
+        FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         ;;
     "frazilo")
         export DATA_DIR="/data"
-        echo "Do me!"; exit
+        #
+        DATE2="${YEAR}0501"
+        FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-05-01_lb.nc"
         ;;
     *)
         echo "Unsupported host: ${host} !"
