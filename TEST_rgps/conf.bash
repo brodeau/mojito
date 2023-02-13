@@ -42,10 +42,8 @@ case ${host} in
         #LIST_STREAM="000 001 002 003 004 005 006 008 009 010 011"
         NSTREAMB="11"
         #
-        DATE1="${YEAR}0101"
-        DATE2="${YEAR}0201"
-        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=$((3*24))  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=72  ; # width of a bin for time sampling [hours]
+        DATE2="${YEAR}0301"
         ;;
     "frazilo")
         export DATA_DIR="/data"
@@ -54,9 +52,10 @@ case ${host} in
         #
         #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=72  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=48  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=24  ; # width of a bin for time sampling [hours]
-        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #
         #NSTREAMB="1"        
         NSTREAMB="136"

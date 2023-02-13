@@ -37,74 +37,13 @@ toDegrees = 180./pi
 
 isubsamp_fig = 72 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-#seeding_type='nemo_Tpoint' ; iHSS=20
+seeding_type='nemo_Tpoint' ; iHSS=20
 #seeding_type='debug'
-seeding_type='mojitoNC' ; fNCseed = '/home/laurent/DEV/mojito/TEST_rgps/RGPS_ice_drift_1997-01-01_1997-02-01_lb.nc'
+##seeding_type='mojitoNC' ; fNCseed = '/home/laurent/DEV/mojito/TEST_rgps/RGPS_ice_drift_1997-01-01_1997-02-01_lb.nc'
+#seeding_type='mojitoNC' ; fNCseed = '/home/laurent/DEV/mojito/TEST_rgps/RGPS_ice_drift_1997-01-01_1997-03-01_lb.nc'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
-
-def debugSeeding():
-    zLatLon = np.array([
-        [84. ,  20.],
-        [89. ,  50.],
-        [63. , -11.], # point outside of domain
-        [85. , 100.],        
-        [89. , 100.],
-        [79. , 180.],
-        [76. ,  46.], # No ice, Barents Sea
-        [75. , 190.],
-        [85.2, -15.], # Too close to land
-        [75. , 210.],
-        [75. , -72.], # Baffin bay
-        [83. , 200.],
-        [79. , -42.], # over mask (Greenland!)
-        [85. , 300.]  ])
-    return zLatLon
-
-def debugSeeding1():
-    zLatLon = np.array([ [75.,190.] ])
-    return zLatLon
-
-
-def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=None ):
-
-    zmsk = pmskT[::khss,::khss]
-    zlat = platT[::khss,::khss]
-    zlon = plonT[::khss,::khss]
-
-    (Nj,Ni) = np.shape(zmsk)
-    ztmp = np.zeros((Nj,Ni))
-    
-    #if fmsk_rstrct:
-    #    with Dataset(fmsk_rstrct) as id_mr:
-    #        maskR = id_mr.variables['mask'][::khss,::khss]
-    #        if np.shape(maskR) != (Nj,Ni):
-    #            print('ERROR [nemoSeed()]: restricted area mask does not agree in shape with model output!'); exit(0)
-    
-    msk_T = np.zeros((Nj,Ni), dtype='i1')
-
-    msk_T[:,:] = zmsk[:,:]
-
-    # Only north of ...
-    msk_T[np.where(zlat < 55.)] = 0
-        
-    # Only over a decent concentration of ice:
-    ztmp[:,:] = pIC[::khss,::khss]
-    msk_T[np.where(ztmp < 0.9)] = 0
-
-    (idy_keep, idx_keep) = np.where( msk_T==1 )
-    NbIPt = len(idy_keep)
-    zLatLon = np.zeros((NbIPt,2))
-    
-    for jp in range(NbIPt):
-        jj = idy_keep[jp]
-        ji = idx_keep[jp]
-        zLatLon[jp,:] = [ zlat[jj,ji],zlon[jj,ji] ]
-        
-    del zmsk,zlat,zlon
-        
-    return zLatLon
 
 
 if __name__ == '__main__':
@@ -119,13 +58,9 @@ if __name__ == '__main__':
     cf_mm = argv[2]
 
 
-
-
     # Reading mesh metrics into mesh-mask file:
     with Dataset(cf_mm) as id_mm:
         imaskt = id_mm.variables['tmask'][0,0,:,:]
-        #imasku = id_mm.variables['umask'][0,0,:,:]
-        #imaskv = id_mm.variables['vmask'][0,0,:,:]
         xlonF  = id_mm.variables['glamf'][0,:,:]
         xlatF  = id_mm.variables['gphif'][0,:,:]
         xlonT  = id_mm.variables['glamt'][0,:,:]
@@ -205,11 +140,11 @@ if __name__ == '__main__':
     ################################################################################################
     ###                                     S E E D I N G                                        ###
     if seeding_type=='nemo_Tpoint':
-        Xseed0G = nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
+        Xseed0G = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
         #
     elif seeding_type=='debug':
-        if idebug in [0,1,2]: Xseed0G = debugSeeding()
-        if idebug in [3]:     Xseed0G = debugSeeding1()
+        if idebug in [0,1,2]: Xseed0G = mjt.debugSeeding()
+        if idebug in [3]:     Xseed0G = mjt.debugSeeding1()
         #
     elif seeding_type=='mojitoNC':
         zt, zIDs, zlat, zlon, zy, zx = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
@@ -411,7 +346,16 @@ if __name__ == '__main__':
                     
                     # Update the mesh indices according to the new host cell:
                     VRTCS[jP,:,:],vJInT[jP,:] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:,:], vJInT[jP,:] )
-
+                    # LOLO DEBUG: test if `UpdtInd4NewCell` does a good job:
+                    #[ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = VRTCS[jP,:,:]
+                    #zzf = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
+                    #                        (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
+                    #if not mjt.IsInsideCell( ry_nxt, rx_nxt, zzf ):
+                    #    print('FUCK UP!!!')
+                    #    exit(0)
+                    #else:
+                    #    print('INSIDE cell :D')
+                                        
                     # Based on updated new indices, some buoys might get killed:
                     icncl = mjt.Survive( IDs[jP], vJInT[jP,:], imaskt, pIceC=xIC,  iverbose=idebug )
                     if icncl>0: IsAlive[jP]=0

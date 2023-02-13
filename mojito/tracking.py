@@ -288,14 +288,14 @@ def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
         ji4vert[0,:] = ji4vert[0,:] - 1
         kjiT[0] = kjiT[0]-1
     elif knhc==5:
-        print('LOLO: WE HAVE A 5 !!!!')
+        print(' * [UpdtInd4NewCell()]: WE HAVE A 5 !!!!')
         # went left + down
         ji4vert[1,:] = ji4vert[1,:] - 1
         ji4vert[0,:] = ji4vert[0,:] - 1
         kjiT[1] = kjiT[1]-1
         kjiT[0] = kjiT[0]-1
     elif knhc==6:
-        print('LOLO: WE HAVE A 6 !!!!')
+        print(' * [UpdtInd4NewCell()]: WE HAVE A 6 !!!!')
         # went right + down
         ji4vert[1,:] = ji4vert[1,:] + 1
         ji4vert[0,:] = ji4vert[0,:] - 1
@@ -310,14 +310,14 @@ def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
         ji4vert[0,:] = ji4vert[0,:] + 1
         kjiT[0] = kjiT[0]+1
     elif knhc==7:
-        print('LOLO: WE HAVE A 7 !!!!')
+        print(' * [UpdtInd4NewCell()]: WE HAVE A 7 !!!!')
         # went right + up
         ji4vert[1,:] = ji4vert[1,:] + 1
         ji4vert[0,:] = ji4vert[0,:] + 1
         kjiT[1] = kjiT[1]+1
         kjiT[0] = kjiT[0]+1
     elif knhc==8:
-        print('LOLO: WE HAVE A 8 !!!!')
+        print(' * [UpdtInd4NewCell()]: WE HAVE A 8 !!!!')
         # went right + up
         ji4vert[1,:] = ji4vert[1,:] - 1
         ji4vert[0,:] = ji4vert[0,:] + 1
@@ -334,4 +334,70 @@ def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
     return ji4vert, kjiT
 
 
+
+
+
+# Misc. seeding functions (when seeding not based on input file)...
+
+def debugSeeding():
+    zLatLon = np.array([
+        [84. ,  20.],
+        [89. ,  50.],
+        [63. , -11.], # point outside of domain
+        [85. , 100.],        
+        [89. , 100.],
+        [79. , 180.],
+        [76. ,  46.], # No ice, Barents Sea
+        [75. , 190.],
+        [85.2, -15.], # Too close to land
+        [75. , 210.],
+        [75. , -72.], # Baffin bay
+        [83. , 200.],
+        [79. , -42.], # over mask (Greenland!)
+        [85. , 300.]  ])
+    return zLatLon
+
+def debugSeeding1():
+    zLatLon = np.array([ [75.,190.] ])
+    return zLatLon
+
+
+def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=None ):
+
+    zmsk = pmskT[::khss,::khss]
+    zlat = platT[::khss,::khss]
+    zlon = plonT[::khss,::khss]
+
+    (Nj,Ni) = np.shape(zmsk)
+    ztmp = np.zeros((Nj,Ni))
+    
+    #if fmsk_rstrct:
+    #    with Dataset(fmsk_rstrct) as id_mr:
+    #        maskR = id_mr.variables['mask'][::khss,::khss]
+    #        if np.shape(maskR) != (Nj,Ni):
+    #            print('ERROR [nemoSeed()]: restricted area mask does not agree in shape with model output!'); exit(0)
+    
+    msk_T = np.zeros((Nj,Ni), dtype='i1')
+
+    msk_T[:,:] = zmsk[:,:]
+
+    # Only north of ...
+    msk_T[np.where(zlat < 55.)] = 0
+        
+    # Only over a decent concentration of ice:
+    ztmp[:,:] = pIC[::khss,::khss]
+    msk_T[np.where(ztmp < 0.9)] = 0
+
+    (idy_keep, idx_keep) = np.where( msk_T==1 )
+    NbIPt = len(idy_keep)
+    zLatLon = np.zeros((NbIPt,2))
+    
+    for jp in range(NbIPt):
+        jj = idy_keep[jp]
+        ji = idx_keep[jp]
+        zLatLon[jp,:] = [ zlat[jj,ji],zlon[jj,ji] ]
+        
+    del zmsk,zlat,zlon
+        
+    return zLatLon
 
