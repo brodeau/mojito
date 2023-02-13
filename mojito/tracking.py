@@ -156,7 +156,7 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, x
     for jP in range(nP):
 
         if jP%100==0:
-            print('   * [SeedInit()]: finding nearest T-point and host F-cell... buoy #'+str(jP)+' / '+str(nP)+' ...')
+            print('   * [SeedInit()]: finding nearest T-point and host cell... buoy #'+str(jP)+' / '+str(nP)+' ...')
         
         if iverbose>0:
             print('   * [SeedInit()]: focus on buoy with ID:'+str(pIDs[jP]))

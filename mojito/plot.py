@@ -153,7 +153,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
         ax.annotate(' Nb. buoys = '+str(NbnotMasked), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
     if title:
-        ax.annotate(title, xy=(0.5, 0.975), xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
+        ax.annotate(title, xy=(0.5, 0.965), xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
         
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
