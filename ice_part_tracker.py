@@ -56,7 +56,6 @@ if __name__ == '__main__':
     cf_mm = argv[2]
 
     lSeedFromNCfile = ( len(argv)==4 )
-
     if lSeedFromNCfile:
         seeding_type='mojitoNC'
         fNCseed = argv[3]
@@ -64,77 +63,22 @@ if __name__ == '__main__':
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
     
 
-    # Reading mesh metrics into mesh-mask file:
-    with Dataset(cf_mm) as id_mm:
-        imaskt = id_mm.variables['tmask'][0,0,:,:]
-        xlonF  = id_mm.variables['glamf'][0,:,:]
-        xlatF  = id_mm.variables['gphif'][0,:,:]
-        xlonT  = id_mm.variables['glamt'][0,:,:]
-        xlatT  = id_mm.variables['gphit'][0,:,:]
-        xe1T  = id_mm.variables['e1t'][0,:,:] / 1000. ; # km
-        xe2T  = id_mm.variables['e2t'][0,:,:] / 1000. ; # km
-        
-        
-    (Nj,Ni) = np.shape(xlonT)
+    # Getting model grid metrics and friends:
+    imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
-    imaskt = np.array(imaskt, dtype=int)
-    #imasku = np.array(imasku, dtype=int)
-    #imaskv = np.array(imaskv, dtype=int)
-
-    xlonF = np.mod( xlonF, 360. )
-    xlonT = np.mod( xlonT, 360. )
-
-    xXt = np.zeros((Nj,Ni))
-    xYt = np.zeros((Nj,Ni))
-    xXf = np.zeros((Nj,Ni))
-    xYf = np.zeros((Nj,Ni))
+    # Allocating arrays for model data:
+    (Nj,Ni) = np.shape( imaskt )    
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
     xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
-
-    # Local resolution in km (for ):
-    xResKM = np.zeros((Nj,Ni))
-    xResKM[:,:] = np.sqrt( xe1T*xe1T + xe2T*xe2T )
-    del xe1T, xe2T
-    #ii = dump_2d_field( 'res_km.nc', xResKM, xlon=xlonT, xlat=xlatT, name='resolution', unit='km' )
-    #exit(0)
     
-
-    # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
-    #  ==> same North-Polar-Stereographic projection as RGPS data...
-    xYt[:,:], xXt[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlatT, xlonT)
-    xYf[:,:], xXf[:,:] = mjt.ConvertGeo2CartesianNPSkm(xlatF, xlonF)
-    del xlatF, xlonF
-
-
-
-
-    
-
-    #if idebug>2:
-    #    ii = dump_2d_field( 'xXt.nc', xXt, xlon=xlonT, xlat=xlatT, name='xXt', unit='km' )
-    #    ii = dump_2d_field( 'xXf.nc', xXf, xlon=xlonF, xlat=xlatF, name='xXf', unit='km' )
-
-
-
-    #######################
-    # Input SI3 data file #
-    #######################
-
+    # Open Input SI3 data file
     id_uv = Dataset(cf_uv)
-
     Nt = id_uv.dimensions['time_counter'].size
-
     print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
 
 
     
-
-
-
-
-
-
     ############################
     # Initialization / Seeding #
     ############################
@@ -142,9 +86,6 @@ if __name__ == '__main__':
     # We need the sea-ice concentration at t=0 so we can cancel buoys if no ice:
     xIC[:,:] = id_uv.variables['siconc'][0,:,:]
 
-
-    ################################################################################################
-    ###                                     S E E D I N G                                        ###
     if seeding_type=='nemo_Tpoint':
         Xseed0G = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
         #
@@ -188,9 +129,9 @@ if __name__ == '__main__':
     
     vJInT, VRTCS = mjt.SeedInit( IDs, Xseed0G, Xseed0C, xlatT, xlonT, xYf, xXf, xResKM,
                                  IsAlive, imaskt, xIceConc=xIC, iverbose=idebug )
-
     del xResKM
 
+    
     # Getting rid of useless seeded buoys
     nPn = np.sum(IsAlive)
     if nPn<nP:
@@ -215,7 +156,6 @@ if __name__ == '__main__':
     xPosYY = np.zeros((Nt+1,nP)) -9999.  ; # y-position of buoy along the Nt records [km]
     xPosLo = np.zeros((Nt+1,nP)) -9999.
     xPosLa = np.zeros((Nt+1,nP)) -9999.
-    
     vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
     #-----------------------------------------------------------

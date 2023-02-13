@@ -34,7 +34,7 @@ case ${host} in
         #
         DATE2="${YEAR}0301"
         FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-03-01_lb_LIGHT.nc"
-        #FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
+        FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         ;;
     "frazilo")
         export DATA_DIR="/data"

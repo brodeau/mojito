@@ -8,7 +8,7 @@ from netCDF4 import Dataset
 
 #from climporn import epoch2clock, clock2epoch
 
-from .util import chck4f
+from .util import chck4f, ConvertGeo2CartesianNPSkm
 
 tunits_default = 'seconds since 1970-01-01 00:00:00'
 
@@ -55,6 +55,49 @@ def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
     zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
 
     return nP, ztime, zy, zx, zlat, zlon, kBIDs
+
+
+
+def GetModelGrid( fNCmeshmask ):
+
+    chck4f( fNCmeshmask)
+    
+    # Reading mesh metrics into mesh-mask file:
+    with Dataset(fNCmeshmask) as id_mm:
+        kmaskt = id_mm.variables['tmask'][0,0,:,:]
+        zlonF  = id_mm.variables['glamf'][0,:,:]
+        zlatF  = id_mm.variables['gphif'][0,:,:]
+        zlonT  = id_mm.variables['glamt'][0,:,:]
+        zlatT  = id_mm.variables['gphit'][0,:,:]
+        ze1T   = id_mm.variables['e1t'][0,:,:] / 1000. ; # km
+        ze2T   = id_mm.variables['e2t'][0,:,:] / 1000. ; # km
+                
+    (nj,ni) = np.shape(kmaskt)
+
+    kmaskt = np.array(kmaskt, dtype=int)
+
+
+    zXt = np.zeros((nj,ni))
+    zYt = np.zeros((nj,ni))
+    zXf = np.zeros((nj,ni))
+    zYf = np.zeros((nj,ni))
+
+    # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
+    #  ==> same North-Polar-Stereographic projection as RGPS data...
+    zlonT = np.mod( zlonT, 360. )
+    zlonF = np.mod( zlonF, 360. )
+    zYt[:,:], zXt[:,:] = ConvertGeo2CartesianNPSkm(zlatT, zlonT)
+    zYf[:,:], zXf[:,:] = ConvertGeo2CartesianNPSkm(zlatF, zlonF)
+    del zlatF, zlonF
+    
+    # Local resolution in km (for ):
+    zResKM = np.zeros((nj,ni))
+    zResKM[:,:] = np.sqrt( ze1T*ze1T + ze2T*ze2T )
+    del ze1T, ze2T
+    #ii = dump_2d_field( 'res_km.nc', zResKM, xlon=zlonT, xlat=zlatT, name='resolution', unit='km' )
+
+    return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM
+
 
 
 
@@ -172,4 +215,5 @@ def LoadDataMJT( cfile, krec=0, iverbose=0 ):
     zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
 
     return ztime, kBIDs, zlat, zlon, zy, zx
+
 

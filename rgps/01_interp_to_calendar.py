@@ -35,7 +35,7 @@ import mojito as mjt
 #Nrec_min_days = 3 ; # retain only buoys with a record length >= Nrec_min_days (starting from specified initial date)
 
 iplot = 1 ; # show the result in figures?
-l_drop_doublons = False
+l_drop_doublons = False ; # PR: keep the one with the longest record...
 rd_tol = 5. # tolerance distance in km to conclude it's the same buoy
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
