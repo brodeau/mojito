@@ -175,8 +175,8 @@ if __name__ == '__main__':
 
     ################################################################################################
 
-
-
+    if iplot>0 and not path.exists('./figs'):
+        mkdir('./figs')
     
     # Vectors with initial number of buoys
     IDs      = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
@@ -227,7 +227,6 @@ if __name__ == '__main__':
     del Xseed0G, Xseed0C, idxKeep
 
     if iplot>0 and idebug>0:
-        if not path.exists('./figs'): mkdir('./figs')
         mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker: Init Seeding' )
 
