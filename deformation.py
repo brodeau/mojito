@@ -16,7 +16,7 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
-idebug=2
+idebug=0
 
 l_accurate_time=True
 
@@ -211,11 +211,14 @@ if __name__ == '__main__':
     if not path.exists('./figs'): mkdir('./figs')
 
     mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig='./figs/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
-                         pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$', marker_size=marker_size )
+                         pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                         marker_size=marker_size, title='Divergence' )
     mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig='./figs/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
-                         pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$', marker_size=marker_size )
+                         pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                         marker_size=marker_size, title='Shear' )
     mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig='./figs/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
-                         pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$', marker_size=marker_size )
+                         pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                         marker_size=marker_size, title='Total deformation' )
 
 
     ###

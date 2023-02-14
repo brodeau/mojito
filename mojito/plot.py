@@ -392,7 +392,8 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
 
 
 def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
-                     pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None, marker_size=None ):
+                     pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None,
+                     marker_size=None, title=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -417,13 +418,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     else:
         cm = plt.cm.get_cmap('RdBu')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
-    
-    #if lGeoCoor:
-    #    # Geograhic coordinates (lon,lat)
-    #    import cartopy.crs as ccrs
-    #    Proj = ccrs.PlateCarree()
-    #    vfig = (12*zoom,9*zoom)
-    #else:
+
     # Cartesian coordinates (x,y)
     (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom, rangeX=rangeX, rangeY=rangeY )
     
@@ -431,7 +426,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     
     ddx = dx*Ly/Lx
     if unit:
-        ax = plt.axes([1.25*ddx/Lx, 1.4*1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2.2*dy)/Ly], facecolor='0.75')
+        ax = plt.axes([1.25*ddx/Lx, 1.6*1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2.2*dy)/Ly], facecolor='0.75')
     else:
         ax = plt.axes([1.25*ddx/Lx,     1.25*dy/Ly, (Lx-2*ddx)/Lx,   (Ly-2*dy)/Ly], facecolor='0.75')
         
@@ -448,41 +443,17 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     #plt.plot( pX, pY, '.', ms=marker_size, color=clPoints, zorder=200) ; #, alpha=0.5)
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )
 
-
+    if title:
+        ax.annotate(title, xy=(0.1, 0.12), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     if unit:
         # => triggers the colorbar! lilo
-        ax2 = plt.axes([0.18,0.03,0.7,0.02])
-        #clb = mpl.colorbar.ColorbarBase(ax=ax2, ticks=fa.vc_fld_powlog, cmap=pal_fld, norm=norm_fld, orientation='horizontal', extend='neither')
+        ax2 = plt.axes([0.18,0.05,0.7,0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
     
-    # Adding quadrangles:
-    #if len(QuadMesh)>0:
-    #    (nbQ,_) = np.shape(QuadMesh)
-    #    (nbP,)  = np.shape(pX)
-    #    
-    #    for jQ in range(nbQ):
-    #        vids = QuadMesh[jQ,:] ; # the 4 IDs of the 4 points defining this Quad
-    #        if len(pX_Q)>0 and len(pY_Q)>0:
-    #            vx, vy = pX_Q[vids], pY_Q[vids]
-    #        else:
-    #            vx, vy = pX[vids], pY[vids]
-    #        vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
-    #        plt.plot(vX,vY, col_blu, lw=5*zrat, zorder=100)
-    #        plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
-    #        # Indicate quadrangle # in its center:
-    #        rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
-    #        ax.annotate(str(jQ), (rmLon, rmLat), color='w', fontweight='bold', zorder=160)
-    #
-    #if len(pnames)>0:
-    #    i=0
-    #    for cnm in pnames:
-    #        ax.annotate(cnm, (pX[i], pY[i]), color=clPNames, fontweight='bold', zorder=500)
-    #        i=i+1
-    #
     plt.savefig(cfig)
     plt.close(1)
-
+    return 0
     
 
 def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
