@@ -363,9 +363,8 @@ if __name__ == '__main__':
         for jt in range(Nt):
             rt = vTbin[jt,0]
             ct = epoch2clock(rt)
-            zIDs = xmsk[jt,:]*vIDs[:] -1*(1-xmsk[jt,:]) ; # -1 => when buoys is missing => right counting in `ShowBuoysMap`!
             print(' Ploting for '+ct+'!')
             cfig = './figs/SELECTION/t-interp_buoys_RGPS_'+ct+'.png'
-            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=zIDs, cfig=cfig,
+            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=vIDs, cfig=cfig,
                               ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='RGPS' )
             print('')
