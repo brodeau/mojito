@@ -28,7 +28,7 @@ div_max = 0.1
 shr_max = 0.1
 tot_max = 0.1
 
-zoom=2
+zoom=1
 
 def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
     '''

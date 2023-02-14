@@ -53,7 +53,7 @@ list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
 interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
 
-l_drop_coastal   = True ; # get rid of buoys to close to land
+l_drop_coastal   = False ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
 
 FillValue = -9999.
@@ -201,11 +201,11 @@ if __name__ == '__main__':
 
     
     # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
-    xmsk = np.zeros((Nt,Nb), dtype='i1') + 1
-    xlon = np.zeros((Nt,Nb))
-    xlat = np.zeros((Nt,Nb))
-    xX   = np.zeros((Nt,Nb))
-    xY   = np.zeros((Nt,Nb))
+    xmsk = np.zeros((Nt,Nb), dtype='i1')
+    xlon = np.zeros((Nt,Nb)) + FillValue
+    xlat = np.zeros((Nt,Nb)) + FillValue
+    xX   = np.zeros((Nt,Nb)) + FillValue
+    xY   = np.zeros((Nt,Nb)) + FillValue
     
     ic = -1
     for jid in vIDs:
@@ -247,8 +247,8 @@ if __name__ == '__main__':
             fC = interpolate.Akima1DInterpolator(vt,   vx0[idx])
         xlon[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
         xX[0:Nt_b,ic]   = fC(vTbin[0:Nt_b,0])
-        
-        if l_shorten: xmsk[Nt_b:Nt,ic] = 0
+
+        xmsk[0:Nt_b,ic] = 1
 
         if idebug>1 and Nb<=20:
             # Visual control of interpolation:
@@ -256,12 +256,10 @@ if __name__ == '__main__':
             lbr.plot_interp_series( jid, 'lon', vt, vTbin[0:Nt_b,0], vlon0[idx], xlon[0:Nt_b,ic] )
 
 
-    #
     xlat = np.ma.masked_where( xmsk==0, xlat )
     xlon = np.ma.masked_where( xmsk==0, xlon )
-    xX   = np.ma.masked_where( xmsk==0, xX   )
     xY   = np.ma.masked_where( xmsk==0, xY )
-
+    xX   = np.ma.masked_where( xmsk==0, xX   )
     
     # Removing doublons:
     if l_drop_doublons:
@@ -352,12 +350,11 @@ if __name__ == '__main__':
     ### if l_drop_doublons
 
     # Masking arrays:
-    idxmsk = np.where( xmsk==0 )
-    xY[idxmsk]   = FillValue
-    xX[idxmsk]   = FillValue
-    xlat[idxmsk] = FillValue
-    xlon[idxmsk] = FillValue
-
+    xlat = np.ma.masked_where( xmsk==0, xlat )
+    xlon = np.ma.masked_where( xmsk==0, xlon )
+    xY   = np.ma.masked_where( xmsk==0, xY )
+    xX   = np.ma.masked_where( xmsk==0, xX   )
+    
     # GENERATION OF COMPREHENSIVE NETCDF FILE:    
     kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, mask=xmsk, tunits=ctunits_expected, fillVal=FillValue )
     

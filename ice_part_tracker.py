@@ -320,15 +320,17 @@ if __name__ == '__main__':
         # Updating in terms of lon,lat for all the buoys at once:
         xPosG[jt+1,:,:] = mjt.CartNPSkm2Geo1D( xPosC[jt+1,:,:] )
 
+
         if iplot>0:
             # Show on the map of the Arctic:
             if jt%isubsamp_fig == 0:
-                zIDs = xmask[jt,:,0]*IDs[:] - 1*(1-xmask[jt,:,0]) ; # -1 => when buoys is missing => right counting in `ShowBuoysMap`!
-                mjt.ShowBuoysMap( itime,  xPosG[jt,:,1], xPosG[jt,:,0], pvIDs=zIDs,
+                zLon = np.ma.masked_where( xmask[jt,:,:]==0, xPosG[jt,:,1] )
+                zLat = np.ma.masked_where( xmask[jt,:,:]==0, xPosG[jt,:,0] )
+                mjt.ShowBuoysMap( itime, zLon, zLat, pvIDs=zIDs,
                                   cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
                                   title='IceTracker + SI3 u,v fields' )
-                
+                del zLon, zLat
         print('\n')                
     ### for jt in range(Nt-1)
 
@@ -338,11 +340,8 @@ if __name__ == '__main__':
 
 
     # Masking arrays:
-    idxmsk = np.where( xmask==0 )
-    xPosC[idxmsk] = FillValue
-    xPosG[idxmsk] = FillValue
-    #xPosLo = np.ma.masked_where( xmask==0, xPosLo )
-
+    xPosG = np.ma.masked_where( xmask==0, xPosG )
+    xPosC = np.ma.masked_where( xmask==0, xPosC )
     
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
     kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],

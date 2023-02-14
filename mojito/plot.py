@@ -118,11 +118,11 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     lIDs = ( np.shape(pvIDs)==(Nb,) )
     #
     # Number of remaining valid points:
-    NbValid = None
+    #NbValid = None
     if np.ma.isMaskedArray(pvlat):
         NbValid = pvlon.count()
-    elif lIDs:
-        NbValid = (pvIDs > 0).sum() ; # We assume arrays have missing values...
+    else:
+        NbValid = ( (pvlon>=-180.) and (pvlon<=360.)(pvlat>=-90.) and (pvlat<=-90.) ).sum()
     #
     fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor=col_bg)
