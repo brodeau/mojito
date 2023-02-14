@@ -6,7 +6,7 @@ if [ "$1" = "2" ]; then
 
 elif [ "$1" = "3" ]; then
     killall -9 deformation.py do3.sh
-    rm -f figs/z*.png npz/DEFORMATIONS_z* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
+    rm -f figs/z*.png npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
     
 elif [ "$1" = "all" ]; then
     rm -rf figs npz logs *.png *.nc *.svg *.pdf
