@@ -217,3 +217,19 @@ def LoadNCdataMJT( cfile, krec=0, iverbose=0 ):
     return ztime, kBIDs, np.array([zlat,zlon]).T, np.array([zy,zx]).T
 
 
+def GetDimNCdataMJT( cfile ):
+    '''
+    '''
+    chck4f(cfile)
+    with Dataset(cfile) as id_in:
+        list_dim = list( id_in.dimensions.keys() )
+        for cd in ['time','buoy']:
+            if not cd in list_dim:
+                print(' ERROR [GetDimNCdataMJT()]: no dimensions `'+cd+'` found into input file!'); exit(0)
+        Nt = id_in.dimensions['time'].size
+        nP = id_in.dimensions['buoy'].size
+        print(' * [GetDimNCdataMJT]: total number of records in file '+cfile+' =>', Nt)
+        print(' * [GetDimNCdataMJT]: max. number of buoys (at start) in file '+cfile+' =>', nP)
+    return Nt, nP
+
+
