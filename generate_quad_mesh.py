@@ -18,8 +18,8 @@ from netCDF4 import Dataset
 from climporn import chck4f, epoch2clock
 import mojito   as mjt
 
-idebug=0
-l_plot = True ; # Create figures to see what we are doing...
+idebug = 0
+iplot  = 0 ; # Create figures to see what we are doing...
 
 #l_box_restriction=True
 l_box_restriction=False
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     chck4f(cf_lsm)
 
     if not path.exists('./npz'): mkdir('./npz')
-    if l_plot:
+    if iplot>0:
         if not path.exists('./figs'): mkdir('./figs')
 
     #########################################################################################################
@@ -291,7 +291,7 @@ if __name__ == '__main__':
 
 
             # Plots only for jrec==0:
-            if l_plot:
+            if iplot>0:
                 if idebug>1:
                     # Show all initial points (out of TrackIce):
                     print('\n *** Launching initial cloud point plot!')
@@ -335,7 +335,7 @@ if __name__ == '__main__':
         ### if jr == 0
 
 
-        if l_plot:
+        if iplot>0:
 
             TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
             QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
