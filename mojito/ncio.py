@@ -214,6 +214,6 @@ def LoadDataMJT( cfile, krec=0, iverbose=0 ):
 
     zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
 
-    return ztime, kBIDs, zlat, zlon, zy, zx
+    return ztime, kBIDs, np.array([zlat,zlon]).T, np.array([zy,zx]).T
 
 

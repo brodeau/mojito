@@ -65,6 +65,14 @@ if __name__ == '__main__':
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
     
 
+    if iplot>0 and not path.exists('./figs'):
+        mkdir('./figs')
+
+    # File to save seeding location work after seed initialization:
+    if not path.exists('./npz'): mkdir('./npz')
+    cf_npz_intrmdt = './npz/Initialized_buoys_'+str.replace( path.basename(cf_uv), '.nc4', '.npz' )
+
+        
     # Getting model grid metrics and friends:
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
@@ -80,74 +88,62 @@ if __name__ == '__main__':
     print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
 
 
-    
+
     ############################
     # Initialization / Seeding #
     ############################
-    
-    # We need the sea-ice concentration at t=0 so we can cancel buoys if no ice:
-    xIC[:,:] = id_uv.variables['siconc'][0,:,:]
 
-    if seeding_type=='nemo_Tpoint':
-        XseedG = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
-        #
-    elif seeding_type=='debug':
-        if idebug in [0,1,2]: XseedG = mjt.debugSeeding()
-        if idebug in [3]:     XseedG = mjt.debugSeeding1()
-        #
-    elif seeding_type=='mojitoNC':
-        zt, zIDs, zlat, zlon, zy, zx = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
-        XseedG = np.array([zlat,zlon]).T
-        XseedC = np.array([zy,zx]).T
-        print('     => data is read at date =',epoch2clock(zt))
-        del zt, zlat, zlon, zy, zx
-    #
-    print('\n shape of XseedG =',np.shape(XseedG))
-
-    (nP,_) = np.shape(XseedG)
-
-    if seeding_type!='mojitoNC':
-        # same for seeded initial positions, XseedG->XseedC:
-        zy,zx = mjt.ConvertGeo2CartesianNPSkm(XseedG[:,0], XseedG[:,1])
-        XseedC = np.array([zy,zx]).T
-        del zx,zy
-
-    ################################################################################################
-
-    
-    if iplot>0 and not path.exists('./figs'):
-        mkdir('./figs')
-
-    # File to save seeding location work after seed initialization:
-    if not path.exists('./npz'): mkdir('./npz')
-    cf_npz_intrmdt = './npz/Initialized_buoys_'+str.replace( path.basename(cf_uv), '.nc4', '.npz' )
 
     if path.exists(cf_npz_intrmdt):
 
         print('\n *** We found file '+cf_npz_intrmdt+' here! So using it and skeeping first stage!')
         with np.load(cf_npz_intrmdt) as data:
-            nP     = data['nP']
-            XseedG = data['XseedG']
-            XseedC = data['XseedC']
-            IDs    = data['IDs']
-            vJIt   = data['vJIt']
-            VRTCS  = data['VRTCS']
+            nP    = data['nP']
+            xPosG0 = data['xPosG0']
+            xPosC0 = data['xPosC0']
+            IDs   = data['IDs']
+            vJIt  = data['vJIt']
+            VRTCS = data['VRTCS']
 
     else:
-        
+
+        # Going through whole initialization / seeding process
+        # ----------------------------------------------------
+                
+        xIC[:,:] = id_uv.variables['siconc'][0,:,:] ; # We need ice conc. at t=0 so we can cancel buoys accordingly
+    
+        if seeding_type=='nemo_Tpoint':
+            XseedG = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
+            #
+        elif seeding_type=='debug':
+            if idebug in [0,1,2]: XseedG = mjt.debugSeeding()
+            if idebug in [3]:     XseedG = mjt.debugSeeding1()
+            #
+        elif seeding_type=='mojitoNC':
+            zt, zIDs, XseedG, XseedC = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
+            print('     => data is read at date =',epoch2clock(zt))
+        #
+        print('\n shape of XseedG =',np.shape(XseedG))
+    
+        (nP,_) = np.shape(XseedG)
+
         # We want an ID for each seeded buoy:
         IDs = np.array( range(nP), dtype=int) + 1 ; # Default! No ID=0 !!!
-        if seeding_type=='mojitoNC':
+
+        
+        if seeding_type!='mojitoNC':            
+            XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
             IDs[:] = zIDs[:]
             del zIDs
             
         # Find the location of each seeded buoy onto the model grid:
-        nP, XseedG, XseedC, IDs, vJIt, VRTCS = mjt.SeedInit( IDs, XseedG, XseedC, xlatT, xlonT, xYf, xXf,
+        nP, xPosG0, xPosC0, IDs, vJIt, VRTCS = mjt.SeedInit( IDs, XseedG, XseedC, xlatT, xlonT, xYf, xXf,
                                                              xResKM, imaskt, xIceConc=xIC, iverbose=idebug )    
-    
+        del xResKM, XseedG, XseedC
+        
         # This first stage is fairly costly so saving the info:
         print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
-        np.savez_compressed( cf_npz_intrmdt, nP=nP, XseedG=XseedG, XseedC=XseedC, IDs=IDs, vJIt=vJIt, VRTCS=VRTCS )
+        np.savez_compressed( cf_npz_intrmdt, nP=nP, xPosG0=xPosG0, xPosC0=xPosC0, IDs=IDs, vJIt=vJIt, VRTCS=VRTCS )
 
     del xResKM
 
@@ -156,22 +152,20 @@ if __name__ == '__main__':
     iAlive = np.zeros(      nP , dtype='i1') + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
     vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
     xmaskB = np.zeros((Nt+1,nP), dtype='i1')
-    xPosXX = np.zeros((Nt+1,nP)) -9999.  ; # x-position of buoy along the Nt records [km]
-    xPosYY = np.zeros((Nt+1,nP)) -9999.  ; # y-position of buoy along the Nt records [km]
-    xPosLo = np.zeros((Nt+1,nP)) -9999.
-    xPosLa = np.zeros((Nt+1,nP)) -9999.
+    xPosC  = np.zeros((Nt+1,nP,2)) -9999.  ; # x-position of buoy along the Nt records [km]
+    xPosG  = np.zeros((Nt+1,nP,2)) -9999.
     vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
-    #-----------------------------------------------------------
+
+    # Initial values for some arrays:
+    xPosC[0,:,:] = xPosC0
+    xPosG[0,:,:] = xPosG0    
+    xmaskB[0,:]  = 1
     
-    
-    xPosLa[0,:], xPosLo[0,:] = XseedG[:,0], XseedG[:,1] ; # degrees!
-    xPosYY[0,:], xPosXX[0,:] = XseedC[:,0], XseedC[:,1] ; # km !
-    xmaskB[0,:] = 1
-    del XseedG, XseedC
+    del xPosC0, xPosG0
 
     if iplot>0 and idebug>0:
-        mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
+        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker: Init Seeding' )
 
     
@@ -186,7 +180,6 @@ if __name__ == '__main__':
         print('\n *** Reading record #'+str(jt)+'/'+str(Nt-1)+' in SI3 file ==> date =',
               ctime,'(model:'+epoch2clock(int(rtmod))+')')
         vTime[jt] = itime
-
         
         xIC[:,:] = id_uv.variables['siconc'][jt,:,:]
         xUu[:,:] = id_uv.variables['u_ice'][jt,:,:]
@@ -198,8 +191,8 @@ if __name__ == '__main__':
 
             if iAlive[jP]==1:
             
-                rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
-                rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
+                [ ry  , rx   ] = xPosC[jt,jP,:] ; # km !
+                [ rlat, rlon ] = xPosG[jt,jP,:] ; # degrees !
     
                 [jnT,inT] = vJIt[jP,:]; # indices for T-point at center of current cell
                 
@@ -274,10 +267,8 @@ if __name__ == '__main__':
                 # => position [km] of buoy after this time step will be:
                 rx_nxt = rx + dx/1000. ; # [km]
                 ry_nxt = ry + dy/1000. ; # [km]
-    
-                xPosXX[jt+1,jP] = rx_nxt
-                xPosYY[jt+1,jP] = ry_nxt
-                xmaskB[jt+1,jP] = 1
+                xPosC[jt+1,jP,:] = [ ry_nxt, rx_nxt ]
+                xmaskB[jt+1,jP]  = 1
                 
                 # Is it still inside our mesh:
                 lSI = mjt.IsInsideCell(ry_nxt, rx_nxt, vCELLs[jP])
@@ -316,13 +307,13 @@ if __name__ == '__main__':
         ### for jP in range(nP)
 
         # Updating in terms of lon,lat for all the buoys at once:
-        xPosLa[jt+1,:], xPosLo[jt+1,:] = mjt.ConvertCartesianNPSkm2Geo( xPosYY[jt+1,:], xPosXX[jt+1,:] )
+        xPosG[jt+1,:,:] = mjt.CartNPSkm2Geo1D( xPosC[jt+1,:,:] )
 
 
         if iplot>0:
             # Show on the map of the Arctic:
             if jt%isubsamp_fig == 0:
-                mjt.ShowBuoysMap( itime,  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs,
+                mjt.ShowBuoysMap( itime,  xPosG[jt,:,1], xPosG[jt,:,0], pvIDs=IDs,
                                   cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
                                   title='IceTracker + SI3 u,v fields' )
@@ -336,13 +327,13 @@ if __name__ == '__main__':
 
 
     # Masking arrays:
-    xPosLo = np.ma.masked_where( xmaskB==0, xPosLo )
-    xPosLa = np.ma.masked_where( xmaskB==0, xPosLa )
-    xPosXX = np.ma.masked_where( xmaskB==0, xPosXX )
-    xPosYY = np.ma.masked_where( xmaskB==0, xPosYY )
+    #xPosLo = np.ma.masked_where( xmaskB==0, xPosLo )
+    #xPosLa = np.ma.masked_where( xmaskB==0, xPosLa )
+    #xPosXX = np.ma.masked_where( xmaskB==0, xPosXX )
+    #xPosYY = np.ma.masked_where( xmaskB==0, xPosYY )
     
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
-    kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosYY, xPosXX, xPosLa, xPosLo, tunits=ctunits_expected, fillVal=-9999. )
+    kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1], tunits=ctunits_expected, fillVal=-9999. )
 
     #if iplot>0:
     #    # Show on the map of the Arctic:

@@ -587,7 +587,7 @@ def Geo2CartNPSkm1D( pcoorG ):
     #
     zx,zy,_ = crs_trg.transform_points(crs_src, pcoorG[:,1], pcoorG[:,0]).T
     #
-    return np.array([ zy/1000., zx/1000. ])
+    return np.array([ zy/1000., zx/1000. ]).T
 
 
 def CartNPSkm2Geo1D( pcoorC ):
@@ -606,7 +606,7 @@ def CartNPSkm2Geo1D( pcoorC ):
     #
     zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*pcoorC[:,1], 1000.*pcoorC[:,0]).T
     #
-    return np.array([zlat, zlon])
+    return np.array([zlat, zlon]).T
 
 
 
