@@ -122,28 +122,38 @@ if __name__ == '__main__':
     if not path.exists('./npz'): mkdir('./npz')
     cf_npz_intrmdt = './npz/Initialized_buoys_'+str.replace( path.basename(cf_uv), '.nc4', '.npz' )
 
-    # We want an ID for each seeded buoy:
-    IDs = np.array( range(nP), dtype=int) + 1 ; # Default! No ID=0 !!!
-    if seeding_type=='mojitoNC':
-        IDs[:] = zIDs[:]
-        del zIDs
+    if path.exists(cf_npz_intrmdt):
+
+        print('\n *** We found file '+cf_npz_intrmdt+' here! So using it and skeeping first stage!')
+        with np.load(cf_npz_intrmdt) as data:
+            nP     = data['nP']
+            XseedG = data['XseedG']
+            XseedC = data['XseedC']
+            IDs    = data['IDs']
+            vJIt   = data['vJIt']
+            VRTCS  = data['VRTCS']
+
+    else:
         
-    # Find the location of each seeded buoy onto the model grid:
-    nP, XseedG, XseedC, IDs, vJIt, VRTCS = mjt.SeedInit( IDs, XseedG, XseedC, xlatT, xlonT, xYf, xXf,
-                                                         xResKM, imaskt, xIceConc=xIC, iverbose=idebug )    
+        # We want an ID for each seeded buoy:
+        IDs = np.array( range(nP), dtype=int) + 1 ; # Default! No ID=0 !!!
+        if seeding_type=='mojitoNC':
+            IDs[:] = zIDs[:]
+            del zIDs
+            
+        # Find the location of each seeded buoy onto the model grid:
+        nP, XseedG, XseedC, IDs, vJIt, VRTCS = mjt.SeedInit( IDs, XseedG, XseedC, xlatT, xlonT, xYf, xXf,
+                                                             xResKM, imaskt, xIceConc=xIC, iverbose=idebug )    
+    
+        # This first stage is fairly costly so saving the info:
+        print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
+        np.savez_compressed( cf_npz_intrmdt, nP=nP, XseedG=XseedG, XseedC=XseedC, IDs=IDs, vJIt=vJIt, VRTCS=VRTCS )
+
     del xResKM
-
-    # This first stage is fairly costly so saving the info:
-    print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
-    np.savez_compressed( cf_npz_intrmdt, nP=nP, XseedG=XseedG, XseedC=XseedC, IDs=IDs, vJIt=vJIt, VRTCS=VRTCS )
-    #lolo
-
-
-
 
         
     # Allocation for nP buoys:
-    IsAlive  = np.zeros(       nP , dtype=int) + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
+    iAlive = np.zeros(      nP , dtype='i1') + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
     vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
     xmaskB = np.zeros((Nt+1,nP), dtype='i1')
     xPosXX = np.zeros((Nt+1,nP)) -9999.  ; # x-position of buoy along the Nt records [km]
@@ -186,7 +196,7 @@ if __name__ == '__main__':
         
         for jP in range(nP):
 
-            if IsAlive[jP]==1:
+            if iAlive[jP]==1:
             
                 rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
                 rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
@@ -297,11 +307,11 @@ if __name__ == '__main__':
                                         
                     # Based on updated new indices, some buoys might get killed:
                     icncl = mjt.Survive( IDs[jP], vJIt[jP,:], imaskt, pIceC=xIC,  iverbose=idebug )
-                    if icncl>0: IsAlive[jP]=0
+                    if icncl>0: iAlive[jP]=0
                     
                 ### if not lSI
 
-            ### if IsAlive[jP]==1
+            ### if iAlive[jP]==1
                 
         ### for jP in range(nP)
 

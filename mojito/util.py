@@ -571,6 +571,45 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx, rtime ):
 
 
 
+def Geo2CartNPSkm1D( pcoorG ):
+    '''
+         => from Geo coor. (lon,lat)[degrees] to cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj!
+    '''
+    from cartopy.crs import PlateCarree, NorthPolarStereo
+    #
+    (_,n2) = np.shape(pcoorG)
+    if n2!=2:
+        print(' ERROR [Geo2CartNPSkm1D()]: input array `pcoorG` has a wrong a shape!')
+        exit(0)
+    #
+    crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
+    crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    #
+    zx,zy,_ = crs_trg.transform_points(crs_src, pcoorG[:,1], pcoorG[:,0]).T
+    #
+    return np.array([ zy/1000., zx/1000. ])
+
+
+def CartNPSkm2Geo1D( pcoorC ):
+    '''
+         => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
+    '''
+    from cartopy.crs import PlateCarree, NorthPolarStereo
+    #
+    (_,n2) = np.shape(pcoorC)
+    if n2!=2:
+        print(' ERROR [CartNPSkm2Geo1D()]: input array `pcoorC` has a wrong a shape!')
+        exit(0)    
+    #
+    crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
+    #
+    zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*pcoorC[:,1], 1000.*pcoorC[:,0]).T
+    #
+    return np.array([zlat, zlon])
+
+
+
 
 def ConvertGeo2CartesianNPSkm( plat, plon ):
     '''
