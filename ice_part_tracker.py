@@ -45,7 +45,7 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 seeding_type='nemo_Tpoint' ; iHSS=15
 #seeding_type='debug'
 
-
+FillValue = -9999.
 
 
 if __name__ == '__main__':
@@ -162,16 +162,16 @@ if __name__ == '__main__':
     # Allocation for nP buoys:
     iAlive = np.zeros(      nP , dtype='i1') + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
     vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
-    xmaskB = np.zeros((Nt+1,nP), dtype='i1')
-    xPosC  = np.zeros((Nt+1,nP,2)) -9999.  ; # x-position of buoy along the Nt records [km]
-    xPosG  = np.zeros((Nt+1,nP,2)) -9999.
+    xmask  = np.zeros((Nt+1,nP,2), dtype='i1')
+    xPosC  = np.zeros((Nt+1,nP,2)) + FillValue  ; # x-position of buoy along the Nt records [km]
+    xPosG  = np.zeros((Nt+1,nP,2)) + FillValue
     vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
 
     # Initial values for some arrays:
     xPosC[0,:,:] = xPosC0
     xPosG[0,:,:] = xPosG0    
-    xmaskB[0,:]  = 1
+    xmask[0,:,:] = 1
     
     del xPosC0, xPosG0
 
@@ -279,7 +279,7 @@ if __name__ == '__main__':
                 rx_nxt = rx + dx/1000. ; # [km]
                 ry_nxt = ry + dy/1000. ; # [km]
                 xPosC[jt+1,jP,:] = [ ry_nxt, rx_nxt ]
-                xmaskB[jt+1,jP]  = 1
+                xmask[jt+1,jP,:] = [    1  ,    1   ]
                 
                 # Is it still inside our mesh:
                 lSI = mjt.IsInsideCell(ry_nxt, rx_nxt, vCELLs[jP])
@@ -338,13 +338,15 @@ if __name__ == '__main__':
 
 
     # Masking arrays:
-    #xPosLo = np.ma.masked_where( xmaskB==0, xPosLo )
-    #xPosLa = np.ma.masked_where( xmaskB==0, xPosLa )
-    #xPosXX = np.ma.masked_where( xmaskB==0, xPosXX )
-    #xPosYY = np.ma.masked_where( xmaskB==0, xPosYY )
+    idxmsk = np.where( xmask==0 )
+    xPosC[idxmsk] = FillValue
+    xPosG[idxmsk] = FillValue
+    #xPosLo = np.ma.masked_where( xmask==0, xPosLo )
+
     
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
-    kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1], tunits=ctunits_expected, fillVal=-9999. )
+    kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
+                               mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue )
 
     #if iplot>0:
     #    # Show on the map of the Arctic:

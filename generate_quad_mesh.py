@@ -2,20 +2,9 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 #
 ##################################################################
-#  INPUT DATA: a `npz` file created with `trackice/scripts/traj2npz.py` (conversion from CSV to NPZ)
+#  INPUT DATA: a `nc` file created with `ncSaveCloudBuoys()` of `mojito/ncio.py` !
 #
-#    L. Brodeau, 2022
-#
-# #TODO: in ri,rj part make sure that ji or jj must not be updated (for lat after lon has been done) when one of these 2 are > 0.5
-#                ex: ri = 0.9 ok keep ji,jj for lon stuff, but then should we not look at lat(ji+1,jj) for lat stuff ???
-#
-# #TODO: This script should be used for first record, but then, at time records later in time,
-#        this script or another should follow the same exact quads found with 1st record, and not
-#        start a Delaunay from scratch at this particular record !!!!
-#
-#
-#  ABOUT input `npz` file:
-#   * Name: should be of the form `NANUK4_ICE-BBM00_6h_19960101_19961031(_xxx).npz`
+#    L. Brodeau, 2023
 #
 ##################################################################
 
@@ -34,8 +23,6 @@ l_plot = True ; # Create figures to see what we are doing...
 
 #l_box_restriction=True
 l_box_restriction=False
-
-
 
 if l_box_restriction:
     vrngX = [-400.,400.]
@@ -62,6 +49,7 @@ rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 b
 
 rzoom_fig = 4
 
+
 if __name__ == '__main__':
 
     cdata_dir = environ.get('DATA_DIR')
@@ -70,10 +58,10 @@ if __name__ == '__main__':
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
     if len(argv) != 5:
-        print('Usage: '+argv[0]+' <file_trj.npz> <LSM_file> <records to use (C), comma-separated> <basic_res_km>')
+        print('Usage: '+argv[0]+' <file_mojito.nc> <LSM_file> <records to use (C), comma-separated> <basic_res_km>')
         exit(0)
 
-    cf_npz = argv[1]
+    cf_nc = argv[1]
     cf_lsm = argv[2]
     lstrec = argv[3]
     resol0 = float(argv[4])
@@ -83,7 +71,7 @@ if __name__ == '__main__':
     vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
     del vcrec
 
-    chck4f(cf_npz)
+    chck4f(cf_nc)
     chck4f(cf_lsm)
 
     if not path.exists('./npz'): mkdir('./npz')
@@ -119,40 +107,55 @@ if __name__ == '__main__':
 
     
     # Getting time info and time step from input npz file which is should look like NEMO output file:
-    vfi   = split('_|\.', path.basename(cf_npz))
-    cfstr = vfi[0]+'_'+vfi[1]+'_'+vfi[2]+'_'+vfi[5]+'_'+vfi[6]
-    CCONF = vfi[0]
-    print('\n *** Original NEMO CONF = '+CCONF)
+    #vfi   = split('_|\.', path.basename(cf_npz))
+    #cfstr = vfi[0]+'_'+vfi[1]+'_'+vfi[2]+'_'+vfi[5]+'_'+vfi[6]
+    #CCONF = vfi[0]
+    #print('\n *** Original NEMO CONF = '+CCONF)
 
+
+    # Loading the data for the 2 selected records:
+    Nt, nBmax = mjt.GetDimNCdataMJT( cf_nc )
+    if np.any(vRec>=Nt):
+        print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
+    #
+    vdate = np.zeros( Nrec,  dtype=int )
+    vIDs  = np.zeros( nBmax, dtype=int )
+    xPosG = np.zeros( (Nrec,nBmax,2) )
+    xPosC = np.zeros( (Nrec,nBmax,2) )
+    #
+    icr = 0
+    for jrec in vRec[:]:
+        vdate[icr], zIDs, xPosG[icr,:,:], xPosC[icr,:,:] = mjt.LoadNCdataMJT( cf_nc, krec=jrec, iverbose=idebug )
+        print( ' * jrec = ',jrec, ', date =',epoch2clock(vdate[icr]))    
+        if icr==0:
+            vIDs[:] = zIDs[:]
+        else:
+            if np.sum(zIDs[:]-vIDs[:])!=0:
+                print('ERROR: ID fuck up in input file!') ; exit(0)
+        icr=icr+1
+    
+    
     # Need some calendar info:
-    with np.load(cf_npz) as data:
-        NbRec = data['NbRec']
-        vtime0 = data['time']
+    NbDays = int( (vdate[1] - vdate[0]) / (3600.*24.) )
+    cdt1 = epoch2clock(vdate[0] )
+    cdt2 = epoch2clock(vdate[-1])
 
-    NbDays = int( (vtime0[-1] - vtime0[0]) / (3600.*24.) )
-    cdt1 = epoch2clock(vtime0[0] )
-    cdt2 = epoch2clock(vtime0[-1])
-
-    print('\n *** Trajectories contain '+str(NbRec)+' records...')
     print('    *  start and End dates => '+cdt1+' -- '+cdt2)
     print('        ==> nb of days =', NbDays)
 
-    if np.any(vRec>=NbRec):
-        print('ERROR: some of the specified records # are >= '+str(NbRec)+'  !'); exit(0)
-
-
+        
     # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
-    print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
-    with Dataset(cf_lsm) as id_lsm:
-        nb_dim = len(id_lsm.variables['tmask'].dimensions)
-        Ni = id_lsm.dimensions['x'].size
-        Nj = id_lsm.dimensions['y'].size
-        print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
-        xlon_t = id_lsm.variables['glamt'][0,:,:]
-        xlat_t = id_lsm.variables['gphit'][0,:,:]
-        xlon_u = id_lsm.variables['glamu'][0,:,:]
-        xlat_v = id_lsm.variables['gphiv'][0,:,:]
-        print('      done.')
+    #print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
+    #with Dataset(cf_lsm) as id_lsm:
+    #    nb_dim = len(id_lsm.variables['tmask'].dimensions)
+    #    Ni = id_lsm.dimensions['x'].size
+    #    Nj = id_lsm.dimensions['y'].size
+    #    print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
+    #    xlon_t = id_lsm.variables['glamt'][0,:,:]
+    #    xlat_t = id_lsm.variables['gphit'][0,:,:]
+    #    xlon_u = id_lsm.variables['glamu'][0,:,:]
+    #    xlat_v = id_lsm.variables['gphiv'][0,:,:]
+    #    print('      done.')
 
 
     # First explore how many buoys and how many records we have based on point IDs:

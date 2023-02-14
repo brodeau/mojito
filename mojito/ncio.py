@@ -101,7 +101,7 @@ def GetModelGrid( fNCmeshmask ):
 
 
 
-def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_default, fillVal=None ):
+def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], tunits=tunits_default, fillVal=None ):
     '''
     '''
     print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')
@@ -110,6 +110,7 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_def
     if np.shape(pY)!=(Nt,Nb) or np.shape(pX)!=(Nt,Nb) or np.shape(pLat)!=(Nt,Nb) or np.shape(pLon)!=(Nt,Nb):
         print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
         exit(0)
+    lSaveMask = (np.shape(mask) == (Nt,Nb))
     
     f_out = Dataset(cf_out, 'w', format='NETCDF4')
 
@@ -127,6 +128,8 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_def
     v_lonb  = f_out.createVariable('longitude', 'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     v_y     = f_out.createVariable('y_pos' ,    'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
+    if lSaveMask:
+        v_mask = f_out.createVariable('mask',   'i1',(cd_time,cd_buoy,),                      zlib=True, complevel=9)
 
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'
@@ -144,7 +147,9 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, tunits=tunits_def
         v_lonb[jt,:] =  pLon[jt,:]
         v_y[jt,:]    =    pY[jt,:]
         v_x[jt,:]    =    pX[jt,:]
-
+        if lSaveMask:
+            v_mask[jt,:] = mask[jt,:]
+            
     f_out.About  = 'RGPS sea-ice drift data (Kwok, 1998)'
     f_out.Author = 'Generated with `'+path.basename(argv[0])+'` of `mojito` (L. Brodeau, 2022)'
     f_out.close()
