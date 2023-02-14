@@ -42,7 +42,7 @@ isubsamp_fig = 72 ; # frequency, in number of model records, we spawn a figure o
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 # `seeding_type` is overriden if a NC file is specified (3rd argument) when calling this script...
-seeding_type='nemo_Tpoint' ; iHSS=10
+seeding_type='nemo_Tpoint' ; iHSS=15
 #seeding_type='debug'
 
 
@@ -67,12 +67,8 @@ if __name__ == '__main__':
 
     if iplot>0 and not path.exists('./figs'):
         mkdir('./figs')
-
-    # File to save seeding location work after seed initialization:
     if not path.exists('./npz'): mkdir('./npz')
-    cf_npz_intrmdt = './npz/Initialized_buoys_'+str.replace( path.basename(cf_uv), '.nc4', '.npz' )
-
-        
+            
     # Getting model grid metrics and friends:
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
@@ -81,6 +77,18 @@ if __name__ == '__main__':
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
     xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
+
+    # We need a name for the intermediate backup file:
+    if seeding_type=='nemo_Tpoint':
+        cf_npz_intrmdt = './npz/Initialized_buoys_'+seeding_type+'_HSS'+str(iHSS)+'.npz'
+    elif seeding_type=='debug':
+        cf_npz_intrmdt = './npz/Initialized_buoys_'+seeding_type+'.npz'
+    elif seeding_type=='mojitoNC':
+        cf_npz_intrmdt = './npz/Initialized_buoys_'+str.replace( path.basename(cf_uv), '.nc4', '.npz' )
+    else:
+        print('ERROR: "'+seeding_type+'" is an unknown seeding option!')
+        exit(0)
+
     
     # Open Input SI3 data file
     id_uv = Dataset(cf_uv)
@@ -88,7 +96,9 @@ if __name__ == '__main__':
     print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
 
 
+   
 
+    
     ############################
     # Initialization / Seeding #
     ############################
@@ -131,15 +141,16 @@ if __name__ == '__main__':
         IDs = np.array( range(nP), dtype=int) + 1 ; # Default! No ID=0 !!!
 
         
-        if seeding_type!='mojitoNC':            
-            XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
+        if seeding_type == 'mojitoNC':
             IDs[:] = zIDs[:]
             del zIDs
+        else:
+            XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
             
         # Find the location of each seeded buoy onto the model grid:
         nP, xPosG0, xPosC0, IDs, vJIt, VRTCS = mjt.SeedInit( IDs, XseedG, XseedC, xlatT, xlonT, xYf, xXf,
                                                              xResKM, imaskt, xIceConc=xIC, iverbose=idebug )    
-        del xResKM, XseedG, XseedC
+        del XseedG, XseedC
         
         # This first stage is fairly costly so saving the info:
         print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
