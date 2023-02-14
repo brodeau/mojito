@@ -27,7 +27,10 @@ host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
-        echo "Do me!"; exit
+        #
+        DATE2="${YEAR}0201"
+        FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-03-01_lb_LIGHT.nc"
+        FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"

@@ -131,7 +131,7 @@ def FindContainingCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
 
 
 
-def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, xIceConc=[], iverbose=0 ):
+def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=[], iverbose=0 ):
     '''
 
     '''
@@ -147,11 +147,9 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, x
     #                  jF,iF:       # j,i indices of the F-point that defines the current mesh/cell
     #                                 # (was the nearest point when we searched for nearest point,
     #                                 #  as buoys move moves within the cell, it might not be the nearest point)
-    zjiT     = np.zeros((nP,2),   dtype=int)
-    zJIvrtcs = np.zeros((nP,2,4), dtype=int)
-
-    if np.sum(ialive) != nP:
-        print('ERROR [SeedInit]: we should begin with a `ialive` filled with 1s!'); exit(0)
+    zjiT    = np.zeros((nP,2),   dtype=int)
+    zJIvrt  = np.zeros((nP,2,4), dtype=int)
+    kcancel = np.zeros( nP ,     dtype='i1') + 1
     
     for jP in range(nP):
 
@@ -169,32 +167,43 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, ialive, maskT, x
         [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, resolkm=pResolKM, max_itr=10 )
 
         if jT<0 or iT<0:
-            ialive[jP] = 0
+            kcancel[jP] = 0
             if iverbose>0: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO nearest T-point found for ',zlat,zlon,')')
                             
-        if ialive[jP] == 1:            
+        if kcancel[jP] == 1:            
             # Ok a nearest point was found!    
             if iverbose>0:
                 print('     ==> nearest T-point for ',zlat,zlon,' on NEMO grid:', jT, iT, '==> lat,lon:',
                       round(platT[jT,iT],3), round(plonT[jT,iT],3))
             # Tests for canceling buoy or not:
             icncl = Survive( pIDs[jP], [jT,iT] , maskT, pIceC=xIceConc, iverbose=iverbose )
-            if icncl>0: ialive[jP] = 0
+            if icncl>0: kcancel[jP] = 0
             
-        if ialive[jP] == 1:
+        if kcancel[jP] == 1:
             # Everything is okay, now we locate the cell/mesh (polygon joining 4 F-points) that includes
             # our target point (zy,zx)
-            lPin, zjiT[jP,:], zJIvrtcs[jP,:,:] = FindContainingCell( (zy,zx), (jT,iT), pYf, pXf, iverbose=iverbose )
+            lPin, zjiT[jP,:], zJIvrt[jP,:,:] = FindContainingCell( (zy,zx), (jT,iT), pYf, pXf, iverbose=iverbose )
             #
             if not lPin:
                 print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
                 print('         => when lookin for point:',zlat,zlon)
-                ialive[jP] = 0
+                kcancel[jP] = 0
                 if iverbose>0: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO proper F-point cell found)')
                         
     ### for jP in range(nP)
 
-    return  zjiT, zJIvrtcs
+    # Now we can shrink the arrays based on `kcancel`
+    iKeep = np.arange(nP,dtype=int)
+    nPn   = np.sum(kcancel)
+    if nPn<nP:
+        (iGone,) = np.where(kcancel==0)
+        print(' * [SeedInit()]: '+str(nP-nPn)+' "to-be-seeded" buoys have to be canceled.')
+        print('          => their IDs:',pIDs[iGone])
+        print('        ==> need to shrink some arrays, number of valid buoys is now',nPn)
+        nP = nPn
+        (iKeep,) = np.where(kcancel==1)
+                
+    return nP, pSG[iKeep,:], pSC[iKeep,:], pIDs[iKeep], zjiT[iKeep,:], zJIvrt[iKeep,:,:]
 
 
 

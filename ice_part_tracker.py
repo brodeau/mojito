@@ -89,69 +89,61 @@ if __name__ == '__main__':
     xIC[:,:] = id_uv.variables['siconc'][0,:,:]
 
     if seeding_type=='nemo_Tpoint':
-        Xseed0G = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
+        XseedG = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
         #
     elif seeding_type=='debug':
-        if idebug in [0,1,2]: Xseed0G = mjt.debugSeeding()
-        if idebug in [3]:     Xseed0G = mjt.debugSeeding1()
+        if idebug in [0,1,2]: XseedG = mjt.debugSeeding()
+        if idebug in [3]:     XseedG = mjt.debugSeeding1()
         #
     elif seeding_type=='mojitoNC':
         zt, zIDs, zlat, zlon, zy, zx = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
-        Xseed0G = np.array([zlat,zlon]).T
-        Xseed0C = np.array([zy,zx]).T
+        XseedG = np.array([zlat,zlon]).T
+        XseedC = np.array([zy,zx]).T
         print('     => data is read at date =',epoch2clock(zt))
-        #print(np.shape(Xseed0G), np.shape(Xseed0G))
         del zt, zlat, zlon, zy, zx
-        #print('Xseed0G =',Xseed0G)
-        #print('Xseed0C =',Xseed0C)
-        #exit(0)
-        
-    print('\n shape of Xseed0G =',np.shape(Xseed0G))
+    #
+    print('\n shape of XseedG =',np.shape(XseedG))
 
-    (nP,_) = np.shape(Xseed0G)
+    (nP,_) = np.shape(XseedG)
 
     if seeding_type!='mojitoNC':
-        # same for seeded initial positions, Xseed0G->Xseed0C:
-        zy,zx = mjt.ConvertGeo2CartesianNPSkm(Xseed0G[:,0], Xseed0G[:,1])
-        Xseed0C = np.array([zy,zx]).T
+        # same for seeded initial positions, XseedG->XseedC:
+        zy,zx = mjt.ConvertGeo2CartesianNPSkm(XseedG[:,0], XseedG[:,1])
+        XseedC = np.array([zy,zx]).T
         del zx,zy
 
     ################################################################################################
 
+    
     if iplot>0 and not path.exists('./figs'):
         mkdir('./figs')
-    
-    # Vectors with initial number of buoys
-    IDs      = np.array( range(nP), dtype=int) + 1 ; # No ID=0 !!!
-    IsAlive  = np.zeros(       nP , dtype=int) + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
 
+    # File to save seeding location work after seed initialization:
+    if not path.exists('./npz'): mkdir('./npz')
+    cf_npz_intrmdt = './npz/Initialized_buoys_'+str.replace( path.basename(cf_uv), '.nc4', '.npz' )
+
+    # We want an ID for each seeded buoy:
+    IDs = np.array( range(nP), dtype=int) + 1 ; # Default! No ID=0 !!!
     if seeding_type=='mojitoNC':
         IDs[:] = zIDs[:]
         del zIDs
-    
-    vJInT, VRTCS = mjt.SeedInit( IDs, Xseed0G, Xseed0C, xlatT, xlonT, xYf, xXf, xResKM,
-                                 IsAlive, imaskt, xIceConc=xIC, iverbose=idebug )
+        
+    # Find the location of each seeded buoy onto the model grid:
+    nP, XseedG, XseedC, IDs, vJIt, VRTCS = mjt.SeedInit( IDs, XseedG, XseedC, xlatT, xlonT, xYf, xXf,
+                                                         xResKM, imaskt, xIceConc=xIC, iverbose=idebug )    
     del xResKM
 
-    
-    # Getting rid of useless seeded buoys
-    nPn = np.sum(IsAlive)
-    if nPn<nP:
-        (idxGone,) = np.where(IsAlive==0)
-        print('\n *** '+str(nP-nPn)+' "to-be-seeded" "buoys have been canceled by `SeedInit()`')
-        print('        => their IDs:',IDs[idxGone])
-        print('      ==> need to shrink some arrays, number of valid buoys is now',nPn)
-        (idxKeep,) = np.where(IsAlive==1)
-        IDs     = IDs[idxKeep]
-        IsAlive = np.zeros(nP,dtype=int) + 1
-        vJInT   = vJInT[idxKeep,:]
-        VRTCS   = VRTCS[idxKeep,:,:]
-        nP = nPn
-        del nPn,idxGone
-    else:
-        idxKeep = np.arange(nP,dtype=int)
+    # This first stage is fairly costly so saving the info:
+    print('\n *** Saving intermediate data into '+cf_npz_intrmdt+'!')
+    np.savez_compressed( cf_npz_intrmdt, nP=nP, XseedG=XseedG, XseedC=XseedC, IDs=IDs, vJIt=vJIt, VRTCS=VRTCS )
+    #lolo
 
+
+
+
+        
     # Allocation for nP buoys:
+    IsAlive  = np.zeros(       nP , dtype=int) + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
     vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
     xmaskB = np.zeros((Nt+1,nP), dtype='i1')
     xPosXX = np.zeros((Nt+1,nP)) -9999.  ; # x-position of buoy along the Nt records [km]
@@ -163,10 +155,10 @@ if __name__ == '__main__':
     #-----------------------------------------------------------
     
     
-    xPosLa[0,:], xPosLo[0,:] = Xseed0G[idxKeep,0], Xseed0G[idxKeep,1] ; # degrees!
-    xPosYY[0,:], xPosXX[0,:] = Xseed0C[idxKeep,0], Xseed0C[idxKeep,1] ; # km !
+    xPosLa[0,:], xPosLo[0,:] = XseedG[:,0], XseedG[:,1] ; # degrees!
+    xPosYY[0,:], xPosXX[0,:] = XseedC[:,0], XseedC[:,1] ; # km !
     xmaskB[0,:] = 1
-    del Xseed0G, Xseed0C, idxKeep
+    del XseedG, XseedC
 
     if iplot>0 and idebug>0:
         mjt.ShowBuoysMap( 0,  xPosLo[0,:], xPosLa[0,:], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
@@ -199,7 +191,7 @@ if __name__ == '__main__':
                 rx  , ry   = xPosXX[jt,jP], xPosYY[jt,jP] ; # km !
                 rlon, rlat = xPosLo[jt,jP], xPosLa[jt,jP] ; # degrees !
     
-                [jnT,inT] = vJInT[jP,:]; # indices for T-point at center of current cell
+                [jnT,inT] = vJIt[jP,:]; # indices for T-point at center of current cell
                 
                 if idebug>0:
                     print('\n    * BUOY ID:'+str(IDs[jP])+' => jt='+str(jt)+': ry, rx =', ry, rx,'km'+': rlat, rlon =', rlat, rlon )
@@ -254,7 +246,7 @@ if __name__ == '__main__':
     
 
                 # j,i indices of the cell we are dealing with = that of the F-point aka the upper-right point !!!
-                [jT,iT] = vJInT[jP,:]
+                [jT,iT] = vJIt[jP,:]
                 
                 # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
                 # zU, zV = xUu[jT,iT], xVv[jT,iT] ; # because the F-point is the upper-right corner
@@ -292,7 +284,7 @@ if __name__ == '__main__':
                     inhc = mjt.NewHostCell( icross, [ry,rx], [ry_nxt,rx_nxt], VRTCS[jP,:,:], xYf, xXf,  iverbose=idebug )
                     
                     # Update the mesh indices according to the new host cell:
-                    VRTCS[jP,:,:],vJInT[jP,:] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:,:], vJInT[jP,:] )
+                    VRTCS[jP,:,:],vJIt[jP,:] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:,:], vJIt[jP,:] )
                     # LOLO DEBUG: test if `UpdtInd4NewCell` does a good job:
                     #[ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = VRTCS[jP,:,:]
                     #zzf = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
@@ -304,7 +296,7 @@ if __name__ == '__main__':
                     #    print('INSIDE cell :D')
                                         
                     # Based on updated new indices, some buoys might get killed:
-                    icncl = mjt.Survive( IDs[jP], vJInT[jP,:], imaskt, pIceC=xIC,  iverbose=idebug )
+                    icncl = mjt.Survive( IDs[jP], vJIt[jP,:], imaskt, pIceC=xIC,  iverbose=idebug )
                     if icncl>0: IsAlive[jP]=0
                     
                 ### if not lSI
