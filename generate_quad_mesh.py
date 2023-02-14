@@ -18,7 +18,7 @@ from netCDF4 import Dataset
 from climporn import chck4f, epoch2clock
 import mojito   as mjt
 
-idebug=0
+idebug=1
 l_plot = True ; # Create figures to see what we are doing...
 
 #l_box_restriction=True
@@ -97,6 +97,11 @@ if __name__ == '__main__':
         rQarea_min = 2000.
         rQarea_max = 5000.        
         #
+    elif resol0>200 and resol0<400:
+        rQarea_min =  10000.
+        rQarea_max = 50000.       
+        #
+
     else:
         print('ERROR: we do not know what to do with resolution `resol0` =', resol0) ; exit(0)
         #
@@ -112,6 +117,7 @@ if __name__ == '__main__':
     #CCONF = vfi[0]
     #print('\n *** Original NEMO CONF = '+CCONF)
 
+    cfstr = 'ROOT'
 
     # Loading the data for the 2 selected records:
     Nt, nBmax = mjt.GetDimNCdataMJT( cf_nc )
@@ -122,17 +128,18 @@ if __name__ == '__main__':
     vIDs  = np.zeros( nBmax, dtype=int )
     xPosG = np.zeros( (Nrec,nBmax,2) )
     xPosC = np.zeros( (Nrec,nBmax,2) )
+    pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
     #
-    icr = 0
+    jr = 0
     for jrec in vRec[:]:
-        vdate[icr], zIDs, xPosG[icr,:,:], xPosC[icr,:,:] = mjt.LoadNCdataMJT( cf_nc, krec=jrec, iverbose=idebug )
-        print( ' * jrec = ',jrec, ', date =',epoch2clock(vdate[icr]))    
-        if icr==0:
+        vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:] = mjt.LoadNCdataMJT( cf_nc, krec=jrec, lmask=True )
+        print( ' * jrec = ',jrec, ', date =',epoch2clock(vdate[jr]))    
+        if jr==0:
             vIDs[:] = zIDs[:]
         else:
             if np.sum(zIDs[:]-vIDs[:])!=0:
                 print('ERROR: ID fuck up in input file!') ; exit(0)
-        icr=icr+1
+        jr=jr+1
     
     
     # Need some calendar info:
@@ -140,95 +147,41 @@ if __name__ == '__main__':
     cdt1 = epoch2clock(vdate[0] )
     cdt2 = epoch2clock(vdate[-1])
 
-    print('    *  start and End dates => '+cdt1+' -- '+cdt2)
+    print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
     print('        ==> nb of days =', NbDays)
 
-        
-    # We need to load the NEMO's metric files to translate `jj,ji` to actual coordinates:
-    #print('\n *** Reading "'+CCONF+'" metrics in "'+cf_lsm+'" ...')
-    #with Dataset(cf_lsm) as id_lsm:
-    #    nb_dim = len(id_lsm.variables['tmask'].dimensions)
-    #    Ni = id_lsm.dimensions['x'].size
-    #    Nj = id_lsm.dimensions['y'].size
-    #    print('    --- the shape of the '+CCONF+' domain appears to be Ni, Nj =', Ni, Nj)
-    #    xlon_t = id_lsm.variables['glamt'][0,:,:]
-    #    xlat_t = id_lsm.variables['gphit'][0,:,:]
-    #    xlon_u = id_lsm.variables['glamu'][0,:,:]
-    #    xlat_v = id_lsm.variables['gphiv'][0,:,:]
-    #    print('      done.')
 
+    # STUPID: #fixme
+    zXY   = np.zeros( (nBmax,2,Nrec) )
+    zXY[:,0,:] = xPosC[:,:,1].T
+    zXY[:,1,:] = xPosC[:,:,0].T
+    zGC   = np.zeros( (nBmax,2,Nrec) )
+    zGC[:,0,:] = xPosG[:,:,1].T
+    zGC[:,1,:] = xPosG[:,:,0].T
 
-    # First explore how many buoys and how many records we have based on point IDs:
-    with np.load(cf_npz) as data:
-        xMSK = data['mask'][:,:]
-        xIDs = data['IDs'][:,:]
+    mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
+    ztim = np.zeros((nBmax,Nrec))
+    zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
 
-    (NbP0,Nrtot) = np.shape(xIDs)
+    for jp in range(nBmax):
+        ztim[jp,:] = vdate[:]
+    #del vdate
 
-    # Disapearing buoys along the specified records?
-    idxBok = np.arange(NbP0) ; # default: they are all fine!
-    if np.any(xIDs[:,vRec]<1):
-        (idxB0,idxR0) = np.where(xMSK==0)
-        (idxB1,idxR1) = np.where(xIDs <1)
-        if np.sum( np.abs(idxB0-idxB1) ) != 0 or np.sum( np.abs(idxR0-idxR1) ):
-            print('ERROR: np.where(xIDs[:,vRec]<1) != np.where(xMSK==0) !'); exit(0)
-        idx_vnshd = np.unique(idxB1)
-        nbrm = len(idx_vnshd)
-        print('\n *** The '+str(nbrm)+' buoys, with following IDs, do not make it along the '+str(Nrec)+' records specified:',xIDs[idx_vnshd,0])
-        print('   ==> will be ignored!')
-        (idxBok,) = np.where( xMSK[:,np.max(vRec)] == 1 ) ;  # those OK at the last record are good to keep !
-        print('    ==>  updating number of buoys from '+str(NbP0)+' to '+str(len(idxBok))+'!')
-        NbP0 = len(idxBok)
-        del idxB0,idxR0,idxB1,idxR1
-
-    if Nrec > Nrtot:
-        print('ERROR: you want to work with more records than there is !!!',Nrec,Nrtot); exit(0)
-    if np.max(vRec) > Nrtot-1:
-        print('ERROR: max(vRec) > Nrtot-1 !', np.max(vRec), Nrtot-1 ); exit(0)
-
-    del xIDs
-    print('')
-
-    # Array with the shape coresponding to the # of records we want to read:
-    xIDs = np.zeros((NbP0,Nrec), dtype=int)
-    xJIs = np.zeros((NbP0,Nrec), dtype=int)
-    xJJs = np.zeros((NbP0,Nrec), dtype=int)
-    vtim = np.zeros(Nrec)
-    mask = np.zeros( NbP0      , dtype=int) + 1  ; # Mask to for "deleted" points (to cancel)
-
-    #############################
-    with np.load(cf_npz) as data:
-        jr = 0
-        for jrec in vRec:
-            print(' * Reading for record # '+str(jrec)+' into '+cf_npz+' !!!')
-            xIDs[:,jr] = data['IDs'][idxBok,jrec]
-            xJIs[:,jr] = data['JIs'][idxBok,jrec]
-            xJJs[:,jr] = data['JJs'][idxBok,jrec]
-            vtim[jr]   = data['time'][jrec]
-            jr = jr+1
-
-    zGC  = np.zeros((NbP0,2,Nrec))
-    zXY  = np.zeros((NbP0,2,Nrec))
-    ztim = np.zeros((NbP0,Nrec))
-    zPnm = np.array( [ str(i) for i in xIDs[:,0] ], dtype='U32' ) ; # Name for each point, based on 1st record...
-
-    for jp in range(NbP0):
-        ztim[jp,:] = vtim[:]
-    del vtim
-            
+    
     for jr in range(Nrec):
         print('\n   * Record #'+str(vRec[jr])+':')
 
         # Translate rji,rjj from TracIce to lon,lat and x,y:
-        zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
+        #zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
 
         # Get rid of points to close to land (shrinks arrays!):
         mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
     # How many points left after elimination of buoys that get too close to land (at any record):
     NbP1 = np.sum(mask)
-    print('\n *** '+str(NbP1)+' / '+str(NbP0)+' points survived the dist2coast test => ', str(NbP0-NbP1)+' points to delete!')
+    print('\n *** '+str(NbP1)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(nBmax-NbP1)+' points to delete!')
 
+    
     NbP = NbP1
     if l_box_restriction:
         # Restriction to a smaller box for debugging purposes:
@@ -237,44 +190,35 @@ if __name__ == '__main__':
         NbP = np.sum(mask)
         print('\n *** '+str(NbP)+' / '+str(NbP1)+' points survived the box test => ', str(NbP1-NbP)+' points to delete!')
 
-    
-    # We do not need to keep a record dimension for IDs, but first ensure there's no fuck-up...
-    zPntIDs = xIDs[:,0].copy()
-    for jr in range(Nrec):
-        if np.any(xIDs[:,jr]-zPntIDs[:] != 0):
-            print(' Fuck Up!!!! => `xIDs` not consistent along the records!!!' ); exit(0)
-    del xIDs
 
-    zPnm, zPntIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY, ztim )
+    zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
 
-    if idebug>1:
+    if idebug>0:
         for jr in range(Nrec):
             print('\n  DEBUG *** Record #'+str(vRec[jr])+':')
             for jc in range(NbP):
-                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',zPntIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
+                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',vIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
                        ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',epoch2clock(ztim[jc,jr]) )
-                if str(zPntIDs[jc])!=zPnm[jc]:
-                    print(' Fuck Up!!!! => zPntIDs[jc], zPnm[jc] =',zPntIDs[jc], zPnm[jc] ); exit(0)
+                if str(vIDs[jc])!=zPnm[jc]:
+                    print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
         print('')
 
+    
+    cdate0  = str.replace( epoch2clock(vdate[vRec[0]], precision='D'), '-', '')
 
-    
-    cdate0  = str.replace( epoch2clock(vtime0[vRec[0]], precision='D'), '-', '')
-    
     for jr in range(Nrec):
         jrec = vRec[jr]
 
         print('\n\n *** QUAD-MESH GENERATION => record #'+str(jrec)+': record = '+str(jr))
 
-        cdats  = epoch2clock(vtime0[jrec])
-        cdate  = str.replace( epoch2clock(vtime0[jrec], precision='D'), '-', '')
+        cdats  = epoch2clock(vdate[jr])
+        cdate  = str.replace( epoch2clock(vdate[jr], precision='D'), '-', '')
 
         cfbase = cfstr+'_'+cdate0+'t0_'+cdate
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)
 
         cf_npzQ = './npz/Q-mesh_'+cfbase+'.npz'
-        #print(' cf_npzQ =', cf_npzQ); exit(0)
-        
+
         if jr == 0:
 
             print('\n *** Delaunay triangulation for 1st record!')
@@ -286,12 +230,13 @@ if __name__ == '__main__':
             while not lOK:
 
                 TRI = Delaunay(zXY[:,:,jr])
+                
                 xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
                 (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
                 xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
                 # For some reasons, here, `xTpnts` can involve less points than the number of points
-                # fed into Delaunay (zXY), if it is the case we have to shrink `zXY`, `zPntIDs`, `zPnm`
+                # fed into Delaunay (zXY), if it is the case we have to shrink `zXY`, `vIDs`, `zPnm`
                 # accordingly...
                 PntIdxInUse = np.unique( xTpnts.flatten() )
                 NbPnew      = len(PntIdxInUse)
@@ -307,7 +252,7 @@ if __name__ == '__main__':
                     mask[ind2keep] = 1
                     if np.sum(mask) != NbPnew:
                         print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
-                    zPnm, zPntIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, zPntIDs, zGC, zXY, ztim )
+                    zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
                     del zPntIdx0, mask, ind2keep
                     NbP = NbPnew
                     print('      => done! Only '+str(NbP)+' points left in the game...')
@@ -317,10 +262,18 @@ if __name__ == '__main__':
             ### while not lOK
             print('\n *** We have '+str(NbT)+' triangles!')
 
+            
             # Conversion to the `Triangle` class:
-            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, zPntIDs, ztim[:,jr], zPnm )
+            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, vIDs, ztim[:,jr], zPnm )
             del xTpnts, xNeighborIDs, TRI
 
+            # Info on the triangles:
+            if idebug>0:
+                zlngth = np.mean( TRIAS.lengths(), axis=1)
+                zml = np.mean(zlngth)
+                print('   => mean length and stdev of the sides of all triangles =',zml,mjt.StdDev( zml, zlngth ), 'km')
+                del zlngth, zml
+            
             # Merge triangles into quadrangles:
             xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
                                                                 ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
@@ -334,7 +287,7 @@ if __name__ == '__main__':
             mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
 
             # To be used for other record, indices of Points to keep for Quads:
-            _,ind2keep,_ = np.intersect1d(zPntIDs, vPids, return_indices=True); # retain only indices of `zPntIDs` that exist in `vPids`
+            _,ind2keep,_ = np.intersect1d(vIDs, vPids, return_indices=True); # retain only indices of `vIDs` that exist in `vPids`
 
 
             # Plots only for jrec==0:
@@ -369,7 +322,7 @@ if __name__ == '__main__':
             print('\n *** Quad recycling for jr=',jr)
 
             # Recycling Quads found at 1st record (QUADS0): lilo
-            xQcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], zPntIDs, QUADS0,  iverbose=idebug )
+            xQcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
             QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats )
@@ -409,3 +362,4 @@ if __name__ == '__main__':
 
     ### for jr in range(Nrec):
     print('\n --- Over!\n')
+

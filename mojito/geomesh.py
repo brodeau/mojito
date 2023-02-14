@@ -558,6 +558,9 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
     
         RETURNS: mask==0 for buoys that must be deleted....
     '''
+    from .ncio import LoadDist2CoastNC
+    from .util import Dist2Coast
+    #
     if (not path.exists(fNCdist2coast)):
         print('ERROR [MaskCoastal()]: provide '+fNCdist2coast+' does not exist!!!'); exit(0)        
     if rMinDistFromLand<=0:
@@ -570,9 +573,7 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
     if len(mask) > 0:
         if len(mask)!=nB:
             print('ERROR [MaskCoastal()]: shape problem => `len(mask)!=nB` !!!'); exit(0)        
-        mask1d[:] = mask[:]
-            
-    from .ncio import LoadDist2CoastNC, Dist2Coast
+        mask1d[:] = mask[:]            
         
     vlon_dist, vlat_dist, xdist = LoadDist2CoastNC( fNCdist2coast ) ; # Load `distance to coast` data...
 
