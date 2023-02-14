@@ -10,7 +10,7 @@ EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 #else
 #CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 330" ; # NEMO SEED at HSS=15
 
-CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 10" ; # RGPS seed
+CMD="${EXE}  ice_tracking.nc 0,72 10" ; # RGPS seed
 
 #fi
 

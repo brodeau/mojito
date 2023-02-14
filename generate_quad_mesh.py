@@ -109,12 +109,8 @@ if __name__ == '__main__':
 
     
     # Getting time info and time step from input npz file which is should look like NEMO output file:
-    #vfi   = split('_|\.', path.basename(cf_npz))
-    #cfstr = vfi[0]+'_'+vfi[1]+'_'+vfi[2]+'_'+vfi[5]+'_'+vfi[6]
-    #CCONF = vfi[0]
-    #print('\n *** Original NEMO CONF = '+CCONF)
-
-    cfstr = 'ROOT'
+    vfi   = split('_|\.', path.basename(cf_nc))
+    cfstr = vfi[0]
 
     # Loading the data for the 2 selected records:
     Nt, nBmax = mjt.GetDimNCdataMJT( cf_nc )
@@ -201,7 +197,7 @@ if __name__ == '__main__':
         print('')
 
     
-    cdate0  = str.replace( epoch2clock(vdate[vRec[0]], precision='D'), '-', '')
+    cdate0  = str.replace( epoch2clock(vdate[0], precision='D'), '-', '')
 
     for jr in range(Nrec):
         jrec = vRec[jr]

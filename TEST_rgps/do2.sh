@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 . ./conf.bash
 
+EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 
 if [ "$1" = "" ]; then
     echo "USAGE: $0 <file_pos_mojito.nc>"
@@ -9,11 +10,14 @@ if [ "$1" = "" ]; then
 fi
 
 FIN="$1"
-    
+
+# Number of records inside netCDF file:
+Nr=`ncdump -h ${FIN} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
+echo
+echo " * ${Nr} records in ${FIN}!"
 
 
 
-EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 
 
 #if [ "$1" = "d" ]; then
@@ -21,7 +25,7 @@ EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 #else
 #CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 330" ; # NEMO SEED at HSS=15
 
-CMD="${EXE} ${FIN} 0,1 10" ; # RGPS seed
+CMD="${EXE} ${FIN} 2,3 10" ; # RGPS seed
 
 #fi
 
