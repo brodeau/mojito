@@ -115,8 +115,14 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     '''
     (Nb,) = np.shape(pvlon)
     #
-    NbnotMasked = None
-    if np.ma.isMaskedArray(pvlon): NbnotMasked = pvlon.count()
+    lIDs = ( np.shape(pvIDs)==(Nb,) )
+    #
+    # Number of remaining valid points:
+    NbValid = None
+    if np.ma.isMaskedArray(pvlat):
+        NbValid = pvlon.count()
+    elif lIDs:
+        NbValid = (pvIDs > 0).sum() ; # We assume arrays have missing values...
     #
     fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor=col_bg)
@@ -126,7 +132,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
     # Add IDs figure right next to buoys (if pvIDs provided and not too many buoys!):
-    if np.shape(pvIDs)==(Nb,) and Nb<=800:
+    if lIDs and Nb<=800:
         ctype = str(pvIDs.dtype) ; # type of pvIDs:
         lstr = ( ctype[0:2] == '<U' ) ; # does pvIDs contain strings ???
         #
@@ -149,8 +155,8 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     if cdate != '':
         ax.annotate('Date: '+cdate, xy=(0.6, 0.925), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
-    if NbnotMasked:
-        ax.annotate(' Nb. buoys = '+str(NbnotMasked), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
+    if NbValid:
+        ax.annotate(' Nb. buoys = '+str(NbValid), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
     if title:
         ax.annotate(title, xy=(0.5, 0.965), xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)

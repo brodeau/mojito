@@ -196,7 +196,7 @@ if __name__ == '__main__':
         xUu[:,:] = id_uv.variables['u_ice'][jt,:,:]
         xVv[:,:] = id_uv.variables['v_ice'][jt,:,:]
 
-        print('   *   current number of buoys to follow: '+str(nP))
+        print('   *   current number of buoys alive = '+str(iAlive.sum()))
         
         for jP in range(nP):
 
@@ -320,11 +320,11 @@ if __name__ == '__main__':
         # Updating in terms of lon,lat for all the buoys at once:
         xPosG[jt+1,:,:] = mjt.CartNPSkm2Geo1D( xPosC[jt+1,:,:] )
 
-
         if iplot>0:
             # Show on the map of the Arctic:
             if jt%isubsamp_fig == 0:
-                mjt.ShowBuoysMap( itime,  xPosG[jt,:,1], xPosG[jt,:,0], pvIDs=IDs,
+                zIDs = xmask[jt,:,0]*IDs[:] - 1*(1-xmask[jt,:,0]) ; # -1 => when buoys is missing => right counting in `ShowBuoysMap`!
+                mjt.ShowBuoysMap( itime,  xPosG[jt,:,1], xPosG[jt,:,0], pvIDs=zIDs,
                                   cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
                                   title='IceTracker + SI3 u,v fields' )
