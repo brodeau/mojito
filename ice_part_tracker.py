@@ -130,7 +130,7 @@ if __name__ == '__main__':
             if idebug in [3]:     XseedG = mjt.debugSeeding1()
             #
         elif seeding_type=='mojitoNC':
-            zt, zIDs, XseedG, XseedC = mjt.LoadDataMJT( fNCseed, krec=0, iverbose=idebug )
+            zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=0, iverbose=idebug )
             print('     => data is read at date =',epoch2clock(zt))
         #
         print('\n shape of XseedG =',np.shape(XseedG))
