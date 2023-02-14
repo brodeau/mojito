@@ -56,7 +56,7 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 l_drop_coastal   = True ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
 
-
+FillValue = -9999.
 
 
 
@@ -351,21 +351,24 @@ if __name__ == '__main__':
         
     ### if l_drop_doublons
 
-    xY   = np.ma.masked_where( xmsk==0, xY )
-    xX   = np.ma.masked_where( xmsk==0, xX )
-    xlat = np.ma.masked_where( xmsk==0, xlat )
-    xlon = np.ma.masked_where( xmsk==0, xlon )
+    # Masking arrays:
+    idxmsk = np.where( xmsk==0 )
+    xY[idxmsk]   = FillValue
+    xX[idxmsk]   = FillValue
+    xlat[idxmsk] = FillValue
+    xlon[idxmsk] = FillValue
 
-    # GENERATION OF COMPREHENSIVE NETCDF FILE:
-    kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, tunits=ctunits_expected, fillVal=-9999. )
+    # GENERATION OF COMPREHENSIVE NETCDF FILE:    
+    kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, mask=xmsk, tunits=ctunits_expected, fillVal=FillValue )
     
     if iplot>0:
 
         for jt in range(Nt):
             rt = vTbin[jt,0]
             ct = epoch2clock(rt)
+            zIDs = xmsk[jt,:]*vIDs[:] -1*(1-xmsk[jt,:]) ; # -1 => when buoys is missing => right counting in `ShowBuoysMap`!
             print(' Ploting for '+ct+'!')
             cfig = './figs/SELECTION/t-interp_buoys_RGPS_'+ct+'.png'
-            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=[], cfig=cfig,
+            mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=zIDs, cfig=cfig,
                               ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='RGPS' )
             print('')

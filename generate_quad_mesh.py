@@ -13,9 +13,8 @@ from os import path, environ, mkdir
 import numpy as np
 from re import split
 from scipy.spatial import Delaunay
-from netCDF4 import Dataset
 
-from climporn import chck4f, epoch2clock
+from climporn import epoch2clock
 import mojito   as mjt
 
 idebug = 0
@@ -57,22 +56,20 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    if len(argv) != 5:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <LSM_file> <records to use (C), comma-separated> <basic_res_km>')
+    if len(argv) != 4:
+        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km>')
         exit(0)
 
     cf_nc = argv[1]
-    cf_lsm = argv[2]
-    lstrec = argv[3]
-    resol0 = float(argv[4])
+    lstrec = argv[2]
+    resol0 = float(argv[3])
 
     vcrec = split(',',lstrec)
     Nrec  = len(vcrec)
     vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
     del vcrec
 
-    chck4f(cf_nc)
-    chck4f(cf_lsm)
+    mjt.chck4f(cf_nc)
 
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
