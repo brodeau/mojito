@@ -42,7 +42,7 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        DATE2="${YEAR}0501"
+        DATE2="${YEAR}0401"
         FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-05-01_lb.nc"
         ;;
     *)
