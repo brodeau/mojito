@@ -18,7 +18,7 @@ from netCDF4 import Dataset
 from climporn import chck4f, epoch2clock
 import mojito   as mjt
 
-idebug=1
+idebug=0
 l_plot = True ; # Create figures to see what we are doing...
 
 #l_box_restriction=True
