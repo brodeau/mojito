@@ -324,9 +324,9 @@ if __name__ == '__main__':
         if iplot>0:
             # Show on the map of the Arctic:
             if jt%isubsamp_fig == 0:
-                zLon = np.ma.masked_where( xmask[jt,:,:]==0, xPosG[jt,:,1] )
-                zLat = np.ma.masked_where( xmask[jt,:,:]==0, xPosG[jt,:,0] )
-                mjt.ShowBuoysMap( itime, zLon, zLat, pvIDs=zIDs,
+                zLon = np.ma.masked_where( xmask[jt,:,1]==0, xPosG[jt,:,1] )
+                zLat = np.ma.masked_where( xmask[jt,:,0]==0, xPosG[jt,:,0] )
+                mjt.ShowBuoysMap( itime, zLon, zLat, pvIDs=IDs,
                                   cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
                                   title='IceTracker + SI3 u,v fields' )
@@ -344,13 +344,10 @@ if __name__ == '__main__':
     xPosC = np.ma.masked_where( xmask==0, xPosC )
     
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
-    kk = mjt.ncSaveCloudBuoys( 'ice_tracking.nc', vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
+    cdt1 = split('_', epoch2clock(vTime[0] ))[0]
+    cdt2 = split('_', epoch2clock(vTime[Nt]))[0]
+    foutnc = 'SI3_tracking_'+cdt1+'_'+cdt2+'.nc'
+    
+    kk = mjt.ncSaveCloudBuoys( foutnc, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
                                mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue )
-
-    #if iplot>0:
-    #    # Show on the map of the Arctic:
-    #    for jt in range(0,Nt,isubsamp_fig):
-    #        mjt.ShowBuoysMap( vTime[jt],  xPosLo[jt,:], xPosLa[jt,:], pvIDs=IDs, cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'.png',
-    #                          cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker + SI3 u,v fields' )
-    #                          #cnmfig=None, ms=15, ralpha=1., lShowDate=True, zoom=1.2 )
             
