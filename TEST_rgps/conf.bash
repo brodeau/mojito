@@ -61,7 +61,7 @@ case ${host} in
         NSTREAMB="136"
         DATE2="${YEAR}0401"
         #
-        MARKER_SIZE=40
+        MARKER_SIZE=5
         ;;
     *)
         echo "Unsupported host: ${host} !"
