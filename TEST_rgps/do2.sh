@@ -25,7 +25,7 @@ echo " * ${Nr} records in ${FIN}!"
 #else
 #CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 330" ; # NEMO SEED at HSS=15
 
-CMD="${EXE} ${FIN} 2,3 10" ; # RGPS seed
+CMD="${EXE} ${FIN} 2,3 10"
 
 #fi
 

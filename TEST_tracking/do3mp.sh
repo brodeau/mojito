@@ -14,7 +14,7 @@ ijob=0
 RESKM=10
 
 #cstr=`printf "%03d" ${istr}`
-cstr="RGPS"
+cstr="SI3"
 
 list=( `\ls npz/Q-mesh_${cstr}*.npz | grep ${YEAR}` )
 nbf=`echo ${list[*]} | wc -w`
