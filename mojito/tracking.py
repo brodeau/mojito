@@ -12,6 +12,86 @@ rmin_conc = 0.6 ; # ice concentration below which we disregard the point...
 
 rFoundKM = 2.5
 
+def find_ji_of_min(x):
+    '''
+    # Yes, reinventing the wheel here, but it turns out
+    # it is faster this way!
+    '''
+    k = x.argmin()
+    nx = x.shape[1]
+    return k//nx, k%nx
+
+
+def Haversine( plat, plon, xlat, xlon ):
+    '''
+    # ! VECTOR VERSION !
+    # Returns the distance in km at the surface of the earth
+    # between two GPS points (degreesN, degreesE)
+    # (plat,plon)  : a point
+    # xlat, xlon : 2D arrays
+    #
+    # Here we do not need accuracy on Earth radius, since the call
+    # to this function is suposely made to find nearest point
+    '''
+    to_rad = 3.141592653589793/180.
+    R = 6360. ; # radius of Earth in km (sufficient to take it as a constant here...)
+    #
+    a1 = np.sin( 0.5 * ((xlat - plat)*to_rad) )
+    a2 = np.sin( 0.5 * ((xlon - plon)*to_rad) )
+    a3 = np.cos( xlat*to_rad ) * np.cos(plat*to_rad)
+    #
+    return 2.*R*np.arcsin( np.sqrt( a1*a1 + a3 * a2*a2 ) )
+
+
+def NearestPoint( pcoor_trg, Ys, Xs, rd_found_km=10., resolkm=[], j_prv=None, i_prv=None, np_box_r=10, max_itr=5 ):
+    '''
+    # * pcoor_trg : GPS coordinates (lat,lon) of target point    ([real],[real])
+    # * Ys        : array of source grid latitude            2D numpy.array [real]
+    # * Xs        : array of source grid longitude           2D numpy.array [real]
+    # * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
+    #               because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
+    '''
+    (yT,xT) = pcoor_trg
+    (Ny,Nx) = Ys.shape
+    #
+    l2Dresol = ( np.shape(resolkm)==(Ny,Nx) )
+    #
+    lbox = ( j_prv and i_prv )
+    if lbox:
+        j1, j2 = max(j_prv-np_box_r,0), min(j_prv+np_box_r+1,Ny)
+        i1, i2 = max(i_prv-np_box_r,0), min(i_prv+np_box_r+1,Nx)
+    else:
+        (j1,i1 , j2,i2) = (0,0 , Ny,Nx)
+    #
+    jy, jx = -1,-1 ; # "not found" flag value...
+    lfound = False    
+    rfnd   = rd_found_km
+    igo    = 0
+    #
+    while (not lfound) and igo<max_itr :
+        igo = igo + 1
+        if lbox and igo>1:
+            (j1,i1 , j2,i2) = (0,0 , Ny,Nx) ; # Falling back on whole domain for second pass...
+        xd = Haversine( yT, xT,  Ys[j1:j2,i1:i2], Xs[j1:j2,i1:i2] )
+        jy, jx = find_ji_of_min( xd )
+        #
+        if igo==1 and l2Dresol: rfnd = 0.5*resolkm[jy,jx]
+        #
+        if not lbox and igo==1: igo=2 ; # we jump one round because no need of the pass to global...
+        #
+        lfound = ( xd[jy,jx] < rfnd )
+        if igo>1 and not lfound:
+            rfnd = 1.2*rfnd ; # increasing validation distance criterion by 20 %
+    #
+    if lbox:
+        jy, jx = jy+j1, jx+i1 ; # found in the zoom box => translate to indices in whole domain:
+    #
+    if jy<0 or jx<0 or jy>=Ny or jx>=Nx or igo==max_itr:
+        if ivrb>0: print('    WARNING [NearestPoint()]: did not find a nearest point for target point ',yT,xT,' !')
+        if ivrb>0: print('            => last tested distance criterions =', rfnd,' km')
+        jy, jx = -1,-1        
+    return [jy,jx]
+
 
 def IsInsideCell( py, px, CellPolygon ):
     '''
@@ -28,7 +108,6 @@ def _ccw_( pcA, pcB, pcC ):
         * etc...
     '''
     return (pcC[0]-pcA[0])*(pcB[1]-pcA[1]) > (pcB[0]-pcA[0])*(pcC[1]-pcA[1])
-
 
 def intersect2Seg( pcA, pcB, pcC, pcD ):
     '''
@@ -133,9 +212,7 @@ def FindContainingCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
 
 def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=[], iverbose=0 ):
     '''
-
     '''
-    from gonzag import NearestPoint
     #
     (nP,n2) = np.shape(pSG)
     #
@@ -206,15 +283,6 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=
     return nP, pSG[iKeep,:], pSC[iKeep,:], pIDs[iKeep], zjiT[iKeep,:], zJIvrt[iKeep,:,:]
 
 
-
-
-
-
-
-
-
-
-
 def CrossedEdge( pP1, pP2, ji4vert, pY, pX,  iverbose=0 ):
     '''
         * pP1    : point 1 as [y1,x1]
@@ -234,8 +302,6 @@ def CrossedEdge( pP1, pP2, ji4vert, pY, pX,  iverbose=0 ):
         vdir = ['bottom', 'right-hand', 'upper', 'left-hand']
         print('    [CrossedEdge()]: particle is crossing the '+vdir[kk]+' edge of the mesh!')
     return kk+1
-
-
 
 
 def NewHostCell( kcross, pP1, pP2, ji4vert, pY, pX,  iverbose=0 ):
@@ -409,4 +475,6 @@ def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=None ):
     del zmsk,zlat,zlon
         
     return zLatLon
+
+
 

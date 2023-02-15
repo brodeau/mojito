@@ -266,7 +266,7 @@ if __name__ == '__main__':
         print(' #FIXME: l_drop_doublons !!!'); exit(0)
         
         # Use x,y !!! not lon,lat likebelow !!!
-        from gonzag import Haversine
+        from .tracking import Haversine
 
         vid_mask = np.zeros(Nb, dtype='i1')
         vid_mask[:] = 1

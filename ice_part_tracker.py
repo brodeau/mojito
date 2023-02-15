@@ -2,25 +2,12 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
-#TODO:
-#   make that the plot shows number of buoys with another method that the masked array....
-#
-#     * gz.NearestPoint should be used only at seeding time / jt==0
-#     Once we detect that a move makes the buoy leave the current mesh
-#     we should be able to give a number between 1 and 4 to tell
-#     through which cell wall the crossing happen, thus it should be
-#     easy in upcomming itteration to update the indices for the new cell
-#     that contains the buoy !!!
-
-
 from sys import argv, exit
 from os import path, mkdir
 import numpy as np
 from re import split
 
 from netCDF4 import Dataset
-
-import gonzag as gz
 
 from climporn import dump_2d_field, epoch2clock, clock2epoch
 import mojito   as mjt
@@ -33,7 +20,7 @@ from math import atan2,pi
 idebug=0
 iplot=1
 
-rdt = 3600. ; # time step
+rdt = 3600. ; # time step (must be that of model output ice velocities used)
 
 toDegrees = 180./pi
 
@@ -245,9 +232,6 @@ if __name__ == '__main__':
                 ### if not lStillIn[jP]
                 ###########################################################################################################################
     
-                # The 4 weights for bi-linear interpolation within this cell:
-                #[w1, w2, w3, w4] = gz.WeightBL( (rlat,rlon), xlatF, xlonF, JIsSurroundMesh )
-
                 if idebug>2:
                     # We can have a look in the mesh:
                     cnames    = np.array([ 'P'+str(i+1)+': '+str(VRTCS[jP,0,i])+','+str(VRTCS[jP,1,i]) for i in range(4) ], dtype='U32')
