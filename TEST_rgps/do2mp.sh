@@ -39,7 +39,7 @@ for ii in $(seq 0 $((Nr-2))); do
         wait
         echo; echo
     fi
-    
+
 done
 
 wait

@@ -46,7 +46,7 @@ for ii in $(seq 0 $((Nr-2))); do
         CMD="${EXE} ${FIN} ${rec1},${rec2} ${RESKM}" ; # RGPS seed
         echo "  ==> ${CMD}"; echo
         ${CMD} > ${cflog} &
-        echo; echo
+    echo; sleep 1 ; echo
     #else
     #    echo; echo
     #    echo " Skipping generation of Quads as ${cfQ1} & ${cfQ2} already there!"
@@ -61,8 +61,7 @@ for ii in $(seq 0 $((Nr-2))); do
 
 done
 
-
-#wait
+wait
 
 echo
 echo " *** `date` ALL done!"
