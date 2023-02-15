@@ -2,7 +2,7 @@
 
 * Ajouter la partie sous-sampling du nuage de point qui marchait dans RGPS => ajouter a `generate_quad_mesh` !!!
 
-
+* Ajouter l'option de stop a une date donnee dans `ice_part_track` !!!
 
 
 
