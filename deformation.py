@@ -208,15 +208,16 @@ if __name__ == '__main__':
 
 
     # Some plots:
-    if not path.exists('./figs'): mkdir('./figs')
+    cdir = './figs/deformation'
+    if not path.exists(cdir): mkdir(cdir)
 
-    mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig='./figs/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
+    mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
                          pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                          marker_size=marker_size, title='Divergence' )
-    mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig='./figs/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
+    mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
                          pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                          marker_size=marker_size, title='Shear' )
-    mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig='./figs/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
+    mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
                          pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                          marker_size=marker_size, title='Total deformation' )
 
