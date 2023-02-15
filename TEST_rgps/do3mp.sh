@@ -34,7 +34,7 @@ if [ "${nbf}" != "" ]; then
 
     echo; echo " *** List of reference dates for ${cstr}:"; echo "${list_date_ref}"; echo
 
-    
+
     for dr in ${list_date_ref}; do
         echo
         lst=(`\ls npz/Q-mesh_${cstr}_${dr}_*.npz`) ; # echo ${lst[*]}
@@ -44,7 +44,7 @@ if [ "${nbf}" != "" ]; then
 
             fQ1=${lst[0]}
             fQ2=${lst[1]}
-            echo " ==> will use:"; echo "     * ${fQ1}"; echo "     * ${fQ2}"
+            echo " * Job # ${ijob} ==> will use:"; echo "     * ${fQ1}"; echo "     * ${fQ2}"
 
             flog=`basename ${fQ1}`
             flog=`echo ${flog} | sed -e s/".npz"/""/g`

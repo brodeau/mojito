@@ -54,6 +54,7 @@ case ${host} in
         #DATE2="${YEAR}0401"
         DATE2="${YEAR}0205"
         FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-05-01_lb.nc"
+        SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
         #
         MARKER_SIZE=5
         ;;
@@ -70,4 +71,5 @@ export FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}/${FSI3IN}"
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
 
-#="
+mkdir -p ./figs ./npz
+

@@ -24,25 +24,26 @@ mkdir -p logs
 
 for ii in $(seq 0 $((Nr-2))); do
     echo $ii
-
+    
     cflog="logs/out_${ii}_$((ii+1)).out"
-
-        ijob=$((ijob+1))
-        echo " *** Construction of Quadrangles"
-        CMD="${EXE} ${FIN} ${ii},$((ii+1)) ${RESKM}" ; # RGPS seed
-        echo "  ==> ${CMD}"; echo
-        ${CMD} > ${cflog} &
-        echo; sleep 1 ; echo
-
+    
+    ijob=$((ijob+1))
+    echo " *** Construction of Quadrangles"
+    CMD="${EXE} ${FIN} ${ii},$((ii+1)) ${RESKM}" ; # RGPS seed
+    echo "  ==> ${CMD}"; echo
+    ${CMD} > ${cflog} &
+    echo; sleep 1 ; echo
+    
     if [ $((ijob%NJPAR)) -eq 0 ]; then
         echo "Waiting! (ijob = ${ijob})...."
         wait
         echo; echo
     fi
-
+    
 done
 
 wait
+
 echo
 echo " *** `date` ALL done!"
 echo
