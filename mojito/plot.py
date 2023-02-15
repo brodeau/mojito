@@ -58,7 +58,7 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
                'font.size':       int(18.*fntzoom_inv),
-               'legend.fontsize': int(22.*fntzoom_inv),
+               'legend.fontsize': int(16.*fntzoom_inv),
                'xtick.labelsize': int(15.*fntzoom_inv),
                'ytick.labelsize': int(15.*fntzoom_inv),
                'axes.labelsize':  int(17.*fntzoom) }
@@ -511,7 +511,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     '''
     from math import ceil
 
-    nB = len(ppdf)
+    (nB,) = np.shape(ppdf)
     if len(pbinc) != nB:
         print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinc`!'); exit(0)
     if len(pbinb) != nB+1:
@@ -592,7 +592,8 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
-               wbin=None, title=None, period=None ):
+               wbin=None, title=None, period=None, origin=None,
+               ppdf2=[], origin2=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
@@ -602,12 +603,15 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     '''
     from math import ceil
 
-    nB = len(ppdf)
+    (nB,) = np.shape(ppdf)
     if len(pbinc) != nB:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinc`!'); exit(0)
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
+
+    l_comparaison = ( np.shape(ppdf2)==(nB,) )
+        
     # For figure axes:
     xlog_min = 1.e-3
     xlog_max = 1.e-1
@@ -629,8 +633,16 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     
     ax1.set_xlim(xlog_min, xlog_max)
     
-    plt.loglog(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
+    plt.loglog(pbinc[:], ppdf[:], 'o', color='0.6', label=origin, zorder=5)
 
+    if l_comparaison:
+        ppdf2 = np.ma.masked_where( pbinc>xcut_dat, ppdf2 )
+        plt.loglog(pbinc[:], ppdf2[:], '+', color='b', label=origin2, zorder=10)
+        ax1.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+
+        
+
+    
     ax1.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax1.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     

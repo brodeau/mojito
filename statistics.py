@@ -12,6 +12,8 @@ from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1
+iplot=0
+
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
@@ -82,7 +84,7 @@ if __name__ == '__main__':
         vf = split('_',fb)
         print(vf)
         #
-        if kf==0: cname = vf[1] ; # should be 'RGPS' or 'SI3' !
+        if kf==0: corigin = vf[1] ; # should be 'RGPS' or 'SI3' !
         list_date.append(split('-',vf[2])[0])
         #
         kStreamName[kf] = vf[1]
@@ -187,37 +189,37 @@ if __name__ == '__main__':
 
 
 
-    cfroot = 'PDF_'+cname+'_'+cperiod
+    cfroot = 'PDF_'+corigin+'_'+cperiod
 
 
 
     
     # Saving in `npz` files:
-    np.savez_compressed( './npz/'+cfroot+'_divergence.npz', name='divergence', period=cperiod, wbin=wbin_div,
+    np.savez_compressed( './npz/'+cfroot+'_divergence.npz', name='divergence', origin=corigin, period=cperiod, wbin=wbin_div,
                          Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
     
-    np.savez_compressed( './npz/'+cfroot+'_shear.npz',      name='shear',      period=cperiod, wbin=wbin_shr,
+    np.savez_compressed( './npz/'+cfroot+'_shear.npz',      name='shear',      origin=corigin, period=cperiod, wbin=wbin_shr,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
 
 
-
-    cdir = './figs'
-    if not path.exists(cdir): mkdir(cdir)
-
+    if iplot>0:
+        cdir = './figs'
+        if not path.exists(cdir): mkdir(cdir)
+    
+            
+        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cdir+'/loglog'+cfroot+'_divergence.svg',
+                            wbin=wbin_div, title=corigin, period=cperiod )
         
-    kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cdir+'/loglog'+cfroot+'_divergence.svg',
-                        wbin=wbin_div, title=cname, period=cperiod )
+        kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPd, name='Shear', cfig=cdir+'/loglog'+cfroot+'_shear.svg',
+                            wbin=wbin_shr, title=corigin, period=cperiod )
     
-    kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPd, name='Shear', cfig=cdir+'/loglog'+cfroot+'_shear.svg',
-                        wbin=wbin_shr, title=cname, period=cperiod )
-
-
-    xdiv_rng=[0.001,0.1] ; # x-range we want on the x-axis of the plot
-    xshr_rng=[0.001,0.1] ; # x-range we want on the x-axis of the plot
     
-    kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cdir+'/'+cfroot+'_divergence.svg',
-                         xrng=xdiv_rng, wbin=wbin_div, title=cname, period=cperiod )
-    
-    kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig=cdir+'/'+cfroot+'_shear.svg',
-                         xrng=xshr_rng, wbin=wbin_shr, title=cname, period=cperiod )
+        xdiv_rng=[0.001,0.1] ; # x-range we want on the x-axis of the plot
+        xshr_rng=[0.001,0.1] ; # x-range we want on the x-axis of the plot
+        
+        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cdir+'/'+cfroot+'_divergence.svg',
+                             xrng=xdiv_rng, wbin=wbin_div, title=corigin, period=cperiod )
+        
+        kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig=cdir+'/'+cfroot+'_shear.svg',
+                             xrng=xshr_rng, wbin=wbin_shr, title=corigin, period=cperiod )
     
