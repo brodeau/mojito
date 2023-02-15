@@ -3,7 +3,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path
+from os import path, mkdir
 from glob import glob
 import numpy as np
 from re import split
@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
 
 
-    xfrng=[0.001,0.1] ; # x-range we want on the x-axis of the plot
+    xfrng=[0.001,1.] ; # x-range we want on the x-axis of the plot
 
 
 

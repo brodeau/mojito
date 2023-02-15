@@ -614,8 +614,10 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
         
     # For figure axes:
     xlog_min = 1.e-3
-    xlog_max = 1.e-1
-    xcut_dat = 0.8e-1
+    #xlog_max = 1.e-1
+    xlog_max = 1.
+    #xcut_dat = 0.8e-1
+    xcut_dat = 1.
 
     ki = _initStyle_()
 
