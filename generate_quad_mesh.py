@@ -36,7 +36,7 @@ rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-rzoom_fig = 4
+rzoom_fig = 5
 
 
 if __name__ == '__main__':
