@@ -630,6 +630,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     plt.ylabel('Probability', color='k')
 
     ppdf = np.ma.masked_where( pbinc>xcut_dat, ppdf )
+    #ppdf = np.ma.masked_where( ppdf<1.e-8, ppdf )
     
     ax1.set_xlim(xlog_min, xlog_max)
     
@@ -637,6 +638,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     if l_comparaison:
         ppdf2 = np.ma.masked_where( pbinc>xcut_dat, ppdf2 )
+        #ppdf2 = np.ma.masked_where( ppdf<5.e-4, ppdf2 )
         plt.loglog(pbinc[:], ppdf2[:], '+', color='b', label=origin2, zorder=10)
         ax1.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
