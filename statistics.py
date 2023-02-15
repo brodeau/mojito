@@ -26,191 +26,181 @@ rconv = 24.*3600.
 
 # Bin widths for pdfs
 wbin_div = 0.0005 ; # day^-1
-#wbin_div = 0.005 ; # day^-1
-max_div  = 5.    ; # day^-1
+min_div  = 0.001 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+max_div  = 5.     ; # day^-1
 
 wbin_shr = 0.0005 ; # day^-1
-#wbin_shr = 0.005 ; # day^-1
+min_shr = 0.001 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
 max_shr = 5. ; # day^-1
 
-if not len(argv) in [2]:
-    print('Usage: '+argv[0]+' <directory_input_npz_files>')
-    exit(0)
-cd_in = argv[1]
-#cf_Q2 = argv[2]
-#mrkrsz= int(argv[3])
-
-# Polpulating deformation files available:
-listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*.npz') )
-nbFiles = len(listnpz)
-print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
 
 
-kStreamName = np.zeros(nbFiles, dtype='U4')
-kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
-kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
 
-#kDate1      = np.zeros(nbFiles, dtype='U10')
-kf = 0
-for ff in listnpz:
-    print('\n  # File: '+ff)
-    fb = path.basename(ff)
-    vf = split('_',fb)
-    kStreamName[kf] = vf[1]
+### 
+def constructBins( rmin, rmax, wdthB, name='divergence', iverbose=0 ):
     #
-    with np.load(ff) as data:
-        rdate = int( data['time'] )
-        #cdate = str( data['cdate'] )
-        nPnts =      data['Npoints']
-        #Xc    =      data['Xc']
-        #Yc    =      data['Yc']
-        #zdiv  =      data['divergence']
-        #zshr  =      data['shear']
-
-    kiDate[kf] = rdate
-    kNbPoints[kf] = nPnts
-
-    print('   * Stream: '+kStreamName[kf] )
-    print('   * Date = ',epoch2clock(kiDate[kf]))
-    print('   * Nb. of points = ',kNbPoints[kf] )
-        
-    kf = kf+1
-
-print('\n')
-
-#print('  ==> list of streams:', kStreamName[:])
-
-nP = np.sum(kNbPoints)
-print('  ==> Total number of points:', nP)
-
-
-
-# Now that we know the total number of points we can allocate and fill arrays for divergence and shear
-Zdiv = np.zeros(nP)
-Zshr = np.zeros(nP)
-
-jP = 0 ; # Counter from 0 to nP-1
-kf = 0 ; # Counter for files, 0 to nbFiles-1
-for ff in listnpz:
-    jPe = jP + kNbPoints[kf]
-    with np.load(ff) as data:
-        zdiv  =      data['divergence']
-        zshr  =      data['shear']
+    nB = (rmax - rmin) / wdthB
+    if not nB%1.==0.:
+        print('ERROR [constructBins()]: "'+name+'" => nB is not an integer! nB =',nB); exit(0)
+    nB = int(nB)
     #
-    Zdiv[jP:jPe] = rconv*zdiv ; # day^-1
-    Zshr[jP:jPe] = rconv*zshr ; # day^-1
+    zbin_bounds = [  float(i+1)*wdthB for i in range(nB+1) ]
+    zbin_bounds = np.round( zbin_bounds, 6 )
+    zbin_center = [ 1.5*wdthB + float(i)*wdthB for i in range(nB) ]
+    zbin_center = np.round( zbin_center, 6 )
     #
-    jP = jPe
-    kf = kf+1
+    if iverbose>0:
+        print('\n * constructBins()]: we have '+str(nB)+' bins for the '+name+' !')
+        print('     => zbin_bounds =',zbin_bounds,'\n')
+        print('     => zbin_center =',zbin_center)
+
+    return nB, zbin_bounds, zbin_center
 
 
-#print(Zdiv)
-
-if not max_div:
-    div_min, div_max = np.min(Zdiv), np.max(Zdiv)
-    print(' min & max for div:', div_min, div_max)
-    max_div =  ( round( 1.25 * max(abs(div_min),abs(div_max)), 2 ) )
-print('    ==> x-axis max =',max_div,' day^-1')
-#
-#nBinsD = 2.*max_div / wbin_div
-nBinsD = max_div / wbin_div - 1. ; # `-1` because we ignore first bin (too close too zero)
-if not nBinsD%1.==0.:
-    print('ERROR: nBinsD is not an integer! nBinsD =',nBinsD); exit(0)
-nBinsD = int(nBinsD)
-#
-#xbin_bounds_div = [ -max_div + float(i)*wbin_div for i in range(nBinsD+1) ]
-xbin_bounds_div = [ float(i+1)*wbin_div for i in range(nBinsD+1) ]
-xbin_bounds_div = np.round( xbin_bounds_div, 6 )
-#xbin_center_div = [ -max_div+0.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
-xbin_center_div = [ 1.5*wbin_div + float(i)*wbin_div for i in range(nBinsD) ]
-xbin_center_div = np.round( xbin_center_div, 6 )
-min_div = np.min(xbin_bounds_div)
-if idebug>0:
-    print('\n *** we have '+str(nBinsD)+' bins for the divergence !')
-    print('xbin_bounds_div =',xbin_bounds_div,'\n')
-    print('xbin_center_div =',xbin_center_div)
-    print(' min value of divergence considered for PDF =',min_div)
-
-    
-# For the shear:
-if not max_shr:
-    shr_max = np.max(Zshr)
-    print(' max for shr:', shr_max)
-    max_shr =  ( round(1.25*shr_max, 2) )
-print('    ==> x-axis max =',max_shr,' day^-1')
-
-#nBinsS = max_shr / wbin_shr
-nBinsS = max_shr / wbin_shr - 1. ; # `-1` because we ignore first bin (too close too zero)
-if not nBinsS%1.==0.:
-    print('ERROR: nBinsS is not an integer! nBinsS =',nBinsS); exit(0)
-nBinsS = int(nBinsS)
-#
-xbin_bounds_shr = [  float(i+1)*wbin_shr for i in range(nBinsS+1) ]
-xbin_bounds_shr = np.round( xbin_bounds_shr, 6 )
-xbin_center_shr = [ 1.5*wbin_shr + float(i)*wbin_shr for i in range(nBinsS) ]
-xbin_center_shr = np.round( xbin_center_shr, 6 )
-min_shr = np.min(xbin_bounds_shr)
-#
-if idebug>0:
-    print('\n *** we have '+str(nBinsS)+' bins for the shear !')
-    print('xbin_bounds_shr =',xbin_bounds_shr,'\n')
-    print('xbin_center_shr =',xbin_center_shr)
-    print(' min value of shrear considered for PDF =',min_shr)
 
 
-PDF_div = np.zeros(nBinsD)
-PDF_shr = np.zeros(nBinsS)
 
-nPd = nP
-nPs = nP
 
-for iP in range(nP):
+if __name__ == '__main__':
 
-    rdiv = abs(Zdiv[iP]) ; # Yes! Absolute value of divergence, we want 1 single tail for the PDF...
+    if not len(argv) in [2]:
+        print('Usage: '+argv[0]+' <directory_input_npz_files>')
+        exit(0)
+    cd_in = argv[1]
 
-    if rdiv > max_div:
-        nPd = nPd - 1
-        print(' * WARNING: excluding extreme value of Divergence: ',rdiv,'day^-1')
-    elif rdiv <= min_div:
-        nPd = nPd - 1
+
+    # Polpulating deformation files available:
+    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*.npz') )
+    nbFiles = len(listnpz)
+    print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
+
+
+    kStreamName = np.zeros(nbFiles, dtype='U4')
+    kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
+    kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
+
+    kf = 0
+    for ff in listnpz:
+        print('\n  # File: '+ff)
+        fb = path.basename(ff)
+        vf = split('_',fb)
+        kStreamName[kf] = vf[1]
         #
-    else:
-        jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
-        if not ( rdiv>xbin_bounds_div[jf] and rdiv<=xbin_bounds_div[jf+1] ):
-            print(' Binning error on divergence!')
-            print('  => divergence =',rdiv)
-            print('  => bounds =',xbin_bounds_div[jf],xbin_bounds_div[jf+1])
-            exit(0)
-        PDF_div[jf] = PDF_div[jf]+1
+        with np.load(ff) as data:
+            rdate = int( data['time'] )
+            nPnts =      data['Npoints']
+    
+        kiDate[kf] = rdate
+        kNbPoints[kf] = nPnts
+    
+        print('   * Stream: '+kStreamName[kf] )
+        print('   * Date = ',epoch2clock(kiDate[kf]))
+        print('   * Nb. of points = ',kNbPoints[kf] )
+            
+        kf = kf+1
+    
+    print('\n')
+    
+    #print('  ==> list of streams:', kStreamName[:])
+    
+    nP = np.sum(kNbPoints)
+    print('  ==> Total number of points:', nP)
+    
+    
+    
+    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear
+    Zdiv = np.zeros(nP)
+    Zshr = np.zeros(nP)
+    
+    jP = 0 ; # Counter from 0 to nP-1
+    kf = 0 ; # Counter for files, 0 to nbFiles-1
+    for ff in listnpz:
+        jPe = jP + kNbPoints[kf]
+        with np.load(ff) as data:
+            zdiv  =      data['divergence']
+            zshr  =      data['shear']
+        #
+        Zdiv[jP:jPe] = rconv*zdiv ; # day^-1
+        Zshr[jP:jPe] = rconv*zshr ; # day^-1
+        #
+        jP = jPe
+        kf = kf+1
 
-    rshr = Zshr[iP]
-    if rshr> max_shr or rshr<0.:
-        nPs = nPs - 1
-        print(' * WARNING: excluding extreme value of Shear: ',rshr,'day^-1')        
-    elif rshr <= min_shr:
-        nPd = nPd - 1
-    else:
-        jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
-        if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
-            print(' Binning error on shear!')
-            print('  => shear =',rshr)
-            print('  => bounds =',xbin_bounds_shr[jf],xbin_bounds_shr[jf+1])
-            exit(0)
-        PDF_shr[jf] = PDF_shr[jf]+1
 
-
-
-PDF_div[:] = PDF_div[:]/float(nPd)
-PDF_shr[:] = PDF_shr[:]/float(nPs)
-
-
-xdiv_rng=[min_div,0.1] ; # x-range we want on the x-axis of the plot
-xshr_rng=[min_shr,0.1] ; # x-range we want on the x-axis of the plot
-
-
-kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.svg',
-                     xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
-
-kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig='PDF_shear.svg',
-                     xrng=xshr_rng, wbin=wbin_shr, title='RGPS' )
-
+    # For the divergence
+    nBinsD, xbin_bounds_div, xbin_center_div = constructBins( min_div, max_div, wbin_div, name='divergence', iverbose=idebug )
+        
+    # For the shear:
+    nBinsS, xbin_bounds_shr, xbin_center_shr = constructBins( min_shr, max_shr, wbin_shr, name='shear', iverbose=idebug )
+    
+    
+    PDF_div = np.zeros(nBinsD)
+    PDF_shr = np.zeros(nBinsS)
+    
+    nPd = nP
+    nPs = nP
+    
+    for iP in range(nP):
+    
+        rdiv = abs(Zdiv[iP]) ; # Yes! Absolute value of divergence, we want 1 single tail for the PDF...
+    
+        if rdiv > max_div:
+            nPd = nPd - 1
+            print(' * WARNING: excluding extreme value of Divergence: ',rdiv,'day^-1')
+        elif rdiv <= min_div:
+            nPd = nPd - 1
+            #
+        else:
+            jf = np.argmin( np.abs( xbin_center_div - rdiv ) )    
+            if not ( rdiv>xbin_bounds_div[jf] and rdiv<=xbin_bounds_div[jf+1] ):
+                print(' Binning error on divergence!')
+                print('  => divergence =',rdiv)
+                print('  => bounds =',xbin_bounds_div[jf],xbin_bounds_div[jf+1])
+                exit(0)
+            PDF_div[jf] = PDF_div[jf]+1
+    
+        rshr = Zshr[iP]
+        if rshr> max_shr or rshr<0.:
+            nPs = nPs - 1
+            print(' * WARNING: excluding extreme value of Shear: ',rshr,'day^-1')        
+        elif rshr <= min_shr:
+            nPd = nPd - 1
+        else:
+            jf = np.argmin( np.abs( xbin_center_shr - rshr ) )    
+            if not ( rshr>=xbin_bounds_shr[jf] and rshr<xbin_bounds_shr[jf+1] ):
+                print(' Binning error on shear!')
+                print('  => shear =',rshr)
+                print('  => bounds =',xbin_bounds_shr[jf],xbin_bounds_shr[jf+1])
+                exit(0)
+            PDF_shr[jf] = PDF_shr[jf]+1
+    
+    
+    
+    PDF_div[:] = PDF_div[:]/float(nPd)
+    PDF_shr[:] = PDF_shr[:]/float(nPs)
+    
+    
+    xdiv_rng=[min_div,0.1] ; # x-range we want on the x-axis of the plot
+    xshr_rng=[min_shr,0.1] ; # x-range we want on the x-axis of the plot
+    
+    
+    
+    kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='loglogPDF_divergence.svg',
+                         xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
+    
+    
+    kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.svg',
+                         xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
+    
+    kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig='PDF_shear.svg',
+                         xrng=xshr_rng, wbin=wbin_shr, title='RGPS' )
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

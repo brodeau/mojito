@@ -21,7 +21,7 @@ import climporn as cp
 
 #idebug = 0
 
-rndaxiskm = 500 ; 
+rndaxiskm = 500 ;
 
 # Figure stuff:
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
@@ -81,7 +81,7 @@ def roundAxisRange( pR, rndKM=None ):
         zrnd = rndaxiskm
     return [ floor(np.min(pR)/zrnd)*zrnd , ceil(np.max(pR)/zrnd)*zrnd ]
 
-def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):    
+def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):
     #  => we want to preserve aspect ratio!
     # Rounding axis boundaries at 100 km:
     lFrxy = False
@@ -164,7 +164,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
 
     if title:
         ax.annotate(title, xy=(0.5, 0.965), xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
-        
+
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
     plt.close(1)
@@ -213,7 +213,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
             * pvlon => 2D array (Nt,Nb) of longitudes (float)
             * pvlat => 2D array (Nt,Nb) of  latitudes (float)
             * pvIDs => (OPTIONAL) vector of length Nb of buoys IDs (integer)
-            * 
+            *
             * NminPnts => if a record contains less points than this number we stop plotting!
     '''
 
@@ -235,23 +235,23 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
     kk = 0
 
     for jt in range(Nt):
-        
-        #  How many buoys alive at this record ?        
+
+        #  How many buoys alive at this record ?
         (idx,) = np.where( pvlat[jt,:] >= -90. ) ; # ( since `pvlat` should be masked with `-9999` values...)
         nPtsAlive = len(idx)
 
         if nPtsAlive >= NminPnts:
-        
+
             ct = cp.epoch2clock(pvt[jt])
-    
+
             cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
-            
+
             if clock_res=='d':
                 # Daily precision for clock on figure:
                 ct = split('_',ct)[0]
-    
+
             print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)
-    
+
             kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
     #
     return kk
@@ -302,14 +302,14 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
     ###  * ppntIDs: (len=nP) ID (integer)  for each point
     '''
     from math import log
-    
-    zrat = 1./zoom    
-    kk = _initStyle_(fntzoom=zoom)    
+
+    zrat = 1./zoom
+    kk = _initStyle_(fntzoom=zoom)
 
     rsz_annot  = 5*zoom**0.4
 
     (nbP,) = np.shape(pX) ; # Number of points that defines all the triangles...
-    
+
     if lGeoCoor:
         # Geograhic coordinates (lon,lat)
         import cartopy.crs     as ccrs
@@ -325,14 +325,14 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
             vfig = (12*zoom,9*zoom)
         else:
             print('\n *** ERROR ['+caller+'.ShowTQMesh()]: Unknown projection "'+cProj+'"!'); exit(0)
-        #            
+        #
     else:
         # Cartesian coordinates (x,y) in km...
         (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom, rangeX=rangeX, rangeY=rangeY )
-    
+
     fig = plt.figure(num=1, figsize=vfig, facecolor='w')
-    
-    if lGeoCoor:         
+
+    if lGeoCoor:
         ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj, facecolor=col_bg)
         ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
         ax.add_feature(cftr.LAND, color='0.5', zorder=70)
@@ -344,7 +344,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
         plt.axis([ xA,xB , yA,yB ])
         # Showing points:
         plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200 )
-    
+
     # Adding triangles:
     if len(TriMesh)>0:
         (nbT,_) = np.shape(TriMesh); # Number of triangles
@@ -355,14 +355,14 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
 
         # Indicate triangle # in its center:
         for jT in range(nbT):
-            vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle        
+            vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle
             rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
             ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=rsz_annot, zorder=60)
-    
+
     # Adding quadrangles:
     if len(QuadMesh)>0:
         (nbQ,_) = np.shape(QuadMesh)
-        
+
         for jQ in range(nbQ):
             vids = QuadMesh[jQ,:] ; # the 4 IDs of the 4 points defining this Quad
             if len(pX_Q)>0 and len(pY_Q)>0:
@@ -379,7 +379,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
             if len(qnames)>0:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
                 ax.annotate(qnames[jQ], (rmLon, rmLat), color='b', size=0.6*rsz_annot, zorder=165)
-                
+
     if len(pnames)>0:
         for jP in range(nbP):
             ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=rsz_annot, zorder=500)
@@ -408,9 +408,9 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     ###     traingle world!
     '''
     from math import log
-    
+
     zrat = 1./zoom
-    kk = _initStyle_(fntzoom=zoom)    
+    kk = _initStyle_(fntzoom=zoom)
 
     # Colormap:
     if   cwhat=='shr':
@@ -425,15 +425,15 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
     # Cartesian coordinates (x,y)
     (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom, rangeX=rangeX, rangeY=rangeY )
-    
+
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
-    
+
     ddx = dx*Ly/Lx
     if unit:
         ax = plt.axes([1.25*ddx/Lx, 1.6*1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2.2*dy)/Ly], facecolor='0.75')
     else:
         ax = plt.axes([1.25*ddx/Lx,     1.25*dy/Ly, (Lx-2*ddx)/Lx,   (Ly-2*dy)/Ly], facecolor='0.75')
-        
+
     plt.axis([ xA,xB , yA,yB ])
 
     # Pixel size:
@@ -442,7 +442,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
         if rangeX and rangeY:
             rrm = int( max( abs(rangeX[1]-rangeX[0]) , abs(rangeY[1]-rangeY[0]) ) )
             marker_size = 1710000./rrm
-    
+
     # Showing points:
     #plt.plot( pX, pY, '.', ms=marker_size, color=clPoints, zorder=200) ; #, alpha=0.5)
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )
@@ -454,11 +454,51 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
         ax2 = plt.axes([0.18,0.05,0.7,0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
-    
+
     plt.savefig(cfig)
     plt.close(1)
     return 0
-    
+
+
+
+
+
+def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_name='mesh.png', pcoor_extra=(-999.,-999.), label_extra=None ):
+    '''
+    isrc_msh: 2D integer array of shape (4,2)
+    wghts:    1D real array of shape (4,)
+    pcoor_extra: just an extra point to show on the figure....
+    '''
+    (yT,xT)                             = pcoor_trg
+    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
+    #
+    fig = plt.figure(num = 1, figsize=[14,10], facecolor='w', edgecolor='k')
+    ax1 = plt.axes([0.09, 0.07, 0.6, 0.9])
+
+    plt.plot( [     xT    ], [     yT    ], marker='o', ms=15, color='k', label='target point' ) ; # target point !
+
+    for i in range(4):
+        [ja,ia] = isrc_msh[i,:]
+        [jb,ib] = isrc_msh[(i+1)%4,:]
+        # Lines to see the mesh:
+        plt.plot( [ Xs[ja,ia],Xs[jb,ib] ], [ Ys[ja,ia],Ys[jb,ib] ], linestyle='-', color='k', marker=None, ms=10, label=None)
+        # The point:
+        plt.plot( [ Xs[ja,ia] ], [ Ys[ja,ia] ], marker='o', ms=10, label=vnames[i] )
+
+    if pcoor_extra!=(-999.,-999.):
+        (yE,xE) = pcoor_extra
+        plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label=label_extra ) ; # target point !
+
+    ax1.legend(loc='center left', bbox_to_anchor=(1.07, 0.5), fancybox=True)
+    plt.savefig(fig_name, dpi=100, transparent=False)
+    plt.close(1)
+
+
+
+
+
+
+
 
 def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
                 xrng=None, wbin=None, title=None ):
@@ -470,7 +510,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
       * wbin:  width of the bin in [day^-1]
     '''
     from math import ceil
-    
+
     nB = len(ppdf)
     if len(pbinc) != nB:
         print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinc`!'); exit(0)
@@ -481,11 +521,11 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     nx_subsamp = 1
     if xrng and wbin:
         nx_subsamp = int( (xrng[1]-xrng[0])/wbin/10. )
-        
+
     ki = _initStyle_()
-        
+
     width_bin = pbinb[2]-pbinb[1]
-        
+
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
     ax1 = plt.axes([0.1, 0.085, 0.85, 0.85])
@@ -526,7 +566,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
             cpt = cpt + 1
         plt.xticks(locs,ax_lab)
         del ax_lab
-    
+
     #plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
     #
     #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
@@ -540,7 +580,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
         ax1.annotate('Bin width = '+str(wbin)+r' day$^{-1}$', xy=(0.62, 0.82), xycoords='figure fraction', **cfont_clock)
     if title:
         ax1.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
-        
+
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
 
@@ -550,32 +590,95 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 
-def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_name='mesh.png', pcoor_extra=(-999.,-999.), label_extra=None ):
+
+
+
+
+
+def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
+                xrng=None, wbin=None, title=None ):
     '''
-    isrc_msh: 2D integer array of shape (4,2)
-    wghts:    1D real array of shape (4,)
-    pcoor_extra: just an extra point to show on the figure....
+      * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
+      * pbinc: vector of the center of the bins (x-axis), size = nB
+      * ppdf:  the PDF, same size as `pbinc`, size = nB
+
+      * wbin:  width of the bin in [day^-1]
     '''
-    (yT,xT)                             = pcoor_trg
-    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
+    from math import ceil
+
+    nB = len(ppdf)
+    if len(pbinc) != nB:
+        print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinc`!'); exit(0)
+    if len(pbinb) != nB+1:
+        print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
+
+    # Subsampling of labels on the x-axis:
+    nx_subsamp = 1
+    if xrng and wbin:
+        nx_subsamp = int( (xrng[1]-xrng[0])/wbin/10. )
+
+    ki = _initStyle_()
+
+    width_bin = pbinb[2]-pbinb[1]
+
+    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
-    fig = plt.figure(num = 1, figsize=[14,10], facecolor='w', edgecolor='k')
-    ax1 = plt.axes([0.09, 0.07, 0.6, 0.9])
+    ax1 = plt.axes([0.1, 0.085, 0.85, 0.85])
+    #
+    # Y-axis:
+    #rinc = 10. ; # => dy of 0.1
+    rinc = 100. ; # => dy of 0.01
+    ymax = ceil(rinc*np.max(ppdf))/rinc
+    ax1.set_ylabel(r'Probability')
+    plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
+    ax1.set_ylim(0.,ymax)
+    #
+    # X-axis:
+    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+    #
+    if xrng:
+        ax1.set_xlim(xrng[0], xrng[1])
+        plt.xticks( np.arange(xrng[0], xrng[1]+width_bin, width_bin) )
+    else:
+        ax1.set_xlim(pbinb[0], pbinb[nB])
+        plt.xticks( pbinb[:] )
+    #
+    if nx_subsamp>1:
+        ax_lab = []
+        locs, labels = plt.xticks()
+        cpt = 0 # with ipct = 1: tick priting will start at y1+dt on x axis rather than y1
+        for rr in locs:
+            if cpt % nx_subsamp == 0:
+                if rr%1.0 == 0.:
+                    cr = str(int(rr))  # it's something like 22.0, we want 22 !!!
+                else:
+                    cr = str(round(rr,6))
+                ax_lab.append(cr)
+            else:
+                ax_lab.append(' ')
+            cpt = cpt + 1
+        plt.xticks(locs,ax_lab)
+        del ax_lab
 
-    plt.plot( [     xT    ], [     yT    ], marker='o', ms=15, color='k', label='target point' ) ; # target point !
-        
-    for i in range(4):
-        [ja,ia] = isrc_msh[i,:]
-        [jb,ib] = isrc_msh[(i+1)%4,:]
-        # Lines to see the mesh:
-        plt.plot( [ Xs[ja,ia],Xs[jb,ib] ], [ Ys[ja,ia],Ys[jb,ib] ], linestyle='-', color='k', marker=None, ms=10, label=None)
-        # The point:
-        plt.plot( [ Xs[ja,ia] ], [ Ys[ja,ia] ], marker='o', ms=10, label=vnames[i] )
+    plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
+    #
+    #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
+    #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor=None, linewidth=2, zorder=10 )
+    #
+    #plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
 
-    if pcoor_extra!=(-999.,-999.):
-        (yE,xE) = pcoor_extra
-        plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label=label_extra ) ; # target point !
+    if Np:
+        ax1.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
+    if wbin:
+        ax1.annotate('Bin width = '+str(wbin)+r' day$^{-1}$', xy=(0.62, 0.82), xycoords='figure fraction', **cfont_clock)
+    if title:
+        ax1.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
 
-    ax1.legend(loc='center left', bbox_to_anchor=(1.07, 0.5), fancybox=True)
-    plt.savefig(fig_name, dpi=100, transparent=False)
+    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
+
+    return 0
+
+
+
+
