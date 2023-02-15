@@ -18,7 +18,7 @@ from climporn import epoch2clock
 import mojito   as mjt
 
 idebug = 0
-iplot  = 2 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -63,7 +63,8 @@ if __name__ == '__main__':
 
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
-        if not path.exists('./figs'): mkdir('./figs')
+        cfdir = './figs/quadgener'
+        if not path.exists(cfdir): mkdir(cfdir)
 
     #########################################################################################################
 
@@ -274,13 +275,13 @@ if __name__ == '__main__':
                 if iplot>3:
                     # Show all initial points (out of TrackIce):
                     print('\n *** Launching initial cloud point plot!')
-                    kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfbase+'.png',
+                    kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig=cfdir+'/fig01a_cloud_points_'+cfbase+'.png',
                                          ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
                                          rangeX=vrngX, rangeY=vrngY )
                 if iplot>2:
                     # Show triangles on a map:
                     print('\n *** Launching Triangle plot!')
-                    kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
+                    kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=cfdir+'/fig01_Mesh_Triangles_'+cfbase+'.png',
                                          ppntIDs=TRIAS.PointIDs,
                                          TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
                                          rangeX=vrngX, rangeY=vrngY )
@@ -322,18 +323,18 @@ if __name__ == '__main__':
             if iplot>1:
                 # Show triangles together with the quadrangles on a map:
                 print('\n *** Launching Triangle+Quad plot!')
-                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
+                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig=cfdir+'/fig02_Mesh_Quadrangles_'+cfbase+'.png',
                                      ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
                                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
                                      lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
             if iplot>2:
                 # Show only points composing the quadrangles:
-                kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
+                kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cfdir+'/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                      ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
             
             # Show only the quads with only the points that define them:
             print('\n *** Launching Quad-only plot!')
-            kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
+            kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cfdir+'/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                  ppntIDs=QUA.PointIDs, QuadMesh=QUA.MeshVrtcPntIdx, qIDs=QUA.QuadIDs,
                                  lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 

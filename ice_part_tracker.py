@@ -51,10 +51,9 @@ if __name__ == '__main__':
         mjt.chck4f(fNCseed)
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
     
-
-    if iplot>0 and not path.exists('./figs'):
-        mkdir('./figs')
-    if not path.exists('./npz'): mkdir('./npz')
+    cfdir = './figs/tracking'
+    if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
+    if not path.exists('./npz'):           mkdir('./npz')
             
     # Getting model grid metrics and friends:
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
@@ -163,7 +162,7 @@ if __name__ == '__main__':
     del xPosC0, xPosG0
 
     if iplot>0 and idebug>0:
-        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig='./figs/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
+        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig=cfdir+'/INIT_Pos_buoys_'+'%4.4i'%(0)+'.png',
                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker: Init Seeding' )
 
     
@@ -311,7 +310,7 @@ if __name__ == '__main__':
                 zLon = np.ma.masked_where( xmask[jt,:,1]==0, xPosG[jt,:,1] )
                 zLat = np.ma.masked_where( xmask[jt,:,0]==0, xPosG[jt,:,0] )
                 mjt.ShowBuoysMap( itime, zLon, zLat, pvIDs=IDs,
-                                  cfig='./figs/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
+                                  cfig=cfdir+'/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
                                   title='IceTracker + SI3 u,v fields' )
                 del zLon, zLat
