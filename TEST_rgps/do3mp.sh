@@ -54,7 +54,7 @@ if [ "${nbf}" != "" ]; then
             CMD="${EXE} ${fQ1} ${fQ2} 0 ${MARKER_SIZE}"
             echo "  ==> ${CMD}"; echo
             ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
-            echo; echo
+            echo; sleep 1; echo
 
             if [ $((ijob%NJPAR)) -eq 0 ]; then
                 echo "Waiting! (ijob = ${ijob})...."

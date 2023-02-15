@@ -51,7 +51,8 @@ case ${host} in
         #
         NJPAR=28
         #
-        DATE2="${YEAR}0401"
+        #DATE2="${YEAR}0401"
+        DATE2="${YEAR}0205"
         FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-05-01_lb.nc"
         #
         MARKER_SIZE=5

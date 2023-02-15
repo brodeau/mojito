@@ -32,7 +32,7 @@ for ii in $(seq 0 $((Nr-2))); do
         CMD="${EXE} ${FIN} ${ii},$((ii+1)) ${RESKM}" ; # RGPS seed
         echo "  ==> ${CMD}"; echo
         ${CMD} > ${cflog} &
-        echo; echo
+        echo; sleep 1 ; echo
 
     if [ $((ijob%NJPAR)) -eq 0 ]; then
         echo "Waiting! (ijob = ${ijob})...."
