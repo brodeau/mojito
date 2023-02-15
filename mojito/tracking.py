@@ -5,10 +5,7 @@ from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
 
-#from math import atan2,pi
-
-
-rmin_conc = 0.6 ; # ice concentration below which we disregard the point...
+rmin_conc = 0.1 ; # ice concentration below which we disregard the point...
 
 rFoundKM = 2.5
 
