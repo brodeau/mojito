@@ -67,3 +67,8 @@ if [ "${nbf}" != "" ]; then
     done
 
 fi
+
+wait
+echo
+echo " *** `date` ALL done!"
+echo
