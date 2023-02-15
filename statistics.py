@@ -79,11 +79,17 @@ if __name__ == '__main__':
     kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
     kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
 
+    list_date = []
     kf = 0
     for ff in listnpz:
         print('\n  # File: '+ff)
         fb = path.basename(ff)
         vf = split('_',fb)
+        print(vf)
+        #
+        if kf==0: cname = vf[1] ; # should be 'RGPS' or 'SI3' !
+        list_date.append(split('-',vf[2])[0])
+        #
         kStreamName[kf] = vf[1]
         #
         with np.load(ff) as data:
@@ -105,8 +111,11 @@ if __name__ == '__main__':
     
     nP = np.sum(kNbPoints)
     print('  ==> Total number of points:', nP)
-    
-    
+
+
+    print('  ==> list of dates:', list_date[:])
+
+    cdt1, cdt2 = list_date[0],list_date[-1]
     
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear
     Zdiv = np.zeros(nP)
@@ -178,29 +187,32 @@ if __name__ == '__main__':
     
     PDF_div[:] = PDF_div[:]/float(nPd)
     PDF_shr[:] = PDF_shr[:]/float(nPs)
+
+
+
+    cfroot = 'PDF_'+cname+'_'+cdt1+'-'+cdt2
+
+
+
     
+    # Saving in `npz` files:
+    np.savez_compressed( './npz/'+cfroot+'_divergence.npz', name='divergence', Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
+    np.savez_compressed( './npz/'+cfroot+'_shear.npz',      name='shear',      Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
+
+        
+    kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='loglog'+cfroot+'_divergence.svg',
+                        wbin=wbin_div, title=cname, period=cdt1+' - '+cdt2 )
     
+    kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPd, name='Shear', cfig='loglog'+cfroot+'_shear.svg',
+                        wbin=wbin_shr, title=cname, period=cdt1+' - '+cdt2 )
+
+
     xdiv_rng=[min_div,0.1] ; # x-range we want on the x-axis of the plot
     xshr_rng=[min_shr,0.1] ; # x-range we want on the x-axis of the plot
     
+    kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cfroot+'_divergence.svg',
+                         xrng=xdiv_rng, wbin=wbin_div, title=cname, period=cdt1+' - '+cdt2 )
     
-    
-    kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='loglogPDF_divergence.svg',
-                         xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
-    
-    
-    kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig='PDF_divergence.svg',
-                         xrng=xdiv_rng, wbin=wbin_div, title='RGPS' )
-    
-    kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig='PDF_shear.svg',
-                         xrng=xshr_rng, wbin=wbin_shr, title='RGPS' )
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig=cfroot+'_shear.svg',
+                         xrng=xshr_rng, wbin=wbin_shr, title=cname, period=cdt1+' - '+cdt2 )
     
