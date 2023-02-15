@@ -612,61 +612,32 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-    # Subsampling of labels on the x-axis:
-    nx_subsamp = 1
-    if xrng and wbin:
-        nx_subsamp = int( (xrng[1]-xrng[0])/wbin/10. )
+    # For figure axes:
+    xlog_min = 1.e-3
+    xlog_max = 1.e-1
+    xcut_dat = 0.8e-1
 
     ki = _initStyle_()
 
-    width_bin = pbinb[2]-pbinb[1]
-
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
-    ax1 = plt.axes([0.1, 0.085, 0.85, 0.85])
-    #
-    # Y-axis:
-    #rinc = 10. ; # => dy of 0.1
-    rinc = 100. ; # => dy of 0.01
-    ymax = ceil(rinc*np.max(ppdf))/rinc
-    ax1.set_ylabel(r'Probability')
-    plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
-    ax1.set_ylim(0.,ymax)
+    ax1 = plt.axes([0.11, 0.085, 0.85, 0.85])
     #
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
     #
-    if xrng:
-        ax1.set_xlim(xrng[0], xrng[1])
-        plt.xticks( np.arange(xrng[0], xrng[1]+width_bin, width_bin) )
-    else:
-        ax1.set_xlim(pbinb[0], pbinb[nB])
-        plt.xticks( pbinb[:] )
-    #
-    if nx_subsamp>1:
-        ax_lab = []
-        locs, labels = plt.xticks()
-        cpt = 0 # with ipct = 1: tick priting will start at y1+dt on x axis rather than y1
-        for rr in locs:
-            if cpt % nx_subsamp == 0:
-                if rr%1.0 == 0.:
-                    cr = str(int(rr))  # it's something like 22.0, we want 22 !!!
-                else:
-                    cr = str(round(rr,6))
-                ax_lab.append(cr)
-            else:
-                ax_lab.append(' ')
-            cpt = cpt + 1
-        plt.xticks(locs,ax_lab)
-        del ax_lab
+    # Y-axis:
+    plt.ylabel('Probability', color='k')
 
-    plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
-    #
-    #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
-    #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor=None, linewidth=2, zorder=10 )
-    #
-    #plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
+    ppdf = np.ma.masked_where( pbinc>xcut_dat, ppdf )
+    
+    ax1.set_xlim(xlog_min, xlog_max)
+    
+    plt.loglog(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
 
+    ax1.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    ax1.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+    
     if Np:
         ax1.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
     if wbin:
