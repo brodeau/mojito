@@ -18,17 +18,7 @@ from climporn import epoch2clock
 import mojito   as mjt
 
 idebug = 0
-iplot  = 0 ; # Create figures to see what we are doing...
-
-#l_box_restriction=True
-l_box_restriction=False
-
-if l_box_restriction:
-    vrngX = [-400.,400.]
-    vrngY = [-400.,400.]
-else:
-    vrngX = [-2200.,1600.]
-    vrngY = [-1000.,1800.]
+iplot  = 2 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -46,7 +36,7 @@ rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-rzoom_fig = 4
+rzoom_fig = 6
 
 
 if __name__ == '__main__':
@@ -173,16 +163,8 @@ if __name__ == '__main__':
     # How many points left after elimination of buoys that get too close to land (at any record):
     NbP1 = np.sum(mask)
     print('\n *** '+str(NbP1)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(nBmax-NbP1)+' points to delete!')
-
     
     NbP = NbP1
-    if l_box_restriction:
-        # Restriction to a smaller box for debugging purposes:
-        idxban = np.where( zGC[:,1,0] < 85. ) ; # keep only points north of 85.degN
-        mask[idxban] = 0
-        NbP = np.sum(mask)
-        print('\n *** '+str(NbP)+' / '+str(NbP1)+' points survived the box test => ', str(NbP1-NbP)+' points to delete!')
-
 
     zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
 
@@ -283,16 +265,19 @@ if __name__ == '__main__':
             _,ind2keep,_ = np.intersect1d(vIDs, vPids, return_indices=True); # retain only indices of `vIDs` that exist in `vPids`
 
 
-            # Plots only for jrec==0:
+            # Plots specific to `jrec==0`:
             if iplot>0:
-                if idebug>1:
+                # We need to find a descent X and Y range for the figures:
+                vrngX = mjt.roundAxisRange( TRIAS.PointXY[:,0], rndKM=50. )
+                vrngY = mjt.roundAxisRange( TRIAS.PointXY[:,1], rndKM=50. )
+                #
+                if iplot>3:
                     # Show all initial points (out of TrackIce):
                     print('\n *** Launching initial cloud point plot!')
                     kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig='./figs/fig01a_cloud_points_'+cfbase+'.png',
                                          ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
                                          rangeX=vrngX, rangeY=vrngY )
-                #
-                if idebug>0:
+                if iplot>2:
                     # Show triangles on a map:
                     print('\n *** Launching Triangle plot!')
                     kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig='./figs/fig01_Mesh_Triangles_'+cfbase+'.png',
@@ -334,24 +319,23 @@ if __name__ == '__main__':
             QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
 
-            if idebug>0:
+            if iplot>1:
                 # Show triangles together with the quadrangles on a map:
                 print('\n *** Launching Triangle+Quad plot!')
                 kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig='./figs/fig02_Mesh_Quadrangles_'+cfbase+'.png',
                                      ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
                                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
-                                     lGeoCoor=False, zoom=rzoom_fig,
-                                     rangeX=vrngX, rangeY=vrngY )
-                
-            ## Show only points composing the quadrangles:
-            #kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
-            #                     ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
+                                     lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
+            if iplot>2:
+                # Show only points composing the quadrangles:
+                kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
+                                     ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
+            
             # Show only the quads with only the points that define them:
             print('\n *** Launching Quad-only plot!')
             kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig='./figs/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
-                                 ppntIDs=QUA.PointIDs,
-                                 QuadMesh=QUA.MeshVrtcPntIdx, qIDs=QUA.QuadIDs, lGeoCoor=False, zoom=rzoom_fig,
-                                 rangeX=vrngX, rangeY=vrngY )
+                                 ppntIDs=QUA.PointIDs, QuadMesh=QUA.MeshVrtcPntIdx, qIDs=QUA.QuadIDs,
+                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
     ### for jr in range(Nrec):
     print('\n --- Over!\n')

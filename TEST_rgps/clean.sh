@@ -2,7 +2,7 @@
 
 if [ "$1" = "2" ]; then
     
-    rm -f figs/00_*.png figs/*[TQ]mesh.png npz/[TQ]-mesh_*.npz logs/out_S*__*.out
+    rm -f figs/00_*.png figs/*[TQ]mesh.png npz/[TQ]-mesh_*.npz logs/out_S*__*.out figs/fig0*.png
 
 elif [ "$1" = "3" ]; then
     killall -9 deformation.py do3.sh

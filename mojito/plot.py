@@ -73,9 +73,13 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     #
     return 0
 
-def _rnd_ax_range_( pR ):
+def roundAxisRange( pR, rndKM=None ):
     from math import floor,ceil
-    return floor(np.min(pR)/rndaxiskm)*rndaxiskm , ceil(np.max(pR)/rndaxiskm)*rndaxiskm
+    if rndKM:
+        zrnd = rndKM
+    else:
+        zrnd = rndaxiskm
+    return [ floor(np.min(pR)/zrnd)*zrnd , ceil(np.max(pR)/zrnd)*zrnd ]
 
 def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):    
     #  => we want to preserve aspect ratio!
@@ -86,8 +90,8 @@ def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):
         xA, xB = rangeX[0], rangeX[1]
         yA, yB = rangeY[0], rangeY[1]
     else:
-        xA, xB = _rnd_ax_range_(pX)
-        yA, yB = _rnd_ax_range_(pY)
+        [xA, xB] = roundAxisRange(pX)
+        [yA, yB] = roundAxisRange(pY)
     #
     Lx, Ly = xB-xA, yB-yA
     #dx, dy = rdr*(Lx)*1.5/zoom, rdr*(Ly)*1.5/zoom
