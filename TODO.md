@@ -1,3 +1,16 @@
+
+
+* Ajouter la partie sous-sampling du nuage de point qui marchait dans RGPS => ajouter a `generate_quad_mesh` !!!
+
+
+
+
+
+
+
+
+
+
 * pour la conversion degree-> km => utiliser uniquement fonction and util !!!
 
 * trouver pourquoi dans `deformation.py` le `UM4` ne resemble pas au `UMc`, cela devrait seulement etre une moyenne spatiale !!!
