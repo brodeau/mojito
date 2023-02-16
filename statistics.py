@@ -15,8 +15,8 @@ idebug=1
 iplot=1
 
 
-l_cst_bins = True
-#l_cst_bins = False ; rfexp_bin = 0.1
+#l_cst_bins = True
+l_cst_bins = False ; rfexp_bin = 0.1
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
@@ -110,9 +110,11 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
     zxmin, zxmax = pBb[0], pBb[-1]
     zxrng = zxmax - zxmin
     zbwdth  = np.array( [ (pBb[i+1]-pBb[i]) for i in range(nBins) ] ) ; # width of bins...
-    zbwdthN = zbwdth / (zxrng/nBins) ; # normalized width of bins... => should be only `1` when constant bins...
+    #zbwdthN = zbwdth / (zxrng/nBins) ; # normalized width of bins... => should be only `1` when constant bins...
     #print( 'LOLO zbwdthN =',zbwdthN[:]) ;    exit(0)
 
+    zcorr = zbwdth[0]/zbwdth[:]
+    
     zPDF   = np.zeros(nBins)
 
     nPok = 0
@@ -136,19 +138,19 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
                 print('  => bounds =',pBb[jf],pBb[jf+1])
                 exit(0)
             zPDF[jf] = zPDF[jf] + 1.
-            
             nPok = nPok + 1; # another valid point
 
     # Normalization:
+    zPDF[:] = zPDF[:]*zcorr[:]
+    zPDF[:] = zPDF[:]/float(nPok)
     
     #zPDF[:] =  zPDF[:]/float(nPok) ; # case constant bin width...
     
     #print(zbwdthN[0])
     #print('LOLO: BEFORE: integral of PDF =',np.sum(zPDF[:]*zbwdthN[:]))    
     #zPDF[:] = zPDF[:]*zbwdthN[:] / np.sum(zPDF[:]*zbwdthN[:])
-    zPDF[:] = zPDF[:]*zbwdth[:]/zbwdthN[:] / np.sum(zPDF[:]*zbwdth[:]/zbwdthN[:])
-
-    print('LOLO: AFTER: integral of PDF =',np.sum(zPDF[:]*zbwdthN[:]))
+    #zPDF[:] = zPDF[:]*zbwdth[:]/zbwdthN[:] / np.sum(zPDF[:]*zbwdth[:]/zbwdthN[:])
+    #print('LOLO: AFTER: integral of PDF =',np.sum(zPDF[:]*zbwdthN[:]))
     #exit(0)
     
     return nPok, zPDF
