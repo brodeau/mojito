@@ -12,13 +12,6 @@
 #SBATCH --mem=8000
 ##################################################################
 
-# TO DO:
-#   * Even with a Time bin of 3 days, we want the first date (for the result) to be at <YEAR>/01/01 00:00:00
-#     and not <YEAR>/01/02 12:00:00 !!!
-#     => intiate the search right before the early bin boundary!
-#
-#
-
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
@@ -26,13 +19,8 @@ import numpy as np
 from re import split
 from scipy import interpolate
 
-from netCDF4 import Dataset
-
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
-
-
-#Nrec_min_days = 3 ; # retain only buoys with a record length >= Nrec_min_days (starting from specified initial date)
 
 iplot = 1 ; # show the result in figures?
 l_drop_doublons = False ; # PR: keep the one with the longest record...
@@ -44,9 +32,6 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
-
-#idebug = 2 ; vIDdbg = [ 18 , 62 , 98, 1200, 2800, 3000, 8800, 10290, 16805 ] ; l_show_IDs_fig = True ; # Debug: pick a tiny selection of IDs to follow...
-#idebug = 1 ; vIDdbg = range(0,36000,100)
 idebug = 0
 
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
@@ -57,9 +42,6 @@ l_drop_coastal   = False ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
 
 FillValue = -9999.
-
-
-
 
 
 if __name__ == '__main__':
@@ -98,7 +80,6 @@ if __name__ == '__main__':
     print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
     print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
 
-    #rdtI = rdt1 + 3600*24*Nrec_min_days ; # minimum date for a buoy to reach
     rdtI = rdt1 + 0.5*dt_bin    
     print('\n *** We shall not select buoys that do not make it to at least',epoch2clock(rdtI))
     
@@ -118,12 +99,6 @@ if __name__ == '__main__':
     if idebug>0:
         rlat_min, rlat_max = np.min(vlat0), np.max(vlat0)
         print('\n *** Southernmost & Northernmost latitudes in the dataset =>', rlat_min, rlat_max)
-    
-    #if idebug>0:
-    #    vIDs = np.array(vIDdbg, dtype=int)
-    #    cbla = '[DEBUG] IDs =>'
-    #    for ii in vIDs: cbla = cbla+' '+str(ii)
-    #else:
     
     vIDs, idxUNQid = np.unique(vBIDs0, return_index=True )
 
@@ -225,10 +200,12 @@ if __name__ == '__main__':
         rtend = np.max(vt)
         l_shorten = ( rtend < rdt2 )
         if l_shorten:
-            if idebug>1: print('    * buoy with ID: '+str(jid)+' does not make it to '+epoch2clock(rdt2), '\n      => dies at '+epoch2clock(rtend))
             for Nt_b in range(Nt):
                 if vTbin[Nt_b,0] > rtend: break
-            if idebug>1: print('      ==> last index of vTbin to use is: '+str(Nt_b-1)+' => '+epoch2clock(vTbin[Nt_b-1,0]))
+            if idebug>1:
+                print('    * buoy :'+str(jid)+' does not make it to '+epoch2clock(rdt2))
+                print('      => dies at '+epoch2clock(rtend))
+                print('      ==> last index of vTbin to use is: '+str(Nt_b-1)+' => '+epoch2clock(vTbin[Nt_b-1,0]))
 
         if   interp_1d==0:
             fG = interpolate.interp1d(           vt, vlat0[idx])
@@ -338,17 +315,14 @@ if __name__ == '__main__':
                 ic = ic+1
         vIDs = np.ma.MaskedArray.compressed(vIDs)
         Nb = Nok
-        #print('Shape of vIDs, xlat2, xlon2, xmsk2 =',vIDs.shape,xlat2.shape,xlon2.shape,xmsk2.shape)
         del xmsk, xlat, xlon
         xmsk = xmsk2
         xlat = xlat2
         xlon = xlon2
-        del xmsk2, xlat2, xlon2
-        #print('Shape of vIDs, xlat, xlon, xmsk =',vIDs.shape,xlat.shape,xlon.shape,xmsk.shape)
-        #exit(0)
-        
+        del xmsk2, xlat2, xlon2        
     ### if l_drop_doublons
 
+    
     # Masking arrays:
     xlat = np.ma.masked_where( xmsk==0, xlat )
     xlon = np.ma.masked_where( xmsk==0, xlon )

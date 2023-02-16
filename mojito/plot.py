@@ -534,21 +534,23 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     #
     # Y-axis:
     #rinc = 10. ; # => dy of 0.1
-    rinc = 100. ; # => dy of 0.01
-    ymax = ceil(rinc*np.max(ppdf))/rinc
+    #rinc = 100. ; # => dy of 0.01
+    #ymax = ceil(rinc*np.max(ppdf))/rinc
+    #plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
+    #ax1.set_ylim(0.,ymax)
+    ax1.set_ylim(0.,np.max(ppdf))
+    #
     ax1.set_ylabel(r'Probability')
-    plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
-    ax1.set_ylim(0.,ymax)
     #
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
     #
     if xrng:
         ax1.set_xlim(xrng[0], xrng[1])
-        plt.xticks( np.arange(xrng[0], xrng[1]+width_bin, width_bin) )
-    else:
-        ax1.set_xlim(pbinb[0], pbinb[nB])
-        plt.xticks( pbinb[:] )
+        #plt.xticks( np.arange(xrng[0], xrng[1]+width_bin, width_bin) )
+    #else:
+    #    ax1.set_xlim(pbinb[0], pbinb[nB])
+    #    plt.xticks( pbinb[:] )
     #
     if nx_subsamp>1:
         ax_lab = []
@@ -572,7 +574,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
     plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor=None, linewidth=2, zorder=10 )
     #
-    plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
+    plt.step( pbinb[:-1], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
 
     if Np:
         ax1.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
@@ -585,7 +587,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
-
+    print(' * [PlotPDFdef()]: created figure '+cfig)    
     return 0
 
 
@@ -644,8 +646,6 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
         plt.loglog(pbinc[:], ppdf2[:], '+', color='b', label=origin2, zorder=10)
         ax1.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
-        
-
     
     ax1.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax1.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
@@ -661,7 +661,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
-
+    print(' * [LogPDFdef()]: created figure '+cfig)    
     return 0
 
 
