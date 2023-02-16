@@ -1,9 +1,14 @@
+ * Commencer les PDFs plus loin du 0 que maintenant (y a encore le decrochage du shear!)
+   * comme `0.0015` plutot que les `0.001` actuel??
+
+
 * PDFs: ne pas utiliser les tiny values depuis le debut, pour que le PDF soit bien correctement normalise!
   * aussi: utiliser des bins croissants (ou decroissant) en taille (log ou exp) pour eviter les problemes en log-log
 
 * Ajouter la partie sous-sampling du nuage de point qui marchait dans RGPS => ajouter a `generate_quad_mesh` !!!
 
 * Ajouter l'option de stop a une date donnee dans `ice_part_track` !!!
+
 
 
 

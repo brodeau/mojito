@@ -3,7 +3,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path
+from os import path, mkdir
 from glob import glob
 import numpy as np
 from re import split
@@ -16,7 +16,7 @@ iplot=1
 
 
 #l_cst_bins = True
-l_cst_bins = False ; rfexp_bin = 0.2
+l_cst_bins = False ; rfexp_bin = 0.1
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
@@ -36,7 +36,7 @@ if l_cst_bins:
     wbin_div = 0.001 ; # day^-1
     wbin_shr = 0.001 ; # day^-1
 else:
-    wVbin_min = 0.001 ; # Narrowest bin width (for the smalles values of deformation)
+    wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
 
 
 
@@ -244,10 +244,10 @@ if __name__ == '__main__':
 
     
     # Saving in `npz` files:
-    np.savez_compressed( './npz/'+cfroot+'_divergence.npz', name='divergence', origin=corigin, period=cperiod,
+    np.savez_compressed( cd_in+'/'+cfroot+'_divergence.npz', name='divergence', origin=corigin, period=cperiod,
                          Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
     
-    np.savez_compressed( './npz/'+cfroot+'_shear.npz',      name='shear',      origin=corigin, period=cperiod,
+    np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin, period=cperiod,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
 
     if iplot>0:
