@@ -36,12 +36,12 @@ if l_cst_bins:
     wbin_div = 0.0005 ; # day^-1
     wbin_shr = 0.0005 ; # day^-1
 else:
-    wbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
+    wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
 
 
 
-### 
-def constructCstBins( rmin, rmax, wdthB, name='divergence', iverbose=0 ):
+
+def constructCstBins( rmin, rmax, wdthB, name='unknown', iverbose=0 ):
     #
     nB = (rmax - rmin) / wdthB
     if not nB%1.==0.:
@@ -62,7 +62,7 @@ def constructCstBins( rmin, rmax, wdthB, name='divergence', iverbose=0 ):
     return nB, zbin_bounds, zbin_center
 
 
-def constructExpBins( rfexp, rmin, rmax, wbmin, name='divergence', iverbose=0 ):
+def constructExpBins( rfexp, rmin, rmax, wbmin, name='unknown', iverbose=0 ):
     #
     from math import exp
     #
@@ -75,7 +75,6 @@ def constructExpBins( rfexp, rmin, rmax, wbmin, name='divergence', iverbose=0 ):
         zwbin.append(wb)
         zacc = zacc+wb
         kc = kc+1
-
     zwbin = np.array(zwbin)
     nB    = len(zwbin)
     zbin_bounds = np.zeros(nB+1)
@@ -120,7 +119,7 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
     nPok = 0
     for iP in range(nbP):
     
-        zX = pX[iP] ; # Yes! Absolute value of divergence, we want 1 single tail for the PDF...
+        zX = pX[iP]
     
         if zX>zxmax or zX<zxmin:
             if iverbose>1:
@@ -197,17 +196,12 @@ if __name__ == '__main__':
     
     print('\n')
     
-    #print('  ==> list of streams:', kStreamName[:])
-    
     nP = np.sum(kNbPoints)
     print('  ==> Total number of points:', nP)
-
-
     print('  ==> list of dates:', list_date[:])
 
     cdt1, cdt2 = list_date[0],list_date[-1]
     cperiod = cdt1+'-'+cdt2
-
     
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear
     Zdiv = np.zeros(nP)
@@ -232,26 +226,22 @@ if __name__ == '__main__':
         # For the divergence
         nBinsD, xbin_bounds_div, xbin_center_div = constructCstBins( min_div, max_div, wbin_div, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( min_shr, max_shr, wbin_shr, name='shear', iverbose=idebug )
+        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( min_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )
         
     else:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = constructExpBins( rfexp_bin, min_div, max_div, wbin_min, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = constructExpBins( rfexp_bin, min_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, min_shr, max_shr, wbin_min, name='shear', iverbose=idebug )
+        nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, min_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
         cxtra = '_incB'
     
 
-    nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(Zdiv), cwhat='divergence',iverbose=idebug )
+    nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(Zdiv), cwhat='divergence', iverbose=idebug )
 
-    nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     ,iverbose=idebug )
-
-        
+    nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     , iverbose=idebug )
 
 
     cfroot = 'PDF_'+corigin+'_'+cperiod
-
-
 
     
     # Saving in `npz` files:
@@ -265,15 +255,15 @@ if __name__ == '__main__':
         cdir = './figs'
         if not path.exists(cdir): mkdir(cdir)
             
-        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cdir+'/loglog'+cfroot+'_divergence'+cxtra+'.png',
-                            title=corigin, period=cperiod )
+        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence',
+                            cfig=cdir+'/loglog'+cfroot+'_divergence'+cxtra+'.png', title=corigin, period=cperiod )
         
-        kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPd, name='Shear', cfig=cdir+'/loglog'+cfroot+'_shear'+cxtra+'.png',
-                            title=corigin, period=cperiod )
+        kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
+                            cfig=cdir+'/loglog'+cfroot+'_shear'+cxtra+'.png',      title=corigin, period=cperiod )
     
-        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence', cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',
-                             title=corigin, period=cperiod )
+        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence',
+                             cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin, period=cperiod )
         
-        kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear', cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',
-                             title=corigin, period=cperiod )
+        kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
+                             cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',           title=corigin, period=cperiod )
     
