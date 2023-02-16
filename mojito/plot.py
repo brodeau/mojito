@@ -556,8 +556,9 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     #    plt.xticks(locs,ax_lab)
     #    del ax_lab
 
-    plt.bar ( pbinc[:],  ppdf[:], width=pbinb[1:]-pbinb[:-1], color='0.6', edgecolor=None, linewidth=2, zorder=10 )
-    plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.7, zorder=10) ; # the enveloppe
+    #plt.bar ( pbinc[:],  ppdf[:], width=pbinb[1:]-pbinb[:-1], color='0.6', edgecolor=None, linewidth=2, zorder=10 )
+    #plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.7, zorder=10) ; # the enveloppe
+    plt.bar ( pbinc[:],  ppdf[:], width=pbinb[1:]-pbinb[:-1], color='0.6', edgecolor='k', linewidth=0.5, zorder=10 )
 
     if Np:
         ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)

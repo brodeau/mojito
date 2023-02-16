@@ -12,6 +12,7 @@ from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1
+iffrmt='png'
 
 
 if __name__ == '__main__':
@@ -73,23 +74,18 @@ if __name__ == '__main__':
     cfroot = 'PDF_'+cname+'_'+cperiod
 
 
-
-    xfrng=[0.001,1.] ; # x-range we want on the x-axis of the plot
-
-
-
     if l2files:
         # Only log-log !
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.svg',
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
                             title=cName+': '+corigin+' vs '+corigin2, period=cperiod, origin=corigin, ppdf2=PDF2, origin2=corigin2 )    
     
 
     else:
         # log-log and histogram:
         
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.svg',
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
                             title=cName, period=cperiod )    
     
-        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'_'+cname+'.svg',
-                             xrng=xfrng, title=cName+': '+corigin, period=cperiod )
+        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'_'+cname+'.'+iffrmt,
+                             title=cName+': '+corigin, period=cperiod )
     

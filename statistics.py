@@ -16,7 +16,7 @@ iplot=1
 
 
 #l_cst_bins = True
-l_cst_bins = False ; rfexp_bin = 0.1
+l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
@@ -33,11 +33,10 @@ max_shr = 5. ; # day^-1
 
 # About width of bins:
 if l_cst_bins:
-    wbin_div = 0.0005 ; # day^-1
-    wbin_shr = 0.0005 ; # day^-1
+    wbin_div = 0.001 ; # day^-1
+    wbin_shr = 0.001 ; # day^-1
 else:
-    wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
-
+    wVbin_min = 0.001 ; # Narrowest bin width (for the smalles values of deformation)
 
 
 
@@ -48,16 +47,15 @@ def constructCstBins( rmin, rmax, wdthB, name='unknown', iverbose=0 ):
         print('ERROR [constructBins()]: "'+name+'" => nB is not an integer! nB =',nB); exit(0)
     nB = int(nB)
     #
-    zbin_bounds = [  rmin + float(i)*wdthB for i in range(nB+1) ]
+    zbin_bounds = [ rmin + float(i)*wdthB                 for i in range(nB+1) ]
+    zbin_center = [ 0.5*(zbin_bounds[i]+zbin_bounds[i+1]) for i in range(nB)   ]    
     zbin_bounds = np.round( zbin_bounds, 6 )
-    zbin_center = [ 1.5*wdthB + float(i)*wdthB for i in range(nB) ]
     zbin_center = np.round( zbin_center, 6 )
     #
     if iverbose>0:
-        print('\n * constructBins()]: we have '+str(nB)+' bins for the '+name+' !')
-        print('     => zbin_bounds =',zbin_bounds,'\n')
-        print('     => zbin_center =',zbin_center)
-
+        for jb in range(nB):
+            print( ' * [constructBins] Bin #',jb,' =>', zbin_bounds[jb],zbin_bounds[jb+1], zbin_center[jb] )
+        
     # len(zbin_bounds) = nB + 1 !!!
     return nB, zbin_bounds, zbin_center
 
@@ -225,6 +223,7 @@ if __name__ == '__main__':
     if l_cst_bins:
         # For the divergence
         nBinsD, xbin_bounds_div, xbin_center_div = constructCstBins( min_div, max_div, wbin_div, name='divergence', iverbose=idebug )
+
         # For the shear:
         nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( min_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )
         
