@@ -473,7 +473,7 @@ def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_nam
     [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
     #
     fig = plt.figure(num = 1, figsize=[14,10], facecolor='w', edgecolor='k')
-    ax1 = plt.axes([0.09, 0.07, 0.6, 0.9])
+    ax = plt.axes([0.09, 0.07, 0.6, 0.9])
 
     plt.plot( [     xT    ], [     yT    ], marker='o', ms=15, color='k', label='target point' ) ; # target point !
 
@@ -489,7 +489,7 @@ def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_nam
         (yE,xE) = pcoor_extra
         plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label=label_extra ) ; # target point !
 
-    ax1.legend(loc='center left', bbox_to_anchor=(1.07, 0.5), fancybox=True)
+    ax.legend(loc='center left', bbox_to_anchor=(1.07, 0.5), fancybox=True)
     plt.savefig(fig_name, dpi=100, transparent=False)
     plt.close(1)
 
@@ -501,13 +501,11 @@ def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_nam
 
 
 def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
-                xrng=None, wbin=None, title=None, period=None ):
+                xrng=None, title=None, period=None, dx=0.01 ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
       * ppdf:  the PDF, same size as `pbinc`, size = nB
-
-      * wbin:  width of the bin in [day^-1]
     '''
     from math import ceil
 
@@ -517,73 +515,58 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/PlotPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-    # Subsampling of labels on the x-axis:
-    nx_subsamp = 1
-    if xrng and wbin:
-        nx_subsamp = int( (xrng[1]-xrng[0])/wbin/10. )
+    xmax = 0.1
 
     ki = _initStyle_()
 
-    width_bin = pbinb[2]-pbinb[1]
-
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
-    ax1 = plt.axes([0.1, 0.085, 0.85, 0.85])
+    ax = plt.axes([0.1, 0.085, 0.85, 0.85])
     #
-    #ax1.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
+    #ax.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
     #
     # Y-axis:
-    #rinc = 10. ; # => dy of 0.1
-    #rinc = 100. ; # => dy of 0.01
-    #ymax = ceil(rinc*np.max(ppdf))/rinc
-    #plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
-    #ax1.set_ylim(0.,ymax)
-    ax1.set_ylim(0.,np.max(ppdf))
-    #
-    ax1.set_ylabel(r'Probability')
+    rinc = 100. ; # => dy of 0.01
+    ymax = ceil(rinc*np.max(ppdf))/rinc
+    plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
+    ax.set_ylim(0.,ymax)
+    #ax.set_ylim(0.,np.max(ppdf))
+    ax.set_ylabel(r'Probability')
     #
     # X-axis:
+    plt.xticks( np.arange(0., xmax+dx, dx) )
+    ax.set_xlim( pbinb[0], xmax)
+    #ax.set_xlim( 0., xmax)
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
     #
-    if xrng:
-        ax1.set_xlim(xrng[0], xrng[1])
-        #plt.xticks( np.arange(xrng[0], xrng[1]+width_bin, width_bin) )
-    #else:
-    #    ax1.set_xlim(pbinb[0], pbinb[nB])
-    #    plt.xticks( pbinb[:] )
-    #
-    if nx_subsamp>1:
-        ax_lab = []
-        locs, labels = plt.xticks()
-        cpt = 0 # with ipct = 1: tick priting will start at y1+dt on x axis rather than y1
-        for rr in locs:
-            if cpt % nx_subsamp == 0:
-                if rr%1.0 == 0.:
-                    cr = str(int(rr))  # it's something like 22.0, we want 22 !!!
-                else:
-                    cr = str(round(rr,6))
-                ax_lab.append(cr)
-            else:
-                ax_lab.append(' ')
-            cpt = cpt + 1
-        plt.xticks(locs,ax_lab)
-        del ax_lab
+    #if nx_subsamp>1:
+    #    ax_lab = []
+    #    locs, labels = plt.xticks()
+    #    cpt = 0 # with ipct = 1: tick priting will start at y1+dt on x axis rather than y1
+    #    for rr in locs:
+    #        if cpt % nx_subsamp == 0:
+    #            if rr%1.0 == 0.:
+    #                cr = str(int(rr))  # it's something like 22.0, we want 22 !!!
+    #            else:
+    #                cr = str(round(rr,6))
+    #            ax_lab.append(cr)
+    #        else:
+    #            ax_lab.append(' ')
+    #        cpt = cpt + 1
+    #    plt.xticks(locs,ax_lab)
+    #    del ax_lab
 
-    #plt.plot(pbinc[:], ppdf[:], 'o', color='0.6', zorder=5)
-    #
-    #plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor='b', linewidth=2, zorder=10 )
-    plt.bar ( pbinc[:],  ppdf[:], width=width_bin, color='0.6', edgecolor=None, linewidth=2, zorder=10 )
-    #
-    plt.step( pbinb[:-1], ppdf[:],  color='k', linewidth=0.5, zorder=10) ; # the enveloppe
+    plt.bar ( pbinc[:],  ppdf[:], width=pbinb[1:]-pbinb[:-1], color='0.6', edgecolor=None, linewidth=2, zorder=10 )
+    plt.step( pbinb[1:], ppdf[:],  color='k', linewidth=0.7, zorder=10) ; # the enveloppe
 
     if Np:
-        ax1.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
-    if wbin:
-        ax1.annotate('Bin width = '+str(wbin)+r' day$^{-1}$', xy=(0.62, 0.82), xycoords='figure fraction', **cfont_clock)
+        ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
+    #if wbin:
+    #    ax.annotate('Bin width = '+str(wbin)+r' day$^{-1}$', xy=(0.62, 0.82), xycoords='figure fraction', **cfont_clock)
     if period:
-        ax1.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
+        ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
     if title:
-        ax1.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
+        ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
@@ -594,14 +577,12 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
-               wbin=None, title=None, period=None, origin=None,
+               title=None, period=None, origin=None,
                ppdf2=[], origin2=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
       * ppdf:  the PDF, same size as `pbinc`, size = nB
-
-      * wbin:  width of the bin in [day^-1]
     '''
     from math import ceil
 
@@ -611,21 +592,20 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-
+    rycut_tiny = 1.e-7
+    rxcut_big  = 1.
+    
     l_comparaison = ( np.shape(ppdf2)==(nB,) )
         
     # For figure axes:
-    xlog_min = 1.e-3
-    #xlog_max = 1.e-1
-    xlog_max = 1.
-    #xcut_dat = 0.8e-1
-    xcut_dat = 1.
+    xlog_min,xlog_max = 1.e-3, rxcut_big
+    ylog_min,ylog_max = rycut_tiny, 0.25
 
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
-    ax1 = plt.axes([0.11, 0.085, 0.85, 0.85])
+    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
     #
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
@@ -633,31 +613,30 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     # Y-axis:
     plt.ylabel('Probability', color='k')
 
-    ppdf = np.ma.masked_where( pbinc>xcut_dat, ppdf )
-    #ppdf = np.ma.masked_where( ppdf<1.e-8, ppdf )
+    ppdf = np.ma.masked_where( pbinc>rxcut_big,  ppdf )
+    ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
     
-    ax1.set_xlim(xlog_min, xlog_max)
+    ax.set_xlim(xlog_min, xlog_max)
+    ax.set_ylim(ylog_min, ylog_max)
     
     plt.loglog(pbinc[:], ppdf[:], 'o', color='0.6', label=origin, zorder=5)
 
     if l_comparaison:
-        ppdf2 = np.ma.masked_where( pbinc>xcut_dat, ppdf2 )
-        #ppdf2 = np.ma.masked_where( ppdf<5.e-4, ppdf2 )
+        ppdf2 = np.ma.masked_where( pbinc>rxcut_big,   ppdf2 )
+        ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
         plt.loglog(pbinc[:], ppdf2[:], '+', color='b', label=origin2, zorder=10)
-        ax1.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     
-    ax1.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
-    ax1.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     
     if Np:
-        ax1.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
-    if wbin:
-        ax1.annotate('Bin width = '+str(wbin)+r' day$^{-1}$', xy=(0.62, 0.82), xycoords='figure fraction', **cfont_clock)
+        ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
     if period:
-        ax1.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
+        ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
     if title:
-        ax1.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
+        ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)

@@ -29,7 +29,6 @@ if __name__ == '__main__':
         cname = str(data['name'])
         corigin = str(data['origin'])
         cperiod = str(data['period'])
-        wbin    = data['wbin']
         nP    = data['Np']
         xbin_bounds = data['xbin_bounds']
         xbin_center = data['xbin_center']
@@ -46,7 +45,6 @@ if __name__ == '__main__':
             cname2 = str(data['name'])
             corigin2 = str(data['origin'])
             cperiod2 = str(data['period'])
-            wbin2    = data['wbin']
             nP2    = data['Np']
             xbin_bounds2 = data['xbin_bounds']
             xbin_center2 = data['xbin_center']
@@ -83,15 +81,15 @@ if __name__ == '__main__':
     if l2files:
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.svg',
-                            wbin=wbin, title=cName+': '+corigin+' vs '+corigin2, period=cperiod, origin=corigin, ppdf2=PDF2, origin2=corigin2 )    
+                            title=cName+': '+corigin+' vs '+corigin2, period=cperiod, origin=corigin, ppdf2=PDF2, origin2=corigin2 )    
     
 
     else:
         # log-log and histogram:
         
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.svg',
-                            wbin=wbin, title=cName, period=cperiod )    
+                            title=cName, period=cperiod )    
     
         kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'_'+cname+'.svg',
-                             xrng=xfrng, wbin=wbin, title=cName+': '+corigin, period=cperiod )
+                             xrng=xfrng, title=cName+': '+corigin, period=cperiod )
     
