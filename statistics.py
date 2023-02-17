@@ -174,7 +174,6 @@ if __name__ == '__main__':
         vf = split('_',fb)
         print(vf)
         #
-        if kf==0: corigin = vf[1] ; # should be 'RGPS' or 'SI3' !
         list_date.append(split('-',vf[2])[0])
         #
         kStreamName[kf] = vf[1]
@@ -182,6 +181,7 @@ if __name__ == '__main__':
         with np.load(ff) as data:
             rdate = int( data['time'] )
             nPnts =      data['Npoints']
+            if kf==0: corigin = str(data['origin'])
     
         kiDate[kf] = rdate
         kNbPoints[kf] = nPnts

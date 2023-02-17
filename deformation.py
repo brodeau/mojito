@@ -207,7 +207,7 @@ if __name__ == '__main__':
 
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nQ,
-                         Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot )
+                         Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, origin=corigin )
 
 
     # Some plots:
