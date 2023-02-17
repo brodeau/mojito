@@ -9,8 +9,8 @@
 
 * Ajouter l'option de stop a une date donnee dans `ice_part_track` !!!
 
-
-
+* In quadrangle class, make a function that gives the nominal resolution of all the quadrangles....
+  - then can be used,for example, in `deformation.py` (where it is now infered from file name...)
 
 
 

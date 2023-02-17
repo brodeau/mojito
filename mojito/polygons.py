@@ -6,7 +6,7 @@ from sys import exit
 
 class Triangle:
 
-    def __init__( self,  xPcoor, xTPntIdx, xTnbgh, vPIDs, vPtime, vPnames ):
+    def __init__( self,  xPcoor, xTPntIdx, xTnbgh, vPIDs, vPtime, vPnames, origin='unknown' ):
         '''
                `nP` points => `nT` Triangles!
 
@@ -69,6 +69,7 @@ class Triangle:
         self.MeshVrtcPntIdx = np.array(xTPntIdx, dtype=int)                ; # 3 point indices composing the triangles, CCW => shape = (nT,3)
         self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
         self.NeighborIDs  = np.array(xTnbgh, dtype=int)   ; # IDs of neighbor triangles...
+        self.origin       = origin
         #
         del zvPntIdx, zTcoor
 
@@ -89,7 +90,7 @@ class Triangle:
 
 class Quadrangle:
 
-    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vPtime, vQnames, vQIDs=[], date='unknown' ):
+    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vPtime, vQnames, vQIDs=[], date='unknown', origin='unknown' ):
         '''
                => `nQ` Quadrangles!
 
@@ -158,6 +159,7 @@ class Quadrangle:
         self.MeshVrtcPntIdx = np.array(xQPntIdx, dtype=int)   ; # 4 point indices composing the quadrangles (indices in the frame of "only Quadrangles")
         self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
         self.QuadNames   = np.array( vQnames, dtype='U32' ) ; # point names => shape = (nP)
+        self.origin      = origin
         #
         del zvPntIdx, zTcoor
 
@@ -210,7 +212,7 @@ class Quadrangle:
 
 
 
-def SaveClassPolygon( cfile, Poly, ctype='Q', force_date='unknown' ):
+def SaveClassPolygon( cfile, Poly, ctype='Q', force_date='unknown', origin='unknown' ):
     '''
         Save all arrays necessary to rebuild the Polygon object later on.
 
@@ -229,12 +231,12 @@ def SaveClassPolygon( cfile, Poly, ctype='Q', force_date='unknown' ):
         cdate = force_date
     if ctype=='Q':
         np.savez_compressed( cfile, date=cdate, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx,
-                             PointIDs=Poly.PointIDs, PointTime=Poly.PointTime, QuadNames=Poly.QuadNames, QuadIDs=Poly.QuadIDs )
+                             PointIDs=Poly.PointIDs, PointTime=Poly.PointTime, QuadNames=Poly.QuadNames, QuadIDs=Poly.QuadIDs, origin=origin )
         print('\n *** Quadrangle mesh saved into "'+cfile+'" !')
 
     if ctype=='T':
         np.savez_compressed( cfile, date=cdate, PointXY=Poly.PointXY, MeshVrtcPntIdx=Poly.MeshVrtcPntIdx, NeighborIDs=Poly.NeighborIDs,
-                             PointIDs=Poly.PointIDs, PointTime=Poly.PointTime, PointNames=Poly.PointNames )
+                             PointIDs=Poly.PointIDs, PointTime=Poly.PointTime, PointNames=Poly.PointNames, origin=origin )
         print('\n *** Triangle mesh saved into "'+cfile+'" !')
 
 
@@ -262,6 +264,7 @@ def LoadClassPolygon( cfile, ctype='Q' ):
     MeshVrtcPntIdx = data['MeshVrtcPntIdx']        ; # the `nVrtc` point indices for each polygon => shape: (nPoly,nVrtc)
     PointIDs       = data['PointIDs']
     PointTime      = data['PointTime']
+    corigin        = str(data['origin'])
 
     (nPoly,nVrtc) = np.shape(MeshVrtcPntIdx)
 
@@ -270,14 +273,14 @@ def LoadClassPolygon( cfile, ctype='Q' ):
             print('ERROR: [polygons.LoadPolygon()] => wrong number of vertices for a triangle:',nVrtc); exit(0)
         PointNames  = data['PointNames']
         NeighborIDs = data['NeighborIDs'] ; # shape: (nPoly,3)
-        POLY = Triangle( PointXY, MeshVrtcPntIdx, NeighborIDs, PointIDs, PointTime, PointNames )
+        POLY = Triangle( PointXY, MeshVrtcPntIdx, NeighborIDs, PointIDs, PointTime, PointNames, origin=corigin )
 
     if ctype=='Q':
         if nVrtc!=4:
             print('ERROR: [polygons.LoadPolygon()] => wrong number of vertices for a quadrangle:',nVrtc); exit(0)
         QuadNames = data['QuadNames']
         QuadIDs   = data['QuadIDs']
-        POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, PointTime, QuadNames, vQIDs=QuadIDs, date=cdate )
+        POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, PointTime, QuadNames, vQIDs=QuadIDs, date=cdate, origin=corigin )
 
     return POLY
 

@@ -100,11 +100,11 @@ if __name__ == '__main__':
 
     
     # Getting time info and time step from input npz file which is should look like NEMO output file:
-    vfi   = split('_|\.', path.basename(cf_nc))
-    cfstr = vfi[0]
+    cfstr = split('_tracking_', path.basename(cf_nc))[0]
 
     # Loading the data for the 2 selected records:
-    Nt, nBmax = mjt.GetDimNCdataMJT( cf_nc )
+    Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc )
+
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
     #
@@ -240,7 +240,7 @@ if __name__ == '__main__':
 
             
             # Conversion to the `Triangle` class:
-            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, vIDs, ztim[:,jr], zPnm )
+            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, vIDs, ztim[:,jr], zPnm, origin=corigin )
             del xTpnts, xNeighborIDs, TRI
 
             # Info on the triangles:
@@ -260,7 +260,7 @@ if __name__ == '__main__':
             print('\n *** We have '+str(NbQ)+' quadrangles!')
 
             # Save the triangular mesh info:
-            mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T' )
+            mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', origin=corigin )
 
             # To be used for other record, indices of Points to keep for Quads:
             _,ind2keep,_ = np.intersect1d(vIDs, vPids, return_indices=True); # retain only indices of `vIDs` that exist in `vPids`
@@ -287,10 +287,10 @@ if __name__ == '__main__':
                                          rangeX=vrngX, rangeY=vrngY )
                     
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats )
+            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin )
 
             # Save the quadrangular mesh info:
-            mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q' )
+            mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q', origin=corigin )
 
 
             #######################################################################################################
@@ -304,10 +304,10 @@ if __name__ == '__main__':
             xQcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats )
+            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin )
 
             # Save the quadrangular mesh info:
-            mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q' )
+            mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', origin=corigin )
 
             del QUADS
 

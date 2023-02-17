@@ -241,8 +241,10 @@ def GetDimNCdataMJT( cfile ):
                 print(' ERROR [GetDimNCdataMJT()]: no dimensions `'+cd+'` found into input file!'); exit(0)
         Nt = id_in.dimensions['time'].size
         nP = id_in.dimensions['buoy'].size
+        corgn = id_in.Origin
         print(' * [GetDimNCdataMJT]: total number of records in file '+cfile+' =>', Nt)
         print(' * [GetDimNCdataMJT]: max. number of buoys (at start) in file '+cfile+' =>', nP)
-    return Nt, nP
+        print(' * [GetDimNCdataMJT]: origin of data: "'+corgn+'"')
+    return Nt, nP, corgn
 
 

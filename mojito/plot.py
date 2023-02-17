@@ -428,12 +428,11 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
     fig = plt.figure(num=1, figsize=vfig, facecolor='white')
 
-    ddx = dx*Ly/Lx
-    if unit:
-        ax = plt.axes([1.25*ddx/Lx, 1.6*1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2.2*dy)/Ly], facecolor='0.75')
-    else:
-        ax = plt.axes([1.25*ddx/Lx,     1.25*dy/Ly, (Lx-2*ddx)/Lx,   (Ly-2*dy)/Ly], facecolor='0.75')
-
+    zix = 1.5*dx/Lx
+    ziy = 1.5*dy/Ly
+    if unit: ziy = 4.2*dy/Ly
+    ax = plt.axes( [ zix, ziy, 1.-(dx/Lx+zix), 1.-(dy/Ly+ziy) ], facecolor='0.75')
+        
     plt.axis([ xA,xB , yA,yB ])
 
     # Pixel size:
@@ -444,14 +443,13 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
             marker_size = 1710000./rrm
 
     # Showing points:
-    #plt.plot( pX, pY, '.', ms=marker_size, color=clPoints, zorder=200) ; #, alpha=0.5)
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )
 
     if title:
-        ax.annotate(title, xy=(0.1, 0.12), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+        ax.annotate(title, xy=(0.1, ziy+0.05), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     if unit:
-        # => triggers the colorbar! lilo
-        ax2 = plt.axes([0.18,0.05,0.7,0.02])
+        # => triggers the colorbar
+        ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
 

@@ -36,7 +36,9 @@ def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
         * QD: Quad class loaded from file `kF`
     '''
     print('\n *** In file #'+str(kF)+':')
-    if len(np.shape(QD.PointTime))>1: print('ERROR: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime)); exit(0)
+    if len(np.shape(QD.PointTime))>1:
+        print('ERROR: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime))
+        exit(0)
     print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
     rTmean = np.mean(QD.PointTime)
     cTmean = epoch2clock(rTmean)
@@ -90,8 +92,9 @@ if __name__ == '__main__':
 
     # Comprehensive name for npz and figs to save later on:
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
-    cfnm = split('_',cf1)[1]
-    cfnm = cfnm+'_'+cclck
+    #cfnm = split('_',cf1)[1]
+    corigin = QUA1.origin
+    cfnm = corigin+'_'+cclck
 
     # Try to get a spatial resolution scale from the name:
     cres = ''
@@ -213,13 +216,13 @@ if __name__ == '__main__':
 
     mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
                          pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title='Divergence' )
+                         marker_size=marker_size, title=corigin+': divergence' )
     mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
                          pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title='Shear' )
+                         marker_size=marker_size, title=corigin+': shear' )
     mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
                          pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title='Total deformation' )
+                         marker_size=marker_size, title=corigin+': total deformation' )
 
 
     ###
