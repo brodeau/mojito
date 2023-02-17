@@ -30,7 +30,6 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         #
         DATE2="${YEAR}0201"
-        FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-03-01_lb_LIGHT.nc"
         FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         #
         MARKER_SIZE=20
@@ -41,7 +40,6 @@ case ${host} in
         NJPAR=4
         #
         DATE2="${YEAR}0301"
-        FNCSEED="RGPS_ice_drift_${YEAR}-01-01_${YEAR}-03-01_lb_LIGHT.nc"
         FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         #
         MARKER_SIZE=20
@@ -53,7 +51,6 @@ case ${host} in
         #
         #DATE2="${YEAR}0401"
         DATE2="${YEAR}0205"
-        FNCSEED="RGPS_tracking_${YEAR}-01-01_${YEAR}-02-05_lb.nc"
         SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
 
         #
@@ -65,6 +62,9 @@ case ${host} in
 esac
 
 
+DATE2d="${YEAR}-`echo ${DATE2}|cut -c 5-6`-`echo ${DATE2}|cut -c 7-8`"
+
+FNCSEED="RGPS_tracking_${YEAR}-01-01_${DATE2d}_lb.nc"
 
 #export FNCSEED="${DATA_DIR}/data/mojito/seeding_from_rgps/${FNCSEED}"
 export FNCSEED="${MOJITO_DIR}/TEST_rgps/${FNCSEED}"
