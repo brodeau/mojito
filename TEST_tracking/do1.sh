@@ -5,6 +5,11 @@
 EXE="${MOJITO_DIR}/ice_part_tracker.py"
 
 
+if [ ! -f ${FNCSEED} ]; then
+    echo " ERROR: file ${FNCSEED} is missing !"; exit
+fi
+
+
 if [ "$1" = "d" ]; then
     CMD="${EXE} ${FSI3IN} ${FNMM}"
 else
