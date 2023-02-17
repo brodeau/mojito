@@ -34,7 +34,7 @@ idebug = 0
 
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
-interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
+interp_1d = 0 ; # Time interpolation to fixed time axis: 0=> NN ; 1 => linear; 2 => akima
 
 l_drop_coastal   = False ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
@@ -216,18 +216,24 @@ if __name__ == '__main__':
                 print('      ==> last index of vTbin to use is: '+str(Nt_b-1)+' => '+epoch2clock(vTbin[Nt_b-1,0]))
 
         if   interp_1d==0:
-            fG = interpolate.interp1d(           vt, vlat0[idx])
-            fC = interpolate.interp1d(           vt,   vy0[idx])
+            fG = interpolate.interp1d(           vt, vlat0[idx], kind='nearest' )
+            fC = interpolate.interp1d(           vt,   vy0[idx], kind='nearest' )
         elif interp_1d==1:
+            fG = interpolate.interp1d(           vt, vlat0[idx], kind='linear' )
+            fC = interpolate.interp1d(           vt,   vy0[idx], kind='linear' )
+        elif interp_1d==2:
             fG = interpolate.Akima1DInterpolator(vt, vlat0[idx])
             fC = interpolate.Akima1DInterpolator(vt,   vy0[idx])
         xlat[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
         xY[0:Nt_b,ic]   = fC(vTbin[0:Nt_b,0])
 
         if   interp_1d==0:
-            fG = interpolate.interp1d(           vt, vlon0[idx])
-            fC = interpolate.interp1d(           vt,   vx0[idx])
+            fG = interpolate.interp1d(           vt, vlon0[idx], kind='nearest' )
+            fC = interpolate.interp1d(           vt,   vx0[idx], kind='nearest' )
         elif interp_1d==1:
+            fG = interpolate.interp1d(           vt, vlon0[idx], kind='linear' )
+            fC = interpolate.interp1d(           vt,   vx0[idx], kind='linear' )
+        elif interp_1d==2:
             fG = interpolate.Akima1DInterpolator(vt, vlon0[idx])
             fC = interpolate.Akima1DInterpolator(vt,   vx0[idx])
         xlon[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
