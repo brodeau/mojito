@@ -39,7 +39,11 @@ interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akim
 l_drop_coastal   = False ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
 
-l_drop_overlap = True
+l_drop_doublons = True ; # PR: keep the one with the longest record...
+rd_tol = 7. # tolerance distance in km to conclude it's the same buoy
+NbPass = 2  # number of passes...
+
+l_drop_overlap = False
 rhsskm = 7. ; # [km] get rid of buoys (1 of the 2) that are closer to each other than this `rhsskm` km
 
 FillValue = -9999.
@@ -61,7 +65,7 @@ if __name__ == '__main__':
     cYmmd2   =     argv[3]
     idtbin_h = int(argv[4])
     ####################################################################################################
-    
+
     dt_bin =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while scanning for valid time intervals
 
     cY1,  cY2  = cYmmd1[0:4], cYmmd2[0:4]
@@ -73,26 +77,29 @@ if __name__ == '__main__':
 
     cf_out = 'RGPS_tracking_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
 
+    if l_drop_overlap and l_drop_doublons:
+        print(' ERROR: you cannot use `l_drop_overlap` and `l_drop_doublons`! Choose one of the two!!!')
+        exit(0)
 
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
-    
+
     rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
     print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
     print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
 
-    rdtI = rdt1 + 0.5*dt_bin    
+    rdtI = rdt1 + 0.5*dt_bin
     print('\n *** We shall not select buoys that do not make it to at least',epoch2clock(rdtI))
-    
+
     # Important we want the bins to be centered on the specified dates, so:
     rdt1 = rdt1 - 0.5*dt_bin
-    
+
     # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy_Nmnl)
     Nt, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=0 )
     if idebug>1:
         for jt in range(Nt):
             print('   --- jt: '+str(jt)+' => ',epoch2clock(vTbin[jt,0]),epoch2clock(vTbin[jt,1]),epoch2clock(vTbin[jt,2]))
-    
+
     # Open, inspect the input file and load raw data:
     Np0, vtime0, vy0, vx0, vlat0, vlon0, vBIDs0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
 
@@ -100,13 +107,13 @@ if __name__ == '__main__':
     if idebug>0:
         rlat_min, rlat_max = np.min(vlat0), np.max(vlat0)
         print('\n *** Southernmost & Northernmost latitudes in the dataset =>', rlat_min, rlat_max)
-    
+
     vIDs, idxUNQid = np.unique(vBIDs0, return_index=True )
 
     Nb   = len(vIDs)
     print('\n *** We IDed '+str(Nb)+' (unique) buoys in this file...')
 
-    
+
     # First we are going to get rid of all buoys that are not ... our defined period
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -140,15 +147,15 @@ if __name__ == '__main__':
     vIDs = np.ma.masked_where( vmask==0, vIDs      )
     vIDs = np.ma.MaskedArray.compressed(vIDs)
     Nb   = len(vIDs)
-    print('\n *** UPDATE: based on date selection, there are now '+str(Nb)+' buoys to follow!')
+    print('\n *** UPDATE: based on date selection, there are '+str(Nb)+' buoys left to follow!')
 
 
     if l_drop_coastal:
-        # For now, only at start time...        
+        # For now, only at start time...
         cdata_dir = environ.get('DATA_DIR')
         if cdata_dir==None:
             print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-        fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'        
+        fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
         vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc ) ; # load `distance to coast` data
         #
         vmask = np.zeros(Nb, dtype='i1') + 1
@@ -157,7 +164,7 @@ if __name__ == '__main__':
             if jb%1000==0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
             jid = vIDs[jb]
             (idx,) = np.where( vBIDs0==jid )
-            vt  = vtime0[idx]            
+            vt  = vtime0[idx]
             ii = np.argmin( np.abs(vt - rdt1) ) ; # when we are closest to start time
             zlat, zlon = vlat0[idx[ii]], vlon0[idx[ii]]
             rd_ini = mjt.Dist2Coast( zlon, zlat, vlon_dist, vlat_dist, xdist )
@@ -172,17 +179,17 @@ if __name__ == '__main__':
         vIDs = np.ma.MaskedArray.compressed(vIDs)
         Nb   = len(vIDs)
         del vmask
-        print('\n *** UPDATE: based on minimum distance to nearest coast, there are now '+str(Nb)+' buoys to follow!')
+        print('\n *** UPDATE: based on minimum distance to nearest coast, there are '+str(Nb)+' buoys left to follow!')
         #
-    ### if l_drop_coastal    
-    
+    ### if l_drop_coastal
+
     # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
     xmsk = np.zeros((Nt,Nb), dtype='i1')
     xlon = np.zeros((Nt,Nb)) + FillValue
     xlat = np.zeros((Nt,Nb)) + FillValue
     xX   = np.zeros((Nt,Nb)) + FillValue
     xY   = np.zeros((Nt,Nb)) + FillValue
-    
+
     ic = -1
     for jid in vIDs:
         ic = ic + 1
@@ -216,7 +223,7 @@ if __name__ == '__main__':
             fC = interpolate.Akima1DInterpolator(vt,   vy0[idx])
         xlat[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
         xY[0:Nt_b,ic]   = fC(vTbin[0:Nt_b,0])
-        
+
         if   interp_1d==0:
             fG = interpolate.interp1d(           vt, vlon0[idx])
             fC = interpolate.interp1d(           vt,   vx0[idx])
@@ -246,24 +253,84 @@ if __name__ == '__main__':
         jt = 0 ; # Only at start !!!!
         #
         (idxn,) = np.where( xmsk[jt,:]==1 )
-        zcoor = np.array([ xX[jt,:], xY[jt,:] ]).T ; # for `gudhi` coord = [X,Y] !            
+        zcoor = np.array([ xX[jt,:], xY[jt,:] ]).T ; # for `gudhi` coord = [X,Y] !
         _, _, idx_keep = mjt.SubSampCloud( rhsskm, zcoor )
         idx_rm = np.setdiff1d( idxn, idx_keep ) ; # keep values of `idxn` that are not in `idx_keep`
         xmsk[jt:,idx_rm] = 0 ; # supressing at this time records and all those following!!!
-            
+
         Nbn = np.sum(xmsk[0,:])
         print('      => we removed '+str(Nb-Nbn)+' buoys already at first record!')
         (idxK,) = np.where(xmsk[0,:]==1)
         vIDs =   vIDs[idxK]
-        xmsk = xmsk[:,idxK]        
+        xmsk = xmsk[:,idxK]
         xlat = xlat[:,idxK]
         xlon = xlon[:,idxK]
         xY   =   xY[:,idxK]
         xX   =   xX[:,idxK]
         Nb   = Nbn
         del zcoor, idxn, idx_keep, idx_rm, idxK
-        print('\n *** UPDATE: based on "too close to each other" cleaning, there are now '+str(Nb)+' buoys to follow!')
+        print('\n *** UPDATE: based on "too close to each other" cleaning, there are '+str(Nb)+' buoys left to follow!')
+
+
+
+    if l_drop_doublons:
+        # Based on first time step only!
+        jt = 0
+        #
+        for jp in range(NbPass):
+            print('\n *** Applying initial overlap cleaning at the scale of '+str(rd_tol)+' km')
+            zbmask = np.zeros(Nb, dtype='i1') + 1
+            zlat,zlon = xlat[jt,:],xlon[jt,:]
+            #
+            for jb in range(Nb):
+                if jb%1000==0: print('       pass #'+str(jp+1)+'.... '+str(jb)+' / '+str(Nb)+'...')
+                # All the following work should be done if present buoy has not been cancelled yet
+                if zbmask[jb] == 1:
+                    jid = vIDs[jb]
+                    if idebug>2:
+                        print('\n *** "TOO CLOSE" scanning: Buoy #'+str(jb)+'=> ID ='+str(jid))
+                        print('    ==> lat,lon = ',zlat[jb],zlon[jb])                
+                    vdist = mjt.Haversine( zlat[jb], zlon[jb], zlat, zlon ) ; # build estimates of distances (km) with all other buoy at this same time record:
+            
+                    # Need to mask itself (distance = 0!)
+                    if vdist[jb] != 0.:
+                        print(' PROBLEM: distance with yourself should be 0!'); exit(0)
+                    vdist[jb] = 9999.
+                    if idebug>2:
+                        for rd in vdist:
+                            if rd<10.: print('   distance = ', rd)
+                            
+                    rdmin = np.min(vdist)
+                    if idebug>2: print('    ==> closest neighbor buoy is at '+str(round(rdmin,2))+' km !')
+                    
+                    if rdmin < rd_tol:
+                        # There is at least 1 buoy too close!
+                        # We only deal wit 2 buoys at the time the one we are dealing with and the closest one (otherwize could remove to many)
+                        (idx_2c,) = np.where( vdist == rdmin )
+                        j2c = idx_2c[0]
+                        # Now we have to look at the one of the two that has the longest record:
+                        nr1 = np.sum(xmsk[:,jb])
+                        nr2 = np.sum(xmsk[:,j2c])
+                        if idebug>2: print(' Nb. of valid records for this buoy and the one too close:',nr1,nr2)
+                        if nr1<nr2: j2c=jb ; # we should cancel this one not the found one!
+                        zbmask[j2c] = 0
+                        xmsk[jt:,j2c] = 0
+                        
+            del zbmask, zlat, zlon
     
+            Nbn = np.sum(xmsk[0,:])
+            print('      => we removed '+str(Nb-Nbn)+' buoys already at first record!')
+            (idxK,) = np.where(xmsk[0,:]==1)
+            vIDs =   vIDs[idxK]
+            xmsk = xmsk[:,idxK]
+            xlat = xlat[:,idxK]
+            xlon = xlon[:,idxK]
+            xY   =   xY[:,idxK]
+            xX   =   xX[:,idxK]
+            Nb   = Nbn
+            del idxK
+            print('\n *** UPDATE: based on "almost-overlap" cleaning, there are '+str(Nb)+' buoys left to follow! (pass #'+str(jp+1)+')')
+    ### if l_drop_doublons
 
     
     # Masking arrays:
@@ -271,10 +338,10 @@ if __name__ == '__main__':
     xlon = np.ma.masked_where( xmsk==0, xlon )
     xY   = np.ma.masked_where( xmsk==0, xY )
     xX   = np.ma.masked_where( xmsk==0, xX   )
-    
-    # GENERATION OF COMPREHENSIVE NETCDF FILE:    
+
+    # GENERATION OF COMPREHENSIVE NETCDF FILE:
     kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xY, xX, xlat, xlon, mask=xmsk, tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
-    
+
     if iplot>0:
 
         for jt in range(Nt):
