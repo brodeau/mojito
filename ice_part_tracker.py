@@ -54,7 +54,13 @@ if __name__ == '__main__':
     cfdir = './figs/tracking'
     if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
     if not path.exists('./npz'):           mkdir('./npz')
-            
+
+
+    # Infer name of NEMO CONFIG and experiment from SI3 file:
+    vn = split('_',path.basename(cf_uv))
+    nconf, nexpr = vn[0], split('-',vn[1])[1]
+    print('    * NEMO config and experiment =', nconf, nexpr)
+    
     # Getting model grid metrics and friends:
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
@@ -329,8 +335,9 @@ if __name__ == '__main__':
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
     cdt1 = split('_', epoch2clock(vTime[0] ))[0]
     cdt2 = split('_', epoch2clock(vTime[Nt]))[0]
-    foutnc = 'SI3_tracking_'+cdt1+'_'+cdt2+'.nc'
+    corgn = 'NEMO-SI3_'+nconf+'_'+nexpr
+    foutnc = corgn+'_tracking_'+cdt1+'_'+cdt2+'.nc'
     
     kk = mjt.ncSaveCloudBuoys( foutnc, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
-                               mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue )
+                               mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue, corigin=corgn )
             

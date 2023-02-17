@@ -101,7 +101,8 @@ def GetModelGrid( fNCmeshmask ):
 
 
 
-def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], tunits=tunits_default, fillVal=None ):
+def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], tunits=tunits_default,
+                      fillVal=None, corigin=None ):
     '''
     '''
     print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')
@@ -111,15 +112,15 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], tunits=t
         print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
         exit(0)
     lSaveMask = (np.shape(mask) == (Nt,Nb))
-    
+    #
     f_out = Dataset(cf_out, 'w', format='NETCDF4')
-
+    #
     # Dimensions:
     cd_time = 'time'
     cd_buoy = 'buoy'
     f_out.createDimension(cd_time, None)
     f_out.createDimension(cd_buoy, Nb  )
-
+    #
     # Variables:
     v_time  = f_out.createVariable(cd_time,     'i4',(cd_time,))
     v_buoy  = f_out.createVariable(cd_buoy,     'i4',(cd_buoy,))
@@ -130,17 +131,17 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], tunits=t
     v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     if lSaveMask:
         v_mask = f_out.createVariable('mask',   'i1',(cd_time,cd_buoy,),                      zlib=True, complevel=9)
-
+    #
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'
     v_latb.units = 'degrees north'
     v_lonb.units = 'degrees south'
     v_y.units    = 'km'
     v_x.units    = 'km'
-
+    #
     v_buoy[:] = np.arange(Nb,dtype='i4')
     v_bid[:]  = pIDs[:]
-
+    #
     for jt in range(Nt):
         v_time[jt]   = ptime[jt]
         v_latb[jt,:] =  pLat[jt,:]
@@ -149,12 +150,14 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], tunits=t
         v_x[jt,:]    =    pX[jt,:]
         if lSaveMask:
             v_mask[jt,:] = mask[jt,:]
-            
-    f_out.About  = 'RGPS sea-ice drift data (Kwok, 1998)'
-    f_out.Author = 'Generated with `'+path.basename(argv[0])+'` of `mojito` (L. Brodeau, 2022)'
+    #
+    if corigin:
+         f_out.Origin = corigin         
+    f_out.About  = 'Lagrangian sea-ice drift'
+    f_out.Author = 'Generated with `'+path.basename(argv[0])+'` of `mojito` (L. Brodeau, 2023)'
     f_out.close()
     print('      ===> '+cf_out+' saved!')
-
+    #
     return 0
 
 
