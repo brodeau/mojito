@@ -49,7 +49,7 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        NJPAR=28
+        NJPAR=30
         #
         #DATE2="${YEAR}0401"
         DATE2="${YEAR}0205"

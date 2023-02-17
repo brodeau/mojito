@@ -48,7 +48,7 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        NJPAR=28
+        NJPAR=30
         #
         #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
