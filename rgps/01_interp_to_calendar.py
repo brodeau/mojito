@@ -22,7 +22,6 @@ from scipy import interpolate
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
-iplot = 1 ; # show the result in figures?
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -31,10 +30,12 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
 idebug = 0
+idebug_interp = 0
+iplot = 1          ; # show the result in figures?
 
 list_expected_var = [ 'index', 'lat', 'lon', 'q_flag', 'time' ]
 
-interp_1d = 0 ; # Time interpolation to fixed time axis: 0=> NN ; 1 => linear; 2 => akima
+interp_1d = 1 ; # Time interpolation to fixed time axis: 0=> NN ; 1 => linear; 2 => akima
 
 l_drop_coastal   = False ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
@@ -47,6 +48,11 @@ l_drop_overlap = False
 rhsskm = 7. ; # [km] get rid of buoys (1 of the 2) that are closer to each other than this `rhsskm` km
 
 FillValue = -9999.
+
+
+dt_nom = 72.2*3600. ; # [s] Nominal `dt` between 2 consecutive records for a buoy => ~ 3 days
+pmdt   =  2. *3600. ; # [s] Allowed deviation from `dt_nom` for 2 consecutive records for a buoy => 2 hours
+
 
 
 if __name__ == '__main__':
@@ -198,10 +204,20 @@ if __name__ == '__main__':
         vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
         Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
 
-        if np.any( vt[1:Np]-vt[0:Np-1] < 0.):
+        # Inspection of time records for this particular buoy:        
+        zdt = vt[1:Np]-vt[0:Np-1]
+        if np.any( zdt <= 0.):
             print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
             exit(0)
+        #zmsk = np.zeros(Np-1, dtype='i1') + 1
+        #(idxmsk,) = np.where( (zdt>dt_nom+pmdt) | (zdt<dt_nom-pmdt)  )
+        #zmsk[idxmsk] = 0
+        #print('\nLOLO `dt` in hours:',zdt/3600.) ; # hours
+        #print('  => mask =', zmsk)
+        #exit(0)
+        
 
+            
         Nt_b = Nt
 
         # Does this buoy survive beyond the fixed time range or not??? lilo
@@ -241,10 +257,10 @@ if __name__ == '__main__':
 
         xmsk[0:Nt_b,ic] = 1
 
-        if idebug>1 and Nb<=20:
+        if idebug_interp>0:
             # Visual control of interpolation:
-            lbr.plot_interp_series( jid, 'lat', vt, vTbin[0:Nt_b,0], vlat0[idx], xlat[0:Nt_b,ic] )
-            lbr.plot_interp_series( jid, 'lon', vt, vTbin[0:Nt_b,0], vlon0[idx], xlon[0:Nt_b,ic] )
+            mjt.plot_interp_series( jid, 'lat', vt, vTbin[0:Nt_b,:], vlat0[idx], xlat[0:Nt_b,ic] )
+            #mjt.plot_interp_series( jid, 'lon', vt, vTbin[0:Nt_b,:], vlon0[idx], xlon[0:Nt_b,ic] )
 
 
     xlat = np.ma.masked_where( xmsk==0, xlat )
