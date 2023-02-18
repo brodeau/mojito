@@ -16,7 +16,8 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
-idebug=0
+idebug=2
+iplot=1
 
 l_accurate_time=True
 
@@ -71,6 +72,11 @@ if __name__ == '__main__':
     if len(argv) == 5:
         marker_size = int(argv[4])
 
+
+    if iplot>0:
+        cdir = './figs/deformation'
+        if not path.exists(cdir): mkdir(cdir)
+        
     # Reading the quad meshes in both npz files:
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
     QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
@@ -143,7 +149,7 @@ if __name__ == '__main__':
 
 
 
-    if idebug>0:
+    if idebug>0 and iplot>0:
         # DEBUG: show velocities at each 4 vertices of each Quad:
         zzx = zX.flatten()
         zzy = zY.flatten()
@@ -159,11 +165,11 @@ if __name__ == '__main__':
         zzu = zzu[idx_uniq]
         zzv = zzv[idx_uniq]
         #
-        mjt.ShowDeformation( zzx, zzy, zzu, cfig='./figs/zvU4_'+cfnm+'_'+cres+'.png', cwhat='U4',
+        mjt.ShowDeformation( zzx, zzy, zzu, cfig=cdir+'/zvU4_'+cfnm+'_'+cres+'.png', cwhat='U4',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zzx, zzy, zzv, cfig='./figs/zvV4_'+cfnm+'_'+cres+'.png', cwhat='V4',
+        mjt.ShowDeformation( zzx, zzy, zzv, cfig=cdir+'/zvV4_'+cfnm+'_'+cres+'.png', cwhat='V4',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zzx, zzy, np.sqrt(zzu*zzu+zzv*zzv), cfig='./figs/zUM4_'+cfnm+'_'+cres+'.png', cwhat='UMc',
+        mjt.ShowDeformation( zzx, zzy, np.sqrt(zzu*zzu+zzv*zzv), cfig=cdir+'/zUM4_'+cfnm+'_'+cres+'.png', cwhat='UMc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zzx, zzy, zzu, zzv
@@ -172,16 +178,16 @@ if __name__ == '__main__':
     zXc = np.mean( zX[:,:], axis=1 )
     zYc = np.mean( zY[:,:], axis=1 )
 
-    if idebug>1:
+    if idebug>1 and iplot>0:
         # Velocities of barycenter of Quads at center of time interval:
         zUc = np.mean( zU[:,:], axis=1 )
         zVc = np.mean( zV[:,:], axis=1 )
         #
-        mjt.ShowDeformation( zXc, zYc, zUc, cfig='./figs/zvUc_'+cfnm+'_'+cres+'.png', cwhat='Uc',
+        mjt.ShowDeformation( zXc, zYc, zUc, cfig=cdir+'/zvUc_'+cfnm+'_'+cres+'.png', cwhat='Uc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zXc, zYc, zVc, cfig='./figs/zvVc_'+cfnm+'_'+cres+'.png', cwhat='Vc',
+        mjt.ShowDeformation( zXc, zYc, zVc, cfig=cdir+'/zvVc_'+cfnm+'_'+cres+'.png', cwhat='Vc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig='./figs/zUMc_'+cfnm+'_'+cres+'.png', cwhat='UMc',
+        mjt.ShowDeformation( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+'_'+cres+'.png', cwhat='UMc',
                              pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zUc, zVc
@@ -211,18 +217,16 @@ if __name__ == '__main__':
 
 
     # Some plots:
-    cdir = './figs/deformation'
-    if not path.exists(cdir): mkdir(cdir)
-
-    mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
-                         pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title=corigin+': divergence' )
-    mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
-                         pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title=corigin+': shear' )
-    mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
-                         pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title=corigin+': total deformation' )
+    if iplot>0:
+        mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+cres+'.png', cwhat='div',
+                             pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                             marker_size=marker_size, title=corigin+': divergence' )
+        mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+cres+'.png',      cwhat='shr',
+                             pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                             marker_size=marker_size, title=corigin+': shear' )
+        mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+cres+'.png',      cwhat='tot',
+                             pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                             marker_size=marker_size, title=corigin+': total deformation' )
 
 
     ###

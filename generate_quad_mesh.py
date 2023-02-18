@@ -18,7 +18,7 @@ from climporn import epoch2clock
 import mojito   as mjt
 
 idebug = 0
-iplot  = 1 ; # Create figures to see what we are doing...
+iplot  = 0 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -103,7 +103,10 @@ if __name__ == '__main__':
     cfstr = split('_tracking_', path.basename(cf_nc))[0]
 
     # Loading the data for the 2 selected records:
-    Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc )
+    Nt, nBmax, corigin, l_t2d = mjt.GetDimNCdataMJT( cf_nc )
+
+    print('LOLO: generate_quad_mesh.py: l_t2d =',l_t2d)
+    #exit(0)
 
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
