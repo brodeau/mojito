@@ -126,7 +126,8 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     if np.ma.isMaskedArray(pvlat):
         NbValid = pvlon.count()
     else:
-        NbValid = ( (pvlon>=-180.) and (pvlon<=360.)(pvlat>=-90.) and (pvlat<=-90.) ).sum()
+        NbValid = 0
+        #NbValid = ( (pvlon>=-180.) and (pvlon<=360.)(pvlat>=-90.) and (pvlat<=-90.) ).sum()
     #
     fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor=col_bg)

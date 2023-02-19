@@ -107,8 +107,9 @@ if __name__ == '__main__':
             print('   --- jt: '+str(jt)+' => ',epoch2clock(vTbin[jt,0]),epoch2clock(vTbin[jt,1]),epoch2clock(vTbin[jt,2]))
 
     # Now, for proper interpolation right from the start we request any selected buoy to have at least one position
-    # during period [rdtA1:rdt1]:
-    rdtA1 = rdt1-dt_bin
+    # under the period [rdtA1:rdt1]:
+    rdtA1 = rdt1 - dt_bin
+    #rdtA1 = rdt1 - 1.5*dt_bin
 
     # Open, inspect the input file and load raw data:
     Np0, vtime0, vYkm0, vXkm0, vlat0, vlon0, vBIDs0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
@@ -157,6 +158,14 @@ if __name__ == '__main__':
                 if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. between:'
                                     +epoch2clock(rdtA1)+' & '+epoch2clock(rdt1)+')')
             
+        # Get rid of buoys that do not have a unique record point during the first bin:
+        if vmask[jb]==1:
+            (idxtp,) = np.where( (vt>vTbin[0,1]) & (vt<=vTbin[0,2]) )
+            if len(idxtp) == 0:
+                vmask[jb] = 0
+                if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. in 1st time bin:'
+                                    +epoch2clock(vTbin[0,1])+' & '+epoch2clock(vTbin[0,2])+')')
+            
         if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
 
 
@@ -200,6 +209,63 @@ if __name__ == '__main__':
         #
     ### if l_drop_coastal
 
+    
+    # Analyse at the time calendar of selected buoys
+    z1stUsedDate = []
+    t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
+    ic = 0
+    for jid in vIDs:
+        ic = ic+1
+        (idx,) = np.where( vBIDs0==jid )
+        vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
+        Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
+
+        # Inspection of time records for this particular buoy:        
+        zdt = vt[1:Np]-vt[0:Np-1]
+        if np.any( zdt <= 0.):
+            print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
+            exit(0)
+
+        # Spot the first record of use of the vt series:
+        (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
+        if len(idxtp)==1:
+            jt1 = idxtp[0]
+        else:
+            #print(' AHH: idxtp=',idxtp,' => ',end='')
+            #for i in idxtp: print(epoch2clock(vt[i]),'; ',end='')
+            #print('')
+            idxnrst = np.argmin(abs(vt[idxtp] - t_bA))
+            jt1 = idxtp[idxnrst]
+        #print('LOLO: jt1 =',jt1,', vt[jt1] =', epoch2clock(vt[jt1]),'\n')
+        z1stUsedDate.append(vt[jt1])
+
+    z1stUsedDate = np.array(z1stUsedDate,dtype=int)
+
+    dt_sens = 600. ; #seconds !
+    tfamily = []
+    tfamily.append(z1stUsedDate[0])
+    for jb in range(Nb):
+        lfound = False
+        itim = z1stUsedDate[jb]
+        #print(epoch2clock(itim))
+        for tknown in tfamily:
+            if itim>=tknown-dt_sens and itim<tknown+dt_sens:
+                # We know this time... break the loop along tfamily
+                lfound = True
+                break
+        if not lfound:
+            # It is a time unknown so far:
+            print('New time:',epoch2clock(itim))
+            tfamily.append(itim)
+        
+    tfamily = np.array(tfamily,dtype=int)
+    ntf = len(tfamily)
+    print('We have '+str(ntf)+' different time family identified:')
+    for itim in tfamily:
+        print(epoch2clock(itim))
+        
+    exit(0)
+    
     # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
     xmsk = np.zeros((Nt,Nb), dtype='i1')
     xlon = np.zeros((Nt,Nb)) + FillValue
@@ -226,8 +292,21 @@ if __name__ == '__main__':
         #print('\nLOLO `dt` in hours:',zdt/3600.) ; # hours
         #print('  => mask =', zmsk)
         #exit(0)
-        
-            
+
+        ##t_c  = vTbin[0,0] ; # time at center of 1st target time bin
+        #t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
+        #idxnrst = np.argmin(abs(vt - t_bA)) ; # closest point
+        #t_nrst = vt[idxnrst]
+        ##print('LOLO: center first time bin and closest point for buoy '+str(jid)+':',epoch2clock(t_c),epoch2clock(t_nrst))
+        #print('LOLO: A-bound first time bin and closest point for buoy '+str(jid)+':',epoch2clock(t_bA),epoch2clock(t_nrst))
+        ## Check if inside the bin:
+        ##if not ( t_nrst>vTbin[0,1] and t_nrst<=vTbin[0,2] ):
+        ##    print('ERROR: `t_nrst` not found in first bin!'); exit(0)
+        #t_offset = t_bA - t_nrst
+        #if idebug>-1: print('   * applying time offset to calendar of buoy '+str(jid)+':', t_offset/3600.,'hours')
+        #vt[:] = vt[:] + t_offset
+
+
         Nt_b = Nt
 
         # Does this buoy survive beyond the fixed time range or not??? lilo
