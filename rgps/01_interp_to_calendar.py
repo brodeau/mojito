@@ -22,6 +22,7 @@ from scipy import interpolate
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
+l_time_offset_families = False
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -209,62 +210,93 @@ if __name__ == '__main__':
         #
     ### if l_drop_coastal
 
+
     
-    # Analyse at the time calendar of selected buoys
-    z1stUsedDate = []
-    t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
-    ic = 0
-    for jid in vIDs:
-        ic = ic+1
-        (idx,) = np.where( vBIDs0==jid )
-        vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
-        Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
-
-        # Inspection of time records for this particular buoy:        
-        zdt = vt[1:Np]-vt[0:Np-1]
-        if np.any( zdt <= 0.):
-            print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
-            exit(0)
-
-        # Spot the first record of use of the vt series:
-        (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
-        if len(idxtp)==1:
-            jt1 = idxtp[0]
-        else:
-            #print(' AHH: idxtp=',idxtp,' => ',end='')
-            #for i in idxtp: print(epoch2clock(vt[i]),'; ',end='')
-            #print('')
-            idxnrst = np.argmin(abs(vt[idxtp] - t_bA))
-            jt1 = idxtp[idxnrst]
-        #print('LOLO: jt1 =',jt1,', vt[jt1] =', epoch2clock(vt[jt1]),'\n')
-        z1stUsedDate.append(vt[jt1])
-
-    z1stUsedDate = np.array(z1stUsedDate,dtype=int)
-
-    dt_sens = 600. ; #seconds !
-    tfamily = []
-    tfamily.append(z1stUsedDate[0])
-    for jb in range(Nb):
-        lfound = False
-        itim = z1stUsedDate[jb]
-        #print(epoch2clock(itim))
-        for tknown in tfamily:
-            if itim>=tknown-dt_sens and itim<tknown+dt_sens:
-                # We know this time... break the loop along tfamily
-                lfound = True
-                break
-        if not lfound:
-            # It is a time unknown so far:
-            print('New time:',epoch2clock(itim))
-            tfamily.append(itim)
-        
-    tfamily = np.array(tfamily,dtype=int)
-    ntf = len(tfamily)
-    print('We have '+str(ntf)+' different time family identified:')
-    for itim in tfamily:
-        print(epoch2clock(itim))
-        
-    exit(0)
+    if l_time_offset_families:
+    
+        # Analyse at the time calendar of selected buoys
+        z1stUsedDate = []
+        t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
+        ic = 0
+        for jid in vIDs:
+            ic = ic+1
+            (idx,) = np.where( vBIDs0==jid )
+            vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
+            Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
+    
+            # Inspection of time records for this particular buoy:        
+            zdt = vt[1:Np]-vt[0:Np-1]
+            if np.any( zdt <= 0.):
+                print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
+                exit(0)
+    
+            # Spot the first record of use of the vt series:
+            (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
+            if len(idxtp)==1:
+                jt1 = idxtp[0]
+            else:
+                #print(' AHH: idxtp=',idxtp,' => ',end='')
+                #for i in idxtp: print(epoch2clock(vt[i]),'; ',end='')
+                #print('')
+                idxnrst = np.argmin(abs(vt[idxtp] - t_bA))
+                jt1 = idxtp[idxnrst]
+            #print('LOLO: jt1 =',jt1,', vt[jt1] =', epoch2clock(vt[jt1]),'\n')
+            z1stUsedDate.append(vt[jt1])
+    
+        z1stUsedDate = np.array(z1stUsedDate,dtype=int)
+    
+        dt_sens = 600. ; #seconds !
+        tfamily = []
+        tfamily.append(z1stUsedDate[0])
+        for jb in range(Nb):
+            lfound = False
+            itim = z1stUsedDate[jb]
+            #print(epoch2clock(itim))
+            for tknown in tfamily:
+                if itim>=tknown-dt_sens and itim<tknown+dt_sens:
+                    # We know this time... break the loop along tfamily
+                    lfound = True
+                    break
+            if not lfound:
+                # It is a time unknown so far:
+                print('New time:',epoch2clock(itim))
+                tfamily.append(itim)
+            
+        tfamily = np.array(tfamily,dtype=int)
+        ntF = len(tfamily)
+        print('We have '+str(ntF)+' different time family identified:')
+        for itim in tfamily:
+            print(epoch2clock(itim))
+    
+        ibelongF = np.zeros(Nb, dtype='i1') ; # tells to what family a buoy belongs to...
+        for jb in range(Nb):
+            itim = z1stUsedDate[jb]
+            jf = 0
+            for tknown in tfamily:
+                if itim>=tknown-dt_sens and itim<tknown+dt_sens:
+                    ibelongF[jb] = jf
+                    break
+                jf = jf+1
+    
+        vfam = np.zeros(ntF, dtype=int)
+        for jf in range(ntF):
+            (idxF,) = np.where( ibelongF[:] == jf )
+            vfam[jf] = len(idxF)
+            print(' * Family #'+str(jf)+' has '+str(vfam[jf])+' buoys!')
+    
+        kFw = np.argmax( vfam )
+        print(' Family '+str(kFw)+' wins! => ', epoch2clock(tfamily[kFw]) )
+        if np.sum(vfam) != Nb:
+            print('ERRO: `sum(vfam) != Nb` !!!'); exit(0)
+    
+        # Correction offset for all families:
+        vtoffset = np.zeros(ntF, dtype=int)
+        vtoffset[:] = tfamily[kFw] - tfamily[:]
+        for jf in range(ntF):
+            print(' time correction offset to add for family #'+str(jf)+' =>',vtoffset[jf]/3600.,'hours')
+            
+    ### if l_time_offset_families
+    #exit(0)
     
     # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
     xmsk = np.zeros((Nt,Nb), dtype='i1')
@@ -273,9 +305,9 @@ if __name__ == '__main__':
     xXkm = np.zeros((Nt,Nb)) + FillValue
     xYkm = np.zeros((Nt,Nb)) + FillValue
 
-    ic = -1
+    jb = -1
     for jid in vIDs:
-        ic = ic + 1
+        jb = jb + 1
 
         (idx,) = np.where( vBIDs0==jid )
         vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
@@ -293,6 +325,12 @@ if __name__ == '__main__':
         #print('  => mask =', zmsk)
         #exit(0)
 
+        if l_time_offset_families:
+            ifml = ibelongF[jb]
+            zadd_offset = vtoffset[ifml]
+            #print('LOLO: buoy ID:'+str(jid)+' belongs to family '+str(ifml)+' correction add offset =',zadd_offset/3600.,'hours')
+            vt[:] = vt[:] + zadd_offset
+        
         ##t_c  = vTbin[0,0] ; # time at center of 1st target time bin
         #t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
         #idxnrst = np.argmin(abs(vt - t_bA)) ; # closest point
@@ -329,8 +367,8 @@ if __name__ == '__main__':
         elif interp_1d==2:
             fG = interpolate.Akima1DInterpolator(vt, vlat0[idx])
             fC = interpolate.Akima1DInterpolator(vt, vYkm0[idx])
-        xlat[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
-        xYkm[0:Nt_b,ic] = fC(vTbin[0:Nt_b,0])
+        xlat[0:Nt_b,jb] = fG(vTbin[0:Nt_b,0])
+        xYkm[0:Nt_b,jb] = fC(vTbin[0:Nt_b,0])
 
         if   interp_1d==0:
             fG = interpolate.interp1d(           vt, vlon0[idx], kind='nearest' )
@@ -341,15 +379,17 @@ if __name__ == '__main__':
         elif interp_1d==2:
             fG = interpolate.Akima1DInterpolator(vt, vlon0[idx])
             fC = interpolate.Akima1DInterpolator(vt, vXkm0[idx])
-        xlon[0:Nt_b,ic] = fG(vTbin[0:Nt_b,0])
-        xXkm[0:Nt_b,ic] = fC(vTbin[0:Nt_b,0])
+        xlon[0:Nt_b,jb] = fG(vTbin[0:Nt_b,0])
+        xXkm[0:Nt_b,jb] = fC(vTbin[0:Nt_b,0])
 
-        xmsk[0:Nt_b,ic] = 1
+        xmsk[0:Nt_b,jb] = 1
 
+        #if ifml!=kFw: xmsk[0:Nt_b,jb] = 0 ; # LOLO removing all buoys not from winning family!
+        
         if idebug_interp>0:
             # Visual control of interpolation:
-            mjt.plot_interp_series( jid, 'lat', vt, vTbin[0:Nt_b,:], vlat0[idx], xlat[0:Nt_b,ic] )
-            #mjt.plot_interp_series( jid, 'lon', vt, vTbin[0:Nt_b,:], vlon0[idx], xlon[0:Nt_b,ic] )
+            mjt.plot_interp_series( jid, 'lat', vt, vTbin[0:Nt_b,:], vlat0[idx], xlat[0:Nt_b,jb] )
+            #mjt.plot_interp_series( jid, 'lon', vt, vTbin[0:Nt_b,:], vlon0[idx], xlon[0:Nt_b,jb] )
 
     if idebug_interp>0: exit(0)
     

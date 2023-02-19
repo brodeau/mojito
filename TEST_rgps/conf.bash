@@ -36,6 +36,7 @@ case ${host} in
         DATE2="${YEAR}0201"
         #LIST_RES="20"
         MARKER_SIZE=15
+        #MARKER_SIZE=50
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
