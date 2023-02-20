@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/rgps/01_interp_to_calendar.py"
+EXE="${MOJITO_DIR}/rgps/interp2calendar.py"
 
 YEAR=`echo ${DATE1} | cut -c1-4`
 
