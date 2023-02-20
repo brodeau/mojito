@@ -23,9 +23,11 @@ from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 
-istream = 2 ; # if>0 => restrain the analysis to buoys of stream #istream !
+istream = 0 ; # if>0 => restrain the analysis to buoys of stream #istream !
 
-l_time_offset_families = True
+l_family = False ; # 1=> restrain to buoys of the largest family !
+
+l_time_offset_families = False
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -128,6 +130,7 @@ if __name__ == '__main__':
     print('\n *** We IDed '+str(Nb)+' (unique) buoys in this file...')
     vmask = np.ones(Nb, dtype='i1')  ; # to mask IDs we cancel
 
+    
     # First we are going to get rid of all buoys that are not ... our defined period
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -141,16 +144,19 @@ if __name__ == '__main__':
         vmask[idx_cncl] = 0
         vIDs = np.ma.masked_where( vmask==0, vIDs )
         vIDs = np.ma.MaskedArray.compressed(vIDs)
-        vStr = np.ma.masked_where( vmask==0, vStr )
-        vStr = np.ma.MaskedArray.compressed(vStr)
+        #vStr = np.ma.masked_where( vmask==0, vStr )
+        #vStr = np.ma.MaskedArray.compressed(vStr)
         Nb   = len(vIDs)
         vmask = np.ones(Nb, dtype='i1')  ; # to mask IDs we cancel
         print('\n *** UPDATE: based on limiting data to stream '+str(istream)+': '+str(Nb)+' buoys left to follow!')
 
+    v1dat = np.zeros(Nb, dtype=int)  ; # For each buoy, what is the date of the earliest record to be used by interpolation
+    
         
     # For each buoy, getting date of earliest and latest snapshot
     print('\n *** Scanning to retain buoys of interest, based on time range...')
-
+    t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
+    
     for jb in range(Nb):
         if jb%1000==0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
 
@@ -170,12 +176,19 @@ if __name__ == '__main__':
             
         # Get rid of buoys that do not have at least 1 record point between rdtA1 and rdt1 (important for interpolation onto Vtbin[0,0]!)
         if vmask[jb]==1:
+            jt1 = None
             (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
-            if len(idxtp) == 0:
+            if len(idxtp)==1:
+                jt1 = idxtp[0]
+            elif len(idxtp)>1:
+                idxnrst = np.argmin(abs(vt[idxtp] - t_bA))
+                jt1 = idxtp[idxnrst]
+            else:
                 vmask[jb] = 0
                 if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. between:'
                                     +epoch2clock(rdtA1)+' & '+epoch2clock(rdt1)+')')
-            
+            if jt1: v1dat[jb] = vt[jt1]
+
         # Get rid of buoys that do not have a unique record point during the first bin:
         if vmask[jb]==1:
             (idxtp,) = np.where( (vt>vTbin[0,1]) & (vt<=vTbin[0,2]) )
@@ -183,16 +196,24 @@ if __name__ == '__main__':
                 vmask[jb] = 0
                 if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. in 1st time bin:'
                                     +epoch2clock(vTbin[0,1])+' & '+epoch2clock(vTbin[0,2])+')')
-            
+                
         if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
 
-
+    # For some unknown reasons:
+    (idx_cncl,) = np.where( v1dat==0 ) ; # 0 is 1970/01/01 00:00 !
+    vmask[idx_cncl] = 0
+        
     # Dropping canceled (masked) buoys and updating number of valid buoys:
     vIDs = np.ma.masked_where( vmask==0, vIDs )
     vIDs = np.ma.MaskedArray.compressed(vIDs)
+    v1dat = np.ma.masked_where( vmask==0, v1dat )
+    v1dat = np.ma.MaskedArray.compressed(v1dat)
     Nb   = len(vIDs)
+    vmask = np.ones(Nb, dtype='i1')  ; # to mask IDs we cancel
     print('\n *** UPDATE: based on date selection, there are '+str(Nb)+' buoys left to follow!')
+
     
+    #for jb in range(Nb): print(' 1st date =', jb, epoch2clock(v1dat[jb]))
 
     if l_drop_coastal:
         # For now, only at start time...
@@ -202,7 +223,6 @@ if __name__ == '__main__':
         fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
         vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc ) ; # load `distance to coast` data
         #
-        vmask = np.zeros(Nb, dtype='i1') + 1
         print('\n *** Scanning to get rid of buoys too close to land (<'+str(int(MinDistFromLand))+' km)')
         for jb in range(Nb):
             if jb%1000==0: print('    .... '+str(jb)+' / '+str(Nb)+'...')
@@ -221,99 +241,98 @@ if __name__ == '__main__':
         # Dropping canceled (masked) buoys and updating number of valid buoys:
         vIDs = np.ma.masked_where( vmask==0, vIDs      )
         vIDs = np.ma.MaskedArray.compressed(vIDs)
+        v1dat = np.ma.masked_where( vmask==0, v1dat      )
+        v1dat = np.ma.MaskedArray.compressed(v1dat)
         Nb   = len(vIDs)
-        del vmask
+        vmask = np.zeros(Nb, dtype='i1') + 1
         print('\n *** UPDATE: based on minimum distance to nearest coast, there are '+str(Nb)+' buoys left to follow!')
         #
     ### if l_drop_coastal
 
 
-    
-    if l_time_offset_families:
-    
-        # Analyse at the time calendar of selected buoys
-        z1stUsedDate = []
-        t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
-        ic = 0
-        for jid in vIDs:
-            ic = ic+1
-            (idx,) = np.where( vBIDs0==jid )
-            vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
-            Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
-    
-            # Inspection of time records for this particular buoy:        
-            zdt = vt[1:Np]-vt[0:Np-1]
-            if np.any( zdt <= 0.):
-                print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
-                exit(0)
-    
-            # Spot the first record of use of the vt series:
-            (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
-            if len(idxtp)==1:
-                jt1 = idxtp[0]
-            else:
-                #print(' AHH: idxtp=',idxtp,' => ',end='')
-                #for i in idxtp: print(epoch2clock(vt[i]),'; ',end='')
-                #print('')
-                idxnrst = np.argmin(abs(vt[idxtp] - t_bA))
-                jt1 = idxtp[idxnrst]
-            #print('LOLO: jt1 =',jt1,', vt[jt1] =', epoch2clock(vt[jt1]),'\n')
-            z1stUsedDate.append(vt[jt1])
-    
-        z1stUsedDate = np.array(z1stUsedDate,dtype=int)
-    
-        dt_sens = 600. ; #seconds !
+    if l_family and l_time_offset_families:
+        print('ERROR: cannot have `l_family and l_time_offset_families` !'); sys.exit(0)
+
+    if l_family or l_time_offset_families:
+
+        dt_sens = 60 ; #seconds !
         tfamily = []
-        tfamily.append(z1stUsedDate[0])
+        tfamily.append(v1dat[0])
         for jb in range(Nb):
             lfound = False
-            itim = z1stUsedDate[jb]
-            #print(epoch2clock(itim))
+            itim = v1dat[jb]
             for tknown in tfamily:
                 if itim>=tknown-dt_sens and itim<tknown+dt_sens:
                     # We know this time... break the loop along tfamily
                     lfound = True
                     break
             if not lfound:
-                # It is a time unknown so far:
-                print('New time:',epoch2clock(itim))
-                tfamily.append(itim)
+                # It is a time unknown so far:                
+                tfamily.append(itim) ; #print('New time:',epoch2clock(itim))
             
         tfamily = np.array(tfamily,dtype=int)
         ntF = len(tfamily)
         print('We have '+str(ntF)+' different time family identified:')
-        for itim in tfamily:
-            print(epoch2clock(itim))
+        for itim in tfamily: print(epoch2clock(itim))
     
         ibelongF = np.zeros(Nb, dtype='i1') ; # tells to what family a buoy belongs to...
         for jb in range(Nb):
-            itim = z1stUsedDate[jb]
+            it0 = v1dat[jb]
             jf = 0
-            for tknown in tfamily:
-                if itim>=tknown-dt_sens and itim<tknown+dt_sens:
+            for itim in tfamily:
+                if it0>=itim-dt_sens and it0<itim+dt_sens:
                     ibelongF[jb] = jf
                     break
                 jf = jf+1
-    
+
         vfam = np.zeros(ntF, dtype=int)
         for jf in range(ntF):
-            (idxF,) = np.where( ibelongF[:] == jf )
+            (idxF,) = np.where( (v1dat >= tfamily[jf]-dt_sens) & (v1dat<tfamily[jf]+dt_sens) )
             vfam[jf] = len(idxF)
             print(' * Family #'+str(jf)+' has '+str(vfam[jf])+' buoys!')
     
         kFw = np.argmax( vfam )
         print(' Family '+str(kFw)+' wins! => ', epoch2clock(tfamily[kFw]) )
         if np.sum(vfam) != Nb:
-            print('ERRO: `sum(vfam) != Nb` !!!'); exit(0)
-    
+            print('ERRO: `sum(vfam) != Nb` !!!',np.sum(vfam),Nb); exit(0)
+
+
+    if l_family:
+        vmask = np.zeros(Nb, dtype='i1')
+        (idx_keep,) = np.where( (v1dat>=tfamily[kFw]-dt_sens) & (v1dat<tfamily[kFw]+dt_sens) )
+        vmask[idx_keep] = 1
+        vIDs = np.ma.masked_where( vmask==0, vIDs )
+        vIDs = np.ma.MaskedArray.compressed(vIDs)
+        Nb   = len(vIDs)
+        print('\n *** UPDATE: based on limiting data to biggest family '+epoch2clock(tfamily[kFw])+': '+str(Nb)+' buoys left to follow!')
+
+        
+    if l_time_offset_families:
+        print('')
+        # Analyse at the time calendar of selected buoys
+        jb = 0
+        for jid in vIDs:
+            jb = jb+1
+            (idx,) = np.where( vBIDs0==jid )
+            vt   = vtime0[idx] ;            # that's the time axis of this particular buoy [epoch time]
+            Np   = len(vt)     ;            # mind that Np varies from 1 buoy to another...
+            # Inspection of time records for this particular buoy:        
+            zdt = vt[1:Np]-vt[0:Np-1]
+            if np.any( zdt <= 0.):
+                print('ERROR: time not increasing for buoy ID:'+str(jid)+' !!!')
+                exit(0)    
         # Correction offset for all families:
         vtoffset = np.zeros(ntF, dtype=int)
         vtoffset[:] = tfamily[kFw] - tfamily[:]
         for jf in range(ntF):
             print(' time correction offset to add for family #'+str(jf)+' =>',vtoffset[jf]/3600.,'hours')
-            
     ### if l_time_offset_families
-    #exit(0)
+
+
+
+
+    
+
     
     # Final arrays have 2 dimmensions Nb & Nt (buoy ID & time record)
     xmsk = np.zeros((Nt,Nb), dtype='i1')
@@ -347,19 +366,6 @@ if __name__ == '__main__':
             zadd_offset = vtoffset[ifml]
             #print('LOLO: buoy ID:'+str(jid)+' belongs to family '+str(ifml)+' correction add offset =',zadd_offset/3600.,'hours')
             vt[:] = vt[:] + zadd_offset
-        
-        ##t_c  = vTbin[0,0] ; # time at center of 1st target time bin
-        #t_bA =  vTbin[0,1] ; # time at left boundary of 1st target time bin
-        #idxnrst = np.argmin(abs(vt - t_bA)) ; # closest point
-        #t_nrst = vt[idxnrst]
-        ##print('LOLO: center first time bin and closest point for buoy '+str(jid)+':',epoch2clock(t_c),epoch2clock(t_nrst))
-        #print('LOLO: A-bound first time bin and closest point for buoy '+str(jid)+':',epoch2clock(t_bA),epoch2clock(t_nrst))
-        ## Check if inside the bin:
-        ##if not ( t_nrst>vTbin[0,1] and t_nrst<=vTbin[0,2] ):
-        ##    print('ERROR: `t_nrst` not found in first bin!'); exit(0)
-        #t_offset = t_bA - t_nrst
-        #if idebug>-1: print('   * applying time offset to calendar of buoy '+str(jid)+':', t_offset/3600.,'hours')
-        #vt[:] = vt[:] + t_offset
 
 
         Nt_b = Nt

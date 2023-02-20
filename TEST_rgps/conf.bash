@@ -46,7 +46,7 @@ case ${host} in
         #
         DT_BINS_H=72  ; # width of a bin for time sampling [hours]
         DATE2="${YEAR}0201"
-        MARKER_SIZE=15
+        MARKER_SIZE=50
         ;;
     "frazilo")
         export DATA_DIR="/data"
