@@ -25,6 +25,10 @@ import mojito as mjt
 
 istream = 0 ; # if>0 => restrain the analysis to buoys of stream #istream !
 
+l_exclude_early = False
+
+l_exclude_empty_1stbin = False
+
 l_family = False ; # 1=> restrain to buoys of the largest family !
 
 l_time_offset_families = False
@@ -173,8 +177,15 @@ if __name__ == '__main__':
         if t2<rdtI and vmask[jb]==1:
             vmask[jb] = 0
             if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+epoch2clock(rdtI)+'!)')
-            
+
         # Get rid of buoys that do not have at least 1 record point between rdtA1 and rdt1 (important for interpolation onto Vtbin[0,0]!)
+        if l_exclude_early and vmask[jb]==1:
+            (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
+            if len(idxtp)==0:
+                vmask[jb] = 0
+                if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. between:'
+                                    +epoch2clock(rdtA1)+' & '+epoch2clock(rdt1)+')')
+        # Constructing `v1dat`:
         if vmask[jb]==1:
             jt1 = None
             (idxtp,) = np.where( (vt>rdtA1) & (vt<=rdt1) )
@@ -183,19 +194,16 @@ if __name__ == '__main__':
             elif len(idxtp)>1:
                 idxnrst = np.argmin(abs(vt[idxtp] - t_bA))
                 jt1 = idxtp[idxnrst]
-            else:
-                vmask[jb] = 0
-                if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. between:'
-                                    +epoch2clock(rdtA1)+' & '+epoch2clock(rdt1)+')')
             if jt1: v1dat[jb] = vt[jt1]
 
         # Get rid of buoys that do not have a unique record point during the first bin:
-        if vmask[jb]==1:
+        if l_exclude_empty_1stbin and vmask[jb]==1:
             (idxtp,) = np.where( (vt>vTbin[0,1]) & (vt<=vTbin[0,2]) )
             if len(idxtp) == 0:
                 vmask[jb] = 0
                 if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. in 1st time bin:'
                                     +epoch2clock(vTbin[0,1])+' & '+epoch2clock(vTbin[0,2])+')')
+
                 
         if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
 
