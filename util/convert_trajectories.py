@@ -14,19 +14,18 @@ from scipy.io import loadmat
 srs_longlat = PlateCarree()
 srs_rgps = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70)
 
-idir = '/data/gcm_setup/data/RGPS_Kwok_98/test_matlab'
-#dst_dir = '/data/gcm_setup/data/RGPS_Kwok_98/test_matlab'
-dst_dir = '.'
+idir = '/data/gcm_setup/data/RGPS_Kwok_98/Ramplab'
+dst_dir = '/data/gcm_setup/data/RGPS_Kwok_98'
+#dst_dir = '.'
 
 ifiles = sorted(glob.glob(f'{idir}/RGPS_*_traj.mat'))
 
 
 
 for ifile in ifiles:
-    dst_file = f'{dst_dir}/{os.path.basename(ifile).replace(".mat", ".nc")}'
+    
+    dst_file = f'{dst_dir}/{os.path.basename(ifile).replace(".mat", ".nc4")}'
     print(ifile, dst_file)
-
-    #exit(0)
     
     # load file
     m = loadmat(ifile)
@@ -141,3 +140,5 @@ for ifile in ifiles:
         
         ds.setncattr('title', 'RGPS trajectories')
         ds.setncattr('reference', 'Kwok, Ronald. “The RADARSAT Geophysical Processor System.” (1998).')    
+
+    print(' *** File '+dst_file+' generated!\n')
