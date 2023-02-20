@@ -150,14 +150,15 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
 
 if __name__ == '__main__':
 
-    if not len(argv) in [2]:
-        print('Usage: '+argv[0]+' <directory_input_npz_files>')
+    if not len(argv) in [3]:
+        print('Usage: '+argv[0]+' <directory_input_npz_files> <exp_name>')
         exit(0)
     cd_in = argv[1]
+    nexp  = argv[2]
 
 
     # Polpulating deformation files available:
-    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*.npz') )
+    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+nexp+'*.npz') )
     nbFiles = len(listnpz)
     print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
 
@@ -174,7 +175,7 @@ if __name__ == '__main__':
         vf = split('_',fb)
         print(vf)
         #
-        list_date.append(split('-',vf[2])[0])
+        list_date.append(split('-',vf[4])[0])
         #
         kStreamName[kf] = vf[1]
         #
@@ -193,7 +194,7 @@ if __name__ == '__main__':
         kf = kf+1
     
     print('\n')
-    
+
     nP = np.sum(kNbPoints)
     print('  ==> Total number of points:', nP)
     print('  ==> list of dates:', list_date[:])

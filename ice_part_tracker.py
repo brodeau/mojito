@@ -329,9 +329,9 @@ if __name__ == '__main__':
                 zLon = np.ma.masked_where( xmask[jt,:,1]==0, xPosG[jt,:,1] )
                 zLat = np.ma.masked_where( xmask[jt,:,0]==0, xPosG[jt,:,0] )
                 mjt.ShowBuoysMap( itime, zLon, zLat, pvIDs=IDs,
-                                  cfig=cfdir+'/Pos_buoys_'+'%4.4i'%(jt)+'_'+ctime+'.png',
+                                  cfig=cfdir+'/Pos_buoys_'+nexpr+'_'+'%4.4i'%(jt)+'_'+ctime+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
-                                  title='IceTracker + SI3 u,v fields' )
+                                  title='IceTracker + SI3 '+nexpr+' u,v fields' )
                 del zLon, zLat
         print('\n')                
     ### for jt in range(Nt-1)

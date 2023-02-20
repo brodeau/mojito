@@ -10,7 +10,7 @@ EXE="${MOJITO_DIR}/statistics.py"
 #fi
 #FIN="$1"
 
-CMD="${EXE} ./npz"
+CMD="${EXE} ./npz ${NEMO_EXP}"
 
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo

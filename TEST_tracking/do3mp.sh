@@ -13,7 +13,7 @@ ijob=0
 
 RESKM=10
 
-cstr="NEMO-SI3"
+cstr="NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}"
 
 list=( `\ls npz/Q-mesh_${cstr}*.npz | grep ${YEAR}` )
 nbf=`echo ${list[*]} | wc -w`
@@ -36,9 +36,11 @@ if [ "${nbf}" != "" ]; then
     
     for dr in ${list_date_ref}; do
         echo
-        lst=(`\ls npz/Q-mesh_${cstr}_*_${dr}_*.npz`) ; # echo ${lst[*]}
-        nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+        lst=(`\ls npz/Q-mesh_${cstr}_*${dr}_*.npz`) ;  #echo ${lst[*]}
+        nf=`echo ${lst[*]} | wc -w` ; echo " => ${nf} files "
 
+
+        
         if [ ${nf} -eq 2 ]; then
 
             fQ1=${lst[0]}

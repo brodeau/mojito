@@ -50,15 +50,14 @@ interp_1d = 1 ; # Time interpolation to fixed time axis: 0=> NN ; 1 => linear; 2
 l_drop_coastal   = False ; # get rid of buoys to close to land
 MinDistFromLand  = 100  ; # how far from the nearest coast should our buoys be? [km]
 
-l_drop_doublons = True ; # PR: keep the one with the longest record...
+l_drop_doublons = False ; # PR: keep the one with the longest record...
 rd_tol = 7. # tolerance distance in km to conclude it's the same buoy
 NbPass = 2  # number of passes...
 
-l_drop_overlap = False
+l_drop_overlap = True
 rhsskm = 7. ; # [km] get rid of buoys (1 of the 2) that are closer to each other than this `rhsskm` km
 
 FillValue = -9999.
-
 
 dt_nom = 72.2*3600. ; # [s] Nominal `dt` between 2 consecutive records for a buoy => ~ 3 days
 pmdt   =  2. *3600. ; # [s] Allowed deviation from `dt_nom` for 2 consecutive records for a buoy => 2 hours

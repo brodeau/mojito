@@ -50,8 +50,8 @@ case ${host} in
         #
         NJPAR=30
         #
-        #DATE2="${YEAR}0205"
-        DATE2="${YEAR}0110"
+        DATE2="${YEAR}0205"
+        #DATE2="${YEAR}0110"
         SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
 
         #
@@ -67,9 +67,10 @@ DATE2d="${YEAR}-`echo ${DATE2}|cut -c 5-6`-`echo ${DATE2}|cut -c 7-8`"
 
 #FNCSEED="RGPS_tracking_${YEAR}-01-01_${DATE2d}_lb.nc"
 #export FNCSEED="${MOJITO_DIR}/TEST_rgps/${FNCSEED}"
-#export FNCSEED="${DATA_DIR}/data/mojito/seeding_from_rgps/${FNCSEED}"
+##export FNCSEED="${DATA_DIR}/data/mojito/seeding_from_rgps/${FNCSEED}"
 
-export FNCSEED="/data/data/mojito/seeding_from_rgps/RGPS_ice_drift_1997-01-01_1997-05-01_lb.nc"
+#export FNCSEED="/data/data/mojito/seeding_from_rgps/RGPS_ice_drift_1997-01-01_1997-05-01_lb.nc"
+export FNCSEED="/data/data/mojito/seeding_from_rgps/RGPS_tracking_1997-01-01_1997-02-05_NEW.nc"
 
 export FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}/${FSI3IN}"
 
