@@ -107,7 +107,7 @@ def GetModelGrid( fNCmeshmask ):
 
 
 
-def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], time2d=[],
+def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[],
                       tunits=tunits_default, fillVal=None, corigin=None ):
     '''
     '''
@@ -118,7 +118,6 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], time2d=[
         print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
         exit(0)
     lSaveMask = (np.shape(mask)   == (Nt,Nb))
-    ltime2d   = (np.shape(time2d) == (Nt,Nb))
     #
     f_out = Dataset(cf_out, 'w', format='NETCDF4')
     #
@@ -138,9 +137,6 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], time2d=[
     v_x     = f_out.createVariable('x_pos',     'f4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
     if lSaveMask:
         v_mask = f_out.createVariable('mask',   'i1',(cd_time,cd_buoy,),                      zlib=True, complevel=9)
-    if ltime2d:
-        vtim2d  = f_out.createVariable('time_pnt', 'i4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
-        vtim2d.units = tunits
     #
     v_time.units = tunits
     v_bid.units  = 'ID of buoy'
@@ -160,8 +156,6 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], time2d=[
         v_x[jt,:]    =    pX[jt,:]
         if lSaveMask:
             v_mask[jt,:] = mask[jt,:]
-        if ltime2d:
-            vtim2d[jt,:] = time2d[jt,:]
     #
     if corigin:
          f_out.Origin = corigin         
@@ -258,7 +252,6 @@ def GetDimNCdataMJT( cfile ):
         print(' * [GetDimNCdataMJT]: max. number of buoys (at start) in file '+cfile+' =>', nP)
         print(' * [GetDimNCdataMJT]: origin of data: "'+corgn+'"')
         list_var = list( id_in.variables.keys() )
-        ltime2d = ( 'time_pnt' in list_var )
-    return Nt, nP, corgn, ltime2d
+    return Nt, nP, corgn
 
 

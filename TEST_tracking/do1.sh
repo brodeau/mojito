@@ -11,9 +11,9 @@ fi
 
 
 if [ "$1" = "d" ]; then
-    CMD="${EXE} ${FSI3IN} ${FNMM}"
+    CMD="${EXE} ${FSI3IN} ${FNMM} ${DATE2}"
 else
-    CMD="${EXE} ${FSI3IN} ${FNMM} ${FNCSEED}" ; # with nc file for init seed...
+    CMD="${EXE} ${FSI3IN} ${FNMM} ${DATE2} ${FNCSEED}" ; # with nc file for init seed...
 fi
 
 echo

@@ -37,20 +37,24 @@ FillValue = -9999.
 
 if __name__ == '__main__':
 
-    if not len(argv) in [3,4]:
-        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> (<seeding_file.nc>)')
+    if not len(argv) in [4,5]:
+        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> <stop_date:YYYYMMDD> (<seeding_file.nc>)')
         exit(0)
         
     cf_uv = argv[1]
     cf_mm = argv[2]
+    cf_de = argv[3]
 
-    lSeedFromNCfile = ( len(argv)==4 )
+    lSeedFromNCfile = ( len(argv)==5 )
     if lSeedFromNCfile:
         seeding_type='mojitoNC'
-        fNCseed = argv[3]
+        fNCseed = argv[4]
         mjt.chck4f(fNCseed)
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
-    
+
+    cdateStop = cf_de[0:4]+'-'+cf_de[4:6]+'-'+cf_de[6:8]+'_00:00:00'
+    idateStop = int(clock2epoch(cdateStop))
+        
     cfdir = './figs/tracking'
     if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
     if not path.exists('./npz'):           mkdir('./npz')
@@ -85,10 +89,19 @@ if __name__ == '__main__':
     # Open Input SI3 data file
     id_uv = Dataset(cf_uv)
     Nt = id_uv.dimensions['time_counter'].size
-    print('\n\n *** '+str(Nt)+' records in input SI3 file!\n')
+    if id_uv.variables['time_counter'].units != ctunits_expected:
+        print('ERROR: wrong units for time calendar in file:',cf_uv)
+        exit(0)
+    print('\n\n *** '+str(Nt)+' records in input SI3 file!')
+    ztime_model = np.array( id_uv.variables['time_counter'][:] , dtype='i4' )
 
-
-   
+    
+    if idateStop<=np.min(ztime_model) or idateStop>np.max(ztime_model):
+        print('ERROR: end time is outside of time calendar of the model file!')
+        exit(0)
+    kstop = np.argmin(np.abs(ztime_model[:]-idateStop)) + 1
+    print('   => will stop at record',kstop,' =>',epoch2clock(ztime_model[kstop]))
+    Nt = kstop
 
     
     ############################

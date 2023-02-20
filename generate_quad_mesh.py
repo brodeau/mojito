@@ -103,10 +103,7 @@ if __name__ == '__main__':
     cfstr = split('_tracking_', path.basename(cf_nc))[0]
 
     # Loading the data for the 2 selected records:
-    Nt, nBmax, corigin, l_t2d = mjt.GetDimNCdataMJT( cf_nc )
-
-    print('LOLO: generate_quad_mesh.py: l_t2d =',l_t2d)
-    #exit(0)
+    Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc )
 
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
