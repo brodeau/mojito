@@ -113,7 +113,7 @@ if __name__ == '__main__':
     #rdtA1 = rdt1 - 1.5*dt_bin
 
     # Open, inspect the input file and load raw data:
-    Np0, vtime0, vYkm0, vXkm0, vlat0, vlon0, vBIDs0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
+    Np0, Ns0, vtime0, vYkm0, vXkm0, vlat0, vlon0, vBIDs0, vStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
 
     if idebug>0:
         rlat_min, rlat_max = np.min(vlat0), np.max(vlat0)

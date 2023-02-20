@@ -33,6 +33,8 @@ def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
 
         nP = id_in.dimensions['points'].size
         if iverbose>0: print('\n *** Total number of points in the file = ', nP)
+        nS = id_in.dimensions['streams'].size
+        if iverbose>0: print('\n *** Total number of streams in the file = ', nS)
 
         # Time records:
         ctunits = id_in.variables['time'].units
@@ -52,9 +54,13 @@ def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
         kBIDs    = np.zeros(nP, dtype=int)
         kBIDs[:] = id_in.variables['index'][:]
 
+        # Buoy stream:
+        kStrm    = np.zeros(nP, dtype='i1')
+        kStrm[:] = id_in.variables['idstream'][:]
+        
     zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
 
-    return nP, ztime, zy, zx, zlat, zlon, kBIDs
+    return nP, nS, ztime, zy, zx, zlat, zlon, kBIDs, kStrm
 
 
 

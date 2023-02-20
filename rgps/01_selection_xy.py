@@ -136,7 +136,7 @@ if __name__ == '__main__':
     NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=idebug-1 )
     
     # Open, inspect the input file and load raw data:
-    Np0, vtime0, vy0, vx0, vlat0, vlon0, vBIDs0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
+    Np0, Ns0, vtime0, vy0, vx0, vlat0, vlon0, vBIDs0, vStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
     
     # Masking all point that are before and beyond our period of interest (note: `vtime0` is not masked!):
     Nb, vIDsWP = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vx0, vy0, vlon0, vlat0,  rmskVal=-99999. )
