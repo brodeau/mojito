@@ -54,11 +54,6 @@ for ifile in ifiles:
         print(' *** Doing stream #',id_stream)
 
         stream = m['out'][0][jS]
-
-
-        #print(stream)
-        #exit(0)
-
         
         x    = [ j[0] for j in stream['trajectories'][0][0]['x_map'][0]  ]
         y    = [ j[0] for j in stream['trajectories'][0][0]['y_map'][0]  ]
