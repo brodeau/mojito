@@ -22,7 +22,10 @@ from scipy import interpolate
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
-l_time_offset_families = False
+
+istream = 2 ; # if>0 => restrain the analysis to buoys of stream #istream !
+
+l_time_offset_families = True
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
@@ -117,20 +120,34 @@ if __name__ == '__main__':
 
     if idebug>0:
         rlat_min, rlat_max = np.min(vlat0), np.max(vlat0)
-        print('\n *** Southernmost & Northernmost latitudes in the dataset =>', rlat_min, rlat_max)
-
+        print('\n *** Southernmost & Northernmost latitudes in the dataset =>', rlat_min, rlat_max)        
+        
     vIDs, idxUNQid = np.unique(vBIDs0, return_index=True )
-
+    vStr           = vStrm0[idxUNQid]
     Nb   = len(vIDs)
     print('\n *** We IDed '+str(Nb)+' (unique) buoys in this file...')
-
+    vmask = np.ones(Nb, dtype='i1')  ; # to mask IDs we cancel
 
     # First we are going to get rid of all buoys that are not ... our defined period
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # To mask IDs we cancel:
-    vmask = np.zeros(Nb, dtype='i1') + 1
+    
+    # Stream restriction:
+    if istream > 0:
+        if istream > Ns0:
+            print('ERROR: there are only',Ns0,'streams in the file!!! =>',istream); exit(0)
+        #
+        (idx_cncl,) = np.where(vStr!=istream)
+        vmask[idx_cncl] = 0
+        vIDs = np.ma.masked_where( vmask==0, vIDs )
+        vIDs = np.ma.MaskedArray.compressed(vIDs)
+        vStr = np.ma.masked_where( vmask==0, vStr )
+        vStr = np.ma.MaskedArray.compressed(vStr)
+        Nb   = len(vIDs)
+        vmask = np.ones(Nb, dtype='i1')  ; # to mask IDs we cancel
+        print('\n *** UPDATE: based on limiting data to stream '+str(istream)+': '+str(Nb)+' buoys left to follow!')
 
+        
     # For each buoy, getting date of earliest and latest snapshot
     print('\n *** Scanning to retain buoys of interest, based on time range...')
 
@@ -171,11 +188,11 @@ if __name__ == '__main__':
 
 
     # Dropping canceled (masked) buoys and updating number of valid buoys:
-    vIDs = np.ma.masked_where( vmask==0, vIDs      )
+    vIDs = np.ma.masked_where( vmask==0, vIDs )
     vIDs = np.ma.MaskedArray.compressed(vIDs)
     Nb   = len(vIDs)
     print('\n *** UPDATE: based on date selection, there are '+str(Nb)+' buoys left to follow!')
-
+    
 
     if l_drop_coastal:
         # For now, only at start time...
