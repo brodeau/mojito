@@ -554,7 +554,7 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, rtime, iverbose=0 ):
         del idxRM, jKeep, idxRMall
         Nok0 = len(pidx0)
     else:
-        if iverbose>0: print('    |SMO|  => no suppression to perform ! :D\n')
+        if iverbose>0: print('    |SMO|  => no suppression to perform...')
     #
     return Nok0, pidx0
 

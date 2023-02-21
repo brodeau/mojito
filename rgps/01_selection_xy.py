@@ -55,7 +55,7 @@ NrB_max =  50  ; # Max number of valid consecutive records for a given buoy, gue
 
 min_nb_buoys_in_stream = 200 ; # minimum number of buoys for considering a stream a stream!
 
-Nb_min_cnsctv = 2   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
+Nb_min_cnsctv = 2 ; #lolo   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
@@ -237,8 +237,7 @@ if __name__ == '__main__':
                                 it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 if rd_ini > MinDistFromLand:
-                                    #IDXtakenl.append(jidx)                  ; # point for first record of buoy `jID`!
-                                    for ii in idx0_id: IDXtakenl.append(ii) ; # points for following records of `jID
+                                    IDXtakenl.extend(idx0_id) ; # points for following records of `jID
                                     if not (jidx in IDXtakenl): print('ERROR: `not (jidx in IDXtakenl)`!'); exit(0)
                                     #
                                     Nbuoys_stream = Nbuoys_stream + 1   ; # this is another valid buoy for this stream
@@ -257,7 +256,7 @@ if __name__ == '__main__':
                         VNB_ini[istream] = Nbuoys_stream
                         VTc_ini[istream] = rTc
                         # Only now can we register the points indices we used into `IDXtakenG`:
-                        for jidx in IDXtakenl: IDXtakenG.append(jidx)
+                        IDXtakenG.extend(IDXtakenl)
                     else:
                         print('  * Well, this stream did not make it through the selection process... :(')
                         Xmsk[istream,:] = 0
