@@ -47,15 +47,17 @@ cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
+Nforced_stream_length = None ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
+#Nforced_stream_length = 2 ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
+Nb_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
+
 dt_buoy_Nmnl = 3*24*3600     ; # the expected nominal time step of the input data, ~ 3 days [s]
-max_dev_from_dt_buoy_Nmnl =  12.*3600. ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
+max_dev_from_dt_buoy_Nmnl =  24.*3600. ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
 
 Ns_max  =  150 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
 NrB_max =  50  ; # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
 
 min_nb_buoys_in_stream = 200 ; # minimum number of buoys for considering a stream a stream!
-
-Nb_min_cnsctv = 2 ; #lolo   ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
 
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
@@ -128,6 +130,12 @@ if __name__ == '__main__':
     print( "   ===> in epoch time: ", rdt1, "to", rdt2 )
     print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
 
+
+    if Nforced_stream_length:
+        if Nb_min_cnsctv > Nforced_stream_length:
+            print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_stream_length` !'); exit(0)
+
+    
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
@@ -202,8 +210,8 @@ if __name__ == '__main__':
                     print('     => '+str(Nok)+' buoys still in the game! ('+str(Nok0-Nok)+' removed because index already in use...)')
                 
 
-                NBstream = 0
-                IDXstream  = []  ; # keeps memory of buoys that are already been included, but only at the stream level
+                NBinStr = 0     ; # number of buoys in the stream
+                IDXofStr  = []  ; # keeps memory of buoys that are already been included, but only at the stream level
                 
                 if Nok >= min_nb_buoys_in_stream:
                     
@@ -228,32 +236,34 @@ if __name__ == '__main__':
                             #print('---lolo: after `mjt.ValidCnsctvRecordsBuoy()` should have fixed the potential exclusion there...')
                             #lolo: I thinks that's where we cancel too many buoys because a time gap means a kill???
                             #exit(0)
-                            
+                            #
                             # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
                             if nbRecOK >= Nb_min_cnsctv:
+                                if Nforced_stream_length:
+                                    nbRecOK = Nforced_stream_length
                                 # We want the buoy to be located at least `MinDistFromLand` km off the coast                                
                                 it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 if rd_ini > MinDistFromLand:
-                                    IDXstream.extend(idx0_id) ; # points for following records of `jID
+                                    IDXofStr.extend(idx0_id[:nbRecOK]) ; # points for following records of `jID / if not Nforced_stream_length: len(idx0_id)==nbRecOK]
                                     #
-                                    NBstream = NBstream + 1   ; # this is another valid buoy for this stream
+                                    NBinStr = NBinStr + 1   ; # this is another valid buoy for this stream
                                     Xmsk[istream,jb] = 1                ; # flag for valid point
                                     XIDs[istream,jb] = jID              ; # keeps memory of select buoy
-                                    XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of valid consec. records
-                                    XIX0[istream,jb,:nbRecOK] = idx0_id[:]
+                                    XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
+                                    XIX0[istream,jb,:nbRecOK] = idx0_id[:nbRecOK]
                                     
                                 ### if rd_ini > MinDistFromLand
                             ### if nbRecOK >= Nb_min_cnsctv
                         ### if not jidx in IDXtakenG
                     ### for jidx in idxT
 
-                    if NBstream >= min_nb_buoys_in_stream:
-                        print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(NBstream)+' buoys!')
-                        VNB_ini[istream] = NBstream
+                    if NBinStr >= min_nb_buoys_in_stream:
+                        print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(NBinStr)+' buoys!')
+                        VNB_ini[istream] = NBinStr
                         VTc_ini[istream] = rTc
                         # Only now can we register the points indices we used into `IDXtakenG`:
-                        IDXtakenG.extend(IDXstream)
+                        IDXtakenG.extend(IDXofStr)
                     else:
                         print('  * Well, this stream did not make it through the selection process... :(')
                         Xmsk[istream,:] = 0
@@ -376,9 +386,12 @@ if __name__ == '__main__':
         if NvB != len(vids): print('ERROR Z1!'); exit(0)
         print('\n *** Having a look at stream #'+cs+' initiated for time bin centered around '+cTc+' !')
 
-        NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
-        print('     ===> has '+str(NvB)+' valid buoys at start!')
-        print('     ===> the buoy with most records has '+str(NCRmax)+' of them!')
+        if Nforced_stream_length:
+            NCRmax = Nforced_stream_length
+        else:        
+            NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
+            print('     ===> has '+str(NvB)+' valid buoys at start!')
+            print('     ===> the buoy with most records has '+str(NCRmax)+' of them!')
 
         if idebug>2:
             print('        => with following IDs:')
@@ -401,6 +414,9 @@ if __name__ == '__main__':
         for jb in range(NvB):
             #
             nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
+            if Nforced_stream_length:
+                nvr = min( nvr, Nforced_stream_length )
+            #
             if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
             xix0[0:nvr,jb] = ZIX0[js,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy

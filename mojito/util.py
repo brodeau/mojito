@@ -177,10 +177,11 @@ def ValidCnsctvRecordsBuoy( date_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
     nbROK = nbR1b
     ztime_ideal = np.array( [ ztime[0]+float(i)*float(dt_expected) for i in range(nbR1b) ], dtype=float )
     #
+    # We cut the series at the first occurence of a dt (time between 2 consec. pos.) > `max_dev_from_dt_expected`
     vtdev = np.abs(ztime - ztime_ideal)
     if np.any(vtdev > max_dev_from_dt_expected):
         (indFU,) = np.where(vtdev > max_dev_from_dt_expected)
-        nbROK = np.min(indFU) ; # yes! no -1 !!!
+        nbROK = np.min(indFU) ; # yes! no -1 !!! 
     #
     if nbROK < nbR1b:
         # Update with only keeping acceptable time records (#fixme: for now only those until first fuckup)
