@@ -62,7 +62,7 @@ case ${host} in
         #NSTREAMB="1"        
         NSTREAMB="136"
         #DATE1="$((YEAR-1))1230"
-        DATE2="${YEAR}0205"
+        DATE2="${YEAR}0305"
         #
         MARKER_SIZE=50
         ;;
