@@ -3,7 +3,7 @@
 . ./conf.bash
 
 
-EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
+EXE="${MOJITO_DIR}/rgps/02_generate_quad_mesh_multi.py"
 
 mkdir -p logs
 

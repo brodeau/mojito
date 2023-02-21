@@ -173,9 +173,12 @@ if __name__ == '__main__':
         print('\n  # File: '+ff)
         fb = path.basename(ff)
         vf = split('_',fb)
-        print(vf)
+        ncb = len(vf)        
         #
-        list_date.append(split('-',vf[4])[0])
+        if ncb == 3:
+            list_date.append(split('-',vf[2])[0])
+        else:
+            list_date.append(split('-',vf[4])[0])
         #
         kStreamName[kf] = vf[1]
         #

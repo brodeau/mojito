@@ -161,7 +161,7 @@ if __name__ == '__main__':
             rTc = vTbin[jt,0] ; # center of the current time bin
             rTa = vTbin[jt,1] ; # begining of the current time bin
             #
-            print("\n *** Selecting point indices that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!")
+            print("\n *** Selecting point pos. that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!",end='')
             (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
             zIDsOK0 = vBIDs0[idxOK0]
             ztimOK0 = vtime0[idxOK0]
@@ -175,7 +175,8 @@ if __name__ == '__main__':
                 ztimOK0 = vtime0[idxOK0]
             #
             Nok0 = len(idxOK0)
-
+            print(' => '+str(Nok0)+' of them!')
+            
             if Nok0>0:
 
                 # If the width of the time bin is large enough (normally>3days),
@@ -201,8 +202,8 @@ if __name__ == '__main__':
                     print('     => '+str(Nok)+' buoys still in the game! ('+str(Nok0-Nok)+' removed because index already in use...)')
                 
 
-                Nbuoys_stream = 0
-                IDXtakenl  = []  ; # keeps memory of buoys that are already been included, but only at the stream level
+                NBstream = 0
+                IDXstream  = []  ; # keeps memory of buoys that are already been included, but only at the stream level
                 
                 if Nok >= min_nb_buoys_in_stream:
                     
@@ -215,10 +216,7 @@ if __name__ == '__main__':
                         #
                         jID = vBIDs0[jidx]
                         #
-                        if (jidx in IDXtakenl): print('LOLO! ERROR ZY!'); exit(0)
-                            
-                        # #fixme: I have the feeling that `IDXtakenl` is unecessary???
-                        if (not jidx in IDXtakenG) and (not jidx in IDXtakenl):
+                        if not jidx in IDXtakenG:
 
                             jb = jb + 1
 
@@ -237,10 +235,9 @@ if __name__ == '__main__':
                                 it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 if rd_ini > MinDistFromLand:
-                                    IDXtakenl.extend(idx0_id) ; # points for following records of `jID
-                                    if not (jidx in IDXtakenl): print('ERROR: `not (jidx in IDXtakenl)`!'); exit(0)
+                                    IDXstream.extend(idx0_id) ; # points for following records of `jID
                                     #
-                                    Nbuoys_stream = Nbuoys_stream + 1   ; # this is another valid buoy for this stream
+                                    NBstream = NBstream + 1   ; # this is another valid buoy for this stream
                                     Xmsk[istream,jb] = 1                ; # flag for valid point
                                     XIDs[istream,jb] = jID              ; # keeps memory of select buoy
                                     XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of valid consec. records
@@ -248,15 +245,15 @@ if __name__ == '__main__':
                                     
                                 ### if rd_ini > MinDistFromLand
                             ### if nbRecOK >= Nb_min_cnsctv
-                        ### if (not jidx in IDXtakenG) and (not jidx in IDXtakenl)
+                        ### if not jidx in IDXtakenG
                     ### for jidx in idxT
 
-                    if Nbuoys_stream >= min_nb_buoys_in_stream:
-                        print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(Nbuoys_stream)+' buoys!')
-                        VNB_ini[istream] = Nbuoys_stream
+                    if NBstream >= min_nb_buoys_in_stream:
+                        print('   +++ CONFIRMED VALID STREAM #'+str(istream)+' +++ => retained '+str(NBstream)+' buoys!')
+                        VNB_ini[istream] = NBstream
                         VTc_ini[istream] = rTc
                         # Only now can we register the points indices we used into `IDXtakenG`:
-                        IDXtakenG.extend(IDXtakenl)
+                        IDXtakenG.extend(IDXstream)
                     else:
                         print('  * Well, this stream did not make it through the selection process... :(')
                         Xmsk[istream,:] = 0

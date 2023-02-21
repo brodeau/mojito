@@ -35,8 +35,7 @@ case ${host} in
         DATE1="$((YEAR-1))1230"
         DATE2="${YEAR}0201"
         #LIST_RES="20"
-        MARKER_SIZE=15
-        #MARKER_SIZE=50
+        MARKER_SIZE=10
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
@@ -46,7 +45,7 @@ case ${host} in
         #
         DT_BINS_H=72  ; # width of a bin for time sampling [hours]
         DATE2="${YEAR}0120"
-        MARKER_SIZE=50
+        MARKER_SIZE=10
         ;;
     "frazilo")
         export DATA_DIR="/data"

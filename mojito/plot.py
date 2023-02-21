@@ -445,7 +445,8 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
         if rangeX and rangeY:
             rrm = int( max( abs(rangeX[1]-rangeX[0]) , abs(rangeY[1]-rangeY[0]) ) )
             marker_size = 1710000./rrm
-
+    marker_size = marker_size*500./Ly
+            
     # Showing points:
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )
 
