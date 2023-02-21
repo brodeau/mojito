@@ -7,6 +7,7 @@ EXE="${MOJITO_DIR}/rgps/03_generate_quad_mesh_multi.py"
 
 mkdir -p logs
 
+ijob=0
 
 
 for dd in ${LIST_RES}; do
@@ -47,10 +48,11 @@ for dd in ${LIST_RES}; do
             cflog="logs/out_S${cstr}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
             
             if [ ! -f ${cfQ1} ] || [ ! -f ${cfQ2} ]; then
+                ijob=$((ijob+1))
                 echo " *** Construction of Quadrangles"
                 CMD="${EXE} ${fref},${ftst} ${dd}"
                 echo "  ==> ${CMD}"; echo
-                ${CMD}
+                ${CMD} > ${cflog} &
                 echo; echo
             else
                 echo; echo
@@ -58,6 +60,12 @@ for dd in ${LIST_RES}; do
                 echo; echo
             fi
 
+            if [ $((ijob%NJPAR)) -eq 0 ]; then
+                echo "Waiting! (ijob = ${ijob})...."
+                wait
+                echo; echo
+            fi
+            
         done
 
         istr=`expr ${istr} + 1`
