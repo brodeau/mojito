@@ -54,10 +54,10 @@ case ${host} in
         #
         #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((12))  ; # width of a bin for time sampling [hours]
-        DT_BINS_H=72  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=72  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=48  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=24  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #
         #NSTREAMB="1"        
         NSTREAMB="136"
