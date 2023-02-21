@@ -8,6 +8,8 @@ EXE="${MOJITO_DIR}/deformation.py"
 
 mkdir -p logs
 
+ijob=0
+
 for dd in ${LIST_RES}; do
 
     echo; echo
@@ -49,10 +51,18 @@ for dd in ${LIST_RES}; do
                     flog=`basename ${fQ1}`
                     flog=`echo ${flog} | sed -e s/".npz"/""/g`
 
+                    ijob=$((ijob+1))
+
                     CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2)) ${MARKER_SIZE}"
                     echo "  ==> ${CMD}"; echo
-                    ${CMD}
+                    ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
                     echo; echo
+
+                    if [ $((ijob%NJPAR)) -eq 0 ]; then
+                        echo "Waiting! (ijob = ${ijob})...."
+                        wait
+                        echo; echo
+                    fi
 
                 fi
 

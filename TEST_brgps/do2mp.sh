@@ -14,6 +14,10 @@ for dd in ${LIST_RES}; do
     csuff="Sampled"
     #if [ ${dd} -eq 10 ]; then csuff="NoSample"; fi
 
+    #nbstream=`\ls npz/SELECTION_buoys_RGPS_S*_${YEAR}*.npz | wc -w`
+    #echo $nbstream
+    #exit
+    
     istr=${NSTREAMA}
     while [ ${istr} -le ${NSTREAMB} ]; do
               

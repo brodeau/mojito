@@ -17,7 +17,7 @@ from climporn import epoch2clock
 import mojito   as mjt
 
 idebug=0
-iplot=1
+iplot=0
 
 corgn = 'RGPS'
 

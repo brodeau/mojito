@@ -1,4 +1,11 @@
- * Commencer les PDFs plus loin du 0 que maintenant (y a encore le decrochage du shear!)
+
+* `deformation.py` rejects often because some buoys' time position is too far away from the mean time of the whole ice plate,
+  this ctiterion should be applied in the 1st scrit: `01_selection_xy.py` !!! And these buoys removed!
+
+
+
+
+* Commencer les PDFs plus loin du 0 que maintenant (y a encore le decrochage du shear!)
    * comme `0.0015` plutot que les `0.001` actuel??
 
 

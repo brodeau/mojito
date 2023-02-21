@@ -483,7 +483,10 @@ if __name__ == '__main__':
             if idebug>0: print('      rt =',rt,' => ',epoch2clock(rt),' => nearest of VTbin =',epoch2clock(vTbin[idx,0]))
             VT[i] = vTbin[idx,0]
             i=i+1
-
+            
+        print('\n *** Comparaison `vtim` vs `VT`:')
+        for k in range(len(vtim)): print('      ', epoch2clock(vtim[k]), epoch2clock(VT[k]))
+            
         # Masking:
         xx = np.ma.masked_where( xmsk==0, xx )
         xy = np.ma.masked_where( xmsk==0, xy )
