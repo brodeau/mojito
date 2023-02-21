@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/rgps/01_selection_xy.py"
+EXE="python3 -u ${MOJITO_DIR}/rgps/01_selection_xy.py"
 
 YEAR=`echo ${DATE1} | cut -c1-4`
 
