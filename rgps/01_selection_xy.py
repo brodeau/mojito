@@ -37,11 +37,10 @@ from os import path, environ, mkdir
 import numpy as np
 
 from re import split
-from scipy import interpolate
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
-idebug = 0
+idebug = 1
 iplot  = 1
 
 cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
@@ -184,7 +183,7 @@ if __name__ == '__main__':
                 # and so also in `zIDsOK0`!
                 # => we need to keep only one occurence of these points, based on
                 #    the date (closest to center of bin `rTc`)
-                Nok0, idxOK0 = mjt.SuppressMulitOccurences( zIDsOK0, ztimOK0, vBIDs0, idxOK0, rTc )
+                Nok0, idxOK0 = mjt.SuppressMulitOccurences( zIDsOK0, ztimOK0, vBIDs0, idxOK0, rTc, iverbose=idebug )
                 del zIDsOK0, ztimOK0
                 
                 # Exclude points if index has already been used:
@@ -285,8 +284,7 @@ if __name__ == '__main__':
         Ncsrec_max = np.max(XNRc) ; # maximum number of valid consecutive records for a buoy
         
 
-        
-        
+                
         # Now that we know how many streams and what is the maximum possible number of buoys into a stream,
         # we can reduce the arrays:
         ZTc_ini = np.zeros( Nstreams                        ) - 999.
@@ -463,7 +461,15 @@ if __name__ == '__main__':
             VT[i] = vTbin[idx,0]
             i=i+1
 
+        # Masking:
+        xx = np.ma.masked_where( xmsk==0, xx )
+        xy = np.ma.masked_where( xmsk==0, xy )
+        xlon = np.ma.masked_where( xmsk==0, xlon )
+        xlat = np.ma.masked_where( xmsk==0, xlat )
+        xtim = np.ma.masked_where( xmsk==0, xtim )
+            
         if iplot>0:
+            #lili
             # Stream time evolution on Arctic map:
             kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_S'+'%3.3i'%(js),
                                         clock_res='d', NminPnts=Nb_min_buoys )
