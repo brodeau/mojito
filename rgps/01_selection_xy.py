@@ -43,7 +43,7 @@ import mojito as mjt
 idebug = 1
 iplot  = 1
 
-cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
+cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -100,23 +100,34 @@ if __name__ == '__main__':
     ####################################################################################################
     narg = len(argv)
     if not narg in [5]:
-        print('Usage: '+argv[0]+' <file_RGPS.nc> <YYYYMMDD1> <YYYYMMDD2> <dt_binning (hours)>')
+        print('Usage: '+argv[0]+' <file_RGPS.nc> <YYYYMMDD(_HH:MM)1> <YYYYMMDD(_HH:MM)2> <dt_binning (hours)>')
         exit(0)
     cf_in    =     argv[1]
-    cYmmd1   =     argv[2]
-    cYmmd2   =     argv[3]
+    cdate1   =     argv[2]
+    cdate2   =     argv[3]
     idtbin_h = int(argv[4])
-    ####################################################################################################
+    ####################################################################################################        
+    dt_bin =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
+    #                                 # scanning for valid etime intervals
+    #
+    ldp1, lhp1 = len(cdate1)==8, len(cdate1)==14
+    ldp2, lhp2 = len(cdate2)==8, len(cdate2)==14
+    #
+    cY1,  cY2  = cdate1[0:4], cdate2[0:4]
+    cmm1, cmm2 = cdate1[4:6], cdate2[4:6]
+    cdd1, cdd2 = cdate1[6:8], cdate2[6:8]
+
+    chhmm1, chhmm2 = '00:00', '00:00'
+    if lhp1: chhmm1 = cdate1[9:11]+':'+cdate1[12:14]
+    if lhp2: chhmm2 = cdate2[9:11]+':'+cdate2[12:14]
+
+
     
-    dt_bin =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while scanning for valid time intervals
-
-    cY1,  cY2  = cYmmd1[0:4], cYmmd2[0:4]
-    cmm1, cmm2 = cYmmd1[4:6], cYmmd2[4:6]
-    cdd1, cdd2 = cYmmd1[6:8], cYmmd2[6:8]
-
-    cdt1 = str.replace(cdt_pattern,'YYYY',cY1) ; cdt1 = str.replace(cdt1,'MM',cmm1) ; cdt1 = str.replace(cdt1,'DD',cdd1)
-    cdt2 = str.replace(cdt_pattern,'YYYY',cY2) ; cdt2 = str.replace(cdt2,'MM',cmm2) ; cdt2 = str.replace(cdt2,'DD',cdd2)
-
+    cdt1 = str.replace(cdt_pattern,'YYYY-MM-DD',cY1+'-'+cmm1+'-'+cdd1)
+    cdt2 = str.replace(cdt_pattern,'YYYY-MM-DD',cY2+'-'+cmm2+'-'+cdd2)
+    cdt1 = str.replace(cdt1,'hh:mm',chhmm1)
+    cdt2 = str.replace(cdt2,'hh:mm',chhmm2)
+    
     cf_out = 'RGPS_ice_drift_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
 
     # File to save work at intermediate stage
@@ -125,7 +136,7 @@ if __name__ == '__main__':
 
     print("\n *** Date range to restrain data to:")
     print(" ==> "+cdt1+" to "+cdt2 )
-
+    
     rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
     print( "   ===> in epoch time: ", rdt1, "to", rdt2 )
     print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
@@ -245,7 +256,7 @@ if __name__ == '__main__':
                                 it1 = idx0_id[0]    ; # initial position for the buoy: #fixme: control all time records?
                                 rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                                 if rd_ini > MinDistFromLand:
-                                    IDXofStr.extend(idx0_id[:nbRecOK]) ; # points for following records of `jID / if not Nforced_stream_length: len(idx0_id)==nbRecOK]
+                                    IDXofStr.extend(idx0_id[:nbRecOK-1]) ; # store point not to be used again. -1 because the last record can be re-used!
                                     #
                                     NBinStr = NBinStr + 1   ; # this is another valid buoy for this stream
                                     Xmsk[istream,jb] = 1                ; # flag for valid point
@@ -423,7 +434,7 @@ if __name__ == '__main__':
             #
             #(idx0_id,) = np.where( vBIDs0 == vids[jb])
             #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
-            indv = xix0[0:nvr,jb].copy()
+            indv = xix0[0:nvr,jb].copy() # 
             #
             xx[0:nvr,jb]   =    vx0[indv]
             xy[0:nvr,jb]   =    vy0[indv]

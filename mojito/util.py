@@ -138,7 +138,7 @@ def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskV
     return nB, zIDs
 
 
-def ValidCnsctvRecordsBuoy( date_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expected, max_dev_from_dt_expected ):
+def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expected, max_dev_from_dt_expected ):
     '''
     LOLO: add test to see if time vector we return is increasing!!! and nothing stupid / boundaries!!!
 
@@ -149,7 +149,7 @@ def ValidCnsctvRecordsBuoy( date_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
               - construct the ideal expected `ztime` (`ztime_ideal`) based on nominal dt
               - dezing tout ce qui s'eloigne trop de ce ztime_ideal !
        Input:
-                * date_min: all buoys considered should exist at and after this time, not before!!! epoch time in [s]
+                * time_min: all buoys considered should exist at and after this time, not before!!! epoch time in [s]
                 * kidx   : the indice of the point we are dealing with (in the frame of original raw data)
                 * ptime0 : time array as in raw data
                 * pBIDs0 : IDs array as in raw data
@@ -163,36 +163,32 @@ def ValidCnsctvRecordsBuoy( date_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
     from climporn import epoch2clock
     #
     (idx_buoy,   ) = np.where( pBIDs0 == pBIDs0[kidx] )
-    (idx_exclude,) = np.where( ptime0 < date_min )
+    (idx_exclude,) = np.where( ptime0 < time_min )
     idx_keep0      = np.setdiff1d( idx_buoy,  idx_exclude ) ; # keep the values of `idx_buoy` that are not in `idx_exclude`
     idx_keep       = np.setdiff1d( idx_keep0, pidx_ignore ) ; # keep the values of `idx_keep0` that are not in `pidx_ignore`
     del idx_exclude, idx_buoy, idx_keep0
     #
     ztime  = ptime0[idx_keep] ; # all time records for this particular buoy
-    if np.any( ztime<=date_min ):
-        print('ERROR: ValidCnsctvRecordsBuoy => `np.any( ztime<=date_min )` !!!!'); exit(0)
+    if np.any( ztime<=time_min ):
+        print('ERROR: ValidCnsctvRecordsBuoy => `np.any( ztime<=time_min )` !!!!'); exit(0)
     #
     nbR1b = len(ztime)      ; # n. of time records for this particulat buoy
     #
     nbROK = nbR1b
-    ztime_ideal = np.array( [ ztime[0]+float(i)*float(dt_expected) for i in range(nbR1b) ], dtype=float )
     #
     # We cut the series at the first occurence of a dt (time between 2 consec. pos.) > `max_dev_from_dt_expected`
+    ztime_ideal = np.array( [ ztime[0]+float(i)*float(dt_expected) for i in range(nbR1b) ], dtype=float )
     vtdev = np.abs(ztime - ztime_ideal)
     if np.any(vtdev > max_dev_from_dt_expected):
+        #print('LOLO: vtdev[:]/3600. = ',vtdev[:]/3600.)
         (indFU,) = np.where(vtdev > max_dev_from_dt_expected)
-        nbROK = np.min(indFU) ; # yes! no -1 !!! 
+        nbROK = np.min(indFU) ; # yes! no -1 !!!
+        #print('LOLO => nbROK =',nbROK)
     #
     if nbROK < nbR1b:
         # Update with only keeping acceptable time records (#fixme: for now only those until first fuckup)
         idx_keep = idx_keep[0:nbROK]
         ztime   =   ztime[0:nbROK]
-    #
-    del nbR1b, ztime_ideal, vtdev
-    #
-    if len(idx_keep)!=nbROK or len(ztime)!=nbROK:
-        print('ERROR: ValidCnsctvRecordsBuoy => `len(idx_keep)!=nbROK or len(ztime)!=nbROK`')
-        exit(0)
     #
     return nbROK, idx_keep, ztime
 
