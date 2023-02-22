@@ -677,7 +677,7 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
 
 
 
-def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, iverbose=0):
+def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
     # or is just too far away from the mean of all buoys
     # => if such a buoy is canceld at stream # k, it should also be canceled at following records
@@ -696,11 +696,12 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, iverbose=0):
         zadiff = np.abs(ptim[jrec,:]-t_mean)
         zdt = np.max(zadiff)/3600.
         if iverbose>0:
+            from climporn import epoch2clock
             print('  * rec #',jrec,'of this stream:')            
             print('    mean time for this record is:',epoch2clock(t_mean))
             print('    bin center time, and bounds:',epoch2clock(pVTb[jrec,0]),epoch2clock(pVTb[jrec,1]),epoch2clock(pVTb[jrec,2]))
             print('    standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
-            print('     ==> furthest point is '+str(round(zdt,2))+'h away from mean! Max dev. allowed =',round(max_t_dev_allowed_in_bin/3600.,2),'h')
+            print('     ==> furthest point is '+str(round(zdt,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
         #
         # Outside of the bin?
         idx_rmA = []
@@ -727,9 +728,9 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, iverbose=0):
         #
         # Too far from the mean?
         idx_rmB = []
-        lcancel = np.any(zadiff>max_t_dev_allowed_in_bin)
+        lcancel = np.any(zadiff>tdev_max)
         if lcancel:
-            (idx_rmB,) = np.where( zadiff>max_t_dev_allowed_in_bin )
+            (idx_rmB,) = np.where( zadiff>tdev_max )
             if np.sum(zmsk[jrec:,idx_rmB])>0:
                 if iverbose>0:
                     print('    WARNING: the time position of some buoys are too far from time mean of all buoys of this bin!!!')

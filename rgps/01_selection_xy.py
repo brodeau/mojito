@@ -40,7 +40,7 @@ from re import split
 from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
-idebug = 1
+idebug = 0
 iplot  = 1
 
 cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
@@ -463,7 +463,7 @@ if __name__ == '__main__':
         # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
         # or is just too far away from the mean of all buoys
         # => if such a buoy is canceld at stream # k, it should also be canceled at following records
-        iFU, xmsk, nBpR = mjt.StreamTimeSanityCheck( cs, ztim, VT, xmsk, nBpR, iverbose=idebug )
+        iFU, xmsk, nBpR = mjt.StreamTimeSanityCheck( cs, ztim, VT, xmsk, nBpR, max_t_dev_allowed_in_bin, iverbose=idebug )
         #
         del ztim
 
