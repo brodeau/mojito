@@ -48,14 +48,14 @@ for dd in ${LIST_RES}; do
             cfQ1="npz/Q-mesh_S${cstr}_${cdt1}t0_${cdt1}_${chr1}_${dd}km_${csuff}.npz"
             cfQ2="npz/Q-mesh_S${cstr}_${cdt1}t0_${cdt2}_${chr2}_${dd}km_${csuff}.npz"
             #
-            cflog="logs/out_S${cstr}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}.out"
+            cflog="S${cstr}_${cdt1}_${chr1}__${cdt2}_${chr2}_${dd}km_${csuff}"
             
             if [ ! -f ${cfQ1} ] || [ ! -f ${cfQ2} ]; then
                 ijob=$((ijob+1))
                 echo " *** Construction of Quadrangles"
                 CMD="${EXE} ${fref},${ftst} ${dd}"
                 echo "  ==> ${CMD}"; echo
-                ${CMD} > ${cflog} &
+                ${CMD} 1>"logs/out_${cflog}.out" 2>"logs/err_${cflog}.err" &
                 echo; echo
             else
                 echo; echo
