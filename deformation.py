@@ -31,33 +31,6 @@ tot_max = 0.1
 
 zoom=1
 
-def CheckTimeSanityQuad( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
-    '''
-        * kF: file number
-        * QD: Quad class loaded from file `kF`
-    '''
-    print('\n *** In file #'+str(kF)+':')
-    if len(np.shape(QD.PointTime))>1:
-        print('ERROR: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime))
-        exit(0)
-    print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
-    rTmean = np.mean(QD.PointTime)
-    cTmean = epoch2clock(rTmean)
-    rStdDv = mjt.StdDev(rTmean, QD.PointTime)
-    print('     => Actual Mean time =',cTmean,', Standard Deviation =',rStdDv/60.,' minutes!')
-    zadiff = np.abs(QD.PointTime-rTmean)
-    zdt = np.max(zadiff)/60.
-    print('     ==> furthest point is '+str(round(zdt,2))+' minutes away from mean!')
-    #
-    if np.any(zadiff>time_dev_from_mean_allowed):
-        print('ERROR: some points read in file #'+str(kF)+' are too far (in time) from mean time=',cTmean)
-        exit(0)
-    else:
-        print('     => ok! No points further than '+str(time_dev_from_mean_allowed/60.)+' minutes from mean...')
-    #
-    return rTmean
-
-
 
 if __name__ == '__main__':
 
@@ -82,8 +55,8 @@ if __name__ == '__main__':
     QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
 
     # Debug have a look at the times of all points and get the actual mean time for each file:
-    rT1 = CheckTimeSanityQuad(1, QUA1, time_dev_max, iverbose=idebug)
-    rT2 = CheckTimeSanityQuad(2, QUA2, time_dev_max, iverbose=idebug)
+    rT1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
+    rT2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
 
     rtimeC = 0.5*(rT1+rT2)
     ctimeC = epoch2clock(rtimeC)

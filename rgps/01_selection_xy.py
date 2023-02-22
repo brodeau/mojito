@@ -107,7 +107,7 @@ if __name__ == '__main__':
     cdate2   =     argv[3]
     idtbin_h = int(argv[4])
     ####################################################################################################        
-    dt_bin =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
+    dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                 # scanning for valid etime intervals
     #
     ldp1, lhp1 = len(cdate1)==8, len(cdate1)==14
@@ -150,8 +150,8 @@ if __name__ == '__main__':
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
-    # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy_Nmnl)
-    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin, iverbose=idebug-1 )
+    # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
+    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin_sec, iverbose=idebug-1 )
     
     # Open, inspect the input file and load raw data:
     Np0, Ns0, vtime0, vy0, vx0, vlat0, vlon0, vBIDs0, vStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     # * Nb: number of different buoys that exist for at least 1 record during specified date range aka whole period (WP)
     # * vIDsWP : array(Nb) list (unique) of IDs for these buoys
     
-    if not path.exists(cf_npz_intrmdt) or idebug>0:
+    if not path.exists(cf_npz_intrmdt) or idebug>1:
 
         # Arrays along streams and buoys:
         # In the following, both Ns_max & Nb are excessive upper bound values....
@@ -180,8 +180,8 @@ if __name__ == '__main__':
             rTc = vTbin[jt,0] ; # center of the current time bin
             rTa = vTbin[jt,1] ; # begining of the current time bin
             #
-            print("\n *** Selecting point pos. that exist at "+cTbin[jt]+" +-"+str(int(dt_bin/2./3600))+"h!",end='')
-            (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin/2.`
+            print("\n *** Selecting point pos. that exist at "+cTbin[jt]+" +-"+str(int(dt_bin_sec/2./3600))+"h!",end='')
+            (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin_sec/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin_sec/2.`
             zIDsOK0 = vBIDs0[idxOK0]
             ztimOK0 = vtime0[idxOK0]
             
@@ -326,15 +326,6 @@ if __name__ == '__main__':
 
         del Xmsk, VTc_ini, VNB_ini, XIDs, XNRc, XIX0
 
-        # MESSAGE:
-        # *** Selection of buoys that exist at 1997-01-31_00:00:00 +-3h!
-        # => 0 buoys satisfy this!
-        # Traceback (most recent call last):
-        # File "/home/laurent/DEV/rgps/./01_selection_xy.py", line 339, in <module>
-        # Zmsk[js,:NvB] = Xmsk[js,indOK]
-        # ValueError: could not broadcast input array from shape (5143,) into shape (5120,)
-
-
         # Masking arrays:
         ZIDs = np.ma.masked_where( Zmsk==0, ZIDs )
         ZNRc = np.ma.masked_where( Zmsk==0, ZNRc )
@@ -449,30 +440,32 @@ if __name__ == '__main__':
         if idebug>1: print('     +++ num. of boys still present at each record of stream #'+cs+':',nBpR[:])
 
         # There might be doublons in coordinates!
-        ifd = 0
-        for jr in range(NCRmax):
-            xcoor = np.array([ xx[jr,:], xy[jr,:] ]).T
-            idx_clones = mjt.IndXYClones( xcoor, rmask_val=-9999. )
-            if len(idx_clones) > 0:
-                # There are doublons!
-                ifd = ifd + len(idx_clones) ; # another hit
-                xmsk[jr,idx_clones] = 0
-            del xcoor, idx_clones
-        if ifd>0:
-            # Again with the nlen(idx_clones)ew mask if we found doublon coordinates:
-            nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
-            NvB = np.max(nBpR)
-            if idebug>1:
-                print('     +++ we removed '+str(ifd)+' buoy records due to doublon of coordinates!')
-                print('     +++ UPDATE: num. of boys still present at each record of stream #'+cs+':',nBpR[:])
+        #ifd = 0
+        #for jr in range(NCRmax):
+        #    xcoor = np.array([ xx[jr,:], xy[jr,:] ]).T
+        #    idx_clones = mjt.IndXYClones( xcoor, rmask_val=-9999. )
+        #    if len(idx_clones) > 0:
+        #        print('LOLO: doublons found!!!')
+        #        # There are doublons!
+        #        ifd = ifd + len(idx_clones) ; # another hit
+        #        xmsk[jr,idx_clones] = 0
+        #    del xcoor, idx_clones
+        #if ifd>0:
+        #    # Again with the nlen(idx_clones)ew mask if we found doublon coordinates:
+        #    nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
+        #    NvB = np.max(nBpR)
+        #    if idebug>1:
+        #        print('     +++ we removed '+str(ifd)+' buoy records due to doublon of coordinates!')
+        #        print('     +++ UPDATE: num. of boys still present at each record of stream #'+cs+':',nBpR[:])
 
 
         # A "mean" time axis along records based on mean accross the buoys remaining at this record...
         ztim = xtim.copy()
         ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(ztim, axis=1) ; # average on the buoy axis, so `vtim` only dimension is records...
-        del ztim
 
+
+                
         # Nearest interpolation of vtim on the VTbin calendar !!!
         #    => so VT contains the mean date for all buoys at a given record but
         #       corresponding to a value taken from VTbin
@@ -484,9 +477,34 @@ if __name__ == '__main__':
             VT[i] = vTbin[idx,0]
             i=i+1
             
-        print('\n *** Comparaison `vtim` vs `VT`:')
-        for k in range(len(vtim)): print('      ', epoch2clock(vtim[k]), epoch2clock(VT[k]))
+        #print('\n *** Comparaison `vtim` vs `VT`:')
+        #for k in range(len(vtim)): print('      ', epoch2clock(vtim[k]), epoch2clock(VT[k]))
+
+        # Now, in each record of the stream we should exclude buoys which time position is too far away from the mean of all buoys
+        # => if such a buoy is canceld at stream # k, it should also be canceled at following records
+        for jrec in range(NCRmax):
+            #t_mean = vtim[jrec]
+            t_mean = np.mean(ztim[jrec,:])
+            rStdDv = mjt.StdDev(t_mean, ztim[jrec,:])
+            print('\nLOLO: mean time for the record #',jrec,'of this stream is:',epoch2clock(t_mean),'; bin center time == VT =',epoch2clock(VT[jrec]) )
+            print('   standard Deviation =',round(rStdDv/3600.,3),' hours!')
+            # dt_bin_sec
+            zadiff = np.abs(ztim[jrec,:]-t_mean)
+            zdt = np.max(zadiff)/3600.
+            print('     ==> furthest point is '+str(round(zdt,2))+' hours away from mean!')
+            #
+            lcancel = np.any(zadiff>dt_bin_sec/2.)
+            if lcancel:
+                print('    ==> we have to cancel some points!')
             
+        del ztim
+        exit(0)
+
+
+
+
+
+        
         # Masking:
         xx = np.ma.masked_where( xmsk==0, xx )
         xy = np.ma.masked_where( xmsk==0, xy )

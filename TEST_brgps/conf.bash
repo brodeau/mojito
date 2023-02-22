@@ -46,8 +46,8 @@ case ${host} in
         #LIST_STREAM="000 001 002 003 004 005 006 008 009 010 011"
         NSTREAMB="11"
         #
-        DT_BINS_H=72  ; # width of a bin for time sampling [hours]
-        DATE2="${YEAR}0120"
+        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        DATE2="${YEAR}0111"
         MARKER_SIZE=10
         ;;
     "frazilo")

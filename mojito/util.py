@@ -638,3 +638,39 @@ def ConvertCartesianNPSkm2Geo( pY, pX ):
         #
     return zlat, zlon
 
+
+
+def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
+    '''
+        We look at the position DATE of all the points composing a group of quads
+        (Quad class `QD`) and return a message error if some points are too far 
+        in time from the mean of all the points...
+
+        * kF: file number
+        * QD: Quad class loaded from file `kF`
+        * time_dev_from_mean_allowed: maximum time deviation from the mean allowed
+    '''
+    if iverbose>0:
+        from climporn import epoch2clock
+        print('\n *** In file #'+str(kF)+':')
+    #
+    if len(np.shape(QD.PointTime))>1:
+        print('ERROR [CheckTimeConsistencyQuads()]: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime))
+        exit(0)
+    if iverbose>0: print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
+    rTmean = np.mean(QD.PointTime)
+    if iverbose>0: cTmean = epoch2clock(rTmean)
+    rStdDv = StdDev(rTmean, QD.PointTime)
+    if iverbose>0: print('     => Actual Mean time =',cTmean,', Standard Deviation =',rStdDv/60.,' minutes!')
+    zadiff = np.abs(QD.PointTime-rTmean)
+    zdt = np.max(zadiff)/60.
+    if iverbose>0: print('     ==> furthest point is '+str(round(zdt,2))+' minutes away from mean!')
+    #
+    if np.any(zadiff>time_dev_from_mean_allowed):
+        print('ERROR [CheckTimeConsistencyQuads()]: some points read in file #'+str(kF)+' are too far (in time) from mean time!')
+        exit(0)
+    else:
+        if iverbose>0: print('     => ok! No points further than '+str(time_dev_from_mean_allowed/60.)+' minutes from mean...')
+    #
+    return rTmean
+
