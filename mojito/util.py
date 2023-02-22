@@ -172,7 +172,7 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
     if np.any( ztime<=time_min ):
         print('ERROR: ValidCnsctvRecordsBuoy => `np.any( ztime<=time_min )` !!!!'); exit(0)
     #
-    nbR1b = len(ztime)      ; # n. of time records for this particulat buoy
+    nbR1b = len(idx_keep)      ; # n. of time records for this particulat buoy
     #
     nbROK = nbR1b
     #
@@ -674,3 +674,82 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
     #
     return rTmean
 
+
+
+
+def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, iverbose=0):
+    # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
+    # or is just too far away from the mean of all buoys
+    # => if such a buoy is canceld at stream # k, it should also be canceled at following records
+    (NRmax,_) = np.shape(pmsk)
+    zmsk = pmsk.copy()
+    zBpR = pBpR.copy()
+    #for jr in range(NRmax):
+    #    print('SUMMARY BEFORE/ rec.',jr,': zBpR[jr], sum(zmsk[jr,:]) =',zBpR[jr], np.sum(zmsk[jr,:]))
+    #
+    kFU = 0
+    if iverbose>0: print('\n *** Time location sanity test and fix for stream #'+str(cstrm))
+    for jrec in range(NRmax):
+        # At this record, the time position of all buoys of this stream is: ztim[jrec,:]
+        t_mean = np.mean(ptim[jrec,:])
+        rStdDv = StdDev(t_mean, ptim[jrec,:])
+        zadiff = np.abs(ptim[jrec,:]-t_mean)
+        zdt = np.max(zadiff)/3600.
+        if iverbose>0:
+            print('  * rec #',jrec,'of this stream:')            
+            print('    mean time for this record is:',epoch2clock(t_mean))
+            print('    bin center time, and bounds:',epoch2clock(pVTb[jrec,0]),epoch2clock(pVTb[jrec,1]),epoch2clock(pVTb[jrec,2]))
+            print('    standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
+            print('     ==> furthest point is '+str(round(zdt,2))+'h away from mean! Max dev. allowed =',round(max_t_dev_allowed_in_bin/3600.,2),'h')
+        #
+        # Outside of the bin?
+        idx_rmA = []
+        lcancel = np.any( ptim[jrec,:]<pVTb[jrec,1] ) or np.any( ptim[jrec,:] > pVTb[jrec,2] )
+        if lcancel:
+            (idx_rm_m,) , (idx_rm_p,) = np.where( ptim[jrec,:]<pVTb[jrec,1] ) ,  np.where( ptim[jrec,:]>pVTb[jrec,2] )                
+            idx_rmA = np.concatenate([ idx_rm_m , idx_rm_p ])
+
+            if np.sum(zmsk[jrec:,idx_rmA])>0:
+                #print('INSIDE before / rec.',jrec,': zBpR[jrec], sum(zmsk[jrec,:]) =',zBpR[jrec], np.sum(zmsk[jrec,:]))
+                #print('INSIDE before / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))                
+                if iverbose>0:
+                    print('    WARNING: the time position of some buoys are outside of that of the expected time bin!!!')
+                    print('    ==> we have to cancel '+str(len(idx_rmA))+' points / '+str(np.sum(zmsk[jrec,:])))
+                jr = jrec
+                if jrec<2:                    
+                    kFU += 1 ; # => means fields will be shrinked later on...
+                    jr=0  ; # if 2nd record (jrec=1) to be canceled then the 1st record becomes useless!
+                #zBpR[jr:] = zBpR[jr:] - len(idx_rmA)
+                zmsk[jr:,idx_rmA] = 0 ; # This and following records!!!                
+                #print('INSIDE after / rec.',jrec,': zBpR[jrec], sum(zmsk[jrec,:]) =',zBpR[jrec], np.sum(zmsk[jrec,:]))
+                #print('INSIDE after / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))
+
+        #
+        # Too far from the mean?
+        idx_rmB = []
+        lcancel = np.any(zadiff>max_t_dev_allowed_in_bin)
+        if lcancel:
+            (idx_rmB,) = np.where( zadiff>max_t_dev_allowed_in_bin )
+            if np.sum(zmsk[jrec:,idx_rmB])>0:
+                if iverbose>0:
+                    print('    WARNING: the time position of some buoys are too far from time mean of all buoys of this bin!!!')
+                    print('    ==> we have to cancel '+str(len(idx_rmB))+' points / '+str(np.sum(zmsk[jrec,:])))
+                jr = jrec
+                if jrec<2:                    
+                    kFU += 1 ; # => means fields will be shrinked later on...
+                    jr=0  ; # if 2nd record (jrec=1) to be canceled then the 1st record becomes useless!
+                #zBpR[jr:] = zBpR[jr:] - len(idx_rmB)
+                zmsk[jr:,idx_rmB] = 0
+    #
+    for jr in range(NRmax):
+        zBpR[jr] = np.sum(zmsk[jr,:])
+        #print('SUMMARY AFTER/ rec.',jr,': zBpR[jr], sum(zmsk[jr,:]) =',zBpR[jr], np.sum(zmsk[jr,:]))
+        
+
+    #for jr in range(NRmax):
+    #    if zBpR[jr] != np.sum(zmsk[jr,:]):
+    #        print('ERROR [StreamTimeSanityCheck()]: `zBpR[jr] != np.sum(zmsk[jr,:])`',zBpR[jr], np.sum(zmsk[jr,:]))
+    #        exit(0)
+        
+    return kFU, zmsk, zBpR
+                
