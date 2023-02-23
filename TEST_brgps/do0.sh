@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/rgps/01_interp_to_calendar.py"
+EXE="python3 -u ${MOJITO_DIR}/rgps/00_scan_streams.py"
 
 YEAR=`echo ${DATE1} | cut -c1-4`
 

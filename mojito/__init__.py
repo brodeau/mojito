@@ -4,6 +4,7 @@
 ############################################################################
 
 from .util     import *
+from .rgps     import *
 from .ncio     import *
 from .geomesh  import *
 from .polygons import *

@@ -1,6 +1,11 @@
 #!/bin/bash
 
-if [ "$1" = "1" ]; then
+. ./conf.bash
+
+if [ "$1" = "0" ]; then
+    rm -f ./npz/RGPS_*${YEAR}*.npz
+    
+elif [ "$1" = "1" ]; then
     rm -f figs/SELECTION/*
 
 elif [ "$1" = "2" ]; then
