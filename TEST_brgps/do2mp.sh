@@ -25,7 +25,7 @@ for ff in ${list_nc}; do
         echo "  ==> bad! Presently we expect 2 records!"
         exit
     fi
-
+    
     
     for res in ${LIST_RES}; do
 
@@ -36,8 +36,9 @@ for ff in ${list_nc}; do
         CMD="${EXE} ${ff} 0,1 ${res}"
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
         ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+        sleep 5
         echo
-
+        
         if [ $((ijob%NJPAR)) -eq 0 ]; then
             echo "Waiting! (ijob = ${ijob})...."
             wait
@@ -45,7 +46,7 @@ for ff in ${list_nc}; do
         fi
         
     done
-
+    
 done
 
 wait

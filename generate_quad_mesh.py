@@ -18,7 +18,7 @@ from climporn import epoch2clock
 import mojito   as mjt
 
 idebug = 0
-iplot  = 1 ; # Create figures to see what we are doing...
+iplot  = 0 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km>')
         exit(0)
 
-    cf_nc = argv[1]
+    cf_nc_in = argv[1]
     lstrec = argv[2]
     resol0 = float(argv[3])
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
     del vcrec
 
-    mjt.chck4f(cf_nc)
+    mjt.chck4f(cf_nc_in)
 
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
@@ -98,13 +98,18 @@ if __name__ == '__main__':
         
 
 
-    
-    # Getting time info and time step from input npz file which is should look like NEMO output file:
-    cfstr = split('_tracking_', path.basename(cf_nc))[0]
-
     # Loading the data for the 2 selected records:
-    Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc )
+    Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc_in )
 
+
+    # We need a string to name the output files:
+    if corigin == 'RGPS':
+        cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[3] ; # Basically the name of the stream
+    else:
+        # From ice_tracking with SI3...
+        cfstr = split('_tracking_', path.basename(cf_nc_in))[0]
+
+    
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
     #
@@ -116,7 +121,7 @@ if __name__ == '__main__':
     #
     jr = 0
     for jrec in vRec[:]:
-        vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:] = mjt.LoadNCdataMJT( cf_nc, krec=jrec, lmask=True )
+        vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True )
         print( ' * jrec = ',jrec, ', date =',epoch2clock(vdate[jr]))    
         if jr==0:
             vIDs[:] = zIDs[:]

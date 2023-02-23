@@ -32,7 +32,6 @@ for ff in ${list_nc}; do
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
         ${CMD}
         echo
-
     done
     
     #exit
