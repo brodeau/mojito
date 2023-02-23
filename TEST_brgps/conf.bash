@@ -59,7 +59,7 @@ case ${host} in
         #
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #
-        NSTREAMB="30"
+        NSTREAMB="100"
         #
         DATE2="${YEAR}0305"
         #
