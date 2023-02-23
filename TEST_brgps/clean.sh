@@ -6,7 +6,7 @@ if [ "$1" = "0" ]; then
     rm -f ./npz/RGPS_*${YEAR}*.npz
     
 elif [ "$1" = "1" ]; then
-    rm -f figs/SELECTION/*
+    rm -f figs/SELECTION/* nc/SELECTION_*${YEAR}*.nc npz/SELECTION_*${YEAR}*.npz
 
 elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/out_S*__*.out

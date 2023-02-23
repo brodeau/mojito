@@ -137,7 +137,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     csct = plt.scatter(x0, y0, marker='o', facecolors='w', edgecolors='none', alpha=ralpha, s=ms*rzoom ) ; # facecolors='none', edgecolors='r'
 
     # Add IDs figure right next to buoys (if pvIDs provided and not too many buoys!):
-    if lIDs and Nb<=800:
+    if lIDs and Nb<=200:
         ctype = str(pvIDs.dtype) ; # type of pvIDs:
         lstr = ( ctype[0:2] == '<U' ) ; # does pvIDs contain strings ???
         #

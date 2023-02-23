@@ -30,6 +30,8 @@ cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
+ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
+
 #Nforced_stream_length = None ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
 Nforced_stream_length = 2 ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
 Nb_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
@@ -40,6 +42,7 @@ Nb_min_buoys = min_nb_buoys_in_stream ; # minimum number of buoys necessary to k
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
+FillValue = -9999.
 #================================================================================================
 
 def __summary__( pNBini, pTcini, pIDs, pNRc ):
@@ -69,7 +72,7 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    for cd in ["npz","figs"]:
+    for cd in ['npz','nc','figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
     if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')
 
@@ -114,12 +117,12 @@ if __name__ == '__main__':
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
 
     
-    print("\n *** Date range to restrain data to:")
-    print(" ==> "+cdt1+" to "+cdt2 )
+    print('\n *** Date range to restrain data to:')
+    print(' ==> '+cdt1+' to '+cdt2 )
     
     rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
-    print( "   ===> in epoch time: ", rdt1, "to", rdt2 )
-    print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
+    print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
+    print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
 
 
     if Nforced_stream_length:
@@ -137,7 +140,7 @@ if __name__ == '__main__':
     Np0, Ns0, vtime0, vykm0, vxkm0, vlat0, vlon0, vBIDs0, vStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
     
     # Masking all point that are before and beyond our period of interest (note: `vtime0` is not masked!):
-    Nb, vIDsWP = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vxkm0, vykm0, vlon0, vlat0,  rmskVal=-99999. )
+    Nb, vIDsWP = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vxkm0, vykm0, vlon0, vlat0,  rmskVal=FillValue )
     # * Nb: number of different buoys that exist for at least 1 record during specified date range aka whole period (WP)
     # * vIDsWP : array(Nb) list (unique) of IDs for these buoys
 
@@ -171,12 +174,12 @@ if __name__ == '__main__':
     for js in range(Nstreams):
         
         cs   = str(js)
-        vids = np.ma.MaskedArray.compressed( ZIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
+        vIDs = np.ma.MaskedArray.compressed( ZIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
         NvB  = ZNB_ini[js]
         rTc  = ZTc_ini[js]
         cTc  = epoch2clock(rTc)
 
-        if NvB != len(vids): print('ERROR Z1!'); exit(0)
+        if NvB != len(vIDs): print('ERROR Z1!'); exit(0)
         print('\n *** Having a look at stream #'+cs+' initiated for time bin centered around '+cTc+' !')
 
         if Nforced_stream_length:
@@ -188,7 +191,7 @@ if __name__ == '__main__':
 
         if idebug>2:
             print('        => with following IDs:')
-            for jii in vids: print(jii,' ', end="")
+            for jii in vIDs: print(jii,' ', end='')
             print('')
 
 
@@ -196,13 +199,14 @@ if __name__ == '__main__':
         #####################################################################
 
         nBpR = np.zeros( NCRmax      , dtype=int) ; # number of remaining buoys at given record
-        xxkm = np.zeros((NCRmax,NvB)) - 9999.
-        xykm = np.zeros((NCRmax,NvB)) - 9999.
-        xlon = np.zeros((NCRmax,NvB)) - 9999.
-        xlat = np.zeros((NCRmax,NvB)) - 9999.
-        xtim = np.zeros((NCRmax,NvB)) - 9999.      ; # the exact time for each buoy!
-        xmsk = np.zeros((NCRmax,NvB) , dtype=int)  ; # the mask for exluding buoys that stick out in time...
+        xXkm = np.zeros((NCRmax,NvB)) + FillValue
+        xYkm = np.zeros((NCRmax,NvB)) + FillValue
+        xlon = np.zeros((NCRmax,NvB)) + FillValue
+        xlat = np.zeros((NCRmax,NvB)) + FillValue
+        xtim = np.zeros((NCRmax,NvB)) + FillValue      ; # the exact time for each buoy!
+        xmsk = np.zeros((NCRmax,NvB) , dtype='i1')  ; # the mask for exluding buoys that stick out in time...
         xix0 = np.zeros((NCRmax,NvB) , dtype=int)  ;
+        #vIDs = np.zeros(        NvB  , dtype=int)  ; => already good!
 
         for jb in range(NvB):
             #
@@ -214,12 +218,12 @@ if __name__ == '__main__':
             #
             xix0[0:nvr,jb] = ZIX0[js,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy
             #
-            #(idx0_id,) = np.where( vBIDs0 == vids[jb])
+            #(idx0_id,) = np.where( vBIDs0 == vIDs[jb])
             #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
             indv = xix0[0:nvr,jb].copy() # 
             #
-            xxkm[0:nvr,jb] = vxkm0[indv]
-            xykm[0:nvr,jb] = vykm0[indv]
+            xXkm[0:nvr,jb] = vxkm0[indv]
+            xYkm[0:nvr,jb] = vykm0[indv]
             xmsk[0:nvr,jb] = 1
             xlon[0:nvr,jb] = vlon0[indv]
             xlat[0:nvr,jb] = vlat0[indv]
@@ -259,26 +263,48 @@ if __name__ == '__main__':
             (idx_keep0,) , (idx_keep1,) = np.where(xmsk[0,:]==1) , np.where(xmsk[1,:]==1)
             idx_keep = np.unique( np.concatenate([idx_keep0,idx_keep1]) )
             xmsk = xmsk[:,idx_keep]
-            xxkm = xxkm[:,idx_keep] 
-            xykm = xykm[:,idx_keep] 
+            xXkm = xXkm[:,idx_keep] 
+            xYkm = xYkm[:,idx_keep] 
             xlon = xlon[:,idx_keep] 
             xlat = xlat[:,idx_keep] 
-            xtim = xtim[:,idx_keep] 
+            xtim = xtim[:,idx_keep]
+            vIDs = vIDs[  idx_keep]
+            #
+            ztim = xtim.copy()
+            ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
+            vtim = np.mean(ztim, axis=1) ; # average on the buoy axis, so `vtim` only dimension is records...
+            #
             print('new shape =', np.shape(xmsk))
 
 
         # Masking:
-        xxkm = np.ma.masked_where( xmsk==0, xxkm )
-        xykm = np.ma.masked_where( xmsk==0, xykm )
+        xXkm = np.ma.masked_where( xmsk==0, xXkm )
+        xYkm = np.ma.masked_where( xmsk==0, xYkm )
         xlon = np.ma.masked_where( xmsk==0, xlon )
         xlat = np.ma.masked_where( xmsk==0, xlat )
         xtim = np.ma.masked_where( xmsk==0, xtim )
-            
+        vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
+
+        cout_root = 'SELECTION_buoys_RGPS_S'+'%3.3i'%(js)
+        
         if iplot>0:
             # Stream time evolution on Arctic map:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=[], cnmfig='SELECTION/geo_buoys_RGPS_S'+'%3.3i'%(js),
+            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=vIDs, cnmfig='SELECTION/'+cout_root,
                                         clock_res='d', NminPnts=Nb_min_buoys )
 
+        # GENERATION OF COMPREHENSIVE NETCDF FILE:
+        #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
+        #  * for the file name we chose the center of the bin used aka `VT[:,0]`
+        cdt1 = split(':',epoch2clock(VT[ 0,0]))[0]+'h'
+        cdt2 = split(':',epoch2clock(VT[-1,0]))[0]+'h'     
+        cf_nc_out = './nc/'+cout_root+'_'+cdt1+'-'+cdt2+'.nc'
+        
+        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
+                                   tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
+
+
+
+            
         # Saving 1 file per stream and per record:
         for jr in range(NCRmax):
 
@@ -292,21 +318,21 @@ if __name__ == '__main__':
 
             if Nbuoys >= Nb_min_buoys:
                 ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
-                cf_out = './npz/SELECTION_buoys_RGPS_S'+'%3.3i'%(js)+'_'+ctr+'.npz'
+                cf_out = './npz/'+cout_root+'_'+ctr+'.npz'
 
                 (indV,) = np.where(xmsk[jr,:]==1) ; # index of valid points
                 if len(indV)!= Nbuoys: print('ERROR: rec.',jr,' of stream '+cs+' => len(indV)!= Nbuoys) !', len(indV), Nbuoys); exit(0)
 
-                np.savez_compressed( cf_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vids[indV],
-                                     vtime=xtim[jr,indV], vx=xxkm[jr,indV], vy=xykm[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
+                np.savez_compressed( cf_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vIDs[indV],
+                                     vtime=xtim[jr,indV], vx=xXkm[jr,indV], vy=xYkm[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
                 if iplot>1:
                     # Plot on cartesian coordinates (km):
-                    cfpng = './figs/SELECTION/xykm_buoys_RGPS_S'+'%3.3i'%(js)+'_'+ctr+'.png'
+                    cfpng = './figs/SELECTION/xYkm_buoys_RGPS_S'+'%3.3i'%(js)+'_'+ctr+'.png'
                     if jr==0:
-                        zrx = [ np.min(xxkm[jr,indV])-100. , np.max(xxkm[jr,indV])+100. ]
-                        zry = [ np.min(xykm[jr,indV])-100. , np.max(xykm[jr,indV])+100. ]
-                    kg = mjt.ShowTQMesh( xxkm[jr,indV], xykm[jr,indV], ppntIDs=vids[indV], cfig=cfpng, lGeoCoor=False,
+                        zrx = [ np.min(xXkm[jr,indV])-100. , np.max(xXkm[jr,indV])+100. ]
+                        zry = [ np.min(xYkm[jr,indV])-100. , np.max(xYkm[jr,indV])+100. ]
+                    kg = mjt.ShowTQMesh( xXkm[jr,indV], xYkm[jr,indV], ppntIDs=vIDs[indV], cfig=cfpng, lGeoCoor=False,
                                          zoom=5, rangeX=zrx, rangeY=zry )
             else:
                 if idebug>0:
