@@ -52,7 +52,8 @@ if __name__ == '__main__':
 
     cf_nc_in = argv[1]
     lstrec = argv[2]
-    resol0 = float(argv[3])
+    creskm = argv[3]
+    resol0 = float(creskm)
 
     vcrec = split(',',lstrec)
     Nrec  = len(vcrec)
@@ -195,7 +196,7 @@ if __name__ == '__main__':
         cdats  = epoch2clock(vdate[jr])
         cdate  = str.replace( epoch2clock(vdate[jr], precision='D'), '-', '')
 
-        cfbase = cfstr+'_'+cdate0+'t0_'+cdate
+        cfbase = cfstr+'_'+cdate0+'t0_'+cdate+'_'+creskm+'km'
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)
 
         cf_npzQ = './npz/Q-mesh_'+cfbase+'.npz'

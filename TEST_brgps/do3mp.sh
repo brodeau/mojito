@@ -10,67 +10,82 @@ mkdir -p logs
 
 ijob=0
 
-for dd in ${LIST_RES}; do
+# Populating the streams available:
+listQ=`\ls npz/Q-mesh_RGPS_S???_${YEAR}????t0_${YEAR}????_*km.npz`
+
+echo "${listQ}"
+
+list_str=""
+for ff in ${listQ}; do
+    cstr=`echo ${ff} | cut -d'_' -f3`
+    echo "cstr = ${cstr}"
+
+    list_str+="`echo ${ff} | cut -d'_' -f3` "
+
+done
+
+# Removing double of occurences:
+list_str=$(echo ${list_str} | tr ' ' '\n' | sort -u)
+echo ${list_str}
+nbs=`echo ${list_str} | wc -w`
+echo " ==> ${nbs} streams!" ; echo
+
+for cres in ${LIST_RES}; do
 
     echo; echo
-    echo " *** ${dd} km ***"
+    echo " *** ${cres} km ***"
     echo
 
-    istr=${NSTREAMA}
-    while [ ${istr} -le ${NSTREAMB} ]; do
-        echo; echo; echo
+    for cstr in ${list_str}; do
 
-        cstr=`printf "%03d" ${istr}`
-        
-        list=( `\ls npz/Q-mesh_S${cstr}*_*_${dd}km_*.npz` )
-        nbf=`echo ${list[*]} | wc -w`
-        nbf=`expr ${nbf} - 1`
+        #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
+        list=`\ls npz/Q-mesh_RGPS_${cstr}_${YEAR}????t0_${YEAR}????_*km.npz`
+        nbf=`echo ${list} | wc -w`
 
         echo " *** Number of files for Stream ${cstr} = ${nbf}"
 
-        if [ "${nbf}" != "" ]; then
-            list_date_ref=""            
-            for ff in ${list[*]}; do
-                date_ref=`echo ${ff} | cut -d_ -f3`
-                list_date_ref+=" ${date_ref}"
-            done
-            list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+        list_date_ref=""
+        for ff in ${list}; do
+            date_ref=`echo ${ff} | cut -d_ -f4`
+            list_date_ref+=" ${date_ref}"
+        done
+        list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
 
-            echo; echo " *** List of reference dates for Stream${cstr}:"; echo "${list_date_ref}"; echo
+        echo; echo " *** List of reference dates for Stream${cstr}:"; echo "${list_date_ref}"; echo
 
-            for dr in ${list_date_ref}; do
-                echo
-                lst=(`\ls npz/Q-mesh_S${cstr}_${dr}_*_${dd}km_*.npz`) ; # echo ${lst[*]}
-                nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
-                if [ ${nf} -eq 2 ]; then
+        for dr in ${list_date_ref}; do
+            echo
+            lst=( `\ls npz/Q-mesh_RGPS_${cstr}_${dr}_${YEAR}????_${cres}km.npz` )
+            nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+            
+            if [ ${nf} -eq 2 ]; then
 
-                    fQ1=${lst[0]}
-                    fQ2=${lst[1]}
-                    echo " ==> will use:"; echo "     * ${fQ1}"; echo "     * ${fQ2}"
+                fQ1=${lst[0]}
+                fQ2=${lst[1]}
+                echo " ==> will use:"
+                echo " * ${fQ1}"
+                echo " * ${fQ2}"
+                
+                flog=`basename ${fQ1}`
+                flog=`echo ${flog} | sed -e s/".npz"/""/g`
 
-                    flog=`basename ${fQ1}`
-                    flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                ijob=$((ijob+1))
 
-                    ijob=$((ijob+1))
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2)) ${MARKER_SIZE}"
+                echo "  ==> ${CMD}"; echo
+                ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                echo; echo
 
-                    CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2)) ${MARKER_SIZE}"
-                    echo "  ==> ${CMD}"; echo
-                    ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                if [ $((ijob%NJPAR)) -eq 0 ]; then
+                    echo "Waiting! (ijob = ${ijob})...."
+                    wait
                     echo; echo
-
-                    if [ $((ijob%NJPAR)) -eq 0 ]; then
-                        echo "Waiting! (ijob = ${ijob})...."
-                        wait
-                        echo; echo
-                    fi
-
                 fi
 
-            done
+            fi
 
-        fi
-        
-        istr=`expr ${istr} + 1`        
+        done
+
     done
 
 done
