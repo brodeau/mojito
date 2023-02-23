@@ -295,9 +295,10 @@ if __name__ == '__main__':
         # GENERATION OF COMPREHENSIVE NETCDF FILE:
         #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
         #  * for the file name we chose the center of the bin used aka `VT[:,0]`
-        cdt1 = split(':',epoch2clock(VT[ 0,0]))[0]+'h'
-        cdt2 = split(':',epoch2clock(VT[-1,0]))[0]+'h'     
-        cf_nc_out = './nc/'+cout_root+'_'+cdt1+'-'+cdt2+'.nc'
+        cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]
+        cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
+        cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
+        cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
         
         kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
                                    tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )

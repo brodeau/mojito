@@ -50,7 +50,7 @@ case ${host} in
         #
         NJPAR=30
         #
-        DATE2="${YEAR}0205"
+        DATE2="${YEAR}0305"
         #DATE2="${YEAR}0110"
         SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
 

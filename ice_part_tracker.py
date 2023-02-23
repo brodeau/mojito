@@ -17,7 +17,7 @@ from shapely.geometry.polygon import Polygon
 
 from math import atan2,pi
 
-idebug=0
+idebug=1
 iplot=1
 
 rdt = 3600. ; # time step (must be that of model output ice velocities used)
@@ -37,23 +37,37 @@ FillValue = -9999.
 
 if __name__ == '__main__':
 
-    if not len(argv) in [4,5]:
-        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> <stop_date:YYYYMMDD> (<seeding_file.nc>)')
+    if not len(argv) in [4]:
+        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> (<seeding_file.nc>)')
         exit(0)
         
     cf_uv = argv[1]
     cf_mm = argv[2]
-    cf_de = argv[3]
+    #cf_de = argv[3]
 
-    lSeedFromNCfile = ( len(argv)==5 )
+    idateStop = None
+    
+    lSeedFromNCfile = ( len(argv)==4 )
     if lSeedFromNCfile:
         seeding_type='mojitoNC'
-        fNCseed = argv[4]
+        fNCseed = argv[3]
         mjt.chck4f(fNCseed)
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
+        ntr, zt = mjt.LoadNCtimeMJT( fNCseed, iverbose=idebug )
+        idate0 = zt[0]     ; cdate0 = epoch2clock(idate0)
+        idateN = zt[ntr-1] ; cdateN = epoch2clock(idateN)
+        print('    => earliest and latest time position in the file: '+cdate0+' - '+cdateN)
 
-    cdateStop = cf_de[0:4]+'-'+cf_de[4:6]+'-'+cf_de[6:8]+'_00:00:00'
-    idateStop = int(clock2epoch(cdateStop))
+        idate0 =  int( round( idate0/3600., 0 ) * 3600. ) ; cdate0 = epoch2clock(idate0)
+        idateN =  int( round( idateN/3600., 0 ) * 3600. ) ; cdateN = epoch2clock(idateN)
+        print('    ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
+
+        idateStrt, cdateStrt = idate0, cdate0
+        idateStop, cdateStop = idateN, cdateN
+
+    #exit(0)
+    #cdateStop = cf_de[0:4]+'-'+cf_de[4:6]+'-'+cf_de[6:8]+'_00:00:00'
+    #idateStop = int(clock2epoch(cdateStop))
         
     cfdir = './figs/tracking'
     if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
@@ -95,6 +109,9 @@ if __name__ == '__main__':
     print('\n\n *** '+str(Nt)+' records in input SI3 file!')
     ztime_model = np.array( id_uv.variables['time_counter'][:] , dtype='i4' )
 
+
+    if not idateStop:
+        print('FIXME: we need a date stop `idateStop` !'); exit(0)
     
     if idateStop<=np.min(ztime_model) or idateStop>np.max(ztime_model):
         print('ERROR: end time is outside of time calendar of the model file!')
