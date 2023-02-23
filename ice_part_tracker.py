@@ -2,6 +2,20 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
+'''
+ TO DO:
+   
+ * `idateStop`: it must be possible to specify it via command line!
+    => but if not specified + we are seeding from a netCDF RGPS data spawned by mojito
+       ==> then get `idateStop` and `idateStart` from the seeding NC file !!!
+
+ * So use a proper argument parsing stuff here
+ 
+ * Now, when a `idateStart` exists, we have to locate the right time record to start from
+   in the model UV file !!!!
+
+'''
+
 from sys import argv, exit
 from os import path, mkdir
 import numpy as np
