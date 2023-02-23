@@ -106,8 +106,6 @@ if __name__ == '__main__':
     cdt2 = str.replace(cdt_pattern,'YYYY-MM-DD',cY2+'-'+cmm2+'-'+cdd2)
     cdt1 = str.replace(cdt1,'hh:mm',chhmm1)
     cdt2 = str.replace(cdt2,'hh:mm',chhmm2)
-    
-    cf_out = 'RGPS_ice_drift_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
 
     # File to save work at intermediate stage
     cf_npz_strinfo = './npz/'+str.replace( path.basename(cf_in), '.nc4', '.npz' )
@@ -171,12 +169,12 @@ if __name__ == '__main__':
 
 
     # Loop along streams:
-    for js in range(Nstreams):
+    for jS in range(Nstreams):
         
-        cs   = str(js)
-        vIDs = np.ma.MaskedArray.compressed( ZIDs[js,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
-        NvB  = ZNB_ini[js]
-        rTc  = ZTc_ini[js]
+        cs   = str(jS)
+        vIDs = np.ma.MaskedArray.compressed( ZIDs[jS,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
+        NvB  = ZNB_ini[jS]
+        rTc  = ZTc_ini[jS]
         cTc  = epoch2clock(rTc)
 
         if NvB != len(vIDs): print('ERROR Z1!'); exit(0)
@@ -185,7 +183,7 @@ if __name__ == '__main__':
         if Nforced_stream_length:
             NCRmax = Nforced_stream_length
         else:        
-            NCRmax = np.max(ZNRc[js,:]) ; # Max number of record from the buoy that has the most
+            NCRmax = np.max(ZNRc[jS,:]) ; # Max number of record from the buoy that has the most
             print('     ===> has '+str(NvB)+' valid buoys at start!')
             print('     ===> the buoy with most records has '+str(NCRmax)+' of them!')
 
@@ -210,13 +208,13 @@ if __name__ == '__main__':
 
         for jb in range(NvB):
             #
-            nvr = ZNRc[js,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
+            nvr = ZNRc[jS,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
             if Nforced_stream_length:
                 nvr = min( nvr, Nforced_stream_length )
             #
             if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
-            xix0[0:nvr,jb] = ZIX0[js,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy
+            xix0[0:nvr,jb] = ZIX0[jS,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy
             #
             #(idx0_id,) = np.where( vBIDs0 == vIDs[jb])
             #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
@@ -285,7 +283,7 @@ if __name__ == '__main__':
         xtim = np.ma.masked_where( xmsk==0, xtim )
         vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
 
-        cout_root = 'SELECTION_buoys_RGPS_S'+'%3.3i'%(js)
+        cout_root = 'SELECTION_buoys_RGPS_S'+'%3.3i'%(jS)
         
         if iplot>0:
             # Stream time evolution on Arctic map:
@@ -293,18 +291,17 @@ if __name__ == '__main__':
                                         clock_res='d', NminPnts=Nb_min_buoys )
 
         # GENERATION OF COMPREHENSIVE NETCDF FILE:
+        #  * 1 file per stream
         #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
         #  * for the file name we chose the center of the bin used aka `VT[:,0]`
         cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]
         cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
         cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
         cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
-        
+
+        print('   * Stream =',jS,' => saving '+cf_nc_out)        
         kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
                                    tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
-
-
-
             
         # Saving 1 file per stream and per record:
         for jr in range(NCRmax):
@@ -319,17 +316,17 @@ if __name__ == '__main__':
 
             if Nbuoys >= Nb_min_buoys:
                 ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
-                cf_out = './npz/'+cout_root+'_'+ctr+'.npz'
+                cf_npz_out = './npz/'+cout_root+'_'+ctr+'.npz'
 
                 (indV,) = np.where(xmsk[jr,:]==1) ; # index of valid points
                 if len(indV)!= Nbuoys: print('ERROR: rec.',jr,' of stream '+cs+' => len(indV)!= Nbuoys) !', len(indV), Nbuoys); exit(0)
 
-                np.savez_compressed( cf_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vIDs[indV],
+                np.savez_compressed( cf_npz_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vIDs[indV],
                                      vtime=xtim[jr,indV], vx=xXkm[jr,indV], vy=xYkm[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
 
                 if iplot>1:
                     # Plot on cartesian coordinates (km):
-                    cfpng = './figs/SELECTION/xYkm_buoys_RGPS_S'+'%3.3i'%(js)+'_'+ctr+'.png'
+                    cfpng = './figs/SELECTION/xYkm_buoys_RGPS_S'+'%3.3i'%(jS)+'_'+ctr+'.png'
                     if jr==0:
                         zrx = [ np.min(xXkm[jr,indV])-100. , np.max(xXkm[jr,indV])+100. ]
                         zry = [ np.min(xYkm[jr,indV])-100. , np.max(xYkm[jr,indV])+100. ]
@@ -342,4 +339,4 @@ if __name__ == '__main__':
 
 
 
-    ### for js in range(Nstreams)
+    ### for jS in range(Nstreams)
