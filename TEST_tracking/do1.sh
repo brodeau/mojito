@@ -38,7 +38,8 @@ for fnc in ${list_nc}; do
 
 
 
-    
+    echo; echo;
+    echo "FIXME: ice_part_tracker.py has to be able to used the correct initial date!!! For now it is only 01/01 ???"
     exit
 done
 
