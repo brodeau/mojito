@@ -12,7 +12,10 @@
  * So use a proper argument parsing stuff here
  
  * Now, when a `idateStart` exists, we have to locate the right time record to start from
-   in the model UV file !!!!
+   in the input SI3 UV file !!!!
+
+ * The `Initialized_buoys_NANUK4_ICE-EVP00_1h_19970101_19970331_icemod.npz` file must bear the appropriate dates
+   it's wrong now (it's that of the time span of the input SI3 UV file...)
 
 '''
 
