@@ -173,13 +173,21 @@ if __name__ == '__main__':
         print('\n  # File: '+ff)
         fb = path.basename(ff)
         vf = split('_',fb)
-        ncb = len(vf)        
+        ncb = len(vf)
+        print('ncb =',ncb)
         #
-        if ncb == 3:
-            list_date.append(split('-',vf[2])[0])
+        if ncb == 4:
+            cdth = split('-',vf[2])[0]
+            list_date.append(split('h',cdth)[0])
         else:
-            list_date.append(split('-',vf[4])[0])
+            print(' `list_date` FIXME !!!'); exit(0)
+        #elif ncb==4:
+        #    print(vf)
+        #    list_date.append(split('-',vf[3])[0])
         #
+        #print( ' list_date =', list_date)
+        #exit(0)
+        
         kStreamName[kf] = vf[1]
         #
         with np.load(ff) as data:
