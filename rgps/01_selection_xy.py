@@ -304,38 +304,36 @@ if __name__ == '__main__':
                                    tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
             
         # Saving 1 file per stream and per record:
-        for jr in range(NCRmax):
-
-            Nbuoys = nBpR[jr] ; # number of buoys alive in current record of this stream
-            # Dates based on the center of time bins used:
-            idate_binC =         int(VT[jr,0])
-            cdate_binC = epoch2clock(VT[jr,0])
-            # Dates based on time average accros all buoys at current record of stream
-            idate_strM =         int(vtim[jr])
-            cdate_strM = epoch2clock(vtim[jr])
-
-            if Nbuoys >= Nb_min_buoys:
-                ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
-                cf_npz_out = './npz/'+cout_root+'_'+ctr+'.npz'
-
-                (indV,) = np.where(xmsk[jr,:]==1) ; # index of valid points
-                if len(indV)!= Nbuoys: print('ERROR: rec.',jr,' of stream '+cs+' => len(indV)!= Nbuoys) !', len(indV), Nbuoys); exit(0)
-
-                np.savez_compressed( cf_npz_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vIDs[indV],
-                                     vtime=xtim[jr,indV], vx=xXkm[jr,indV], vy=xYkm[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
-
-                if iplot>1:
-                    # Plot on cartesian coordinates (km):
-                    cfpng = './figs/SELECTION/xYkm_buoys_RGPS_S'+'%3.3i'%(jS)+'_'+ctr+'.png'
-                    if jr==0:
-                        zrx = [ np.min(xXkm[jr,indV])-100. , np.max(xXkm[jr,indV])+100. ]
-                        zry = [ np.min(xYkm[jr,indV])-100. , np.max(xYkm[jr,indV])+100. ]
-                    kg = mjt.ShowTQMesh( xXkm[jr,indV], xYkm[jr,indV], ppntIDs=vIDs[indV], cfig=cfpng, lGeoCoor=False,
-                                         zoom=5, rangeX=zrx, rangeY=zry )
-            else:
-                if idebug>0:
-                    print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
-                          ' (unsufficient n. of buoys alive:',Nbuoys,')')
+        #for jr in range(NCRmax):
+        #    Nbuoys = nBpR[jr] ; # number of buoys alive in current record of this stream
+        #    # Dates based on the center of time bins used:
+        #    idate_binC =         int(VT[jr,0])
+        #    cdate_binC = epoch2clock(VT[jr,0])
+        #    # Dates based on time average accros all buoys at current record of stream
+        #    idate_strM =         int(vtim[jr])
+        #    cdate_strM = epoch2clock(vtim[jr])
+        #
+        #    if Nbuoys >= Nb_min_buoys:
+        #        ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
+        #        cf_npz_out = './npz/'+cout_root+'_'+ctr+'.npz'
+        #        (indV,) = np.where(xmsk[jr,:]==1) ; # index of valid points
+        #        if len(indV)!= Nbuoys: print('ERROR: rec.',jr,' of stream '+cs+' => len(indV)!= Nbuoys) !', len(indV), Nbuoys); exit(0)
+        #
+        #        np.savez_compressed( cf_npz_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vIDs[indV],
+        #                             vtime=xtim[jr,indV], vx=xXkm[jr,indV], vy=xYkm[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
+        #
+        #        if iplot>1:
+        #            # Plot on cartesian coordinates (km):
+        #            cfpng = './figs/SELECTION/xYkm_buoys_RGPS_S'+'%3.3i'%(jS)+'_'+ctr+'.png'
+        #            if jr==0:
+        #                zrx = [ np.min(xXkm[jr,indV])-100. , np.max(xXkm[jr,indV])+100. ]
+        #                zry = [ np.min(xYkm[jr,indV])-100. , np.max(xYkm[jr,indV])+100. ]
+        #            kg = mjt.ShowTQMesh( xXkm[jr,indV], xYkm[jr,indV], ppntIDs=vIDs[indV], cfig=cfpng, lGeoCoor=False,
+        #                                 zoom=5, rangeX=zrx, rangeY=zry )
+        #    else:
+        #        if idebug>0:
+        #            print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
+        #                  ' (unsufficient n. of buoys alive:',Nbuoys,')')
 
 
 
