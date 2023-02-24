@@ -42,10 +42,12 @@ Nb_min_buoys = min_nb_buoys_in_stream ; # minimum number of buoys necessary to k
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
-l_drop_tooclose = True ; # PR: keep the one with the longest record...
-rd_tol = 7. # tolerance distance in km below which we decide to cancel one of the 2 buoys!
+l_drop_tooclose = False ; # PR: keep the one with the longest record...
 NbPass = 2  # number of passes...
-
+#
+l_drop_overlap = True
+#
+rd_tol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `l_drop_overlap`
 
 FillValue = -9999.
 #================================================================================================
@@ -69,7 +71,7 @@ def __summary__( pNBini, pTcini, pIDs, pNRc ):
     print(' ===================================\n')
 
 
-    
+
 
 if __name__ == '__main__':
 
@@ -91,7 +93,7 @@ if __name__ == '__main__':
     cdate1   =     argv[2]
     cdate2   =     argv[3]
     idtbin_h = int(argv[4])
-    ####################################################################################################        
+    ####################################################################################################
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                 # scanning for valid etime intervals
     #
@@ -105,7 +107,7 @@ if __name__ == '__main__':
     chhmm1, chhmm2 = '00:00', '00:00'
     if lhp1: chhmm1 = cdate1[9:11]+':'+cdate1[12:14]
     if lhp2: chhmm2 = cdate2[9:11]+':'+cdate2[12:14]
-    
+
     cdt1 = str.replace(cdt_pattern,'YYYY-MM-DD',cY1+'-'+cmm1+'-'+cdd1)
     cdt2 = str.replace(cdt_pattern,'YYYY-MM-DD',cY2+'-'+cmm2+'-'+cdd2)
     cdt1 = str.replace(cdt1,'hh:mm',chhmm1)
@@ -117,10 +119,14 @@ if __name__ == '__main__':
 
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given stream, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
-    
+
+    if l_drop_overlap and l_drop_tooclose:
+        print(' ERROR: you cannot use `l_drop_overlap` and `l_drop_tooclose`! Choose one of the two!!!')
+        exit(0)
+
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
-    
+
     rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
     print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
     print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
@@ -130,16 +136,16 @@ if __name__ == '__main__':
         if Nb_min_cnsctv > Nforced_stream_length:
             print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_stream_length` !'); exit(0)
 
-    
+
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
     # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
     NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin_sec, iverbose=idebug-1 )
-    
+
     # Open, inspect the input file and load raw data:
     Np0, Ns0, vtime0, vykm0, vxkm0, vlat0, vlon0, vBIDs0, vStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
-    
+
     # Masking all point that are before and beyond our period of interest (note: `vtime0` is not masked!):
     Nb, vIDsWP = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vxkm0, vykm0, vlon0, vlat0,  rmskVal=FillValue )
     # * Nb: number of different buoys that exist for at least 1 record during specified date range aka whole period (WP)
@@ -173,7 +179,7 @@ if __name__ == '__main__':
 
     # Loop along streams:
     for jS in range(Nstreams):
-        
+
         cs   = str(jS)
         vIDs = np.ma.MaskedArray.compressed( ZIDs[jS,:] ) ; # valid IDs for current stream: shrinked, getting rid of masked points
         NvB  = ZNB_ini[jS]
@@ -185,7 +191,7 @@ if __name__ == '__main__':
 
         if Nforced_stream_length:
             NCRmax = Nforced_stream_length
-        else:        
+        else:
             NCRmax = np.max(ZNRc[jS,:]) ; # Max number of record from the buoy that has the most
             print('     ===> has '+str(NvB)+' valid buoys at start!')
             print('     ===> the buoy with most records has '+str(NCRmax)+' of them!')
@@ -221,7 +227,7 @@ if __name__ == '__main__':
             #
             #(idx0_id,) = np.where( vBIDs0 == vIDs[jb])
             #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
-            indv = xix0[0:nvr,jb].copy() # 
+            indv = xix0[0:nvr,jb].copy() #
             #
             xXkm[0:nvr,jb] = vxkm0[indv]
             xYkm[0:nvr,jb] = vykm0[indv]
@@ -239,7 +245,7 @@ if __name__ == '__main__':
         ztim = xtim.copy()
         ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
         vtim = np.mean(ztim, axis=1) ; # average on the buoy axis, so `vtim` only dimension is records...
-                
+
         # Nearest interpolation of vtim on the VTbin calendar !!!
         #    => so VT contains the mean date for all buoys at a given record but
         #       corresponding to a value taken from VTbin
@@ -259,16 +265,16 @@ if __name__ == '__main__':
         del ztim
 
         if iFU>0:
-            print('old shape =', np.shape(xmsk))                    
+            print('old shape =', np.shape(xmsk))
             # => we masked some first and/or second buoy records, so we can shrink the arrays accordingly
             (idxK0,) , (idxK1,) = np.where(xmsk[0,:]==1) , np.where(xmsk[1,:]==1)
             idxK = np.unique( np.concatenate([idxK0,idxK1]) )
             NvB  = len(idxK)
             xmsk = xmsk[:,idxK]
-            xXkm = xXkm[:,idxK] 
-            xYkm = xYkm[:,idxK] 
-            xlon = xlon[:,idxK] 
-            xlat = xlat[:,idxK] 
+            xXkm = xXkm[:,idxK]
+            xYkm = xYkm[:,idxK]
+            xlon = xlon[:,idxK]
+            xlat = xlat[:,idxK]
             xtim = xtim[:,idxK]
             vIDs = vIDs[  idxK]
             #
@@ -280,29 +286,53 @@ if __name__ == '__main__':
 
 
 
-        if l_drop_tooclose:            
+        if l_drop_tooclose:
             jr = 0 ; # we work with first record !!!
             #
-            NvB, idxK = mjt.CancelTooClose( jr, rd_tol, xlat, xlon, xmsk, NbPass=2 )
+            NvB, idxK = mjt.CancelTooClose( jr, rd_tol_km, xlat, xlon, xmsk, NbPass=2 )
             #
             xmsk = xmsk[jr:,idxK]
             xlat = xlat[jr:,idxK]
             xlon = xlon[jr:,idxK]
             xYkm = xYkm[jr:,idxK]
             xXkm = xXkm[jr:,idxK]
-            xtim = xtim[jr:,idxK]            
-            vIDs =     vIDs[idxK]            
+            xtim = xtim[jr:,idxK]
+            vIDs =     vIDs[idxK]
             del idxK
-            print('\n *** UPDATE: based on "almost-overlap" cleaning, there are '+str(NvB)+' buoys left to follow!')
+            print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow!')
+
+
+        # The one to keep!!!
+        if l_drop_overlap:
+            jr = 0 ; # we work with first record !!!
+            (idxn,) = np.where( xmsk[jr,:]==1 )
+            zcoor = np.array([ xXkm[jr,:], xYkm[jr,:] ]).T ; # for `gudhi` coord = [X,Y] !
+            _, _, idx_keep = mjt.SubSampCloud( rd_tol_km, zcoor )
+            idx_rm = np.setdiff1d( idxn, idx_keep ) ; # keep values of `idxn` that are not in `idx_keep`
+            xmsk[jr:,idx_rm] = 0 ; # supressing at this time records and all those following!!!
+            Nrm = len(idx_rm)
+            #
+            (idxK,) = np.where(xmsk[0,:]==1)
+            NvB  = len(idxK)
+            xmsk = xmsk[jr:,idxK]
+            xlat = xlat[jr:,idxK]
+            xlon = xlon[jr:,idxK]
+            xYkm = xYkm[jr:,idxK]
+            xXkm = xXkm[jr:,idxK]
+            xtim = xtim[jr:,idxK]
+            vIDs =     vIDs[idxK]
+            del zcoor, idxn, idx_keep, idx_rm, idxK
+            #
+            print('\n *** UPDATE: "sub-sampling" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow! ('+str(Nrm)+' removed)')
 
 
 
-            
+
         ##############################
         # Time to save the stuff !!! #
         ##############################
 
-            
+
         # Masking:
         xXkm = np.ma.masked_where( xmsk==0, xXkm )
         xYkm = np.ma.masked_where( xmsk==0, xYkm )
@@ -312,7 +342,7 @@ if __name__ == '__main__':
         vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
 
         cout_root = 'SELECTION_buoys_RGPS_S'+'%3.3i'%(jS)
-        
+
         if iplot>0:
             # Stream time evolution on Arctic map:
             kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=vIDs, cnmfig='SELECTION/'+cout_root,
@@ -327,42 +357,9 @@ if __name__ == '__main__':
         cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
         cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
 
-        print('   * Stream =',jS,' => saving '+cf_nc_out)        
+        print('   * Stream =',jS,' => saving '+cf_nc_out)
         kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
                                    tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
-            
-        # Saving 1 file per stream and per record:
-        #for jr in range(NCRmax):
-        #    Nbuoys = nBpR[jr] ; # number of buoys alive in current record of this stream
-        #    # Dates based on the center of time bins used:
-        #    idate_binC =         int(VT[jr,0])
-        #    cdate_binC = epoch2clock(VT[jr,0])
-        #    # Dates based on time average accros all buoys at current record of stream
-        #    idate_strM =         int(vtim[jr])
-        #    cdate_strM = epoch2clock(vtim[jr])
-        #
-        #    if Nbuoys >= Nb_min_buoys:
-        #        ctr = str.replace( str.replace(cdate_binC[0:16],':','h') ,'-','' ) ; # precision to the minute without ':'
-        #        cf_npz_out = './npz/'+cout_root+'_'+ctr+'.npz'
-        #        (indV,) = np.where(xmsk[jr,:]==1) ; # index of valid points
-        #        if len(indV)!= Nbuoys: print('ERROR: rec.',jr,' of stream '+cs+' => len(indV)!= Nbuoys) !', len(indV), Nbuoys); exit(0)
-        #
-        #        np.savez_compressed( cf_npz_out, itime=idate_binC, date=cdate_binC, Npoints=Nbuoys, vids=vIDs[indV],
-        #                             vtime=xtim[jr,indV], vx=xXkm[jr,indV], vy=xYkm[jr,indV], vlon=xlon[jr,indV], vlat=xlat[jr,indV] )
-        #
-        #        if iplot>1:
-        #            # Plot on cartesian coordinates (km):
-        #            cfpng = './figs/SELECTION/xYkm_buoys_RGPS_S'+'%3.3i'%(jS)+'_'+ctr+'.png'
-        #            if jr==0:
-        #                zrx = [ np.min(xXkm[jr,indV])-100. , np.max(xXkm[jr,indV])+100. ]
-        #                zry = [ np.min(xYkm[jr,indV])-100. , np.max(xYkm[jr,indV])+100. ]
-        #            kg = mjt.ShowTQMesh( xXkm[jr,indV], xYkm[jr,indV], ppntIDs=vIDs[indV], cfig=cfpng, lGeoCoor=False,
-        #                                 zoom=5, rangeX=zrx, rangeY=zry )
-        #    else:
-        #        if idebug>0:
-        #            print('     ===> NOT saving record #'+str(jr)+' of stream #'+cs+
-        #                  ' (unsufficient n. of buoys alive:',Nbuoys,')')
-
 
 
     ### for jS in range(Nstreams)
