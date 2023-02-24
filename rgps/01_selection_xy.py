@@ -24,7 +24,7 @@ from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 idebug = 0
-iplot  = 1
+iplot  = 0
 
 cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
 
