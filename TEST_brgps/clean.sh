@@ -18,7 +18,7 @@ elif [ "$1" = "4" ]; then
     rm -f npz/PDF_*.npz *PDF*.svg
     
 elif [ "$1" = "all" ]; then
-    rm -rf figs npz logs *.png *.nc *.svg *.pdf
+    rm -rf figs npz logs *.png *.nc *.svg *.pdf nc
 
 else
     echo "Tell me something!"
