@@ -24,7 +24,7 @@ from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 idebug = 0
-iplot  = 0
+iplot  = 1
 
 cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
 
@@ -43,7 +43,7 @@ Nb_min_buoys = min_nb_buoys_in_stream ; # minimum number of buoys necessary to k
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
 l_drop_tooclose = True ; # PR: keep the one with the longest record...
-rd_tol = 5. # tolerance distance in km below which we decide to cancel one of the 2 buoys!
+rd_tol = 7. # tolerance distance in km below which we decide to cancel one of the 2 buoys!
 NbPass = 2  # number of passes...
 
 
