@@ -456,6 +456,8 @@ if __name__ == '__main__':
 
 
     if l_drop_doublons:
+        print('FIXME: it is a function now => mjt.CancelTooClose( jr, rd_tol, xlat, xlon, xmsk, NbPass=2 )')
+        exit(0)
         # Based on first time step only!
         jt = 0
         #
@@ -472,7 +474,7 @@ if __name__ == '__main__':
                     if idebug>2:
                         print('\n *** "TOO CLOSE" scanning: Buoy #'+str(jb)+'=> ID ='+str(jid))
                         print('    ==> lat,lon = ',zlat[jb],zlon[jb])                
-                    vdist = mjt.Haversine( zlat[jb], zlon[jb], zlat, zlon ) ; # build estimates of distances (km) with all other buoy at this same time record:
+                    vdist = mjt.Haversine( zlat[jb], zlon[jb], zlat, zlon ) ; # estimates of distances (km) with all other buoy at this same time record:
             
                     # Need to mask itself (distance = 0!)
                     if vdist[jb] != 0.:

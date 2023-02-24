@@ -42,8 +42,14 @@ Nb_min_buoys = min_nb_buoys_in_stream ; # minimum number of buoys necessary to k
 
 list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
+l_drop_tooclose = True ; # PR: keep the one with the longest record...
+rd_tol = 5. # tolerance distance in km below which we decide to cancel one of the 2 buoys!
+NbPass = 2  # number of passes...
+
+
 FillValue = -9999.
 #================================================================================================
+
 
 def __summary__( pNBini, pTcini, pIDs, pNRc ):
     (Nstrm,NbMax) = np.shape(pIDs)
@@ -255,15 +261,16 @@ if __name__ == '__main__':
         if iFU>0:
             print('old shape =', np.shape(xmsk))                    
             # => we masked some first and/or second buoy records, so we can shrink the arrays accordingly
-            (idx_keep0,) , (idx_keep1,) = np.where(xmsk[0,:]==1) , np.where(xmsk[1,:]==1)
-            idx_keep = np.unique( np.concatenate([idx_keep0,idx_keep1]) )
-            xmsk = xmsk[:,idx_keep]
-            xXkm = xXkm[:,idx_keep] 
-            xYkm = xYkm[:,idx_keep] 
-            xlon = xlon[:,idx_keep] 
-            xlat = xlat[:,idx_keep] 
-            xtim = xtim[:,idx_keep]
-            vIDs = vIDs[  idx_keep]
+            (idxK0,) , (idxK1,) = np.where(xmsk[0,:]==1) , np.where(xmsk[1,:]==1)
+            idxK = np.unique( np.concatenate([idxK0,idxK1]) )
+            NvB  = len(idxK)
+            xmsk = xmsk[:,idxK]
+            xXkm = xXkm[:,idxK] 
+            xYkm = xYkm[:,idxK] 
+            xlon = xlon[:,idxK] 
+            xlat = xlat[:,idxK] 
+            xtim = xtim[:,idxK]
+            vIDs = vIDs[  idxK]
             #
             ztim = xtim.copy()
             ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
@@ -272,6 +279,30 @@ if __name__ == '__main__':
             print('new shape =', np.shape(xmsk))
 
 
+
+        if l_drop_tooclose:            
+            jr = 0 ; # we work with first record !!!
+            #
+            NvB, idxK = mjt.CancelTooClose( jr, rd_tol, xlat, xlon, xmsk, NbPass=2 )
+            #
+            xmsk = xmsk[jr:,idxK]
+            xlat = xlat[jr:,idxK]
+            xlon = xlon[jr:,idxK]
+            xYkm = xYkm[jr:,idxK]
+            xXkm = xXkm[jr:,idxK]
+            xtim = xtim[jr:,idxK]            
+            vIDs =     vIDs[idxK]            
+            del idxK
+            print('\n *** UPDATE: based on "almost-overlap" cleaning, there are '+str(NvB)+' buoys left to follow!')
+
+
+
+            
+        ##############################
+        # Time to save the stuff !!! #
+        ##############################
+
+            
         # Masking:
         xXkm = np.ma.masked_where( xmsk==0, xXkm )
         xYkm = np.ma.masked_where( xmsk==0, xYkm )

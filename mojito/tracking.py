@@ -19,26 +19,6 @@ def find_ji_of_min(x):
     return k//nx, k%nx
 
 
-def Haversine( plat, plon, xlat, xlon ):
-    '''
-    # ! VECTOR VERSION !
-    # Returns the distance in km at the surface of the earth
-    # between two GPS points (degreesN, degreesE)
-    # (plat,plon)  : a point
-    # xlat, xlon : 2D arrays
-    #
-    # Here we do not need accuracy on Earth radius, since the call
-    # to this function is suposely made to find nearest point
-    '''
-    to_rad = 3.141592653589793/180.
-    R = 6360. ; # radius of Earth in km (sufficient to take it as a constant here...)
-    #
-    a1 = np.sin( 0.5 * ((xlat - plat)*to_rad) )
-    a2 = np.sin( 0.5 * ((xlon - plon)*to_rad) )
-    a3 = np.cos( xlat*to_rad ) * np.cos(plat*to_rad)
-    #
-    return 2.*R*np.arcsin( np.sqrt( a1*a1 + a3 * a2*a2 ) )
-
 
 def NearestPoint( pcoor_trg, Ys, Xs, rd_found_km=10., resolkm=[], j_prv=None, i_prv=None, np_box_r=10, max_itr=5 ):
     '''
@@ -48,6 +28,7 @@ def NearestPoint( pcoor_trg, Ys, Xs, rd_found_km=10., resolkm=[], j_prv=None, i_
     # * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
     #               because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
     '''
+    from .util import Haversine
     (yT,xT) = pcoor_trg
     (Ny,Nx) = Ys.shape
     #
