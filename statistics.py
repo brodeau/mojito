@@ -16,7 +16,7 @@ iplot=1
 
 
 #l_cst_bins = True
-l_cst_bins = False ; rfexp_bin = 0.1
+l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
@@ -24,10 +24,10 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 rconv = 24.*3600.
 
 # Range to consider:
-min_div  = 0.001 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+min_div  = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
 max_div  = 5.     ; # day^-1
 #
-min_shr = 0.001 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+min_shr = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
 max_shr = 5. ; # day^-1
 
 
