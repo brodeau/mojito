@@ -13,6 +13,10 @@ nbf=`echo ${list_nc} | wc -w`
 
 echo " *** We have ${nbf} files !"
 
+mkdir -p ./logs
+
+ijob=0
+
 for fnc in ${list_nc}; do
 
     fb=`basename ${fnc}`
@@ -22,9 +26,21 @@ for fnc in ${list_nc}; do
     CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
     echo
     echo " *** About to launch:"; echo "     ${CMD}"; echo
+    # SELECTION_buoys_RGPS_S000_19970104h15_19970107h15
+    clog=`basename ${fnc} | sed -e s/'SELECTION_buoys_RGPS_'/''/g -e s/'.nc'/''/g`
 
-    ${CMD}
+    ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
 
+    ijob=$((ijob+1))
+
+    sleep 3
+
+    if [ $((ijob%NJPAR)) -eq 0 ]; then
+        echo "Waiting! (ijob = ${ijob})...."
+        wait
+        echo; echo
+    fi
+    
 done
 
 wait

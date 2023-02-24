@@ -3,7 +3,8 @@
 . ./conf.bash
 
 if [ "$1" = "1" ]; then
-    rm -f figs/tracking/*${NEMO_EXP}*  *${NEMO_EXP}*tracking_*.nc
+    rm -f figs/tracking/*${NEMO_EXP}*
+    rm -f ./nc/*${NEMO_EXP}*_tracking_${YEAR}*.nc npz/Initialized_buoys*.npz
 
 elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/*${NEMO_EXP}* npz/[TQ]-mesh_*${NEMO_EXP}*.npz logs/out_S*__*.out
