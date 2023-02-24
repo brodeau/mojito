@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/ice_part_tracker.py"
+EXE="${MOJITO_DIR}/tracking/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
 dirin="${MOJITO_DIR}/TEST_brgps/nc"; echo ${dirin}
