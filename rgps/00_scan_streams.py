@@ -82,19 +82,14 @@ if __name__ == '__main__':
     chhmm1, chhmm2 = '00:00', '00:00'
     if lhp1: chhmm1 = cdate1[9:11]+':'+cdate1[12:14]
     if lhp2: chhmm2 = cdate2[9:11]+':'+cdate2[12:14]
-
-
     
     cdt1 = str.replace(cdt_pattern,'YYYY-MM-DD',cY1+'-'+cmm1+'-'+cdd1)
     cdt2 = str.replace(cdt_pattern,'YYYY-MM-DD',cY2+'-'+cmm2+'-'+cdd2)
     cdt1 = str.replace(cdt1,'hh:mm',chhmm1)
     cdt2 = str.replace(cdt2,'hh:mm',chhmm2)
     
-    cf_out = 'RGPS_ice_drift_'+split('_', cdt1)[0]+'_'+split('_', cdt2)[0]+'_lb.nc' ;# netCDF file to generate
-
-    # File to save work at intermediate stage
-    cf_npz_strinfo = './npz/'+str.replace( path.basename(cf_in), '.nc4', '.npz' )
-
+    # File to save work in:
+    cf_npz_out = './npz/RGPS_stream_selection_'+cY1+cmm1+cdd1+'_'+cY2+cmm2+cdd2+'.npz'
 
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given stream, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
@@ -296,16 +291,9 @@ if __name__ == '__main__':
         ZIX0[:,:,jr] = np.ma.masked_where( Zmsk==0, ZIX0[:,:,jr] )
     del Zmsk
 
-    # Visualize buoy IDs in each stream:
-    #for js in range(Nstreams):
-    #    print('Stream #'+str(js)+' => ZIDs[js,:] =')
-    #    for jb in range(Nbuoys_max): print( ZIDs[js,jb],' ',end='')
-    #    print('')
-    #exit(0)
-
     mjt.streamSummaryRGPS(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
 
-    print('\n *** Saving info about streams into: '+cf_npz_strinfo+'!')
-    np.savez_compressed( cf_npz_strinfo, Nstreams=Nstreams, ZNB_ini=ZNB_ini, ZTc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
+    print('\n *** Saving info about streams into: '+cf_npz_out+'!')
+    np.savez_compressed( cf_npz_out, Nstreams=Nstreams, ZNB_ini=ZNB_ini, ZTc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
 
 

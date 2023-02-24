@@ -15,10 +15,6 @@ LIST_RES="10"
 
 FILIN="RGPS_${YEAR}.nc4"
 
-#LIST_STREAM="000 001 002 003 004 005 006 007 008"
-NSTREAMA="0"
-NSTREAMB="8"
-
 MARKER_SIZE=10
 
 NJPAR=4 ; # number of jobs we can launch in //
@@ -37,14 +33,10 @@ case ${host} in
         DATE2="${YEAR}0120"
         #LIST_RES="20"
         MARKER_SIZE=10
-        #
-        NSTREAMB="15"
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #LIST_STREAM="000 001 002 003 004 005 006 008 009 010 011"
-        NSTREAMB="11"
         #
         #DT_BINS_H=72  ; # width of a bin for time sampling [hours]
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
@@ -59,9 +51,7 @@ case ${host} in
         #
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #
-        NSTREAMB="100"
-        #
-        DATE2="${YEAR}0305"
+        DATE2="${YEAR}0315"
         #
         MARKER_SIZE=50
         ;;
@@ -71,4 +61,3 @@ case ${host} in
 esac
 
 export RGPS_DIR="${DATA_DIR}/data/RGPS_Kwok_98"
-
