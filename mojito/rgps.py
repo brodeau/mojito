@@ -298,6 +298,16 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, rtime, iverbose=0 ):
 
 def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     from .util import StdDev
+    '''
+       * cstrm: string to identufy current stream
+       * ptim:  2D masked time array  (NCRmax,NvB) or original RGPS time positions [s]
+       * pVTb:  "almost 1D" time array (NCRmax,3) of time bins used [s]
+       * pmsk:  2D mask array (NCRmax,NvB) for canceled points (int)
+       * pBpR:  1D (NCRmax) array of the number of buoys alive at each record (int)
+       * tdev_max: max authorized time deviation from the mean for a buoy [s]
+    '''
+
+    
     # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
     # or is just too far away from the mean of all buoys
     # => if such a buoy is canceld at stream # k, it should also be canceled at following records
@@ -308,7 +318,7 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     #    print('SUMMARY BEFORE/ rec.',jr,': zBpR[jr], sum(zmsk[jr,:]) =',zBpR[jr], np.sum(zmsk[jr,:]))
     #
     kFU = 0
-    if iverbose>0: print('\n *** Time location sanity test and fix for stream #'+str(cstrm))
+    if iverbose>0: print('  * [StreamTimeSanityCheck]: time location sanity test and fix for stream #'+str(cstrm))
     for jrec in range(NRmax):
         # At this record, the time position of all buoys of this stream is: ztim[jrec,:]
         t_mean = np.mean(ptim[jrec,:])

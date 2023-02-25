@@ -138,23 +138,13 @@ if __name__ == '__main__':
         rTa = vTbin[jt,1] ; # begining of the current time bin
         #
         print('\n *** Selecting point pos. that exist at '+cTbin[jt]+' +-'+str(int(dt_bin_sec/2./3600))+'h!',end='')
-        (idxOK0,) = np.where( np.abs( vtime0[:] - rTc ) < dt_bin_sec/2.-0.1 ) ; # yes, removing 0.1 second to `dt_bin_sec/2.`
+        (idxOK0,) = np.where( (np.abs(vtime0[:]-rTc) < dt_bin_sec/2.-0.1) & (vIDs0[:].data >= 0) )       ; # yes, removing 0.1 second to `dt_bin_sec/2.`
         zIDsOK0 = vIDs0[idxOK0]
         ztimOK0 = vtime0[idxOK0]
-
-        if np.any(zIDsOK0<0):
-            print('ERROR: some buoy IDs < 0 !!!'); exit(0)
-            #_,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only indices of `zIDsOK0` that exist in `vIDsWP`
-            #idxOK0  = idxOK0[idx]
-            #del idx
-            #zIDsOK0 = vIDs0[idxOK0]
-            #ztimOK0 = vtime0[idxOK0]
-
-        Nok0 = len(idxOK0)
+        Nok0 = len(idxOK0)        
         print(' => '+str(Nok0)+' positions for '+str(len(np.unique(zIDsOK0)))+' buoys!')
 
         if Nok0>0:
-
             # If the width of the time bin is large enough (normally>3days),
             # the same buoy ID can exist more than once in the same time bin,
             # and so also in `zIDsOK0`!
@@ -224,7 +214,7 @@ if __name__ == '__main__':
                 ### for jidx in idxT
 
                 if NBinStr >= min_nb_buoys_in_stream:
-                    print('   +++ C O N F I R M E D   V A L I D   S T R E A M   #'+str(istream)+' +++ => has '+str(NBinStr)+' buoys!')
+                    print('   +++ C O N F I R M E D   V A L I D   S T R E A M   #'+str(istream)+' +++ => selected '+str(NBinStr)+' buoys!')
                     VNB_ini[istream] = NBinStr
                     VTc_ini[istream] = rTc
                     # Only now can we register the points indices we used into `IDXtakenG`:

@@ -149,9 +149,12 @@ if __name__ == '__main__':
         ZNRc     = data['NRc']
         ZIX0     = data['ZIX0']
     # For some reason, masked shit not preserved via savez/load...
-    ZIDs = np.ma.masked_where( ZIDs==-999, ZIDs )
-    ZNRc = np.ma.masked_where( ZNRc==-999, ZNRc )
+    ZIDs = np.ma.masked_where( ZIDs<0, ZIDs )
+    ZNRc = np.ma.masked_where( ZNRc<0, ZNRc )
     #
+    print('      => we have '+str(Nstreams)+' streams!')
+
+    
     Ncsrec_max = np.max(ZNRc) ; # maximum number of valid consecutive records for a buoy
     for jr in range(Ncsrec_max):
         ZIX0[:,:,jr] = np.ma.masked_where( ZIX0[:,:,jr]==-999, ZIX0[:,:,jr] ) ; # fixme: check!
@@ -233,116 +236,124 @@ if __name__ == '__main__':
         #    => so VT contains the mean date for all buoys at a given record but
         #       corresponding to a value taken from VTbin
         VT = np.zeros( (NCRmax,3), dtype=int )
-        i=0
+        ir=0
         for rt in vtim:
-            idx = np.argmin( np.abs(vTbin[:,0]-rt) )
-            if idebug>0: print('      rt =',rt,' => ',epoch2clock(rt),' => nearest of VTbin =',epoch2clock(vTbin[idx,0]))
-            VT[i,:] = vTbin[idx,:]
-            i=i+1
-
-        # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
-        # or is just too far away from the mean of all buoys
-        # => if such a buoy is canceld at stream # k, it should also be canceled at following records
-        iFU, xmsk, nBpR = mjt.StreamTimeSanityCheck( cs, ztim, VT, xmsk, nBpR, max_t_dev_allowed_in_bin, iverbose=idebug )
-        #
-        del ztim
-
-        if iFU>0:
-            print('old shape =', np.shape(xmsk))
-            # => we masked some first and/or second buoy records, so we can shrink the arrays accordingly
-            (idxK0,) , (idxK1,) = np.where(xmsk[0,:]==1) , np.where(xmsk[1,:]==1)
-            idxK = np.unique( np.concatenate([idxK0,idxK1]) )
-            NvB  = len(idxK)
-            xmsk = xmsk[:,idxK]
-            xXkm = xXkm[:,idxK]
-            xYkm = xYkm[:,idxK]
-            xlon = xlon[:,idxK]
-            xlat = xlat[:,idxK]
-            xtim = xtim[:,idxK]
-            vIDs = vIDs[  idxK]
+            kp = np.argmin( np.abs(vTbin[:,0]-rt) )
+            lStreamOk = ( rt>=vTbin[kp,1] and rt<vTbin[kp,2] )
+            if not lStreamOk:
+                print(' WARNING: could not locate mean buoy time `rt` in the identified time bin :() ')
+                print('          => rt, and time bounds =', epoch2clock(rt), epoch2clock(vTbin[kp,1]), epoch2clock(vTbin[kp,2]))
+                print('          => identified time bin is #'+str(kp+1)+' out of '+str(NTbin)+' in total')
+                print('          ==> forget this stream!\n')
+                break
             #
-            ztim = xtim.copy()
-            ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
-            vtim = np.mean(ztim, axis=1) ; # average on the buoy axis, so `vtim` only dimension is records...
+            if idebug>1: print('      rt =',rt,' => ',epoch2clock(rt),' => nearest of VTbin =',epoch2clock(vTbin[kp,0]))
+            VT[ir,:] = vTbin[kp,:]
+            ir+=1
+
+        if lStreamOk:
+            # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
+            # or is just too far away from the mean of all buoys
+            # => if such a buoy is canceld at stream # k, it should also be canceled at following records
+            iFU, xmsk, nBpR = mjt.StreamTimeSanityCheck( cs, ztim, VT, xmsk, nBpR, max_t_dev_allowed_in_bin, iverbose=idebug )
             #
-            print('new shape =', np.shape(xmsk))
-
-
-
-        if l_drop_tooclose:
-            jr = 0 ; # we work with first record !!!
-            #
-            NvB, idxK = mjt.CancelTooClose( jr, rd_tol_km, xlat, xlon, xmsk, NbPass=2 )
-            #
-            xmsk = xmsk[jr:,idxK]
-            xlat = xlat[jr:,idxK]
-            xlon = xlon[jr:,idxK]
-            xYkm = xYkm[jr:,idxK]
-            xXkm = xXkm[jr:,idxK]
-            xtim = xtim[jr:,idxK]
-            vIDs =     vIDs[idxK]
-            del idxK
-            print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow!')
-
-
-        # The one to keep!!!
-        if l_drop_overlap:
-            jr = 0 ; # we work with first record !!!
-            (idxn,) = np.where( xmsk[jr,:]==1 )
-            zcoor = np.array([ xXkm[jr,:], xYkm[jr,:] ]).T ; # for `gudhi` coord = [X,Y] !
-            _, _, idx_keep = mjt.SubSampCloud( rd_tol_km, zcoor )
-            idx_rm = np.setdiff1d( idxn, idx_keep ) ; # keep values of `idxn` that are not in `idx_keep`
-            xmsk[jr:,idx_rm] = 0 ; # supressing at this time records and all those following!!!
-            Nrm = len(idx_rm)
-            #
-            (idxK,) = np.where(xmsk[0,:]==1)
-            NvB  = len(idxK)
-            xmsk = xmsk[jr:,idxK]
-            xlat = xlat[jr:,idxK]
-            xlon = xlon[jr:,idxK]
-            xYkm = xYkm[jr:,idxK]
-            xXkm = xXkm[jr:,idxK]
-            xtim = xtim[jr:,idxK]
-            vIDs =     vIDs[idxK]
-            del zcoor, idxn, idx_keep, idx_rm, idxK
-            #
-            print('\n *** UPDATE: "sub-sampling" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow! ('+str(Nrm)+' removed)')
-
-
-
-
-        ##############################
-        # Time to save the stuff !!! #
-        ##############################
-
-
-        # Masking:
-        xXkm = np.ma.masked_where( xmsk==0, xXkm )
-        xYkm = np.ma.masked_where( xmsk==0, xYkm )
-        xlon = np.ma.masked_where( xmsk==0, xlon )
-        xlat = np.ma.masked_where( xmsk==0, xlat )
-        xtim = np.ma.masked_where( xmsk==0, xtim )
-        vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
-
-        cout_root = 'SELECTION_RGPS_S'+'%3.3i'%(jS)
-
-        if iplot>0:
-            # Stream time evolution on Arctic map:
-            kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=vIDs, cnmfig='SELECTION/'+cout_root,
-                                        clock_res='d', NminPnts=Nb_min_buoys )
-
-        # GENERATION OF COMPREHENSIVE NETCDF FILE:
-        #  * 1 file per stream
-        #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
-        #  * for the file name we chose the center of the bin used aka `VT[:,0]`
-        cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]  ; # keeps at the hour precision...
-        cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
-        cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
-        cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
-
-        print('   * Stream =',jS,' => saving '+cf_nc_out)
-        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
-                                   tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
+            del ztim
+    
+            if iFU>0:
+                print('old shape =', np.shape(xmsk))
+                # => we masked some first and/or second buoy records, so we can shrink the arrays accordingly
+                (idxK0,) , (idxK1,) = np.where(xmsk[0,:]==1) , np.where(xmsk[1,:]==1)
+                idxK = np.unique( np.concatenate([idxK0,idxK1]) )
+                NvB  = len(idxK)
+                xmsk = xmsk[:,idxK]
+                xXkm = xXkm[:,idxK]
+                xYkm = xYkm[:,idxK]
+                xlon = xlon[:,idxK]
+                xlat = xlat[:,idxK]
+                xtim = xtim[:,idxK]
+                vIDs = vIDs[  idxK]
+                #
+                ztim = xtim.copy()
+                ztim = np.ma.masked_where( xmsk==0, ztim ) ; # otherwize the `mean` in next line would use zeros!!!!
+                vtim = np.mean(ztim, axis=1) ; # average on the buoy axis, so `vtim` only dimension is records...
+                #
+                print('new shape =', np.shape(xmsk))
+    
+    
+    
+            if l_drop_tooclose:
+                jr = 0 ; # we work with first record !!!
+                #
+                NvB, idxK = mjt.CancelTooClose( jr, rd_tol_km, xlat, xlon, xmsk, NbPass=2 )
+                #
+                xmsk = xmsk[jr:,idxK]
+                xlat = xlat[jr:,idxK]
+                xlon = xlon[jr:,idxK]
+                xYkm = xYkm[jr:,idxK]
+                xXkm = xXkm[jr:,idxK]
+                xtim = xtim[jr:,idxK]
+                vIDs =     vIDs[idxK]
+                del idxK
+                print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow!')
+    
+    
+            # The one to keep!!!
+            if l_drop_overlap:
+                jr = 0 ; # we work with first record !!!
+                (idxn,) = np.where( xmsk[jr,:]==1 )
+                zcoor = np.array([ xXkm[jr,:], xYkm[jr,:] ]).T ; # for `gudhi` coord = [X,Y] !
+                _, _, idx_keep = mjt.SubSampCloud( rd_tol_km, zcoor )
+                idx_rm = np.setdiff1d( idxn, idx_keep ) ; # keep values of `idxn` that are not in `idx_keep`
+                xmsk[jr:,idx_rm] = 0 ; # supressing at this time records and all those following!!!
+                Nrm = len(idx_rm)
+                #
+                (idxK,) = np.where(xmsk[0,:]==1)
+                NvB  = len(idxK)
+                xmsk = xmsk[jr:,idxK]
+                xlat = xlat[jr:,idxK]
+                xlon = xlon[jr:,idxK]
+                xYkm = xYkm[jr:,idxK]
+                xXkm = xXkm[jr:,idxK]
+                xtim = xtim[jr:,idxK]
+                vIDs =     vIDs[idxK]
+                del zcoor, idxn, idx_keep, idx_rm, idxK
+                #
+                print('\n *** UPDATE: "sub-sampling" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow! ('+str(Nrm)+' removed)')
+    
+    
+    
+            ##############################
+            # Time to save the stuff !!! #
+            ##############################
+    
+    
+            # Masking:
+            xXkm = np.ma.masked_where( xmsk==0, xXkm )
+            xYkm = np.ma.masked_where( xmsk==0, xYkm )
+            xlon = np.ma.masked_where( xmsk==0, xlon )
+            xlat = np.ma.masked_where( xmsk==0, xlat )
+            xtim = np.ma.masked_where( xmsk==0, xtim )
+            vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
+    
+            cout_root = 'SELECTION_RGPS_S'+'%3.3i'%(jS)
+    
+            if iplot>0:
+                # Stream time evolution on Arctic map:
+                kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=vIDs, cnmfig='SELECTION/'+cout_root,
+                                            clock_res='d', NminPnts=Nb_min_buoys )
+    
+            # GENERATION OF COMPREHENSIVE NETCDF FILE:
+            #  * 1 file per stream
+            #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
+            #  * for the file name we chose the center of the bin used aka `VT[:,0]`
+            cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]  ; # keeps at the hour precision...
+            cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
+            cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
+            cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
+    
+            print('   * Stream =',jS,' => saving '+cf_nc_out)
+            kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
+                                       tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
 
 
     ### for jS in range(Nstreams)
