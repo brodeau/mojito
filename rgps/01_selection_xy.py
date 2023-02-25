@@ -11,9 +11,6 @@
 #SBATCH --account=python
 #SBATCH --mem=8000
 ##################################################################
-#
-# TO DO:
-#  finish the inclusion of `XIX0` !!!
 
 from sys import argv, exit
 from os import path, environ, mkdir
@@ -27,8 +24,6 @@ idebug = 0
 iplot  = 1
 
 cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
-
-fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
 
@@ -50,6 +45,7 @@ l_drop_overlap = True
 rd_tol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `l_drop_overlap`
 
 FillValue = -9999.
+
 #================================================================================================
 
 
@@ -75,11 +71,6 @@ def __summary__( pNBini, pTcini, pIDs, pNRc ):
 
 if __name__ == '__main__':
 
-    cdata_dir = environ.get('DATA_DIR')
-    if cdata_dir==None:
-        print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-    fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
-
     for cd in ['npz','nc','figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
     if not path.exists('./figs/SELECTION'): mkdir('./figs/SELECTION')
@@ -95,11 +86,11 @@ if __name__ == '__main__':
     idtbin_h = int(argv[4])
     ####################################################################################################
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
-    #                                 # scanning for valid etime intervals
-    #
+    #                                     # scanning for valid etime intervals
+
     ldp1, lhp1 = len(cdate1)==8, len(cdate1)==14
     ldp2, lhp2 = len(cdate2)==8, len(cdate2)==14
-    #
+
     cY1,  cY2  = cdate1[0:4], cdate2[0:4]
     cmm1, cmm2 = cdate1[4:6], cdate2[4:6]
     cdd1, cdd2 = cdate1[6:8], cdate2[6:8]
@@ -127,31 +118,24 @@ if __name__ == '__main__':
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 
-    rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
-    print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
-    print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
+    idt1, idt2 = clock2epoch(cdt1), clock2epoch(cdt2)
+    print( '   ===> in epoch time: ', idt1, 'to', idt2 )
+    print( '       ====> double check: ', epoch2clock(idt1), 'to',  epoch2clock(idt2))
 
 
     if Nforced_stream_length:
         if Nb_min_cnsctv > Nforced_stream_length:
             print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_stream_length` !'); exit(0)
 
-
-    # Load `distance to coast` data:
-    vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
-
     # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
-    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( rdt1, rdt2, dt_bin_sec, iverbose=idebug-1 )
-
-    # Open, inspect the input file and load raw data:
-    Np0, Ns0, vtime0, vykm0, vxkm0, vlat0, vlon0, vBIDs0, vStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )
-
-    # Masking all point that are before and beyond our period of interest (note: `vtime0` is not masked!):
-    Nb, vIDsWP = mjt.KeepDataInterest( rdt1, rdt2, vtime0, vBIDs0, vxkm0, vykm0, vlon0, vlat0,  rmskVal=FillValue )
-    # * Nb: number of different buoys that exist for at least 1 record during specified date range aka whole period (WP)
-    # * vIDsWP : array(Nb) list (unique) of IDs for these buoys
+    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
 
 
+    # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
+    Np, Nb, vIDsWP, vtime0, vIDs0, vlat0, vlon0, vykm0, vxkm0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, list_expected_var, l_doYX=True )
+    # * Np: number of points of interst
+    # * Nb: number of unique buoys of interest
+    # * vIDsWP: unique IDs of the buoys of interest
 
 
 
@@ -225,7 +209,7 @@ if __name__ == '__main__':
             #
             xix0[0:nvr,jb] = ZIX0[jS,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy
             #
-            #(idx0_id,) = np.where( vBIDs0 == vIDs[jb])
+            #(idx0_id,) = np.where( vIDs0 == vIDs[jb])
             #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
             indv = xix0[0:nvr,jb].copy() #
             #

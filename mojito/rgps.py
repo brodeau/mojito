@@ -1,5 +1,9 @@
 import numpy as np
 
+
+FillValue = -9999.
+
+
 def streamSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
     from climporn import epoch2clock
     #
@@ -20,46 +24,80 @@ def streamSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
     print(' ===================================\n')
 
 
-
-def KeepDataInterest( pdt1, pdt2, ptime0, pBIDs0, px0, py0, plon0, plat0,  rmskVal=-99999. ):
+def KeepDataInterest( dt1, dt2, ptime0, pIDs0 ):
     '''
        Only keep data of interest in 1D arrays (except time array), based on date1 and date2.
        Excluded points are masked...
        Again, time array `ptime0` won't be masked (unnecessary and dangerous)
        Input:
-                * pdt1, pdt2 : start & end time ([s] UNIX epoch time)
+                * dt1, dt2 : start & end time ([s] UNIX epoch time)
 
        Returns:
-                * nB   : number of different buoys that exist for at least 1 record during specified date range
+                * nB   : number of unique buoys that exist for at least 1 record during specified date range
                 * zIDs : list (unique) of IDs for these buoys (array[nB] of int)
+                * idx_msk: indices to mask to retain only data of interest (date range) in raw data arrays
     '''
-    nP = len(pBIDs0)
+    (nP,) = np.shape( pIDs0 )
+    zIDs0 = pIDs0.copy()
     #
     # Will mask all point that are before and beyond our period of interest:
-    zmsk = np.zeros(nP, dtype=int) + 1
-    zmsk[np.where(ptime0 < pdt1)] = 0
-    zmsk[np.where(ptime0 > pdt2)] = 0
+    (idx_msk,) = np.where( (ptime0 < dt1) | (ptime0 > dt2) )
+    (idx_fub,) = np.where(  zIDs0 < 0 ) ; # just in case some negative IDs exist
+    idx_msk    = np.concatenate([idx_msk,idx_fub])
     #
-    (idx_masked,) = np.where( zmsk == 0 )
-    #
-    if nP-len(idx_masked) != np.sum(zmsk):
-        print('ERROR: [KDI] fuck up #1!')
-        exit(0)
-    print('\n *** [KDI] Total number of points remaining after time-range-exclusion = ',nP-len(idx_masked), '=', np.sum(zmsk))
-    #
-    pBIDs0[idx_masked] = int(rmskVal) ; pBIDs0 =  np.ma.masked_where( zmsk==0, pBIDs0 )
-    px0[idx_masked]    =     rmskVal  ; px0    =  np.ma.masked_where( zmsk==0, px0    )
-    py0[idx_masked]    =     rmskVal  ; py0    =  np.ma.masked_where( zmsk==0, py0    )
-    plon0[idx_masked]  =     rmskVal  ; plon0  =  np.ma.masked_where( zmsk==0, plon0  )
-    plat0[idx_masked]  =     rmskVal  ; plat0  =  np.ma.masked_where( zmsk==0, plat0  )
+    zIDs0[idx_msk] = -999
     #
     # Remaining buoys (IDs)
-    (idx,) = np.where(pBIDs0.data > 0)
-    zIDs = np.sort( np.unique( pBIDs0[idx] ) ) ; # if not `[idx]` then `rmskVal` is counted once!!!
+    (idx,) = np.where(zIDs0 >= 0) ; # yes, ID=0 exists in RGPS data
+    zIDs = np.sort( np.unique( zIDs0[idx] ) ) ; # if not `[idx]` then `rmskVal` is counted once!!!
     nB   = len(zIDs)
-    print("\n *** [KDI] We found "+str(nB)+" different buoys alive during specified period of time!")
+    print('   * [KDI] We found '+str(nB)+' unique buoys alive during specified period of time.')
     #
-    return nB, zIDs
+    return nB, zIDs, idx_msk
+
+
+
+def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
+    '''
+
+    RETURNS:
+     * nPr: number of points of interst
+     * nBu: number of unique buoys of interest
+     * zIDsU: unique IDs of the buoys of interest
+    
+    '''
+    from .ncio import LoadDataRGPS
+
+    # Open, inspect the input file and load raw data:
+    if l_doYX:
+        Np0, _, ztime0, zykm0, zxkm0, zlat0, zlon0, zIDs0, _ = LoadDataRGPS( fRGPS, listVar )
+    else:
+        Np0, _, ztime0,     _,     _, zlat0, zlon0, zIDs0, _ = LoadDataRGPS( fRGPS, listVar )
+    print('   * [LD4TR] before time-range-exclusion we have '+str(Np0)+' points in the file.')
+
+    nBu, zIDsU, idxmsk = KeepDataInterest( idate1, idate2, ztime0, zIDs0 )
+    # * nBu: number of unique buoys that exist for at least 1 record during specified date range aka whole period (WP)
+    # * zIDsU : array(nBu) list (unique) of IDs for these buoys
+
+    # Masking all point that are before and beyond our period of interest (note: `ztime0` is not masked!):
+    zmsk0 = np.ones(Np0, dtype='i1')
+    zmsk0[idxmsk] = 0
+    lcond = ( zmsk0 == 0 )
+    zIDs0[idxmsk] = int(FillValue) ; zIDs0 =  np.ma.masked_where( lcond, zIDs0 )
+    zlat0[idxmsk] =     FillValue  ; zlat0 =  np.ma.masked_where( lcond, zlat0 )
+    zlon0[idxmsk] =     FillValue  ; zlon0 =  np.ma.masked_where( lcond, zlon0 )
+    if l_doYX:
+        zykm0[idxmsk] = FillValue  ; zykm0 =  np.ma.masked_where( lcond, zykm0 )
+        zxkm0[idxmsk] = FillValue  ; zxkm0 =  np.ma.masked_where( lcond, zxkm0 )
+    nPr = np.sum(zmsk0)
+    print('   * [LD4TR] after time-range-exclusion we have '+str(nPr)+' / '+str(Np0)+' points.')
+    del zmsk0, lcond
+    
+    if l_doYX:
+        return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0, zykm0, zxkm0
+    else:
+        return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
+
 
 
 def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expected, max_dev_from_dt_expected ):
@@ -279,7 +317,7 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
         zdt = np.max(zadiff)/3600.
         if iverbose>0:
             from climporn import epoch2clock
-            print('  * rec #',jrec,'of this stream:')            
+            print('  * rec #',jrec,'of this stream:')
             print('    mean time for this record is:',epoch2clock(t_mean))
             print('    bin center time, and bounds:',epoch2clock(pVTb[jrec,0]),epoch2clock(pVTb[jrec,1]),epoch2clock(pVTb[jrec,2]))
             print('    standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
@@ -289,21 +327,21 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
         idx_rmA = []
         lcancel = np.any( ptim[jrec,:]<pVTb[jrec,1] ) or np.any( ptim[jrec,:] > pVTb[jrec,2] )
         if lcancel:
-            (idx_rm_m,) , (idx_rm_p,) = np.where( ptim[jrec,:]<pVTb[jrec,1] ) ,  np.where( ptim[jrec,:]>pVTb[jrec,2] )                
+            (idx_rm_m,) , (idx_rm_p,) = np.where( ptim[jrec,:]<pVTb[jrec,1] ) ,  np.where( ptim[jrec,:]>pVTb[jrec,2] )
             idx_rmA = np.concatenate([ idx_rm_m , idx_rm_p ])
 
             if np.sum(zmsk[jrec:,idx_rmA])>0:
                 #print('INSIDE before / rec.',jrec,': zBpR[jrec], sum(zmsk[jrec,:]) =',zBpR[jrec], np.sum(zmsk[jrec,:]))
-                #print('INSIDE before / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))                
+                #print('INSIDE before / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))
                 if iverbose>0:
                     print('    WARNING: the time position of some buoys are outside of that of the expected time bin!!!')
                     print('    ==> we have to cancel '+str(len(idx_rmA))+' points / '+str(np.sum(zmsk[jrec,:])))
                 jr = jrec
-                if jrec<2:                    
+                if jrec<2:
                     kFU += 1 ; # => means fields will be shrinked later on...
                     jr=0  ; # if 2nd record (jrec=1) to be canceled then the 1st record becomes useless!
                 #zBpR[jr:] = zBpR[jr:] - len(idx_rmA)
-                zmsk[jr:,idx_rmA] = 0 ; # This and following records!!!                
+                zmsk[jr:,idx_rmA] = 0 ; # This and following records!!!
                 #print('INSIDE after / rec.',jrec,': zBpR[jrec], sum(zmsk[jrec,:]) =',zBpR[jrec], np.sum(zmsk[jrec,:]))
                 #print('INSIDE after / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))
 
@@ -318,7 +356,7 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
                     print('    WARNING: the time position of some buoys are too far from time mean of all buoys of this bin!!!')
                     print('    ==> we have to cancel '+str(len(idx_rmB))+' points / '+str(np.sum(zmsk[jrec,:])))
                 jr = jrec
-                if jrec<2:                    
+                if jrec<2:
                     kFU += 1 ; # => means fields will be shrinked later on...
                     jr=0  ; # if 2nd record (jrec=1) to be canceled then the 1st record becomes useless!
                 #zBpR[jr:] = zBpR[jr:] - len(idx_rmB)
@@ -327,12 +365,14 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     for jr in range(NRmax):
         zBpR[jr] = np.sum(zmsk[jr,:])
         #print('SUMMARY AFTER/ rec.',jr,': zBpR[jr], sum(zmsk[jr,:]) =',zBpR[jr], np.sum(zmsk[jr,:]))
-        
+
 
     #for jr in range(NRmax):
     #    if zBpR[jr] != np.sum(zmsk[jr,:]):
     #        print('ERROR [StreamTimeSanityCheck()]: `zBpR[jr] != np.sum(zmsk[jr,:])`',zBpR[jr], np.sum(zmsk[jr,:]))
     #        exit(0)
-        
+
     return kFU, zmsk, zBpR
-                
+
+
+
