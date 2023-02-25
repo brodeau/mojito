@@ -106,10 +106,12 @@ if __name__ == '__main__':
     # We need a string to name the output files:
     if corigin == 'RGPS':
         cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the stream
+        
+    elif split('_',corigin)[0] == 'NEMO-SI3':
+        sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the stream
+        cfstr = sl[0]+'_'+sl[1]+'_'+sl[2]+'_'+sl[4]
     else:
-        # From ice_tracking with SI3...
-        cfstr = split('_tracking_', path.basename(cf_nc_in))[0]
-
+        print('FIXME for corigin = '+corigin+' !!!'); exit(0)
     
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)

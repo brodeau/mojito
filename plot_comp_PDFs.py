@@ -53,8 +53,11 @@ if __name__ == '__main__':
         print('\n * cname_2 =', cname)
         print(' * cperiod_2 =', cperiod)
         print(' * nP_2 =', nP)
-        if cname2!=cname or np.sum(np.abs(xbin_bounds2-xbin_bounds))!=0:
-            print('ERROR: PDF in file 2 looks too different than in first file...')
+        if cname2!=cname:
+            print('ERROR: `cname2!=cname` !',cname2,cname)
+            exit(0)
+        if np.sum(np.abs(xbin_bounds2-xbin_bounds))!=0:
+            print('ERROR: PDF in file 2 looks too different than in first file in terms of bin bounds?...')
             #or cperiod2!=cperiod
             exit(0)
             
@@ -71,7 +74,7 @@ if __name__ == '__main__':
     cdir = './figs'
     if not path.exists(cdir): mkdir(cdir)
 
-    cfroot = 'PDF_'+cname+'_'+cperiod
+    cfroot = 'Comp_PDF_'+cname+'_'+cperiod
 
 
     if l2files:

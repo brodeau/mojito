@@ -1,4 +1,10 @@
 
+
+* Fix the output file name of PDF npz files created by statistics: must include first and last stream, at least the year, and resolution !!!
+
+
+
+
 * `deformation.py` rejects often because some buoys' time position is too far away from the mean time of the whole ice plate,
   this ctiterion should be applied in the 1st scrit: `01_selection_xy.py` !!! And these buoys removed!
 

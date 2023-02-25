@@ -71,18 +71,26 @@ if __name__ == '__main__':
     
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin
-    cfnm = corigin+'_'+cclck
+    
+    cfnm = corigin
 
-    creskm = ''
-        
     # Some info from npz file name:
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
+
+
     if corigin == 'RGPS':
-        cc1 = split('km.',cf1)[0] ; cc1 = split('_',cc1)[-1]
-        cc2 = split('km.',cf2)[0] ; cc2 = split('_',cc2)[-1]
-    else:    
-        cc1 = split('km_',cf1)[0] ; cc1 = split('_',cc1)[-1]
-        cc2 = split('km_',cf2)[0] ; cc2 = split('_',cc2)[-1]        
+        cstream =  split('_',cf1)[2]
+    elif split('_',corigin)[0] == 'NEMO-SI3':
+        cstream =  split('_',cf1)[4]
+    else:
+        print('FIXME: unknow origin: ',corigin); exit(0)
+        
+    cfnm += '_'+cstream
+    cfnm += '_'+cclck
+        
+    creskm = ''
+    cc1 = split('km.',cf1)[0] ; cc1 = split('_',cc1)[-1]
+    cc2 = split('km.',cf2)[0] ; cc2 = split('_',cc2)[-1]
     if cc1==cc2 and cc1.isdigit() and cc2.isdigit():
         creskm = '_'+cc1+'km'
         print('\n *** We have a resolution from names of files => '+cc1+' km !')

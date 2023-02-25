@@ -16,12 +16,11 @@ echo "${listQ}"
 
 list_str=""
 for ff in ${listQ}; do
-    cstr=`echo ${ff} | cut -d'_' -f3`
-    echo "cstr = ${cstr}"
-
     list_str+="`echo ${ff} | cut -d'_' -f3` "
-
 done
+
+
+
 
 # Removing double of occurences:
 list_str=$(echo ${list_str} | tr ' ' '\n' | sort -u)
