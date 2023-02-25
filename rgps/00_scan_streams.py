@@ -151,7 +151,7 @@ if __name__ == '__main__':
             #ztimOK0 = vtime0[idxOK0]
 
         Nok0 = len(idxOK0)
-        print(' => '+str(Nok0)+' of them!')
+        print(' => '+str(Nok0)+' positions for '+str(len(np.unique(zIDsOK0)))+' buoys!')
 
         if Nok0>0:
 
