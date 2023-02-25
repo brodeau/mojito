@@ -74,9 +74,9 @@ if __name__ == '__main__':
     if lSeedFromNCfile:
         seeding_type='mojitoNC'
         fNCseed = argv[3]
-        cstrSeed = str.replace( path.basename(fNCseed), 'SELECTION_buoys_', '' )
+        cstrSeed = str.replace( path.basename(fNCseed), 'SELECTION_', '' )
         cstrSeed = str.replace( cstrSeed, '.nc', '' )
-        cstrStrm = split('_',path.basename(fNCseed))[3]
+        cstrStrm = split('_',path.basename(fNCseed))[2]
         #
         mjt.chck4f(fNCseed)
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')

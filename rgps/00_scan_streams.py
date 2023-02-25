@@ -142,14 +142,14 @@ if __name__ == '__main__':
         zIDsOK0 = vIDs0[idxOK0]
         ztimOK0 = vtime0[idxOK0]
 
-        # For some unknown reasons, sometimes, the ID=0 exists in zIDsOK0, fixing this...
-        if np.any(zIDsOK0<=0):
-            _,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only indices of `zIDsOK0` that exist in `vIDsWP`
-            idxOK0  = idxOK0[idx]
-            del idx
-            zIDsOK0 = vIDs0[idxOK0]
-            ztimOK0 = vtime0[idxOK0]
-        #
+        if np.any(zIDsOK0<0):
+            print('ERROR: some buoy IDs < 0 !!!'); exit(0)
+            #_,idx,_ = np.intersect1d(zIDsOK0, vIDsWP, return_indices=True); # retain only indices of `zIDsOK0` that exist in `vIDsWP`
+            #idxOK0  = idxOK0[idx]
+            #del idx
+            #zIDsOK0 = vIDs0[idxOK0]
+            #ztimOK0 = vtime0[idxOK0]
+
         Nok0 = len(idxOK0)
         print(' => '+str(Nok0)+' of them!')
 

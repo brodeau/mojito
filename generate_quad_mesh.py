@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     # We need a string to name the output files:
     if corigin == 'RGPS':
-        cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[3] ; # Basically the name of the stream
+        cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the stream
     else:
         # From ice_tracking with SI3...
         cfstr = split('_tracking_', path.basename(cf_nc_in))[0]

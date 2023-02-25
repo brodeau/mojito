@@ -5,7 +5,7 @@
 EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 
 # Populating nc files we can use:
-list_nc=`\ls nc/SELECTION_buoys_RGPS_S???_${YEAR}????h??_${YEAR}????h??.nc`
+list_nc=`\ls nc/SELECTION_RGPS_S???_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} streams!"
 
@@ -54,17 +54,4 @@ wait
 
 
 
-
-
-
-
-
-#if [ "$1" = "d" ]; then
-#    CMD="${EXE} ${FSI3IN} ${FNMM}"
-#else
-#CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 330" ; # NEMO SEED at HSS=15
-
-
-
-#fi
 

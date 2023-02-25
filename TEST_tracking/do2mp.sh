@@ -4,65 +4,59 @@
 
 EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 
-if [ "$1" = "" ]; then
-    echo "USAGE: $0 <file_pos_mojito.nc>"
-    exit
-fi
+LIST_RES=10; #fixme!
 
-FIN="$1"
+NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 
-# Number of records inside netCDF file:
-Nr0=`ncdump -h ${FIN} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
-echo
-echo " * ${Nr0} records in ${FIN}!"
-Nr=$(((Nr0+1)/DT_BINS_H))
-Nr=$((Nr+1))
-echo "   => subsampling at ${DT_BINS_H} hours give ${Nr} useful records!"
-echo $((Nr*DT_BINS_H))
-#exit
-
+# Populating nc files we can use:
+list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_S???_${YEAR}????h??_${YEAR}????h??.nc`
+nbf=`echo ${list_nc} | wc -w`
+echo " => ${nbf} files => ${nbf} streams!"
 
 ijob=0
-
-#CMD="${EXE} ${FIN} 0,1 10" ; # RGPS seed
-
-RESKM=10
-
 mkdir -p logs
 
-for ii in $(seq 0 $((Nr-2))); do
-    echo $ii
-    #
-    rec1=$((ii*DT_BINS_H))
-    rec2=$(((ii+1)*DT_BINS_H))
+for ff in ${list_nc}; do
 
-    echo " * rec1, rec2 = ${rec1} ${rec2}"
+    fb=`basename ${ff}`
+    echo
+    echo " *** Doing file ${fb}"
 
-    cflog="logs/out_${ii}_$((ii+1)).out"
-
-    #if [ ! -f ${cfQ1} ] || [ ! -f ${cfQ2} ]; then
-        ijob=$((ijob+1))
-        echo " *** Construction of Quadrangles"
-        CMD="${EXE} ${FIN} ${rec1},${rec2} ${RESKM}" ; # RGPS seed
-        echo "  ==> ${CMD}"; echo
-        ${CMD} > ${cflog} &
-    echo; sleep 1 ; echo
-    #else
-    #    echo; echo
-    #    echo " Skipping generation of Quads as ${cfQ1} & ${cfQ2} already there!"
-    #    echo; echo
-    #fi
-
-    if [ $((ijob%NJPAR)) -eq 0 ]; then
-        echo "Waiting! (ijob = ${ijob})...."
-        wait
-        echo; echo
+    # Number of records inside netCDF file:
+    Nr=`ncdump -h ${ff} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
+    echo "   => it has ${Nr} time records"
+    if [ ${Nr} -le 65 ] || [ $((Nr/NSS)) -gt 1 ]; then
+        echo "  ==> bad! Presently we expect ABOUT $((NSS+1)) records!"
+        exit
     fi
 
+    lstrec="0,$((Nr-1))"
+
+    for res in ${LIST_RES}; do
+
+        flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${res}km"
+
+        ijob=$((ijob+1))
+
+        CMD="${EXE} ${ff} ${lstrec} ${res}"
+        echo "    ==> will launch:"; echo "     ${CMD}"; echo
+        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+        sleep 5
+        echo
+        
+        if [ $((ijob%NJPAR)) -eq 0 ]; then
+            echo "Waiting! (ijob = ${ijob})...."
+            wait
+            echo; echo
+        fi
+        
+    done
+    
 done
 
 wait
 
-echo
-echo " *** `date` ALL done!"
-echo
+
+
+
+

@@ -54,9 +54,9 @@ if __name__ == '__main__':
     cf_mm = argv[2]
     fNCseed = argv[3]
 
-    cstrSeed = str.replace( path.basename(fNCseed), 'SELECTION_buoys_', '' )
+    cstrSeed = str.replace( path.basename(fNCseed), 'SELECTION_', '' )
     cstrSeed = str.replace( cstrSeed, '.nc', '' )
-    cstrStrm = split('_',path.basename(fNCseed))[3]
+    cstrStrm = split('_',path.basename(fNCseed))[2]
 
     mjt.chck4f(fNCseed)
     print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
@@ -346,12 +346,13 @@ if __name__ == '__main__':
     xPosC = np.ma.masked_where( xmask==0, xPosC )
 
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
-    cdt1 = split('_', epoch2clock(vTime[0] ))[0]
-    cdt2 = split('_', epoch2clock(vTime[Nt]))[0]
+    cdt1, cdt2 = split(':',epoch2clock(vTime[0]))[0] , split(':',epoch2clock(vTime[Nt]))[0] ; # keeps at the hour precision...
+    cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
+    cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
     corgn = 'NEMO-SI3_'+nconf+'_'+nexpr
-    foutnc = './nc/'+corgn+'_tracking_'+cstrStrm+'_'+cdt1+'_'+cdt2+'.nc'
+    cf_nc_out = './nc/'+corgn+'_tracking_'+cstrStrm+'_'+cdt1+'_'+cdt2+'.nc'
 
-    kk = mjt.ncSaveCloudBuoys( foutnc, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
+    kk = mjt.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
                                mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue, corigin=corgn )
 
 

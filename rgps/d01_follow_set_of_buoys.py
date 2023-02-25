@@ -57,7 +57,7 @@ list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
 
 interp_1d = 0 ; # Time interpolation to fixed time axis: 0 => linear / 1 => akima
 
-
+FillValue = -9999. 
 
 if __name__ == '__main__':
 
@@ -124,7 +124,7 @@ if __name__ == '__main__':
         vlat0  = id_in.variables['lat'][:]
 
         # Buoys' IDs:
-        vBIDs0    = np.zeros(Np0, dtype=int)
+        vBIDs0    = np.zeros(Np0, dtype=int) - 1
         vBIDs0[:] = id_in.variables['index'][:]
 
     ### with Dataset(cf_in) as id_in
@@ -132,7 +132,6 @@ if __name__ == '__main__':
     vlon0[:] = np.mod(vlon0, 360.) ; # Longitudes in the [0:360] frame...
 
     # Masking all point that are before and beyond our period of interest:
-    rmask_v = -99999. 
     vmsk_time = np.zeros(Np0, dtype=int) + 1
     vmsk_time[np.where(vtime0 < rdt1-dt_tolr)] = 0
     vmsk_time[np.where(vtime0 > rdt2+dt_tolr)] = 0
@@ -146,16 +145,16 @@ if __name__ == '__main__':
     print('\n *** Total number of points remaining after time-range-exclusion = ',Np0-len(idx_masked), '=', np.sum(vmsk_time))
     #
     #
-    vBIDs0[idx_masked] = int(rmask_v) ; vBIDs0 =  np.ma.masked_where( vmsk_time==0, vBIDs0 )
-    vtime0[idx_masked] = rmask_v      ; vtime0 =  np.ma.masked_where( vmsk_time==0, vtime0 )
-    #vx0[idx_masked]    = rmask_v      ; vx0    =  np.ma.masked_where( vmsk_time==0, vx0    )
-    #vy0[idx_masked]    = rmask_v      ; vy0    =  np.ma.masked_where( vmsk_time==0, vy0    )
-    vlon0[idx_masked]  = rmask_v      ; vlon0  =  np.ma.masked_where( vmsk_time==0, vlon0  )
-    vlat0[idx_masked]  = rmask_v      ; vlat0  =  np.ma.masked_where( vmsk_time==0, vlat0  )
+    vBIDs0[idx_masked] = int(FillValue) ; vBIDs0 =  np.ma.masked_where( vmsk_time==0, vBIDs0 )
+    vtime0[idx_masked] = FillValue      ; vtime0 =  np.ma.masked_where( vmsk_time==0, vtime0 )
+    #vx0[idx_masked]    = FillValue      ; vx0    =  np.ma.masked_where( vmsk_time==0, vx0    )
+    #vy0[idx_masked]    = FillValue      ; vy0    =  np.ma.masked_where( vmsk_time==0, vy0    )
+    vlon0[idx_masked]  = FillValue      ; vlon0  =  np.ma.masked_where( vmsk_time==0, vlon0  )
+    vlat0[idx_masked]  = FillValue      ; vlat0  =  np.ma.masked_where( vmsk_time==0, vlat0  )
 
     # Remaining buoys (IDs)
-    (idx,) = np.where(vBIDs0.data > 0)
-    vIDs = np.sort( np.unique( vBIDs0[idx] ) ) ; # if not `[idx]` then `rmask_v` is counted once!!!
+    (idx,) = np.where(vBIDs0.data >= 0)
+    vIDs = np.sort( np.unique( vBIDs0[idx] ) ) ; # if not `[idx]` then `FillValue` is counted once!!!
     Nb   = len(vIDs)
     print("\n *** We found "+str(Nb)+" different buoys alive during specified period of time!")
 

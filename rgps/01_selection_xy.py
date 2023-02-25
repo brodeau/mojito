@@ -197,7 +197,6 @@ if __name__ == '__main__':
         xtim = np.zeros((NCRmax,NvB)) + FillValue      ; # the exact time for each buoy!
         xmsk = np.zeros((NCRmax,NvB) , dtype='i1')  ; # the mask for exluding buoys that stick out in time...
         xix0 = np.zeros((NCRmax,NvB) , dtype=int)  ;
-        #vIDs = np.zeros(        NvB  , dtype=int)  ; => already good!
 
         for jb in range(NvB):
             #
@@ -325,7 +324,7 @@ if __name__ == '__main__':
         xtim = np.ma.masked_where( xmsk==0, xtim )
         vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
 
-        cout_root = 'SELECTION_buoys_RGPS_S'+'%3.3i'%(jS)
+        cout_root = 'SELECTION_RGPS_S'+'%3.3i'%(jS)
 
         if iplot>0:
             # Stream time evolution on Arctic map:
@@ -336,7 +335,7 @@ if __name__ == '__main__':
         #  * 1 file per stream
         #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
         #  * for the file name we chose the center of the bin used aka `VT[:,0]`
-        cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]
+        cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]  ; # keeps at the hour precision...
         cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
         cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
         cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'

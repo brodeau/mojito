@@ -7,7 +7,7 @@ EXE="${MOJITO_DIR}/tracking/si3_part_tracker.py"
 # 1/ populate the proper NC files to seed from:
 dirin="${MOJITO_DIR}/TEST_brgps/nc"; echo ${dirin}
 
-list_nc=`\ls ${dirin}/SELECTION_buoys_RGPS_*_${YEAR}????h??_${YEAR}????h??.nc`
+list_nc=`\ls ${dirin}/SELECTION_RGPS_*_${YEAR}????h??_${YEAR}????h??.nc`
 
 nbf=`echo ${list_nc} | wc -w`
 
@@ -26,8 +26,8 @@ for fnc in ${list_nc}; do
     CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
     echo
     echo " *** About to launch:"; echo "     ${CMD}"; echo
-    # SELECTION_buoys_RGPS_S000_19970104h15_19970107h15
-    clog=`basename ${fnc} | sed -e s/'SELECTION_buoys_RGPS_'/''/g -e s/'.nc'/''/g`
+    # SELECTION_RGPS_S000_19970104h15_19970107h15
+    clog=`basename ${fnc} | sed -e s/'SELECTION_RGPS_'/''/g -e s/'.nc'/''/g`
 
     ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
 
