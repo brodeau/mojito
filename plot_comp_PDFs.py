@@ -28,7 +28,7 @@ if __name__ == '__main__':
     mjt.chck4f(cf_in)
     with np.load(cf_in) as data:
         cname = str(data['name'])
-        corigin = str(data['origin'])
+        corig = str(data['origin'])
         cperiod = str(data['period'])
         nP    = data['Np']
         xbin_bounds = data['xbin_bounds']
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         mjt.chck4f(cf_in2)
         with np.load(cf_in2) as data:
             cname2 = str(data['name'])
-            corigin2 = str(data['origin'])
+            corig2 = str(data['origin'])
             cperiod2 = str(data['period'])
             nP2    = data['Np']
             xbin_bounds2 = data['xbin_bounds']
@@ -74,21 +74,24 @@ if __name__ == '__main__':
     cdir = './figs'
     if not path.exists(cdir): mkdir(cdir)
 
-    cfroot = 'Comp_PDF_'+cname+'_'+cperiod
+    
 
 
     if l2files:
+
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cname+'_'+cperiod
+        
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
-                            title=cName+': '+corigin+' vs '+corigin2, period=cperiod, origin=corigin, ppdf2=PDF2, origin2=corigin2 )    
+                            title=cName+': '+corig+' vs '+corig2, period=cperiod, origin=corig, ppdf2=PDF2, origin2=corig2 )    
     
-
     else:
         # log-log and histogram:
+        cfroot = 'PDF_'+corig+'_'+cname+'_'+cperiod
         
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
                             title=cName, period=cperiod )    
     
         kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'_'+cname+'.'+iffrmt,
-                             title=cName+': '+corigin, period=cperiod )
+                             title=cName+': '+corig, period=cperiod )
     
