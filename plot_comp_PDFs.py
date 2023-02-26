@@ -17,13 +17,13 @@ iffrmt='png'
 
 if __name__ == '__main__':
 
-    if not len(argv) in [2,3]:
-        print('Usage: '+argv[0]+' <PDFfile.npz> (<PDFfile2.npz>)')
+    if not len(argv) in [2,3,4]:
+        print('Usage: '+argv[0]+' <PDFfile.npz> (<PDFfile2.npz>) (<PDFfile3.npz>)')
         exit(0)
     cf_in = argv[1]
 
     l2files = (len(argv)==3)
-
+    l3files = (len(argv)==4)
     
     mjt.chck4f(cf_in)
     with np.load(cf_in) as data:
@@ -37,7 +37,6 @@ if __name__ == '__main__':
     print(' * cname =', cname)
     print(' * cperiod =', cperiod)
     print(' * nP =', nP)
-
 
     if l2files:
         cf_in2 = argv[2]        
@@ -60,6 +59,30 @@ if __name__ == '__main__':
             print('ERROR: PDF in file 2 looks too different than in first file in terms of bin bounds?...')
             #or cperiod2!=cperiod
             exit(0)
+
+    if l3files:
+        cf_in3 = argv[3]        
+        mjt.chck4f(cf_in3)
+        with np.load(cf_in3) as data:
+            cname3 = str(data['name'])
+            corig3 = str(data['origin'])
+            cperiod3 = str(data['period'])
+            nP3    = data['Np']
+            xbin_bounds3 = data['xbin_bounds']
+            xbin_center3 = data['xbin_center']
+            PDF3   = data['PDF']
+        print('\n * cname_3 =', cname)
+        print(' * cperiod_3 =', cperiod)
+        print(' * nP_3 =', nP)
+        if cname3!=cname:
+            print('ERROR: `cname3!=cname` !',cname3,cname)
+            exit(0)
+        if np.sum(np.abs(xbin_bounds3-xbin_bounds))!=0:
+            print('ERROR: PDF in file 3 looks too different than in first file in terms of bin bounds?...')
+            #or cperiod3!=cperiod
+            exit(0)
+
+
             
     if cname == 'divergence':
         cName = 'Divergence'
@@ -77,13 +100,23 @@ if __name__ == '__main__':
     
 
 
-    if l2files:
+    if   l2files:
 
         cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cname+'_'+cperiod
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
-                            title=cName+': '+corig+' vs '+corig2, period=cperiod, origin=corig, ppdf2=PDF2, origin2=corig2 )    
+                            title=cName+': '+corig+' vs '+corig2, period=cperiod, origin=corig,
+                            ppdf2=PDF2, origin2=corig2 )    
+    
+    elif l3files:
+
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cname+'_'+cperiod
+        
+        # Only log-log !
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
+                            title=cName+': '+corig+' vs '+corig2+' vs '+corig2, period=cperiod, origin=corig,
+                            ppdf2=PDF2, origin2=corig2, ppdf2=PDF3, origin3=corig3 )
     
     else:
         # log-log and histogram:

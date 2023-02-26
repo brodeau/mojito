@@ -582,7 +582,8 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
                title=None, period=None, origin=None,
-               ppdf2=[], origin2=None ):
+               ppdf2=[], origin2=None,
+               ppdf3=[], origin3=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
@@ -599,7 +600,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     rycut_tiny = 1.e-7
     rxcut_big  = 1.
     
-    l_comparaison = ( np.shape(ppdf2)==(nB,) )
+    l_comp2 = ( np.shape(ppdf2)==(nB,) )
+    l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
         
     # For figure axes:
     xlog_min,xlog_max = 1.e-3, rxcut_big
@@ -625,10 +627,16 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     
     plt.loglog(pbinc[:], ppdf[:], 'o', color='0.6', label=origin, zorder=5)
 
-    if l_comparaison:
+    if l_comp2:
         ppdf2 = np.ma.masked_where( pbinc>rxcut_big,   ppdf2 )
         ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
         plt.loglog(pbinc[:], ppdf2[:], '+', color='b', label=origin2, zorder=10)
+        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+
+    if l_comp3:
+        ppdf3 = np.ma.masked_where( pbinc>rxcut_big,   ppdf3 )
+        ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        plt.loglog(pbinc[:], ppdf3[:], '*', color='g', label=origin3, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     
