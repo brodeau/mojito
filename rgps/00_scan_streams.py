@@ -143,7 +143,7 @@ if __name__ == '__main__':
         zIDsOK0 = vIDs0[idxOK0]
         ztimOK0 = vtime0[idxOK0]
         Nok0 = len(idxOK0)        
-        print('     => after "inside time bin" selection: '+str(Nok0)+' positions involving '+str(len(np.unique(zIDsOK0)))+' different buoys!')
+        print('     => after "inside time bin" selection: '+str(Nok0)+' pos. involving '+str(len(np.unique(zIDsOK0)))+' different buoys!')
 
         if Nok0>0:
             # If the width of the time bin is large enough (normally>3days),
@@ -159,13 +159,13 @@ if __name__ == '__main__':
                 Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
             #
             del zIDsOK0, ztimOK0
-            print('     => after "EMO" exlusions: '+str(Nok0)+' positions involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
+            print('     => after "multi-occurence" exlusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
             
             # Exclude points if index has already been used:
             idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
             zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
             Nok = len(zIDsOK)
-            print('     => after "already in use" exclusions: '+str(Nok)+' positions involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
+            print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
 
             if idebug>0:
                 # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsWP`:
