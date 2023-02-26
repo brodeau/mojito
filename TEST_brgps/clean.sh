@@ -9,7 +9,7 @@ elif [ "$1" = "1" ]; then
     rm -f figs/SELECTION/* nc/SELECTION_*${YEAR}*.nc npz/SELECTION_*${YEAR}*.npz
 
 elif [ "$1" = "2" ]; then
-    rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/out_S*__*.out
+    rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/*_SELECTION_RGPS_S*.err
 
 elif [ "$1" = "3" ]; then
     rm -f figs/deformation/* npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out

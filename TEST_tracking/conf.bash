@@ -5,8 +5,8 @@ YEAR="1997"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
 NEMO_CONF="NANUK4"
-NEMO_EXP="BBM00"
-#NEMO_EXP="EVP00"
+#NEMO_EXP="BBM00"
+NEMO_EXP="EVP00"
 
 DT_BINS_H=72  ; # width of a bin for time interpolation (hours)
 
@@ -52,7 +52,7 @@ case ${host} in
         #
         DATE2="${YEAR}0315"
         #DATE2="${YEAR}0110"
-        SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
+        #SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
 
         #
         MARKER_SIZE=5

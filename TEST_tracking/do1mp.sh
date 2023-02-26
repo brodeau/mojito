@@ -26,8 +26,8 @@ for fnc in ${list_nc}; do
     CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
     echo
     echo " *** About to launch:"; echo "     ${CMD}"; echo
-    # SELECTION_RGPS_S000_19970104h15_19970107h15
-    clog=`basename ${fnc} | sed -e s/'SELECTION_RGPS_'/''/g -e s/'.nc'/''/g`
+
+    clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
 
     ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
 

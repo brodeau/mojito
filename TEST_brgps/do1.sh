@@ -6,10 +6,6 @@ EXE="python3 -u ${MOJITO_DIR}/rgps/01_selection_xy.py"
 
 YEAR=`echo ${DATE1} | cut -c1-4`
 
-
-# Usage: ./01_selection_xy.py <file_RGPS.nc> <YYYYMMDD1> <YYYYMMDD2> <dt_binning (hours)>
-
-
 #if [ `echo ${DATE2} | cut -c1-4` -ne ${YEAR} ]; then
 #    echo "ERROR: DATE1 and DATE2 have 2 different years!" ; exit
 #fi

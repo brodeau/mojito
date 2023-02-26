@@ -36,7 +36,7 @@ for ff in ${list_nc}; do
         CMD="${EXE} ${ff} 0,1 ${res}"
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
         ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
-        sleep 5
+        sleep 1
         echo
         
         if [ $((ijob%NJPAR)) -eq 0 ]; then
@@ -50,8 +50,3 @@ for ff in ${list_nc}; do
 done
 
 wait
-
-
-
-
-
