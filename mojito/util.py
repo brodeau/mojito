@@ -87,9 +87,9 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
                 * vTB : array(nB,3) axe==0 => time at center of bin      ([s] UNIX epoch time)
                 *                        axe==1 => time at lower bound of bin ([s] UNIX epoch time)
                 *                        axe==2 => time at upper bound of bin ([s] UNIX epoch time)
-                * cTc : array(nB) human-readable date corresponding to time at center of bin (character string)
     '''
-    from climporn import epoch2clock
+    if iverbose>0:
+        from climporn import epoch2clock
     #
     zhdt = pdt/2.
     #
@@ -97,24 +97,21 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
     print('\n *** New fixed time axis to use to scan data:\n    ===> nB = '+str(nB)+' time bins!')
     #
     vTB = np.zeros((nB,3), dtype=int  ) ; # `*,0` => precise time | `*,1` => bound below | `*,2` => bound above
-    cTc = np.zeros( nB   , dtype='U19')
     #
     vTB[0,0] =  pdt1 + zhdt    ; # time at center of time bin
-    cTc[0]   = epoch2clock(vTB[0,0])
     for jt in range(1,nB):
         tt = vTB[jt-1,0] + pdt
         vTB[jt,0] = tt                ; # time at center of time bin
-        cTc[jt]   = epoch2clock(tt)
     # Time bins bounds:
     vTB[:,1] = vTB[:,0] - zhdt
     vTB[:,2] = vTB[:,0] + zhdt
     #
     if iverbose>0:
         for jt in range(nB):
-            print(" --- jt="+'%3.3i'%(jt)+": * center of bin => ",vTB[jt,0]," => ",cTc[jt])
+            print(" --- jt="+'%3.3i'%(jt)+": * center of bin => ",vTB[jt,0]," => ",epoch2clock(vTB[jt,0]))
             print("             * bin bounds    => "+epoch2clock(vTB[jt,1])+" - "+epoch2clock(vTB[jt,2])+"\n")
     #
-    return nB, vTB, cTc
+    return nB, vTB
 
 
 

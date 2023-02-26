@@ -110,7 +110,7 @@ if __name__ == '__main__':
     rdtB1 = rdt1 - 0.5*dt_bin
 
     # Build scan time axis willingly at relative high frequency (dt_bin << dt_buoy_Nmnl)
-    Nt, vTbin, cTbin =   mjt.TimeBins4Scanning( rdtB1, rdt2, dt_bin, iverbose=0 )
+    Nt, vTbin =   mjt.TimeBins4Scanning( rdtB1, rdt2, dt_bin, iverbose=0 )
     if idebug>0:
         for jt in range(Nt):
             print('   --- jt: '+str(jt)+' => ',epoch2clock(vTbin[jt,0]),epoch2clock(vTbin[jt,1]),epoch2clock(vTbin[jt,2]))

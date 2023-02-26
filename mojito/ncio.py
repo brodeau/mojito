@@ -13,10 +13,11 @@ from .util import chck4f, ConvertGeo2CartesianNPSkm
 tunits_default = 'seconds since 1970-01-01 00:00:00'
 
 
-def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual, Nstrm=None, pSid=[] ):
+def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=None, pSid=[] ):
 
     (nP,) = np.shape(ptime)
 
+    ldoQual   = ( np.shape(pqual)==(nP,) )
     ldoStream = ( Nstrm and np.shape(pSid)==(nP,) )
     
     with Dataset(ncFile, 'w') as ds:
@@ -30,8 +31,9 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual, Nstrm=None
         y      = ds.createVariable("y", "f8", ("points",), zlib=True, complevel=9)
         lon    = ds.createVariable("lon", "f8", ("points",), zlib=True, complevel=9)
         lat    = ds.createVariable("lat", "f8", ("points",), zlib=True, complevel=9)
-        qual   = ds.createVariable("q_flag", "byte", ("points",), zlib=True, complevel=9)
         index  = ds.createVariable("index", "long", ("points",), zlib=True, complevel=9)
+        if ldoQual:
+            qual   = ds.createVariable("q_flag", "byte", ("points",), zlib=True, complevel=9)        
         if ldoStream:
             idstream = ds.createVariable("idstream", "byte", ("points",), zlib=True, complevel=9)
             streams = ds.createVariable("streams", "byte", ("streams",) )
@@ -61,12 +63,13 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual, Nstrm=None
         lat.setncattr('units', "degrees_north")
         lat.setncattr('long_name', "latitude coordinate of virtual buoy")
         lat.setncattr('standard_name', "latitude")
-
-        qual[:] = pqual[:]
-        qual.setncattr('long_name', "Quality flag of virtual buoy")
-
+        
         index[:] = pIDs[:]
         index.setncattr('long_name', "Id of virtual buoy")
+
+        if ldoQual:
+            qual[:] = pqual[:]
+            qual.setncattr('long_name', "Quality flag of virtual buoy")
 
         if ldoStream:
             idstream[:] = pSid[:]

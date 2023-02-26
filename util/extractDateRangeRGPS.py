@@ -51,13 +51,7 @@ if __name__ == '__main__':
     cdt2 = str.replace(cdt2,'hh:mm',chhmm2)
 
     # File to save work in:
-    print(cf_in)
-
-    
     cf_out = 'RGPS_'+split('_',cdt1)[0]+'_'+split('_',cdt2)[0]+'.nc4'
-
-
-    print(cf_out); exit(0)
     
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )

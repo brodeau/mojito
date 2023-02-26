@@ -212,7 +212,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
         vids_ref = vids.copy()
         vidx     = np.arange(nP)
 
-        nP, zidx = SuppressMulitOccurences( vids, vtime, vids_ref, vidx, t_ref )
+        nP, zidx = ExcludeMulitOccurences( vids, vtime, vids_ref, vidx, t_ref )
 
         vids  = vids_ref[zidx]
         vtime = vtime[zidx]
@@ -234,17 +234,21 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
 
 
 
-def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, rtime, iverbose=0 ):
+def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='center', iverbose=0 ):
     '''
          For many possible reasons the same buoy ID can exist more than once in `pIDs`,
          => we need to keep only one occurence of the location index of these points,
             based on the date (closest to center of bin `rTc`)
     INPUT:
-            * pIDs     : 1D array of integers containing buoy IDs with muli-occurence of certain IDs
-            * ptime    : 1D array of real containing epoch time date [s] associated to each buoy
+            * pIDs     : 1D array of integers containing buoy IDs with possible multi-occurence of certain IDs
+            * ptime    : 1D array of real containing epoch time date associated to each buoy [s] (UNIX time)
             * pIDsRef0 : 1D array of integers containing buoy IDs the "0" reference
-            * pidx0     : 1D array of integers containing indices that do this: pIDs == pIDsRef0[pidx0]
-            * rtime    : the  epoch time date [s] we want to select upon! (we keep the buoy which time is closest to this `rtime`)
+            * pidx0    : 1D array of integers containing indices that do this: pIDs == pIDsRef0[pidx0]
+            * binTctr  : time at center of time bin/range we are dealing with [s] (UNIX time)
+            * criterion: criterion used to decide which of the multi-occurence of the same buoy within the time bin/range should stay!
+                         - 'center' => keep the occurence closest to that of center of time bin
+                         - 'first'  => keep the occurence closest to begining of time bin
+                         - 'last'   => keep the occurence closest to the end of time bin
 
     RETURN:
             Updated (or not) `pidx0` and its length
@@ -252,17 +256,21 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, rtime, iverbose=0 ):
             `pIDs`, `ptime` and `pidx0` have the same length!
 
     '''
-    Nok0 = len(pIDs)
-    if len(ptime)!=Nok0:
-        print('ERROR [SuppressMulitOccurences]: `len(ptime)!=len(pIDs)`!'); exit(0)
-    if len(pidx0)!=Nok0:
-        print('ERROR [SuppressMulitOccurences]: `len(pidx0)!=len(pIDs)`!'); exit(0)
+    if not criterion in ['center','first','last']:
+        print('ERROR [ExcludeMulitOccurences]: criterion "'+criterion+'" is unknown!')
+        exit(0)
+    #
+    (Nok0,) = np.shape(pIDs)
+    if np.shape(ptime)!=(Nok0,):
+        print('ERROR [ExcludeMulitOccurences]: `np.shape(ptime)!=np.shape(pIDs)`!'); exit(0)
+    if np.shape(pidx0)!=(Nok0,):
+        print('ERROR [ExcludeMulitOccurences]: `np.shape(pidx0)!=np.shape(pIDs)`!'); exit(0)
     #
     _, idxU = np.unique(pIDs, return_index=True)
-    NokU = len(idxU) ; # NokU is the number of buoys once multi-occurences are removed!
-    np2rm  = Nok0-NokU
+    NokU    = len(idxU) ; # NokU is the number of buoys once multi-occurences are removed!
+    np2rm   = Nok0-NokU
     if np2rm>0:
-        if iverbose>0: print('  |SMO| => ',NokU,'unique buoy IDs in an array that contains',Nok0,' buoy IDs! => '+str(np2rm)+' points to remove!')
+        if iverbose>0: print('    * [EMO] => ',NokU,'unique buoy IDs in array featuring ',Nok0,' buoy IDs! => '+str(np2rm)+' points to exclude!')
         #
         idxOKU = pidx0[idxU] ; # because `idxU` are indices in the `pIDs` world, not in the original `pIDsRef0` world...
         # Indices of the multi-occurences:
@@ -274,8 +282,15 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, rtime, iverbose=0 ):
         idxRMall = []
         for jMO in zIDsMO:
             (idxMlt,) = np.where(pIDs==jMO)
-            # We keep the point that has the time the nearest to that of the center of the bin:
-            jk = np.argmin(np.abs(ptime[idxMlt]-rtime))
+            #
+            if   criterion=='center':
+                # We keep the point that has the time the nearest to that of the center of the bin:
+                jk = np.argmin(np.abs(ptime[idxMlt]-binTctr))
+            elif criterion=='first':
+                jk = np.argmin( ptime[idxMlt] )
+            elif criterion=='last':
+                jk = np.argmax( ptime[idxMlt] )
+            #   
             jKeep = idxMlt[jk]
             idxRM = np.setdiff1d( idxMlt, [jKeep] ) ; # exclude `jKeep` from idxMlt
             idxRM = pidx0[idxRM]; # translate in the `pidx0` frame!!!! IMPORTANT !!!!
@@ -283,14 +298,14 @@ def SuppressMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, rtime, iverbose=0 ):
         #
         idxRMall = np.array(idxRMall, dtype=int)
         if len(idxRMall)!=np2rm:
-            print('ERROR [SuppressMulitOccurences]: `len(idxRMall)!=np2rm`', len(idxRMall), np2rm)
+            print('ERROR [ExcludeMulitOccurences]: `len(idxRMall)!=np2rm`', len(idxRMall), np2rm)
             exit(0)
         # Finally, update `pidx0`:
         pidx0 = np.setdiff1d( pidx0, idxRMall ) ; # keep the values of `pidx0` that are not in `idxRM`
-        del idxRM, jKeep, idxRMall
         Nok0 = len(pidx0)
+        if iverbose>0: print('    * [EMO] => excluded '+str(np2rm)+' pt. of time bin due to multi-occur. of same buoy ID! (criterion='+criterion+')')
     else:
-        if iverbose>0: print('    |SMO|  => no suppression to perform...')
+        if iverbose>0: print('    * [EMO]  => no suppression to perform...')
     #
     return Nok0, pidx0
 

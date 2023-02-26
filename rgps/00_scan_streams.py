@@ -40,12 +40,11 @@ min_nb_buoys_in_stream = 100 ; # minimum number of buoys for considering a strea
 
 MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
 
-list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time', 'idstream', 'streams' ]
+list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'time', 'idstream', 'streams' ]
 
 FillValue = -9999.
 
 #================================================================================================
-
 
 if __name__ == '__main__':
 
@@ -109,7 +108,7 @@ if __name__ == '__main__':
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
     # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
-    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
+    NTbin, vTbin = mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
 
 
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
@@ -117,8 +116,6 @@ if __name__ == '__main__':
     # * Np: number of points of interst
     # * Nb: number of unique buoys of interest
     # * vIDsWP: unique IDs of the buoys of interest
-
-
 
     # Arrays along streams and buoys:
     # In the following, both Ns_max & Nb are excessive upper bound values....
@@ -136,31 +133,43 @@ if __name__ == '__main__':
         #
         rTc = vTbin[jt,0] ; # center of the current time bin
         rTa = vTbin[jt,1] ; # begining of the current time bin
+        rTb = vTbin[jt,2] ; # end of the current time bin
         #
-        print('\n *** Selecting point pos. that exist at '+cTbin[jt]+' +-'+str(int(dt_bin_sec/2./3600))+'h!',end='')
-        (idxOK0,) = np.where( (np.abs(vtime0[:]-rTc) < dt_bin_sec/2.-0.1) & (vIDs0[:].data >= 0) )       ; # yes, removing 0.1 second to `dt_bin_sec/2.`
+        print('\n *** Selecting point pos. that exist at '+epoch2clock(rTc)+' +-'+str(int(dt_bin_sec/2./3600))+
+              'h => between',epoch2clock(rTa),'&',epoch2clock(rTb) )
+
+        (idxOK0,) = np.where( (vtime0>=rTa) & (vtime0<rTb) & (vIDs0.data>=0) )
+
         zIDsOK0 = vIDs0[idxOK0]
         ztimOK0 = vtime0[idxOK0]
         Nok0 = len(idxOK0)        
-        print(' => '+str(Nok0)+' positions for '+str(len(np.unique(zIDsOK0)))+' buoys!')
+        print('     => after "inside time bin" selection: '+str(Nok0)+' positions involving '+str(len(np.unique(zIDsOK0)))+' different buoys!')
 
         if Nok0>0:
             # If the width of the time bin is large enough (normally>3days),
             # the same buoy ID can exist more than once in the same time bin,
             # and so also in `zIDsOK0`!
-            # => we need to keep only one occurence of these points, based on
-            #    the date (closest to center of bin `rTc`)
-            Nok0, idxOK0 = mjt.SuppressMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, iverbose=idebug )
-            del zIDsOK0, ztimOK0
-
-            # Exclude points if index has already been used:
-            idxT  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
-            vIDsT = vIDs0[idxT] ; # the buoys IDs we work with
-            Nok = len(vIDsT)
+            if dt_bin_sec < dt_buoy_Nmnl:
+                # Time bins are narrower than the nominal time step of the RGPS data...
+                #   => we keep buoy occurence closest to that of center of current time bin
+                Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='center', iverbose=idebug )
+            else:
+                # Time bins are wider than the nominal time step of the RGPS data...
+                #   => we keep buoy occurence with the earliest occurence
+                Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
             #
+            del zIDsOK0, ztimOK0
+            print('     => after "EMO" exlusions: '+str(Nok0)+' positions involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
+            
+            # Exclude points if index has already been used:
+            idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
+            zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
+            Nok = len(zIDsOK)
+            print('     => after "already in use" exclusions: '+str(Nok)+' positions involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
+
             if idebug>0:
                 # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsWP`:
-                vOUT = np.setdiff1d( vIDsT, vIDsWP) ; # keep the values of `vIDsT` that are not in `vIDsWP`
+                vOUT = np.setdiff1d( zIDsOK, vIDsWP) ; # keep the values of `zIDsOK` that are not in `vIDsWP`
                 if len(vOUT)!=0:
                     print('ERROR: the IDs of '+str(len(vOUT))+' buoys involved in this date range bin are not refenced in `vIDsWP` !!!')
                     print(' ==>', vOUT)
@@ -178,7 +187,7 @@ if __name__ == '__main__':
 
                 # Now, loop on all the points involved in this date range:
                 jb = -1              ; # buoy counter...
-                for jidx in idxT:
+                for jidx in idxOK:
                     #
                     jID = vIDs0[jidx]
                     #
@@ -211,7 +220,7 @@ if __name__ == '__main__':
                             ### if rd_ini > MinDistFromLand
                         ### if nbRecOK >= Nb_min_cnsctv
                     ### if not jidx in IDXtakenG
-                ### for jidx in idxT
+                ### for jidx in idxOK
 
                 if NBinStr >= min_nb_buoys_in_stream:
                     print('   +++ C O N F I R M E D   V A L I D   S T R E A M   #'+str(istream)+' +++ => selected '+str(NBinStr)+' buoys!')

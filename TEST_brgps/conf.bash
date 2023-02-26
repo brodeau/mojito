@@ -24,15 +24,16 @@ case ${host} in
     "merlat")
         NJPAR=7
         export DATA_DIR="/MEDIA/data"
-        FILIN="RGPS_${YEAR}LIGHT.nc4"
+        #FILIN="RGPS_${YEAR}LIGHT.nc4"
+        FILIN="RGPS_1996-12-21_1997-02-01.nc4"
         #
         #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=84  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
+        DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
         #
-        #DATE1="$((YEAR-1))1230_12:00"
+        DATE1="$((YEAR-1))1230_12:00"
         #DATE1="$((YEAR-1))1230"
-        DATE2="${YEAR}0131"
+        DATE2="${YEAR}0115"
         MARKER_SIZE=10
         ;;
     "mcp-oceannext-01")

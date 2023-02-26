@@ -84,6 +84,6 @@ if __name__ == '__main__':
         lon_all, lat_all, _ = srs_longlat.transform_points(srs_rgps, x_all*1000, y_all*1000).T    
 
 
-        kk = mjt.SaveRGPStoNC( dst_file, time_all, buoy_ids, y_all, x_all, lat_all, lon_all, qual_all, Nstrm=NbStreams, pSid=strm_all )
+        kk = mjt.SaveRGPStoNC( dst_file, time_all, buoy_ids, y_all, x_all, lat_all, lon_all, pqual=qual_all, Nstrm=NbStreams, pSid=strm_all )
         #kk = mjt.SaveRGPStoNC( dst_file, time_all, buoy_ids, y_all, x_all, lat_all, lon_all, qual_all )
 

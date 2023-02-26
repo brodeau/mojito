@@ -35,7 +35,7 @@ min_nb_buoys_in_stream = 200 ; # minimum number of buoys for considering a strea
 
 Nb_min_buoys = min_nb_buoys_in_stream ; # minimum number of buoys necessary to keep a given record of a given stream, when saving files and figures
 
-list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'q_flag', 'time' ]
+list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'time' ]
 
 l_drop_tooclose = False ; # PR: keep the one with the longest record...
 NbPass = 2  # number of passes...
@@ -67,7 +67,7 @@ def __summary__( pNBini, pTcini, pIDs, pNRc ):
     print(' ===================================\n')
 
 
-
+#================================================================================================
 
 if __name__ == '__main__':
 
@@ -128,7 +128,7 @@ if __name__ == '__main__':
             print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_stream_length` !'); exit(0)
 
     # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
-    NTbin, vTbin, cTbin =   mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
+    NTbin, vTbin = mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
 
 
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
