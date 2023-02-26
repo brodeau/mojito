@@ -36,7 +36,7 @@ max_dev_from_dt_buoy_Nmnl = 6*3600 ; # maximum allowed deviation from the `dt_bu
 Ns_max  =  200 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
 NrB_max =  50  ; # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
 
-min_nb_buoys_in_stream = 100 ; # minimum number of buoys for considering a stream a stream!
+min_nb_buoys_in_stream = 10 ; # minimum number of buoys for considering a stream a stream!
 
 MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
 
@@ -159,12 +159,14 @@ if __name__ == '__main__':
                 Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
             #
             del zIDsOK0, ztimOK0
-            print('     => after "multi-occurence" exlusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
+            print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
             
             # Exclude points if index has already been used:
             idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
+            Nok    = len(idxOK)
             zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
-            Nok = len(zIDsOK)
+            if len(np.unique(zIDsOK)) != Nok:
+                print('ERROR: `unique(zIDsOK) != Nok` => `ExcludeMulitOccurences()` did not do its job :('); exit(0)
             print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
 
             if idebug>0:
@@ -176,10 +178,13 @@ if __name__ == '__main__':
                     exit(0)
                 print('     => '+str(Nok)+' buoys still in the game! ('+str(Nok0-Nok)+' removed because index already in use...)')
 
+                
+            #---------------------------------------------------------------------------------------------------------------------
+            NBinStr  = 0     ; # number of buoys in the stream
+            IDXofStr = []  ; # keeps memory of buoys that are already been included, but only at the stream level
 
-            NBinStr = 0     ; # number of buoys in the stream
-            IDXofStr  = []  ; # keeps memory of buoys that are already been included, but only at the stream level
-
+            iBcnl_CR = 0  ; # counter for buoys excluded because of consecutive records...
+            
             if Nok >= min_nb_buoys_in_stream:
 
                 istream += 1 ; # that's a new stream
@@ -216,11 +221,14 @@ if __name__ == '__main__':
                                 XIDs[istream,jb] = jID              ; # keeps memory of select buoy
                                 XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
                                 XIX0[istream,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
-
                             ### if rd_ini > MinDistFromLand
+                        else:
+                            iBcnl_CR += 1
+                        #
                         ### if nbRecOK >= Nb_min_cnsctv
                     ### if not jidx in IDXtakenG
                 ### for jidx in idxOK
+                print('     => '+str(iBcnl_CR)+' buoys were canceled for not having "proper" upcomming positions!')
 
                 if NBinStr >= min_nb_buoys_in_stream:
                     print('   +++ C O N F I R M E D   V A L I D   S T R E A M   #'+str(istream)+' +++ => selected '+str(NBinStr)+' buoys!')
