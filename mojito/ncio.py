@@ -12,6 +12,79 @@ from .util import chck4f, ConvertGeo2CartesianNPSkm
 
 tunits_default = 'seconds since 1970-01-01 00:00:00'
 
+
+def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual, Nstrm=None, pSid=[] ):
+
+    (nP,) = np.shape(ptime)
+
+    ldoStream = ( Nstrm and np.shape(pSid)==(nP,) )
+    
+    with Dataset(ncFile, 'w') as ds:
+        
+        points  = ds.createDimension( "points", nP )
+        if ldoStream:
+            streams = ds.createDimension( "streams", Nstrm )
+        
+        time   = ds.createVariable("time", "f8", ("points",), zlib=True, complevel=9)
+        x      = ds.createVariable("x", "f8", ("points",), zlib=True, complevel=9)
+        y      = ds.createVariable("y", "f8", ("points",), zlib=True, complevel=9)
+        lon    = ds.createVariable("lon", "f8", ("points",), zlib=True, complevel=9)
+        lat    = ds.createVariable("lat", "f8", ("points",), zlib=True, complevel=9)
+        qual   = ds.createVariable("q_flag", "byte", ("points",), zlib=True, complevel=9)
+        index  = ds.createVariable("index", "long", ("points",), zlib=True, complevel=9)
+        if ldoStream:
+            idstream = ds.createVariable("idstream", "byte", ("points",), zlib=True, complevel=9)
+            streams = ds.createVariable("streams", "byte", ("streams",) )
+
+        time[:] = ptime[:]
+        time.setncattr('units', "seconds since 1970-01-01 00:00:00")
+        time.setncattr('standard_name', "time")
+        time.setncattr('long_name', "time of virtual buoy")
+        time.setncattr('calendar', "standard")
+
+        x[:] = pxkm[:]
+        x.setncattr('units', "km")
+        x.setncattr('long_name', "X-coordinate in Polar Stereographic projection, lon_0=-45, lat_ts=70")
+        x.setncattr('standard_name', "x_coordinate")
+
+        y[:] = pykm[:]
+        y.setncattr('units', "km")
+        y.setncattr('long_name', "Y-coordinate in Polar Stereographic projection, lon_0=-45, lat_ts=70")
+        y.setncattr('standard_name', "y_coordinate")
+
+        lon[:] = plon[:]
+        lon.setncattr('units', "degrees_easth")
+        lon.setncattr('long_name', "longitude coordinate of virtual buoy")
+        lon.setncattr('standard_name', "longitude")
+
+        lat[:] = plat[:]
+        lat.setncattr('units', "degrees_north")
+        lat.setncattr('long_name', "latitude coordinate of virtual buoy")
+        lat.setncattr('standard_name', "latitude")
+
+        qual[:] = pqual[:]
+        qual.setncattr('long_name', "Quality flag of virtual buoy")
+
+        index[:] = pIDs[:]
+        index.setncattr('long_name', "Id of virtual buoy")
+
+        if ldoStream:
+            idstream[:] = pSid[:]
+            idstream.setncattr('long_name', "ID of the stream the virtual buoy belongs to")        
+
+            streams[:] = np.arange(Nstrm) + 1
+            streams.setncattr('long_name', "IDs of existing streams")
+        
+        ds.setncattr('title', 'RGPS trajectories')
+        ds.setncattr('reference', 'Kwok, Ronald. “The RADARSAT Geophysical Processor System.” (1998).')    
+
+    print(' *** File '+ncFile+' generated!\n')
+    
+    return 0
+
+
+
+
 def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
     '''
        Open & inspect the RGPS NetCDF input file and load the raw data
@@ -286,5 +359,6 @@ def GetDimNCdataMJT( cfile ):
         print(' * [GetDimNCdataMJT]: origin of data: "'+corgn+'"')
         list_var = list( id_in.variables.keys() )
     return Nt, nP, corgn
+
 
 
