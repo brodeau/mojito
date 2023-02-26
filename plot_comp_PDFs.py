@@ -38,7 +38,7 @@ if __name__ == '__main__':
     print(' * cperiod =', cperiod)
     print(' * nP =', nP)
 
-    if l2files:
+    if l2files or l3files:
         cf_in2 = argv[2]        
         mjt.chck4f(cf_in2)
         with np.load(cf_in2) as data:
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
                             title=cName+': '+corig+' vs '+corig2+' vs '+corig2, period=cperiod, origin=corig,
-                            ppdf2=PDF2, origin2=corig2, ppdf2=PDF3, origin3=corig3 )
+                            ppdf2=PDF2, origin2=corig2, ppdf3=PDF3, origin3=corig3 )
     
     else:
         # log-log and histogram:
