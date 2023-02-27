@@ -90,14 +90,11 @@ if __name__ == '__main__':
         rQarea_min =  10000.
         rQarea_max = 50000.       
         #
-
     else:
         print('ERROR: we do not know what to do with resolution `resol0` =', resol0) ; exit(0)
         #
         #rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
         
-        
-
 
     # Loading the data for the 2 selected records:
     Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc_in )
