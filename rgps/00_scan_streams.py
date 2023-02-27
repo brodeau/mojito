@@ -32,10 +32,6 @@ cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
-#Nforced_stream_length = None ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
-Nforced_stream_length = 2 ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
-Nb_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
-
 dt_buoy_Nmnl = 3*24*3600     ; # the expected nominal time step of the input data, ~ 3 days [s]
 max_dev_from_dt_buoy_Nmnl = 6*3600 ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
 
@@ -106,10 +102,6 @@ if __name__ == '__main__':
     print( '       ====> double check: ', epoch2clock(idt1), 'to',  epoch2clock(idt2))
 
 
-    if Nforced_stream_length:
-        if Nb_min_cnsctv > Nforced_stream_length:
-            print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_stream_length` !'); exit(0)
-
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
@@ -123,48 +115,6 @@ if __name__ == '__main__':
     # * Nb: number of unique buoys of interest
     # * vIDsU0: unique IDs of the buoys of interest len=Nb  #fixme: sure?
     NpT = len(vtime0) ; # Real length of the *0 arrays..
-    
-    #(idxM,) = np.where(vIDs0==145)
-    #print('145 =>',len(idxM))
-    #exit(0)
-
-    
-    # Exlude buoys and associate points corresponding to "mono-record" buoys (mono-record during the whole period, not during a bin)
-    # - if the buoy ID related to a point exists only once in the whole period (not the bin),
-    #   there is no reason to keep it
-    #  => must 1st find the problematic buoys, and then cancel the associated point indices
-    if 1==0:
-        print(' Before mono-record stuff, we have '+str(Np),' points, for '+str(Nb)+' unique buoys.')
-        (idxOK0,) = np.where(vIDs0>=0) ; # since vIDs0 is masked (time-range)
-        if len(idxOK0) != Np:
-            print('ERROR: `len(idxOK0) != Np`'); exit(0)
-        #
-        zmsk = np.zeros( NpT, dtype='i1' )
-        zmsk[np.where(vIDs0.data>=0)] = 1    
-        idxRM = []
-        for kID in vIDsU0:
-            (kdx,) = np.where( vIDs0== kID )
-            ntp = len(kdx)
-            if ntp < 2:
-                #print(' !!! buoy with ID '+str(kID)+' has only 1 record in the period of interest !!!')
-                if ntp != 1:
-                    print('ERROR: `ntp != 1`'); exit(0)
-                idxRM.append( kdx )
-                zmsk[kdx] = 0
-                
-        idxK  = np.setdiff1d( idxOK0, np.array(idxRM)) ; # keep values of `idxOK0` that are not in `idxRM`
-        #
-        Np    = len(idxK)
-        vIDsU0 = np.unique(vIDs0[idxK])
-        Nb = len(vIDsU0)
-        
-        # Updating masked *0 arrays based on the mask: 
-        vIDs0 = np.ma.masked_where( zmsk==0, vIDs0 )
-        vlon0 = np.ma.masked_where( zmsk==0, vlon0 )
-        vlat0 = np.ma.masked_where( zmsk==0, vlat0 )
-        del idxRM, idxK, zmsk, idxOK0
-        print('     => after "mono-record" buoys exclusions: '+str(Np)+' pos. involving '+str(Nb)+' different buoys!')
-
     
     # Arrays along streams and buoys:
     # In the following, both Ns_max & Nb are excessive upper bound values....
@@ -210,7 +160,7 @@ if __name__ == '__main__':
             del zIDsOK0, ztimOK0
             print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
             
-            # Exclude points if index has already been used:
+            # Exclude points if index has already been used or canceled:
             idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
             Nok    = len(idxOK)
             zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
@@ -242,70 +192,47 @@ if __name__ == '__main__':
 
                 # Now, loop on all the remaining point positions involved in this time bin:
                 jb = -1              ; # buoy index
+
                 for jidx in idxOK:
-                    #
+
+                    jb += 1
+                    
                     jID = vIDs0[jidx]
+
+                    if jidx in IDXtakenG:
+                        print('WOW! `jidx in IDXtakenG` !!!'); exit(0)
+                    #if not jidx in IDXtakenG:
+
+                    nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG),
+                                                         dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+
+                    if nbRecOK==0:
+                        IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
+                        #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
+
+                    # * nbRecOK : number of valid consecutive records for this buoy
+                    # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
+                    # * vt1b    : array of dates associated with all these records [s]
+                    
+                    if nbRecOK == 2:
+                        # We want the buoy to be located at least `MinDistFromLand` km off the coast
+                        it1 = idx0_id[0]    ; # initial position for the buoy
+                        rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
+                        if rd_ini > MinDistFromLand:
+                            IDXofStr.append(idx0_id[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
+                            #
+                            NBinStr += 1   ; # this is another valid buoy for this stream
+                            Xmsk[istream,jb] = 1                ; # flag for valid point
+                            XIDs[istream,jb] = jID              ; # keeps memory of select buoy
+                            XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
+                            XIX0[istream,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
+                        ### if rd_ini > MinDistFromLand
+                    else:
+                        iBcnl_CR += 1
                     #
-                    if not jidx in IDXtakenG:
-
-                        jb += 1
-
-                        if Nforced_stream_length==2:
-                            nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jID, jidx, vtime0, vIDs0, np.array(IDXtakenG),
-                                                                 dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
-
-                            if idebug>1:
-                                if nbRecOK==0:
-                                    print(' LOLO: this buoy is a mono-record buoy !!!')
-                                    (idxM,) = np.where(vIDs0==jID)
-                                    if len(idxM)!=1: print('ERROR ZXM!'); exit(0)
-                                elif nbRecOK==1:
-                                    print(' LOLO: not mono-record buoy but did not find a reasonable sucessor for it')
-                                    (idxM,) = np.where((vIDs0==jID) & (vtime0>=rTa))
-                                    print(' Dates for point + successors are:')
-                                    for zt in vtime0[idxM]: print(epoch2clock(zt))
-                                elif nbRecOK==2:
-                                    print(' LOLO: WE FOUND a reasonable sucessor for this buoy')
-                                    (idxM,) = np.where((vIDs0==jID) & (vtime0>=rTa))
-                                    print(' Dates for point + all possible successors are:')
-                                    for zt in vtime0[idxM]: print(epoch2clock(zt))
-                                    print(' ==> the time selected is',epoch2clock(vtime0[idx0_id[1]]) )
-                                    print(' ====> vt1b =', epoch2clock(vt1b[0]), epoch2clock(vt1b[1]))
-
-                            #if nbRecOK==0:
-                            #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
-
-                        else:                        
-                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG),
-                                                                                 dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
-
-
-                        # * nbRecOK : number of valid consecutive records for this buoy
-                        # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
-                        # * vt1b    : array of dates associated with all these records [s]
-
-                        
-                        # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
-                        if nbRecOK >= Nb_min_cnsctv:
-                            # We want the buoy to be located at least `MinDistFromLand` km off the coast
-                            it1 = idx0_id[0]    ; # initial position for the buoy
-                            rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                            if rd_ini > MinDistFromLand:
-                                IDXofStr.extend(idx0_id[:nbRecOK-1]) ; # store point not to be used again. -1 because the last record can be re-used!
-                                #
-                                NBinStr += 1   ; # this is another valid buoy for this stream
-                                Xmsk[istream,jb] = 1                ; # flag for valid point
-                                XIDs[istream,jb] = jID              ; # keeps memory of select buoy
-                                XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
-                                XIX0[istream,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
-                            ### if rd_ini > MinDistFromLand
-                        else:
-                            iBcnl_CR += 1
-                        #
-                        ### if nbRecOK >= Nb_min_cnsctv
-                    ### if not jidx in IDXtakenG
+                    ### if nbRecOK == 2
                 ### for jidx in idxOK
-                print('     => '+str(iBcnl_CR)+' buoys were canceled for not having "proper" upcomming positions!')
+                print('     => '+str(iBcnl_CR)+' buoys were canceled for not having a reasonable upcomming position in time!')
 
                 if NBinStr >= min_nb_buoys_in_stream:
                     print('   +++ C O N F I R M E D   V A L I D   S T R E A M   #'+str(istream)+' +++ => selected '+str(NBinStr)+' buoys!')
