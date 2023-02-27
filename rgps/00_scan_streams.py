@@ -12,6 +12,12 @@
 #SBATCH --mem=8000
 ##################################################################
 
+### TO DO: lili
+# ExcludeMulitOccurences() should be able to use a criterion that cancels the point that has no reasonable successor (based on time step) !
+
+# dangerous stuff is np.where(vIDs0>=0) because masked => can have the "--" value => better np.where(vIDs0.data>=0)
+
+
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
@@ -112,11 +118,54 @@ if __name__ == '__main__':
 
 
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
-    Np, Nb, vIDsWP, vtime0, vIDs0, vlat0, vlon0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, list_expected_var, l_doYX=False )
+    Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, list_expected_var, l_doYX=False )
     # * Np: number of points of interst
     # * Nb: number of unique buoys of interest
-    # * vIDsWP: unique IDs of the buoys of interest
+    # * vIDsU0: unique IDs of the buoys of interest len=Nb  #fixme: sure?
+    NpT = len(vtime0) ; # Real length of the *0 arrays..
+    
+    #(idxM,) = np.where(vIDs0==145)
+    #print('145 =>',len(idxM))
+    #exit(0)
 
+    
+    # Exlude buoys and associate points corresponding to "mono-record" buoys (mono-record during the whole period, not during a bin)
+    # - if the buoy ID related to a point exists only once in the whole period (not the bin),
+    #   there is no reason to keep it
+    #  => must 1st find the problematic buoys, and then cancel the associated point indices
+    if 1==0:
+        print(' Before mono-record stuff, we have '+str(Np),' points, for '+str(Nb)+' unique buoys.')
+        (idxOK0,) = np.where(vIDs0>=0) ; # since vIDs0 is masked (time-range)
+        if len(idxOK0) != Np:
+            print('ERROR: `len(idxOK0) != Np`'); exit(0)
+        #
+        zmsk = np.zeros( NpT, dtype='i1' )
+        zmsk[np.where(vIDs0.data>=0)] = 1    
+        idxRM = []
+        for kID in vIDsU0:
+            (kdx,) = np.where( vIDs0== kID )
+            ntp = len(kdx)
+            if ntp < 2:
+                #print(' !!! buoy with ID '+str(kID)+' has only 1 record in the period of interest !!!')
+                if ntp != 1:
+                    print('ERROR: `ntp != 1`'); exit(0)
+                idxRM.append( kdx )
+                zmsk[kdx] = 0
+                
+        idxK  = np.setdiff1d( idxOK0, np.array(idxRM)) ; # keep values of `idxOK0` that are not in `idxRM`
+        #
+        Np    = len(idxK)
+        vIDsU0 = np.unique(vIDs0[idxK])
+        Nb = len(vIDsU0)
+        
+        # Updating masked *0 arrays based on the mask: 
+        vIDs0 = np.ma.masked_where( zmsk==0, vIDs0 )
+        vlon0 = np.ma.masked_where( zmsk==0, vlon0 )
+        vlat0 = np.ma.masked_where( zmsk==0, vlat0 )
+        del idxRM, idxK, zmsk, idxOK0
+        print('     => after "mono-record" buoys exclusions: '+str(Np)+' pos. involving '+str(Nb)+' different buoys!')
+
+    
     # Arrays along streams and buoys:
     # In the following, both Ns_max & Nb are excessive upper bound values....
     VTc_ini = np.zeros( Ns_max                ) - 999.; # time at center of time bin that first detected this stream
@@ -169,11 +218,12 @@ if __name__ == '__main__':
                 print('ERROR: `unique(zIDsOK) != Nok` => `ExcludeMulitOccurences()` did not do its job :('); exit(0)
             print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
 
+
             if idebug>0:
-                # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsWP`:
-                vOUT = np.setdiff1d( zIDsOK, vIDsWP) ; # keep the values of `zIDsOK` that are not in `vIDsWP`
+                # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsU0`:
+                vOUT = np.setdiff1d( zIDsOK, vIDsU0) ; # keep the values of `zIDsOK` that are not in `vIDsU0`
                 if len(vOUT)!=0:
-                    print('ERROR: the IDs of '+str(len(vOUT))+' buoys involved in this date range bin are not refenced in `vIDsWP` !!!')
+                    print('ERROR: the IDs of '+str(len(vOUT))+' buoys involved in this date range bin are not refenced in `vIDsU0` !!!')
                     print(' ==>', vOUT)
                     exit(0)
                 print('     => '+str(Nok)+' buoys still in the game! ('+str(Nok0-Nok)+' removed because index already in use...)')
@@ -190,8 +240,8 @@ if __name__ == '__main__':
                 istream += 1 ; # that's a new stream
                 if idebug>0: print('    => this date range is potentially the first of stream #'+str(istream)+', with '+str(Nok)+' buoys!')
 
-                # Now, loop on all the points involved in this date range:
-                jb = -1              ; # buoy counter...
+                # Now, loop on all the remaining point positions involved in this time bin:
+                jb = -1              ; # buoy index
                 for jidx in idxOK:
                     #
                     jID = vIDs0[jidx]
@@ -200,16 +250,43 @@ if __name__ == '__main__':
 
                         jb += 1
 
-                        nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG),
-                                                                             dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+                        if Nforced_stream_length==2:
+                            nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jID, jidx, vtime0, vIDs0, np.array(IDXtakenG),
+                                                                 dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+
+                            if idebug>1:
+                                if nbRecOK==0:
+                                    print(' LOLO: this buoy is a mono-record buoy !!!')
+                                    (idxM,) = np.where(vIDs0==jID)
+                                    if len(idxM)!=1: print('ERROR ZXM!'); exit(0)
+                                elif nbRecOK==1:
+                                    print(' LOLO: not mono-record buoy but did not find a reasonable sucessor for it')
+                                    (idxM,) = np.where((vIDs0==jID) & (vtime0>=rTa))
+                                    print(' Dates for point + successors are:')
+                                    for zt in vtime0[idxM]: print(epoch2clock(zt))
+                                elif nbRecOK==2:
+                                    print(' LOLO: WE FOUND a reasonable sucessor for this buoy')
+                                    (idxM,) = np.where((vIDs0==jID) & (vtime0>=rTa))
+                                    print(' Dates for point + all possible successors are:')
+                                    for zt in vtime0[idxM]: print(epoch2clock(zt))
+                                    print(' ==> the time selected is',epoch2clock(vtime0[idx0_id[1]]) )
+                                    print(' ====> vt1b =', epoch2clock(vt1b[0]), epoch2clock(vt1b[1]))
+
+                            #if nbRecOK==0:
+                            #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
+
+                        else:                        
+                            nbRecOK, idx0_id, vt1b = mjt.ValidCnsctvRecordsBuoy( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG),
+                                                                                 dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+
+
                         # * nbRecOK : number of valid consecutive records for this buoy
                         # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                         # * vt1b    : array of dates associated with all these records [s]
-                        #
+
+                        
                         # We want at least `Nb_min_cnsctv` consecutive records for the buoy:
                         if nbRecOK >= Nb_min_cnsctv:
-                            if Nforced_stream_length:
-                                nbRecOK = Nforced_stream_length
                             # We want the buoy to be located at least `MinDistFromLand` km off the coast
                             it1 = idx0_id[0]    ; # initial position for the buoy
                             rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )

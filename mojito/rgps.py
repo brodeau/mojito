@@ -43,7 +43,7 @@ def KeepDataInterest( dt1, dt2, ptime0, pIDs0 ):
     # Will mask all point that are before and beyond our period of interest:
     (idx_msk,) = np.where( (ptime0 < dt1) | (ptime0 > dt2) )
     (idx_fub,) = np.where(  zIDs0 < 0 ) ; # just in case some negative IDs exist
-    idx_msk    = np.concatenate([idx_msk,idx_fub])
+    idx_msk    = np.unique( np.concatenate([idx_msk,idx_fub]) )
     #
     zIDs0[idx_msk] = -999
     #
@@ -78,6 +78,7 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
     nBu, zIDsU, idxmsk = KeepDataInterest( idate1, idate2, ztime0, zIDs0 )
     # * nBu: number of unique buoys that exist for at least 1 record during specified date range aka whole period (WP)
     # * zIDsU : array(nBu) list (unique) of IDs for these buoys
+    # * idxmsk: indices of points to cancel
 
     # Masking all point that are before and beyond our period of interest (note: `ztime0` is not masked!):
     zmsk0 = np.ones(Np0, dtype='i1')
@@ -97,6 +98,64 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0, zykm0, zxkm0
     else:
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
+
+
+def ValidNextRecord( time_min, kID, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max_dev_from_dtNom ):
+    '''
+    
+       RETURNS:
+            * nbROK: number of ok records for this point
+                     0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
+                     1 -> this point (kidx) 
+    
+    
+    '''
+    from climporn import epoch2clock
+    #
+    idxScsr = -9999
+    zt0     = -9999.
+    zts     = -9999.
+    nbROK   = 0
+    #print( 'LOLO: [ValidNextRecord] 0: dtNom, max_dev_from_dtNom =',dtNom/3600, max_dev_from_dtNom/3600)    
+    (idxBuoy,) = np.where( pBIDs0 == kID )
+    #print( 'LOLO: [ValidNextRecord] 1: we have '+str(len(idxBuoy))+' buoy positions,',str(len(np.unique(idxBuoy))) )
+    #print(' LOLO: dates for all these positions:')
+    #print(' Buoy ID =',kID)
+    #print(' idxBuoy =',idxBuoy,' time:')
+    #for ki in idxBuoy:
+    #    print(epoch2clock(ptime0[ki]),end=' ')
+    #print('')
+    
+    if len(idxBuoy) > 1:
+        # Ok, now we know that this point is not the mono-occurence of a mono-record buoy (in the whole period not only in the bin)
+        # We focus on time location of this buoy after the begining of current bin:
+        (idxBuoy,) = np.where( (ptime0>=time_min) & (pBIDs0 == kID) )
+        #
+        zt0  = ptime0[idxBuoy[0]] ; # the first time position in this bin
+        ztR1 = zt0 + dtNom - max_dev_from_dtNom ; # Reasonable lower time bond for successor point
+        ztR2 = zt0 + dtNom + max_dev_from_dtNom ; # Reasonable lower time bond for successor point
+        nbROK   = 1
+        lHasSuccessor = np.any( (ptime0[idxBuoy]>ztR1) & (ptime0[idxBuoy]<ztR2) )
+        #
+        if lHasSuccessor:
+            nbROK   = 2
+            (idxS,) = np.where( (ptime0[idxBuoy]>ztR1) & (ptime0[idxBuoy]<ztR2) )
+            if len(idxS)!=1:
+                #print(' [ValidNextRecord()]: point has more than 1 possible successor!!!')
+                #print(' Point is:',epoch2clock(zt0))
+                #print(' successor are:')
+                #for zt in ptime0[idxBuoy[idxS]]: print(epoch2clock(zt))
+                ii = np.argmin( np.abs(ptime0[idxBuoy[idxS]] - (zt0 + dtNom)) )
+                idxScsr = idxS[ii]
+                #print(' => selected:',epoch2clock(ptime0[idxBuoy[idxScsr]]) ); exit(0)
+            else:
+                idxScsr = idxS[0]
+            #
+            idxScsr = idxBuoy[idxScsr] ; # in the ref0 frame!
+            zts = ptime0[idxScsr]            
+    #
+    return nbROK, np.array([kidx, idxScsr], dtype=int), np.array([zt0, zts])
+
 
 
 
@@ -153,6 +212,8 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
         ztime   =   ztime[0:nbROK]
     #
     return nbROK, idx_keep, ztime
+
+
 
 
 def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
