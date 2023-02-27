@@ -155,11 +155,15 @@ if __name__ == '__main__':
             else:
                 # Time bins are wider than the nominal time step of the RGPS data...
                 #   => we keep buoy occurence with the earliest occurence
-                Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
+                #Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
+                #   => or better occurence that yields to a valid successor point:
+                Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='successors',
+                                                           ptimeRef0=vtime0, dtNom=dt_buoy_Nmnl, devdtNom=max_dev_from_dt_buoy_Nmnl,
+                                                           iverbose=idebug )
             #
             del zIDsOK0, ztimOK0
             print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
-            
+
             # Exclude points if index has already been used or canceled:
             idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
             Nok    = len(idxOK)

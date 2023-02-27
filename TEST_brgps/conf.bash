@@ -29,6 +29,7 @@ case ${host} in
         #
         #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=84  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
         #
         #DATE1="$((YEAR-1))1227_00:00" ; DT_BINS_H=$((24*10))

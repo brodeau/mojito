@@ -100,12 +100,12 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
 
 
-def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max_dev_from_dtNom ):
+def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, devdtNom ):
     '''
        RETURNS:
             * nbROK: number of ok records for this point
                      0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
-                     1 -> this point (kidx) has successors in time but none is reasonably timed (based on dtNom & max_dev_from_dtNom)
+                     1 -> this point (kidx) has successors in time but none is reasonably timed (based on dtNom & devdtNom)
                      2 -> a reasonably timed successor has been found
     '''
     from climporn import epoch2clock
@@ -114,7 +114,7 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max_dev_
     zt0     = -9999.
     zts     = -9999.
     nbROK   = 0
-    #print( 'LOLO: [ValidNextRecord] 0: dtNom, max_dev_from_dtNom =',dtNom/3600, max_dev_from_dtNom/3600)
+    #print( 'LOLO: [ValidNextRecord] 0: dtNom, devdtNom =',dtNom/3600, devdtNom/3600)
 
     kID = pBIDs0[kidx]
     (idxBuoy,) = np.where( pBIDs0 == kID )
@@ -132,8 +132,8 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max_dev_
         (idxBuoy,) = np.where( (ptime0>=time_min) & (pBIDs0 == kID) )
         #
         zt0  = ptime0[idxBuoy[0]] ; # the first time position in this bin
-        ztR1 = zt0 + dtNom - max_dev_from_dtNom ; # Reasonable lower time bond for successor point
-        ztR2 = zt0 + dtNom + max_dev_from_dtNom ; # Reasonable lower time bond for successor point
+        ztR1 = zt0 + dtNom - devdtNom ; # Reasonable lower time bond for successor point
+        ztR2 = zt0 + dtNom + devdtNom ; # Reasonable lower time bond for successor point
         nbROK   = 1
         lHasSuccessor = np.any( (ptime0[idxBuoy]>ztR1) & (ptime0[idxBuoy]<ztR2) )
         #
@@ -298,8 +298,9 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
     return 0
 
 
-
-def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='center', iverbose=0 ):
+#lili
+def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='center',
+                            ptimeRef0=[], dtNom=None, devdtNom=None, iverbose=0 ):
     '''
          For many possible reasons the same buoy ID can exist more than once in `pIDs`,
          => we need to keep only one occurence of the location index of these points,
@@ -314,6 +315,7 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
                          - 'center' => keep the occurence closest to that of center of time bin
                          - 'first'  => keep the occurence closest to begining of time bin
                          - 'last'   => keep the occurence closest to the end of time bin
+                         - 'successors' => keep the occurence that is the most likely to have an appropriate successor in time
 
     RETURN:
             Updated (or not) `pidx0` and its length
@@ -321,9 +323,13 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
             `pIDs`, `ptime` and `pidx0` have the same length!
 
     '''
-    if not criterion in ['center','first','last']:
+    if not criterion in ['center','first','last','successors']:
         print('ERROR [ExcludeMulitOccurences]: criterion "'+criterion+'" is unknown!')
         exit(0)
+    #
+    if criterion=='successors' and (not np.shape(ptimeRef0)==np.shape(pIDsRef0) or not dtNom or not devdtNom):
+         print('ERROR [ExcludeMulitOccurences]: with "'+criterion+'" criterion, you must provide `ptimeRef0` array and `dtNom` and `devdtNom`!')
+         exit(0)        
     #
     (Nok0,) = np.shape(pIDs)
     if np.shape(ptime)!=(Nok0,):
@@ -342,7 +348,14 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
         idxMO = np.setdiff1d( pidx0, idxOKU ) ; # keep the values of `pidx0` that are not in `idxOKU`
         del idxOKU
         zIDsMO = np.unique( pIDsRef0[idxMO] ); # unique IDs of the buoys that exist more than once in current time bin...
-        #
+
+        if criterion=='successors':
+            #from climporn import epoch2clock
+            # Checking that `ptimeRef0` is consistent with `ptime`
+            if np.sum(np.abs(ptimeRef0[pidx0] - ptime)) != 0:
+                print('ERROR [ExcludeMulitOccurences]: `ptimeRef0[pidx0]` not equal to `ptime` !')
+                exit(0)
+        
         # Analysis:
         idxRMall = []
         for jMO in zIDsMO:
@@ -355,18 +368,54 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
                 jk = np.argmin( ptime[idxMlt] )
             elif criterion=='last':
                 jk = np.argmax( ptime[idxMlt] )
+            #
+            elif criterion=='successors':
+                idxMlt0 = pidx0[idxMlt]
+                #print(' Times for all the occurences of buoy inside bin:')
+                #for zt in ptimeRef0[idxMlt0]: print(epoch2clock(zt))
+                isuccess = np.zeros(len(idxMlt),dtype='i1')          ; # "1" if an acceptable successor was found for this point 0 otherwize
+                #
+                jm = 0
+                for idx0 in idxMlt0:
+                    #print(' * idx0 =', idx0,':')
+                    zt0 = ptimeRef0[idx0]
+                    ztf_ideal = zt0 + dtNom
+                    #print('   => time =',epoch2clock(zt0), '  ==> successor ideal time =',epoch2clock(ztf_ideal))
+                    (idxFuture0,) = np.where( (pIDsRef0==jMO) & (ptimeRef0>zt0) )
+                    if len(idxFuture0)>0:
+                        #print('   ==> future occurence of the buoy: ')
+                        #for ztf in ptimeRef0[idxFuture0]: print('         * '+epoch2clock(ztf))
+                        zdevFideal = np.abs(ptimeRef0[idxFuture0] - ztf_ideal)
+                        #print('   ==> deviation from ideal in hours:',zdevFideal[:]/3600)
+                        kK = np.argmin(zdevFideal)
+                        #print( '   ==> ',zdevFideal[kK]/3600,'wins! => ', epoch2clock(ptimeRef0[idxFuture0[kK]]) )
+                        if zdevFideal[kK] < devdtNom:
+                            isuccess[jm] = 1
+                    #
+                    jm += 1
+                #print(' isuccess =',isuccess)
+                if np.sum(isuccess) == 0:
+                    # No candidate, keeping earliest point, just as in 'first' criterion
+                    jk = np.argmin( ptime[idxMlt] )
+                else:
+                    (iis,) = np.where(isuccess==1)
+                    jk = iis[0] ; # keeping first of the winners...                    
             #   
             jKeep = idxMlt[jk]
             idxRM = np.setdiff1d( idxMlt, [jKeep] ) ; # exclude `jKeep` from idxMlt
-            idxRM = pidx0[idxRM]; # translate in the `pidx0` frame!!!! IMPORTANT !!!!
-            idxRMall.extend(idxRM)
+            idxRM0 = pidx0[idxRM]; # translate in the `pidx0` frame!!!! IMPORTANT !!!!
+            idxRMall.extend(idxRM0)
+            #
+            #print('FINAL we keep time:', epoch2clock(ptimeRef0[pidx0[jKeep]]),'!')
+            #for idx in idxRM0:
+            #    print('FINAL we delete time:', epoch2clock(ptimeRef0[idx]),'!\n')            
         #
         idxRMall = np.array(idxRMall, dtype=int)
         if len(idxRMall)!=np2rm:
             print('ERROR [ExcludeMulitOccurences]: `len(idxRMall)!=np2rm`', len(idxRMall), np2rm)
             exit(0)
         # Finally, update `pidx0`:
-        pidx0 = np.setdiff1d( pidx0, idxRMall ) ; # keep the values of `pidx0` that are not in `idxRM`
+        pidx0 = np.setdiff1d( pidx0, idxRMall )
         Nok0 = len(pidx0)
         if iverbose>0: print('    * [EMO] => excluded '+str(np2rm)+' pt. of time bin due to multi-occur. of same buoy ID! (criterion='+criterion+')')
     else:
