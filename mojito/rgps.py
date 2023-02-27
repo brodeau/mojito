@@ -277,7 +277,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
         vids_ref = vids.copy()
         vidx     = np.arange(nP)
 
-        nP, zidx = ExcludeMulitOccurences( vids, vtime, vids_ref, vidx, t_ref )
+        nP, zidx = ExcludeMultiOccurences( vids, vtime, vids_ref, vidx, t_ref )
 
         vids  = vids_ref[zidx]
         vtime = vtime[zidx]
@@ -299,7 +299,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
 
 
 #lili
-def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='center',
+def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='center',
                             ptimeRef0=[], dtNom=None, devdtNom=None, iverbose=0 ):
     '''
          For many possible reasons the same buoy ID can exist more than once in `pIDs`,
@@ -324,18 +324,18 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
 
     '''
     if not criterion in ['center','first','last','successors']:
-        print('ERROR [ExcludeMulitOccurences]: criterion "'+criterion+'" is unknown!')
+        print('ERROR [ExcludeMultiOccurences]: criterion "'+criterion+'" is unknown!')
         exit(0)
     #
     if criterion=='successors' and (not np.shape(ptimeRef0)==np.shape(pIDsRef0) or not dtNom or not devdtNom):
-         print('ERROR [ExcludeMulitOccurences]: with "'+criterion+'" criterion, you must provide `ptimeRef0` array and `dtNom` and `devdtNom`!')
+         print('ERROR [ExcludeMultiOccurences]: with "'+criterion+'" criterion, you must provide `ptimeRef0` array and `dtNom` and `devdtNom`!')
          exit(0)        
     #
     (Nok0,) = np.shape(pIDs)
     if np.shape(ptime)!=(Nok0,):
-        print('ERROR [ExcludeMulitOccurences]: `np.shape(ptime)!=np.shape(pIDs)`!'); exit(0)
+        print('ERROR [ExcludeMultiOccurences]: `np.shape(ptime)!=np.shape(pIDs)`!'); exit(0)
     if np.shape(pidx0)!=(Nok0,):
-        print('ERROR [ExcludeMulitOccurences]: `np.shape(pidx0)!=np.shape(pIDs)`!'); exit(0)
+        print('ERROR [ExcludeMultiOccurences]: `np.shape(pidx0)!=np.shape(pIDs)`!'); exit(0)
     #
     _, idxU = np.unique(pIDs, return_index=True)
     NokU    = len(idxU) ; # NokU is the number of buoys once multi-occurences are removed!
@@ -353,7 +353,7 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
             #from climporn import epoch2clock
             # Checking that `ptimeRef0` is consistent with `ptime`
             if np.sum(np.abs(ptimeRef0[pidx0] - ptime)) != 0:
-                print('ERROR [ExcludeMulitOccurences]: `ptimeRef0[pidx0]` not equal to `ptime` !')
+                print('ERROR [ExcludeMultiOccurences]: `ptimeRef0[pidx0]` not equal to `ptime` !')
                 exit(0)
         
         # Analysis:
@@ -412,7 +412,7 @@ def ExcludeMulitOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ce
         #
         idxRMall = np.array(idxRMall, dtype=int)
         if len(idxRMall)!=np2rm:
-            print('ERROR [ExcludeMulitOccurences]: `len(idxRMall)!=np2rm`', len(idxRMall), np2rm)
+            print('ERROR [ExcludeMultiOccurences]: `len(idxRMall)!=np2rm`', len(idxRMall), np2rm)
             exit(0)
         # Finally, update `pidx0`:
         pidx0 = np.setdiff1d( pidx0, idxRMall )

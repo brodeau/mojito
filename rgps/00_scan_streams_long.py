@@ -152,11 +152,11 @@ if __name__ == '__main__':
             if dt_bin_sec < dt_buoy_Nmnl:
                 # Time bins are narrower than the nominal time step of the RGPS data...
                 #   => we keep buoy occurence closest to that of center of current time bin
-                Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='center', iverbose=idebug )
+                Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='center', iverbose=idebug )
             else:
                 # Time bins are wider than the nominal time step of the RGPS data...
                 #   => we keep buoy occurence with the earliest occurence
-                Nok0, idxOK0 = mjt.ExcludeMulitOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
+                Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
             #
             del zIDsOK0, ztimOK0
             print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
@@ -166,7 +166,7 @@ if __name__ == '__main__':
             Nok    = len(idxOK)
             zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
             if len(np.unique(zIDsOK)) != Nok:
-                print('ERROR: `unique(zIDsOK) != Nok` => `ExcludeMulitOccurences()` did not do its job :('); exit(0)
+                print('ERROR: `unique(zIDsOK) != Nok` => `ExcludeMultiOccurences()` did not do its job :('); exit(0)
             print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
 
             if idebug>0:
