@@ -100,15 +100,13 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
 
 
-def ValidNextRecord( time_min, kID, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max_dev_from_dtNom ):
+def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max_dev_from_dtNom ):
     '''
-    
        RETURNS:
             * nbROK: number of ok records for this point
                      0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
-                     1 -> this point (kidx) 
-    
-    
+                     1 -> this point (kidx) has successors in time but none is reasonably timed (based on dtNom & max_dev_from_dtNom)
+                     2 -> a reasonably timed successor has been found
     '''
     from climporn import epoch2clock
     #
@@ -116,7 +114,9 @@ def ValidNextRecord( time_min, kID, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max
     zt0     = -9999.
     zts     = -9999.
     nbROK   = 0
-    #print( 'LOLO: [ValidNextRecord] 0: dtNom, max_dev_from_dtNom =',dtNom/3600, max_dev_from_dtNom/3600)    
+    #print( 'LOLO: [ValidNextRecord] 0: dtNom, max_dev_from_dtNom =',dtNom/3600, max_dev_from_dtNom/3600)
+
+    kID = pBIDs0[kidx]
     (idxBuoy,) = np.where( pBIDs0 == kID )
     #print( 'LOLO: [ValidNextRecord] 1: we have '+str(len(idxBuoy))+' buoy positions,',str(len(np.unique(idxBuoy))) )
     #print(' LOLO: dates for all these positions:')
@@ -152,7 +152,11 @@ def ValidNextRecord( time_min, kID, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, max
                 idxScsr = idxS[0]
             #
             idxScsr = idxBuoy[idxScsr] ; # in the ref0 frame!
-            zts = ptime0[idxScsr]            
+            zts = ptime0[idxScsr]
+
+            if idxScsr in pidxIgnore:
+                print('ERROR [ValidNextRecord()] `idxScsr` is forbidden by `pidxIgnore`! ')
+                exit(0)            
     #
     return nbROK, np.array([kidx, idxScsr], dtype=int), np.array([zt0, zts])
 

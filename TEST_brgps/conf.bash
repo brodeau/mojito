@@ -30,10 +30,10 @@ case ${host} in
         #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=84  ; # width of a bin for time sampling [hours]
         #DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
-        DT_BINS_H=$((24*15))  ; # width of a bin for time sampling [hours]
         #
-        DATE1="$((YEAR-1))1226_12:00"
-        #DATE1="$((YEAR-1))1230"
+        #DATE1="$((YEAR-1))1227_00:00" ; DT_BINS_H=$((24*10))
+        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*10))
+        #
         DATE2="${YEAR}0131"
         MARKER_SIZE=10
         ;;
