@@ -12,7 +12,8 @@ from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1
-iffrmt='png'
+#iffrmt='png'
+iffrmt='pdf'
 
 
 if __name__ == '__main__':

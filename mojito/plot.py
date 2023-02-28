@@ -597,12 +597,14 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-    rycut_tiny = 1.e-7
+    rycut_tiny = 5.e-6
     rxcut_big  = 1.
     
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
-        
+
+    
+    
     # For figure axes:
     xlog_min,xlog_max = 1.e-3, rxcut_big
     ylog_min,ylog_max = rycut_tiny, 0.25
@@ -625,29 +627,29 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     ax.set_xlim(xlog_min, xlog_max)
     ax.set_ylim(ylog_min, ylog_max)
     
-    plt.loglog(pbinc[:], ppdf[:], 'o', color='0.6', label=origin, zorder=5)
+    plt.loglog(pbinc[:], ppdf[:], 'o', linestyle='-', linewidth=4, markersize=10, fillstyle='none', color='k', label=origin, zorder=5)
 
     if l_comp2:
         ppdf2 = np.ma.masked_where( pbinc>rxcut_big,   ppdf2 )
         ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-        plt.loglog(pbinc[:], ppdf2[:], '+', color='b', label=origin2, zorder=10)
+        plt.loglog(pbinc[:], ppdf2[:], 'o', markersize=10, color='0.4', linestyle='-', linewidth=4,  label=origin2, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     if l_comp3:
         ppdf3 = np.ma.masked_where( pbinc>rxcut_big,   ppdf3 )
         ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-        plt.loglog(pbinc[:], ppdf3[:], '*', color='g', label=origin3, zorder=10)
-        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=10, color='0.6', linestyle='--', linewidth=4, label=origin3, zorder=10)
+        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     
-    if Np:
+    if Np and not (l_comp2 or l_comp3):
         ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
     if period:
         ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
-    if title:
+    if title  and not l_comp3:
         ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
