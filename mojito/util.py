@@ -484,7 +484,7 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
     else:
         if iverbose>0: print('     => ok! No points further than '+str(time_dev_from_mean_allowed/60.)+' minutes from mean...')
     #
-    return rTmean
+    return rTmean, rStdDv
 
 
 

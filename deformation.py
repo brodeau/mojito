@@ -30,6 +30,10 @@ div_max = 0.1
 shr_max = 0.1
 tot_max = 0.1
 
+t_dev_cancel = 60. ; # a quadrangle can involve points that are too distant from one another in terms of time
+#                      # => we disregard any quadrangles which standard deviation of the time of the 4 positions
+#                      #    excess `t_dev_cancel` seconds !
+
 zoom=1
 
 
@@ -56,15 +60,16 @@ if __name__ == '__main__':
     QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
 
     # Debug have a look at the times of all points and get the actual mean time for each file:
-    rT1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
-    rT2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
+    rTm1, rStD1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
+    rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
     #print('LOLO STOP [deformation.py] after `CheckTimeConsistencyQuads()`!'); exit(0)
     
-    rtimeC = 0.5*(rT1+rT2)
+    rtimeC = 0.5*(rTm1+rTm2)
     ctimeC = epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
-    rdt = rT2 - rT1
-    print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/(3600*24),2))+' days')
+    rdt = rTm2 - rTm1
+    if not l_accurate_time:
+        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/(3600*24),2))+' days')
 
     vclck = split('_',ctimeC)
     chh = split(':',vclck[1])[0]
@@ -118,6 +123,49 @@ if __name__ == '__main__':
 
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
+
+
+    if rStD1>10. and rStD2>10.:
+        # => 10 s means 0.s !!!
+        # Now when the selection was too wide in termes of time some quadrangles can involve points that are too
+        # distant from one another in terms of time, should disregard these quadrangles!
+        zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
+        zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
+        idxKeep = []
+        std_max = 0.
+        for jQ in range(nQ):
+            z4t1, z4t2 = zTime1[jQ,:], zTime2[jQ,:]
+            #c4t = [ epoch2clock(z4t[i]) for i in range(4) ]
+            zstd1, zstd2 = mjt.StdDev( np.mean(z4t1), z4t1 ), mjt.StdDev( np.mean(z4t2), z4t2 )
+            if zstd1 < t_dev_cancel and zstd2 < t_dev_cancel: idxKeep.append(jQ)
+            #print(' jQ, 4 times, StdDev (h): ', jQ, c4t, zstd/3600. )
+            if zstd1>std_max: std_max=zstd1
+            if zstd2>std_max: std_max=zstd2
+            
+        print('Max point-time-position StDev found within a Quadrangles is =',std_max/3600.,'h')
+    
+        idxKeep = np.array( idxKeep , dtype=int )
+    
+        nQn = len(idxKeep)
+        print(' *** '+str(nQ-nQn)+' quads /'+str(nQ)+
+              ' disregarded because points have too much of a difference in time position (>'+str(int(t_dev_cancel/60.))+'min)')
+    
+        
+        vidx1 = vidx1[idxKeep]
+        vidx2 = vidx2[idxKeep]
+        nQ = nQn
+        del zTime1, zTime2
+
+    else:
+        print(' *** There is no deviation in time in the 2-dimensional time array :)')
+    #exit(0)
+
+
+
+
+
+
+    
     # Coordinates of the 4 points of quadrangles for the 2 consecutive records:
     zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #  km !
     zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !

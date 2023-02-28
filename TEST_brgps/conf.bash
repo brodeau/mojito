@@ -48,7 +48,7 @@ case ${host} in
         #
         DATE1="${YEAR}0103_00:00" ; DATE2="${YEAR}0116"; DT_BINS_H=$((24*10))        
         #
-        MARKER_SIZE=10
+        MARKER_SIZE=20
         ;;
     "frazilo")
         export DATA_DIR="/data"
