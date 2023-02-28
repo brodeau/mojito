@@ -16,9 +16,10 @@ from scipy.spatial import Delaunay
 from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
-idebug=2
+idebug=1
 iplot=1
 
+#l_accurate_time=False
 l_accurate_time=True
 
 # Conversion from s-1 to day-1:
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     # Debug have a look at the times of all points and get the actual mean time for each file:
     rT1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
     rT2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
-
+    #print('LOLO STOP [deformation.py] after `CheckTimeConsistencyQuads()`!'); exit(0)
+    
     rtimeC = 0.5*(rT1+rT2)
     ctimeC = epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
@@ -98,6 +100,11 @@ if __name__ == '__main__':
         
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
+
+    if l_accurate_time:
+        figSfx='_tbuoy.png'
+    else:
+        figSfx='_tglob.png'
     
     # The Quads we retain, i.e. those who exist in both snapshots:
     vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
@@ -121,8 +128,10 @@ if __name__ == '__main__':
         zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
         zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
         #
-        zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
+        zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2], 
                                                          xtime1=zTime1, xtime2=zTime2, iverbose=idebug )
+        # => having rdt=1 will yield fuck-up fields if used, and must not be used!
+        
     else:
 
         zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
@@ -133,7 +142,6 @@ if __name__ == '__main__':
 
     zrx = [ np.min(zX)-25. , np.max(zX)+25. ]
     zry = [ np.min(zY)-25. , np.max(zY)+25. ]
-
 
 
     if idebug>0 and iplot>0:
@@ -152,11 +160,11 @@ if __name__ == '__main__':
         zzu = zzu[idx_uniq]
         zzv = zzv[idx_uniq]
         #
-        mjt.ShowDeformation( zzx, zzy, zzu, cfig=cdir+'/zvU4_'+cfnm+'.png', cwhat='U4',
+        mjt.ShowDeformation( zzx, zzy, zzu, cfig=cdir+'/zvU4_'+cfnm+figSfx, cwhat='U4',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zzx, zzy, zzv, cfig=cdir+'/zvV4_'+cfnm+'.png', cwhat='V4',
+        mjt.ShowDeformation( zzx, zzy, zzv, cfig=cdir+'/zvV4_'+cfnm+figSfx, cwhat='V4',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zzx, zzy, np.sqrt(zzu*zzu+zzv*zzv), cfig=cdir+'/zUM4_'+cfnm+'.png', cwhat='UMc',
+        mjt.ShowDeformation( zzx, zzy, np.sqrt(zzu*zzu+zzv*zzv), cfig=cdir+'/zUM4_'+cfnm+figSfx, cwhat='UMc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zzx, zzy, zzu, zzv
@@ -170,11 +178,11 @@ if __name__ == '__main__':
         zUc = np.mean( zU[:,:], axis=1 )
         zVc = np.mean( zV[:,:], axis=1 )
         #
-        mjt.ShowDeformation( zXc, zYc, zUc, cfig=cdir+'/zvUc_'+cfnm+'.png', cwhat='Uc',
+        mjt.ShowDeformation( zXc, zYc, zUc, cfig=cdir+'/zvUc_'+cfnm+figSfx, cwhat='Uc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zXc, zYc, zVc, cfig=cdir+'/zvVc_'+cfnm+'.png', cwhat='Vc',
+        mjt.ShowDeformation( zXc, zYc, zVc, cfig=cdir+'/zvVc_'+cfnm+figSfx, cwhat='Vc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+'.png', cwhat='UMc',
+        mjt.ShowDeformation( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
                              pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
         #
         del zUc, zVc
@@ -205,13 +213,13 @@ if __name__ == '__main__':
 
     # Some plots:
     if iplot>0:
-        mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence.png', cwhat='div',
+        mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                              pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                              marker_size=marker_size, title=corigin+': divergence' )
-        mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear.png',      cwhat='shr',
+        mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
                              pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                              marker_size=marker_size, title=corigin+': shear' )
-        mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total.png',      cwhat='tot',
+        mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
                              pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                              marker_size=marker_size, title=corigin+': total deformation' )
 

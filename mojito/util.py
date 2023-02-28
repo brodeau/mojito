@@ -469,6 +469,7 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
         print('ERROR [CheckTimeConsistencyQuads()]: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime))
         exit(0)
     if iverbose>0: print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
+    #for zt in QD.PointTime:  print(epoch2clock(zt)); #lolo
     rTmean = np.mean(QD.PointTime)
     if iverbose>0: cTmean = epoch2clock(rTmean)
     rStdDv = StdDev(rTmean, QD.PointTime)

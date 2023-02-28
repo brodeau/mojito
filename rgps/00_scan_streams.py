@@ -25,7 +25,7 @@ idebug = 0
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 dt_Nmnl         = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
-max_dev_dt_Nmnl = dt_Nmnl/3 ; # maximum allowed deviation from the `dt_Nmnl` between 2 consecutive records of buoy [s]
+#                             # => attention must be paid to `max_dev_dt_Nmnl` later in the code...
 
 Ns_max  =  200 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
 
@@ -62,6 +62,14 @@ if __name__ == '__main__':
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
 
+    # Adjustements that depend on the width of bins:
+    if dt_bin_sec < dt_Nmnl:
+        max_dev_dt_Nmnl = 6*3600 ; # => 6 hours! maximum allowed deviation from the `dt_Nmnl` between 2 consecutive records of buoy [s]
+    else:
+        max_dev_dt_Nmnl = dt_Nmnl/3 ; # => ~ 1 day ! maximum allowed deviation from the `dt_Nmnl` between 2 consecutive records of buoy [s]
+
+    print('\n *** Max. allowed deviation in time from the `dt_Nmnl` between 2 consec. points to select =',max_dev_dt_Nmnl/3600,'hours')
+    
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
     
     # File to save work in:

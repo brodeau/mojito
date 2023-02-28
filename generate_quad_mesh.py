@@ -97,9 +97,10 @@ if __name__ == '__main__':
         
 
     # Loading the data for the 2 selected records:
-    Nt, nBmax, corigin = mjt.GetDimNCdataMJT( cf_nc_in )
+    Nt, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
 
-
+    if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
+    
     # We need a string to name the output files:
     if corigin == 'RGPS':
         cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the stream
@@ -118,18 +119,24 @@ if __name__ == '__main__':
     xPosG = np.zeros( (Nrec,nBmax,2) )
     xPosC = np.zeros( (Nrec,nBmax,2) )
     pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
+    if lTimePos:
+        timePos = np.zeros( (Nrec,nBmax), dtype=int )        
     #
     jr = 0
     for jrec in vRec[:]:
-        vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True )
-        print( ' * jrec = ',jrec, ', date =',epoch2clock(vdate[jr]))    
+        if lTimePos:
+            vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:], timePos[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True, lGetTimePos=True  )
+        else:
+            vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:]                = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True, lGetTimePos=False )
+        #
+        print( ' * jrec = ',jrec, ', mean date =',epoch2clock(vdate[jr]))    
         if jr==0:
             vIDs[:] = zIDs[:]
         else:
             if np.sum(zIDs[:]-vIDs[:])!=0:
                 print('ERROR: ID fuck up in input file!') ; exit(0)
         jr=jr+1
-    
+
     
     # Need some calendar info:
     NbDays = int( (vdate[1] - vdate[0]) / (3600.*24.) )
@@ -149,14 +156,14 @@ if __name__ == '__main__':
     zGC[:,1,:] = xPosG[:,:,0].T
 
     mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
-    ztim = np.zeros((nBmax,Nrec))
+    ztim = np.zeros((nBmax,Nrec), dtype=int )
     zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
 
-    for jp in range(nBmax):
-        ztim[jp,:] = vdate[:]
-    #del vdate
+    if lTimePos:
+        ztim[:,:] = timePos[:,:].T
+    else:
+        for jp in range(nBmax): ztim[jp,:] = vdate[:]
 
-    
     for jr in range(Nrec):
         print('\n   * Record #'+str(vRec[jr])+':')
 
