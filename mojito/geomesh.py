@@ -435,6 +435,7 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
 
     # Velocities at the 4 vertices at center of time interval:
     if np.shape(xtime1)==(nq,n4) and np.shape(xtime2)==(nq,n4):
+        print('   * [PDVfromPos()]: using accurate time of points for `dt` in estimate of velocities!')
         zdt = xtime2.copy() * 0.
         zdt = xtime2[:,:]-xtime1[:,:]
         zU = np.array( [ (pXY2[:,k,0] - pXY1[:,k,0])/zdt[:,k] for k in range(4) ] ).T ; # 1000 because X,Y in km !!!
