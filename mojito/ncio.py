@@ -10,7 +10,11 @@ from netCDF4 import Dataset
 
 from .util import chck4f, ConvertGeo2CartesianNPSkm
 
+
+
 tunits_default = 'seconds since 1970-01-01 00:00:00'
+
+list_required_var_RGPS = [ 'index', 'x', 'y', 'lon', 'lat', 'time', 'idstream', 'streams' ]
 
 
 def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=None, pSid=[] ):
@@ -88,7 +92,7 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=N
 
 
 
-def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
+def LoadDataRGPS( cfile, iverbose=0 ):
     '''
        Open & inspect the RGPS NetCDF input file and load the raw data
     '''
@@ -103,7 +107,7 @@ def LoadDataRGPS( cfile, plistVar, iverbose=0 ):
         list_var = list( id_in.variables.keys() )
         if iverbose>0: print(' ==> variables: ', list_var, '\n')
         #
-        for cv in plistVar:
+        for cv in list_required_var_RGPS:
             if not cv in list_var:
                 print(' ERROR [LoadDataRGPS()]: no variable `'+cv+'` found into input file!'); exit(0)
 

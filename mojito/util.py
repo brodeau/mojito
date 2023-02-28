@@ -26,6 +26,36 @@ def degE_to_degWE( X ):
         # X is an array
         return np.copysign(1., 180.-X)*np.minimum(X, np.abs(X-360.))
 
+
+def DateString( date1, date2, dformat='YYYY-MM-DD_hh:mm:00', returnShort=False ):
+    '''
+        * date1, date2 : 2 dates in either of these 2 formats `YYYYMMDD` or `YYYYMMDD_hh:mm` !
+    '''
+    ldp1, lhp1 = len(date1)==8, len(date1)==14
+    ldp2, lhp2 = len(date2)==8, len(date2)==14
+
+    cY1,  cY2  = date1[0:4], date2[0:4]
+    cmm1, cmm2 = date1[4:6], date2[4:6]
+    cdd1, cdd2 = date1[6:8], date2[6:8]
+
+    chhmm1, chhmm2 = '00:00', '00:00'
+    if lhp1: chhmm1 = date1[9:11]+':'+date1[12:14]
+    if lhp2: chhmm2 = date2[9:11]+':'+date2[12:14]
+
+    cdt1 = str.replace(dformat,'YYYY-MM-DD',cY1+'-'+cmm1+'-'+cdd1)
+    cdt2 = str.replace(dformat,'YYYY-MM-DD',cY2+'-'+cmm2+'-'+cdd2)
+    cdtL1 = str.replace(cdt1,'hh:mm',chhmm1) ; # ex: 2001-04-22_02:30
+    cdtL2 = str.replace(cdt2,'hh:mm',chhmm2)
+
+    cdtS1 = cY1+cmm1+cdd1 ; # ex: 20010422
+    cdtS2 = cY2+cmm2+cdd2
+
+    if returnShort:
+        return cdtL1, cdtL2,  cdtS1, cdtS2
+    else:
+        return cdtL1, cdtL2
+    
+    
 def Haversine( plat, plon, xlat, xlon ):
     '''
     # ! VECTOR VERSION !

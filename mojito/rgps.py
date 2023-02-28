@@ -1,8 +1,6 @@
 import numpy as np
 
-
 FillValue = -9999.
-
 
 def streamSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
     from climporn import epoch2clock
@@ -57,7 +55,7 @@ def KeepDataInterest( dt1, dt2, ptime0, pIDs0 ):
 
 
 
-def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
+def LoadData4TimeRange( idate1, idate2, fRGPS, l_doYX=False ):
     '''
 
     RETURNS:
@@ -70,9 +68,9 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, listVar, l_doYX=False ):
 
     # Open, inspect the input file and load raw data:
     if l_doYX:
-        Np0, _, ztime0, zykm0, zxkm0, zlat0, zlon0, zIDs0, _ = LoadDataRGPS( fRGPS, listVar )
+        Np0, _, ztime0, zykm0, zxkm0, zlat0, zlon0, zIDs0, _ = LoadDataRGPS( fRGPS )
     else:
-        Np0, _, ztime0,     _,     _, zlat0, zlon0, zIDs0, _ = LoadDataRGPS( fRGPS, listVar )
+        Np0, _, ztime0,     _,     _, zlat0, zlon0, zIDs0, _ = LoadDataRGPS( fRGPS )
     print('   * [LD4TR] before time-range-exclusion we have '+str(Np0)+' points in the file.')
 
     nBu, zIDsU, idxmsk = KeepDataInterest( idate1, idate2, ztime0, zIDs0 )

@@ -12,12 +12,6 @@
 #SBATCH --mem=8000
 ##################################################################
 
-### TO DO: lili
-# ExcludeMultiOccurences() should be able to use a criterion that cancels the point that has no reasonable successor (based on time step) !
-
-# dangerous stuff is np.where(vIDs0>=0) because masked => can have the "--" value => better np.where(vIDs0.data>=0)
-
-
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
@@ -28,23 +22,19 @@ import mojito as mjt
 
 idebug = 0
 
-cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
-
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
-dt_buoy_Nmnl = 3*24*3600     ; # the expected nominal time step of the input data, ~ 3 days [s]
-max_dev_from_dt_buoy_Nmnl = 6*3600 ; # maximum allowed deviation from the `dt_buoy_Nmnl` between 2 consecutive records of buoy [s]
+dt_Nmnl         = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
+max_dev_dt_Nmnl = dt_Nmnl/3 ; # maximum allowed deviation from the `dt_Nmnl` between 2 consecutive records of buoy [s]
 
 Ns_max  =  200 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
-NrB_max =  50  ; # Max number of valid consecutive records for a given buoy, guess!, just for dimensionning array before knowing!!!
 
 min_nb_buoys_in_stream = 10 ; # minimum number of buoys for considering a stream a stream!
 
 MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
 
-list_expected_var = [ 'index', 'x', 'y', 'lon', 'lat', 'time', 'idstream', 'streams' ]
-
 FillValue = -9999.
+
 
 #================================================================================================
 
@@ -72,24 +62,10 @@ if __name__ == '__main__':
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
 
-    ldp1, lhp1 = len(cdate1)==8, len(cdate1)==14
-    ldp2, lhp2 = len(cdate2)==8, len(cdate2)==14
-
-    cY1,  cY2  = cdate1[0:4], cdate2[0:4]
-    cmm1, cmm2 = cdate1[4:6], cdate2[4:6]
-    cdd1, cdd2 = cdate1[6:8], cdate2[6:8]
-
-    chhmm1, chhmm2 = '00:00', '00:00'
-    if lhp1: chhmm1 = cdate1[9:11]+':'+cdate1[12:14]
-    if lhp2: chhmm2 = cdate2[9:11]+':'+cdate2[12:14]
-
-    cdt1 = str.replace(cdt_pattern,'YYYY-MM-DD',cY1+'-'+cmm1+'-'+cdd1)
-    cdt2 = str.replace(cdt_pattern,'YYYY-MM-DD',cY2+'-'+cmm2+'-'+cdd2)
-    cdt1 = str.replace(cdt1,'hh:mm',chhmm1)
-    cdt2 = str.replace(cdt2,'hh:mm',chhmm2)
-
+    cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
+    
     # File to save work in:
-    cf_npz_out = './npz/RGPS_stream_selection_'+cY1+cmm1+cdd1+'_'+cY2+cmm2+cdd2+'.npz'
+    cf_npz_out = './npz/RGPS_stream_selection_'+cdtS1+'_'+cdtS2+'.npz'
 
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given stream, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
@@ -105,12 +81,12 @@ if __name__ == '__main__':
     # Load `distance to coast` data:
     vlon_dist, vlat_dist, xdist = mjt.LoadDist2CoastNC( fdist2coast_nc )
 
-    # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
+    # Build binning time axis:
     NTbin, vTbin = mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
 
 
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
-    Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, list_expected_var, l_doYX=False )
+    Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, l_doYX=False )
     # * Np: number of points of interst
     # * Nb: number of unique buoys of interest
     # * vIDsU0: unique IDs of the buoys of interest len=Nb  #fixme: sure?
@@ -119,11 +95,11 @@ if __name__ == '__main__':
     # Arrays along streams and buoys:
     # In the following, both Ns_max & Nb are excessive upper bound values....
     VTc_ini = np.zeros( Ns_max                ) - 999.; # time at center of time bin that first detected this stream
-    VNB_ini = np.zeros( Ns_max,      dtype=int) - 999 ; # n. of valid buoys at inititialization of each stream
-    XIDs    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores buoys IDs in use in a given stream
-    XNRc    = np.zeros((Ns_max, Nb), dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
-    Xmsk    = np.zeros((Ns_max, Nb), dtype=int)       ; # tells if given buoy of given stream is alive (1) or dead (0)
-    XIX0    = np.zeros((Ns_max, Nb, NrB_max), dtype=int) - 999 ;
+    VNB_ini = np.zeros( Ns_max,         dtype=int) - 999 ; # n. of valid buoys at inititialization of each stream
+    XIDs    = np.zeros((Ns_max, Nb),    dtype=int) - 999 ; # stores buoys IDs in use in a given stream
+    XNRc    = np.zeros((Ns_max, Nb),    dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
+    Xmsk    = np.zeros((Ns_max, Nb),    dtype='i1')      ; # tells if given buoy of given stream is alive (1) or dead (0)
+    XIX0    = np.zeros((Ns_max, Nb, 2), dtype=int) - 999 ;
 
     IDXtakenG = []  ; # keeps memory of points (indices) that have already been used by previous streams
 
@@ -148,7 +124,7 @@ if __name__ == '__main__':
             # If the width of the time bin is large enough (normally>3days),
             # the same buoy ID can exist more than once in the same time bin,
             # and so also in `zIDsOK0`!
-            if dt_bin_sec < dt_buoy_Nmnl:
+            if dt_bin_sec < dt_Nmnl:
                 # Time bins are narrower than the nominal time step of the RGPS data...
                 #   => we keep buoy occurence closest to that of center of current time bin
                 Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='center', iverbose=idebug )
@@ -158,7 +134,7 @@ if __name__ == '__main__':
                 #Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
                 #   => or better occurence that yields to a valid successor point:
                 Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='successors',
-                                                           ptimeRef0=vtime0, dtNom=dt_buoy_Nmnl, devdtNom=max_dev_from_dt_buoy_Nmnl,
+                                                           ptimeRef0=vtime0, dtNom=dt_Nmnl, devdtNom=max_dev_dt_Nmnl,
                                                            iverbose=idebug )
             #
             del zIDsOK0, ztimOK0
@@ -208,7 +184,7 @@ if __name__ == '__main__':
                     #if not jidx in IDXtakenG:
 
                     nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG),
-                                                         dt_buoy_Nmnl, max_dev_from_dt_buoy_Nmnl )
+                                                                  dt_Nmnl, max_dev_dt_Nmnl )
 
                     if nbRecOK==0:
                         IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
@@ -268,6 +244,8 @@ if __name__ == '__main__':
     Nbuoys_max = np.max(VNB_ini)
     Ncsrec_max = np.max(XNRc) ; # maximum number of valid consecutive records for a buoy
 
+    if Ncsrec_max != 2:
+        print('ERROR: `Ncsrec_max != 2` !'); exit(0)
 
     # Now that we know how many streams and what is the maximum possible number of buoys into a stream,
     # we can reduce the arrays:
@@ -275,7 +253,7 @@ if __name__ == '__main__':
     ZNB_ini = np.zeros( Nstreams             , dtype=int) - 999
     ZIDs    = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
     ZNRc    = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    Zmsk    = np.zeros((Nstreams, Nbuoys_max), dtype=int)
+    Zmsk    = np.zeros((Nstreams, Nbuoys_max), dtype='i1')
     ZIX0    = np.zeros((Nstreams, Nbuoys_max, Ncsrec_max), dtype=int) - 999
 
     for js in range(Nstreams):
