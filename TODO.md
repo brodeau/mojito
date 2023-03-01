@@ -1,5 +1,11 @@
 
 
+* Use the nearest U and V point in ice part tracker! And not `0.5(U(i-1)+U(i))` as for now !!!
+
+
+
+
+
 * Fix the output file name of PDF npz files created by statistics: must include first and last stream, at least the year, and resolution !!!
 
 

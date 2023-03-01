@@ -44,9 +44,9 @@ case ${host} in
         FILIN="RGPS_1996-12-21_1997-02-01.nc4"
         #
         #DT_BINS_H=72  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=6  ; DATE2="${YEAR}0110"
+        DT_BINS_H=6  ; DATE2="${YEAR}0110"
         #
-        DATE1="${YEAR}0103_00:00" ; DATE2="${YEAR}0116"; DT_BINS_H=$((24*10))        
+        DATE1="${YEAR}0103_00:00" ; DATE2="${YEAR}0119"; DT_BINS_H=$((24*7))
         #
         MARKER_SIZE=20
         ;;
