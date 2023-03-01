@@ -14,7 +14,6 @@ import mojito   as mjt
 idebug=1
 iplot=1
 
-
 #l_cst_bins = True
 l_cst_bins = False ; rfexp_bin = 0.2
 
@@ -29,7 +28,6 @@ max_div  = 5.     ; # day^-1
 #
 min_shr = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
 max_shr = 5. ; # day^-1
-
 
 # About width of bins:
 if l_cst_bins:
@@ -181,7 +179,7 @@ if __name__ == '__main__':
         vf = split('_',fb)
 
         if corigin == 'RGPS':
-            cdth = split('-',vf[2])[0]
+            cdth = split('-',vf[3])[0]
         elif split('_',corigin)[0] == 'NEMO-SI3':
             cdth = split('-',vf[5])[0]
         else:
@@ -207,13 +205,13 @@ if __name__ == '__main__':
     nP = np.sum(kNbPoints)
     print('  ==> Total number of points:', nP)
     print('  ==> list of dates:', list_date[:])
-
+    
     cdt1, cdt2 = list_date[0],list_date[-1]
     cperiod = cdt1+'-'+cdt2
     
-    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear
-    Zdiv = np.zeros(nP)
+    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
+    ZDiv = np.zeros(nP)
     
     jP = 0 ; # Counter from 0 to nP-1
     kf = 0 ; # Counter for files, 0 to nbFiles-1
@@ -223,7 +221,7 @@ if __name__ == '__main__':
             zdiv  =      data['divergence']
             zshr  =      data['shear']
         #
-        Zdiv[jP:jPe] = rconv*zdiv ; # day^-1
+        ZDiv[jP:jPe] = rconv*zdiv ; # day^-1
         Zshr[jP:jPe] = rconv*zshr ; # day^-1
         #
         jP = jPe
@@ -243,36 +241,74 @@ if __name__ == '__main__':
         # For the shear:
         nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, min_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
         cxtra = '_incB'
+
+
+
+
+
+    # Signed divergence:
+    (idxN,) = np.where(ZDiv<-min_div)
+    nPn  = len(idxN)
+    Zcnv = np.zeros(nPn)
+    Zcnv[:] = - ZDiv[idxN] ; # We want it to be positive for the graph...
     
+    (idxP,) = np.where(ZDiv> min_div)
+    nPp  = len(idxP)
+    Zdiv = np.zeros(nPp)
+    Zdiv[:] = ZDiv[idxP]
 
-    nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(Zdiv), cwhat='divergence', iverbose=idebug )
 
-    nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     , iverbose=idebug )
+
+    nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     ,  iverbose=idebug )    
+    
+    nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
+    nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
+    nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
 
 
     cfroot = 'PDF_'+corigin+'_'+cperiod
 
     
     # Saving in `npz` files:
-    np.savez_compressed( cd_in+'/'+cfroot+'_divergence.npz', name='divergence', origin=corigin, period=cperiod,
-                         Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
-    
     np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin, period=cperiod,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
+    
+    np.savez_compressed( cd_in+'/'+cfroot+'_Divergence.npz', name='Divergence', origin=corigin, period=cperiod,
+                         Np=nPD, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
+    
+    np.savez_compressed( cd_in+'/'+cfroot+'_divergence.npz', name='divergence', origin=corigin, period=cperiod,
+                         Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
+    
+    np.savez_compressed( cd_in+'/'+cfroot+'_convergence.npz', name='convergence', origin=corigin, period=cperiod,
+                         Np=nPc, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
+    
 
     if iplot>0:
         cdir = './figs'
         if not path.exists(cdir): mkdir(cdir)
-            
-        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence',
-                            cfig=cdir+'/loglog'+cfroot+'_divergence'+cxtra+'.png', title=corigin, period=cperiod )
         
         kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
                             cfig=cdir+'/loglog'+cfroot+'_shear'+cxtra+'.png',      title=corigin, period=cperiod )
-    
-        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence',
-                             cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin, period=cperiod )
+            
+        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='|Divergence|',
+                            cfig=cdir+'/loglog'+cfroot+'_Divergence'+cxtra+'.png', title=corigin, period=cperiod )
+
+        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence',
+                            cfig=cdir+'/loglog'+cfroot+'_divergence'+cxtra+'.png', title=corigin, period=cperiod )
+
+        kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_cnv, Np=nPc, name='Convergence',
+                            cfig=cdir+'/loglog'+cfroot+'_convergence'+cxtra+'.png', title=corigin, period=cperiod )
+
         
         kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
                              cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',           title=corigin, period=cperiod )
+        
+        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='Divergence',
+                             cfig=cdir+'/'+cfroot+'_Divergence'+cxtra+'.png',      title=corigin, period=cperiod )
+    
+        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPd, name='Divergence',
+                             cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin, period=cperiod )
+    
+        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPc, name='Convergence',
+                             cfig=cdir+'/'+cfroot+'_convergence'+cxtra+'.png',      title=corigin, period=cperiod )
     
