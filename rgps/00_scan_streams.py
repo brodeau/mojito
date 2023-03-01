@@ -130,21 +130,11 @@ if __name__ == '__main__':
 
         if Nok0>0:
             # If the width of the time bin is large enough (normally>3days),
-            # the same buoy ID can exist more than once in the same time bin,
-            # and so also in `zIDsOK0`!
-            if dt_bin_sec < dt_Nmnl:
-                # Time bins are narrower than the nominal time step of the RGPS data...
-                #   => we keep buoy occurence closest to that of center of current time bin
-                Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='center', iverbose=idebug )
-            else:
-                # Time bins are wider than the nominal time step of the RGPS data...
-                #   => we keep buoy occurence with the earliest occurence
-                #Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='first', iverbose=idebug )
-                #   => or better occurence that yields to a valid successor point:
-                Nok0, idxOK0 = mjt.ExcludeMultiOccurences( zIDsOK0, ztimOK0, vIDs0, idxOK0, rTc, criterion='successors',
-                                                           ptimeRef0=vtime0, dtNom=dt_Nmnl, devdtNom=max_dev_dt_Nmnl,
-                                                           iverbose=idebug )
-            #
+            # the same buoy (ID) can have more than 1 position during the time bin,
+            # => need to keep only one position:
+
+            Nok0, idxOK0 = mjt.EMO2( zIDsOK0, ztimOK0, vIDs0, vtime0, idxOK0, rTc, criterion='nearest',
+                                     dtNom=dt_Nmnl, devdtNom=max_dev_dt_Nmnl, iverbose=1 )
             del zIDsOK0, ztimOK0
             print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
 
@@ -155,7 +145,6 @@ if __name__ == '__main__':
             if len(np.unique(zIDsOK)) != Nok:
                 print('ERROR: `unique(zIDsOK) != Nok` => `ExcludeMultiOccurences()` did not do its job :('); exit(0)
             print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
-
 
             if idebug>0:
                 # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsU0`:
