@@ -597,51 +597,49 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-    rycut_tiny = 5.e-6
-    rxcut_big  = 1.
+    rycut_tiny = 1.e-6 ; # mask probability values below this limit
     
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
 
-    
-    
+        
     # For figure axes:
-    xlog_min,xlog_max = 1.e-3, rxcut_big
-    ylog_min,ylog_max = rycut_tiny, 0.25
+    xlog_min,xlog_max = 2.75e-3, 0.5
+    ylog_min,ylog_max = 5.e-6, 0.25
 
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
-    #
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
-    #
-    # X-axis:
-    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
-    #
-    # Y-axis:
-    plt.ylabel('Probability', color='k')
 
-    ppdf = np.ma.masked_where( pbinc>rxcut_big,  ppdf )
-    ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
-    
-    ax.set_xlim(xlog_min, xlog_max)
-    ax.set_ylim(ylog_min, ylog_max)
-    
+    #ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
+        
     plt.loglog(pbinc[:], ppdf[:], 'o', linestyle='-', linewidth=4, markersize=10, fillstyle='none', color='k', label=origin, zorder=5)
 
     if l_comp2:
-        ppdf2 = np.ma.masked_where( pbinc>rxcut_big,   ppdf2 )
-        ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+        #ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
         plt.loglog(pbinc[:], ppdf2[:], 'o', markersize=10, color='0.4', linestyle='-', linewidth=4,  label=origin2, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     if l_comp3:
-        ppdf3 = np.ma.masked_where( pbinc>rxcut_big,   ppdf3 )
-        ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        #ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
         plt.loglog(pbinc[:], ppdf3[:], '*', markersize=10, color='0.6', linestyle='--', linewidth=4, label=origin3, zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
-    
+
+    # X-axis:
+    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+    ax.set_xlim(xlog_min, xlog_max)
+    ax.set_xticks([0.005, 0.01, 0.05, 0.1, 0.5])
+    ax.set_xticklabels(['0.005', '0.01', '0.05', '0.1', '0.5'])
+    #plt.tick_params(axis='x', which='minor')
+    #from matplotlib.ticker import FormatStrFormatter
+    #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
+
+    # Y-axis:
+    plt.ylabel('Probability', color='k')
+    ax.set_ylim(ylog_min, ylog_max)
+            
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     
