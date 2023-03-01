@@ -597,12 +597,12 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-    rycut_tiny = 1.e-6 ; # mask probability values below this limit
+    rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
     
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
 
-        
+    print('corigin =', origin)
     # For figure axes:
     xlog_min,xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-6, 0.25
@@ -612,18 +612,18 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
-    #ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
+    if origin!='RGPS': ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
         
     plt.loglog(pbinc[:], ppdf[:], 'o', linestyle='-', linewidth=4, markersize=10, fillstyle='none', color='k', label=origin, zorder=5)
 
     if l_comp2:
-        #ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-        plt.loglog(pbinc[:], ppdf2[:], 'o', markersize=10, color='0.4', linestyle='-', linewidth=4,  label=origin2, zorder=10)
+        if origin2!='RGPS': ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+        plt.loglog(pbinc[:], ppdf2[:], 'o', markersize=10, color='0.4', linestyle='-', linewidth=3,  label=origin2, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     if l_comp3:
-        #ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=10, color='0.6', linestyle='--', linewidth=4, label=origin3, zorder=10)
+        if origin3!='RGPS': ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=10, color='0.6', linestyle='--', linewidth=3, label=origin3, zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 

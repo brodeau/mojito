@@ -13,7 +13,7 @@ import mojito   as mjt
 
 idebug=1
 #iffrmt='png'
-iffrmt='pdf'
+iffrmt='svg'
 
 
 if __name__ == '__main__':
@@ -84,9 +84,13 @@ if __name__ == '__main__':
             exit(0)
 
 
-            
-    if cname == 'divergence':
+        
+    if   cname == 'Divergence':
+        cName = '|Divergence|'
+    elif cname == 'divergence':
         cName = 'Divergence'
+    elif cname == 'convergence':
+        cName = 'Convergence'
     elif cname == 'shear':
         cName = 'Shear'
     elif cname == 'deftot':
@@ -94,38 +98,38 @@ if __name__ == '__main__':
     else:
         print(' ERROR: unknow field:',cname,'!') ; exit(0)
     
-
+    cfname = cName
+    if cname == 'Divergence': cfname = 'AbsDiv'    
+        
     cdir = './figs'
     if not path.exists(cdir): mkdir(cdir)
 
     
-
-
     if   l2files:
 
-        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cname+'_'+cperiod
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cperiod
         
         # Only log-log !
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
                             title=cName+': '+corig+' vs '+corig2, period=cperiod, origin=corig,
                             ppdf2=PDF2, origin2=corig2 )    
     
     elif l3files:
 
-        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cname+'_'+cperiod
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cperiod
         
         # Only log-log !
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
                             title=cName+': '+corig+' vs '+corig2+' vs '+corig2, period=cperiod, origin=corig,
                             ppdf2=PDF2, origin2=corig2, ppdf3=PDF3, origin3=corig3 )
     
     else:
         # log-log and histogram:
-        cfroot = 'PDF_'+corig+'_'+cname+'_'+cperiod
+        cfroot = 'PDF_'+corig+'_'+cfname+'_'+cperiod
         
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'_'+cname+'.'+iffrmt,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
                             title=cName, period=cperiod )    
     
-        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'_'+cname+'.'+iffrmt,
+        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'.'+iffrmt,
                              title=cName+': '+corig, period=cperiod )
     

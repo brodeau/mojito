@@ -15,7 +15,7 @@ elif [ "$1" = "3" ]; then
     rm -f figs/deformation/* npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
     
 elif [ "$1" = "4" ]; then
-    rm -f npz/PDF_*.npz *PDF*.svg
+    rm -f npz/PDF_*.npz figs/*PDF_*.*
     
 elif [ "$1" = "all" ]; then
     rm -rf figs npz logs *.png *.nc *.svg *.pdf nc

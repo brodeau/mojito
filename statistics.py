@@ -23,11 +23,13 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 rconv = 24.*3600.
 
 # Range to consider:
-min_div  = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-max_div  = 5.     ; # day^-1
+#min_div  = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+min_div  = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+max_div  = 1.     ; # day^-1
 #
-min_shr = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-max_shr = 5. ; # day^-1
+#min_shr = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+min_shr = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+max_shr = 1. ; # day^-1
 
 # About width of bins:
 if l_cst_bins:
@@ -244,8 +246,6 @@ if __name__ == '__main__':
 
 
 
-
-
     # Signed divergence:
     (idxN,) = np.where(ZDiv<-min_div)
     nPn  = len(idxN)
@@ -273,14 +273,14 @@ if __name__ == '__main__':
     np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin, period=cperiod,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
     
-    np.savez_compressed( cd_in+'/'+cfroot+'_Divergence.npz', name='Divergence', origin=corigin, period=cperiod,
+    np.savez_compressed( cd_in+'/'+cfroot+'_absDiv.npz', name='Divergence', origin=corigin, period=cperiod,
                          Np=nPD, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
     
     np.savez_compressed( cd_in+'/'+cfroot+'_divergence.npz', name='divergence', origin=corigin, period=cperiod,
-                         Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
+                         Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
     
     np.savez_compressed( cd_in+'/'+cfroot+'_convergence.npz', name='convergence', origin=corigin, period=cperiod,
-                         Np=nPc, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
+                         Np=nPc, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_cnv )
     
 
     if iplot>0:
