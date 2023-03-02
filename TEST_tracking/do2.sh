@@ -11,7 +11,7 @@ NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 # Populating nc files we can use:
 list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_S???_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
-echo " => ${nbf} files => ${nbf} streams!"
+echo " => ${nbf} files => ${nbf} batches!"
 
 for ff in ${list_nc}; do
 

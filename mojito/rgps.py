@@ -2,21 +2,21 @@ import numpy as np
 
 FillValue = -9999.
 
-def streamSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
+def batchSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
     from climporn import epoch2clock
     #
-    (Nstrm,NbMax) = np.shape(pIDs)
-    if Nstrm != len(pNBini):
-        print('ERROR: [streamSummaryRGPS()] => error #1')
+    (Nbtch,NbMax) = np.shape(pIDs)
+    if Nbtch != len(pNBini):
+        print('ERROR: [batchSummaryRGPS()] => error #1')
     if not NbMax == max(pNBini):
-        print('ERROR: [streamSummaryRGPS()] => error #2')
+        print('ERROR: [batchSummaryRGPS()] => error #2')
     print('\n ==========   SUMMARY   ==========')
-    print(' *** Number of identified streams: '+str(Nstrm))
-    print(' *** Number of buoys selected in each stream:')
-    for js in range(Nstrm):
+    print(' *** Number of identified batches: '+str(Nbtch))
+    print(' *** Number of buoys selected in each batch:')
+    for js in range(Nbtch):
         cTc0  = epoch2clock(pTcini[js])
-        print('        * Stream #'+str(js)+' initiated at time bin centered around '+cTc0+' => has '+str(pNBini[js])+' buoys')
-    print(' *** Max number of buoys possibly found in a stream = ',NbMax)
+        print('        * Batch #'+str(js)+' initiated at time bin centered around '+cTc0+' => has '+str(pNBini[js])+' buoys')
+    print(' *** Max number of buoys possibly found in a batch = ',NbMax)
     print('     * shape of ZIDs =', np.shape(pIDs))
     print('     * shape of ZNRc =', np.shape(pNRc))
     print(' ===================================\n')
@@ -562,10 +562,10 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
 
 
 
-def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
+def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     from .util import StdDev
     '''
-       * cstrm: string to identufy current stream
+       * cbtch: string to identufy current batch
        * ptim:  2D masked time array  (NCRmax,NvB) or original RGPS time positions [s]
        * pVTb:  "almost 1D" time array (NCRmax,3) of time bins used [s]
        * pmsk:  2D mask array (NCRmax,NvB) for canceled points (int)
@@ -574,9 +574,9 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     '''
 
     
-    # Now, in each record of the stream we should exclude buoys which time position is not inside the expected time bin
+    # Now, in each record of the batch we should exclude buoys which time position is not inside the expected time bin
     # or is just too far away from the mean of all buoys
-    # => if such a buoy is canceld at stream # k, it should also be canceled at following records
+    # => if such a buoy is canceld at batch # k, it should also be canceled at following records
     (NRmax,_) = np.shape(pmsk)
     zmsk = pmsk.copy()
     zBpR = pBpR.copy()
@@ -584,16 +584,16 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     #    print('SUMMARY BEFORE/ rec.',jr,': zBpR[jr], sum(zmsk[jr,:]) =',zBpR[jr], np.sum(zmsk[jr,:]))
     #
     kFU = 0
-    if iverbose>0: print('  * [StreamTimeSanityCheck]: time location sanity test and fix for stream #'+str(cstrm))
+    if iverbose>0: print('  * [BatchTimeSanityCheck]: time location sanity test and fix for batch #'+str(cbtch))
     for jrec in range(NRmax):
-        # At this record, the time position of all buoys of this stream is: ztim[jrec,:]
+        # At this record, the time position of all buoys of this batch is: ztim[jrec,:]
         t_mean = np.mean(ptim[jrec,:])
         rStdDv = StdDev(t_mean, ptim[jrec,:])
         zadiff = np.abs(ptim[jrec,:]-t_mean)
         zdt = np.max(zadiff)/3600.
         if iverbose>0:
             from climporn import epoch2clock
-            print('  * rec #',jrec,'of this stream:')
+            print('  * rec #',jrec,'of this batch:')
             print('    mean time for this record is:',epoch2clock(t_mean))
             print('    bin center time, and bounds:',epoch2clock(pVTb[jrec,0]),epoch2clock(pVTb[jrec,1]),epoch2clock(pVTb[jrec,2]))
             print('    standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
@@ -645,7 +645,7 @@ def StreamTimeSanityCheck( cstrm, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
 
     #for jr in range(NRmax):
     #    if zBpR[jr] != np.sum(zmsk[jr,:]):
-    #        print('ERROR [StreamTimeSanityCheck()]: `zBpR[jr] != np.sum(zmsk[jr,:])`',zBpR[jr], np.sum(zmsk[jr,:]))
+    #        print('ERROR [BatchTimeSanityCheck()]: `zBpR[jr] != np.sum(zmsk[jr,:])`',zBpR[jr], np.sum(zmsk[jr,:]))
     #        exit(0)
 
     return kFU, zmsk, zBpR

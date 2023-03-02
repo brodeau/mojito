@@ -103,10 +103,10 @@ if __name__ == '__main__':
     
     # We need a string to name the output files:
     if corigin == 'RGPS':
-        cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the stream
+        cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the batch
         
     elif split('_',corigin)[0] == 'NEMO-SI3':
-        sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the stream
+        sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the batch
         cfstr = sl[0]+'_'+sl[1]+'_'+sl[2]+'_'+sl[4]
     else:
         print('FIXME for corigin = '+corigin+' !!!'); exit(0)

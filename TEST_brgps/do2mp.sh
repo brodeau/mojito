@@ -7,7 +7,7 @@ EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 # Populating nc files we can use:
 list_nc=`\ls nc/SELECTION_RGPS_S???_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
-echo " => ${nbf} files => ${nbf} streams!"
+echo " => ${nbf} files => ${nbf} batches!"
 
 ijob=0
 mkdir -p logs

@@ -76,7 +76,7 @@ if __name__ == '__main__':
         fNCseed = argv[3]
         cstrSeed = str.replace( path.basename(fNCseed), 'SELECTION_', '' )
         cstrSeed = str.replace( cstrSeed, '.nc', '' )
-        cstrStrm = split('_',path.basename(fNCseed))[2]
+        cstrBatch = split('_',path.basename(fNCseed))[2]
         #
         mjt.chck4f(fNCseed)
         print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     del xPosC0, xPosG0
 
     if iplot>0 and idebug>1:
-        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig=cfdir+'/INIT_Pos_buoys_'+cstrStrm+'_'+nexpr+'_'+'%4.4i'%(jt)+'.png',
+        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig=cfdir+'/INIT_Pos_buoys_'+cstrBatch+'_'+nexpr+'_'+'%4.4i'%(jt)+'.png',
                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker: Init Seeding' )
 
 
@@ -394,7 +394,7 @@ if __name__ == '__main__':
     cdt1 = split('_', epoch2clock(vTime[0] ))[0]
     cdt2 = split('_', epoch2clock(vTime[Nt]))[0]
     corgn = 'NEMO-SI3_'+nconf+'_'+nexpr
-    foutnc = './nc/'+corgn+'_tracking_'+cstrStrm+'_'+cdt1+'_'+cdt2+'.nc'
+    foutnc = './nc/'+corgn+'_tracking_'+cstrBatch+'_'+cdt1+'_'+cdt2+'.nc'
 
     kk = mjt.ncSaveCloudBuoys( foutnc, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
                                mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue, corigin=corgn )
@@ -408,7 +408,7 @@ if __name__ == '__main__':
                 zLon = np.ma.masked_where( xmask[jt,:,1]==0, xPosG[jt,:,1] )
                 zLat = np.ma.masked_where( xmask[jt,:,0]==0, xPosG[jt,:,0] )
                 mjt.ShowBuoysMap( vTime[jt], zLon, zLat, pvIDs=IDs,
-                                  cfig=cfdir+'/Pos_buoys_'+cstrStrm+'_'+nexpr+'_'+'%4.4i'%(jt)+'_'+epoch2clock(vTime[jt])+'.png',
+                                  cfig=cfdir+'/Pos_buoys_'+cstrBatch+'_'+nexpr+'_'+'%4.4i'%(jt)+'_'+epoch2clock(vTime[jt])+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
                                   title='IceTracker + SI3 '+nexpr+' u,v fields' )
                 del zLon, zLat

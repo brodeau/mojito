@@ -86,13 +86,13 @@ if __name__ == '__main__':
 
 
     if corigin == 'RGPS':
-        cstream =  split('_',cf1)[2]
+        cbatch =  split('_',cf1)[2]
     elif split('_',corigin)[0] == 'NEMO-SI3':
-        cstream =  split('_',cf1)[4]
+        cbatch =  split('_',cf1)[4]
     else:
         print('FIXME: unknow origin: ',corigin); exit(0)
         
-    cfnm += '_'+cstream
+    cfnm += '_'+cbatch
     cfnm += '_'+cclck
         
     creskm = ''

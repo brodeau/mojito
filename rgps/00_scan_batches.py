@@ -27,9 +27,9 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 dt_Nmnl         = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 #                             # => attention must be paid to `max_dev_dt_Nmnl` later in the code...
 
-Ns_max  =  200 ; # Max number of Streams, guess!, just for dimensionning array before knowing!!!
+NbtchMax  =  200 ; # Max number of Batches, guess!, just for dimensionning array before knowing!!!
 
-min_nb_buoys_in_stream = 10 ; # minimum number of buoys for considering a stream a stream!
+min_nb_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
 
 MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
 
@@ -73,9 +73,9 @@ if __name__ == '__main__':
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
     
     # File to save work in:
-    cf_npz_out = './npz/RGPS_stream_selection_'+cdtS1+'_'+cdtS2+'.npz'
+    cf_npz_out = './npz/RGPS_batch_selection_'+cdtS1+'_'+cdtS2+'.npz'
 
-    max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given stream, a point should not be further in time
+    max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given batch, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
 
     print('\n *** Date range to restrain data to:')
@@ -100,18 +100,18 @@ if __name__ == '__main__':
     # * vIDsU0: unique IDs of the buoys of interest len=Nb  #fixme: sure?
     NpT = len(vtime0) ; # Real length of the *0 arrays..
     
-    # Arrays along streams and buoys:
-    # In the following, both Ns_max & Nb are excessive upper bound values....
-    VTc_ini = np.zeros( Ns_max                ) - 999.; # time at center of time bin that first detected this stream
-    VNB_ini = np.zeros( Ns_max,         dtype=int) - 999 ; # n. of valid buoys at inititialization of each stream
-    XIDs    = np.zeros((Ns_max, Nb),    dtype=int) - 999 ; # stores buoys IDs in use in a given stream
-    XNRc    = np.zeros((Ns_max, Nb),    dtype=int) - 999 ; # stores the number of records for each buoy in a given stream
-    Xmsk    = np.zeros((Ns_max, Nb),    dtype='i1')      ; # tells if given buoy of given stream is alive (1) or dead (0)
-    XIX0    = np.zeros((Ns_max, Nb, 2), dtype=int) - 999 ;
+    # Arrays along batches and buoys:
+    # In the following, both NbtchMax & Nb are excessive upper bound values....
+    VTc_ini = np.zeros( NbtchMax                ) - 999.; # time at center of time bin that first detected this batch
+    VNB_ini = np.zeros( NbtchMax,         dtype=int) - 999 ; # n. of valid buoys at inititialization of each batch
+    XIDs    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores buoys IDs in use in a given batch
+    XNRc    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores the number of records for each buoy in a given batch
+    Xmsk    = np.zeros((NbtchMax, Nb),    dtype='i1')      ; # tells if given buoy of given batch is alive (1) or dead (0)
+    XIX0    = np.zeros((NbtchMax, Nb, 2), dtype=int) - 999 ;
 
-    IDXtakenG = []  ; # keeps memory of points (indices) that have already been used by previous streams
+    IDXtakenG = []  ; # keeps memory of points (indices) that have already been used by previous batches
 
-    istream        = -1
+    ibatch        = -1
     for jt in range(NTbin):
         #
         rTc = vTbin[jt,0] ; # center of the current time bin
@@ -157,15 +157,15 @@ if __name__ == '__main__':
 
                 
             #---------------------------------------------------------------------------------------------------------------------
-            NBinStr  = 0     ; # number of buoys in the stream
-            IDXofStr = []  ; # keeps memory of buoys that are already been included, but only at the stream level
+            NBinStr  = 0     ; # number of buoys in the batch
+            IDXofStr = []  ; # keeps memory of buoys that are already been included, but only at the batch level
 
             iBcnl_CR = 0  ; # counter for buoys excluded because of consecutive records...
             
-            if Nok >= min_nb_buoys_in_stream:
+            if Nok >= min_nb_buoys_in_batch:
 
-                istream += 1 ; # that's a new stream
-                if idebug>0: print('    => this date range is potentially the first of stream #'+str(istream)+', with '+str(Nok)+' buoys!')
+                ibatch += 1 ; # that's a new batch
+                if idebug>0: print('    => this date range is potentially the first of batch #'+str(ibatch)+', with '+str(Nok)+' buoys!')
 
                 # Now, loop on all the remaining point positions involved in this time bin:
                 jb = -1              ; # buoy index
@@ -198,11 +198,11 @@ if __name__ == '__main__':
                         if rd_ini > MinDistFromLand:
                             IDXofStr.append(idx0_id[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
                             #
-                            NBinStr += 1   ; # this is another valid buoy for this stream
-                            Xmsk[istream,jb] = 1                ; # flag for valid point
-                            XIDs[istream,jb] = jID              ; # keeps memory of select buoy
-                            XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
-                            XIX0[istream,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
+                            NBinStr += 1   ; # this is another valid buoy for this batch
+                            Xmsk[ibatch,jb] = 1                ; # flag for valid point
+                            XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
+                            XNRc[ibatch,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
+                            XIX0[ibatch,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
                         ### if rd_ini > MinDistFromLand
                     else:
                         iBcnl_CR += 1
@@ -211,23 +211,23 @@ if __name__ == '__main__':
                 ### for jidx in idxOK
                 print('     => '+str(iBcnl_CR)+' buoys were canceled for not having a reasonable upcomming position in time!')
 
-                if NBinStr >= min_nb_buoys_in_stream:
-                    print('   +++ C O N F I R M E D   V A L I D   S T R E A M   #'+str(istream)+' +++ => selected '+str(NBinStr)+' buoys!')
-                    VNB_ini[istream] = NBinStr
-                    VTc_ini[istream] = rTc
+                if NBinStr >= min_nb_buoys_in_batch:
+                    print('   +++ C O N F I R M E D   V A L I D   B A T C H   #'+str(ibatch)+' +++ => selected '+str(NBinStr)+' buoys!')
+                    VNB_ini[ibatch] = NBinStr
+                    VTc_ini[ibatch] = rTc
                     # Only now can we register the points indices we used into `IDXtakenG`:
                     IDXtakenG.extend(IDXofStr)
                 else:
-                    print('  * Well, this stream did not make it through the selection process... :(')
-                    Xmsk[istream,:] = 0
-                    XIDs[istream,:] = -999 ; #rm ! masked later with Xmsk?
-                    XNRc[istream,:] = -999 ; #rm !
-                    XIX0[istream,:,:] = -999 ; #rm !
+                    print('  * Well, this batch did not make it through the selection process... :(')
+                    Xmsk[ibatch,:] = 0
+                    XIDs[ibatch,:] = -999 ; #rm ! masked later with Xmsk?
+                    XNRc[ibatch,:] = -999 ; #rm !
+                    XIX0[ibatch,:,:] = -999 ; #rm !
 
-                    istream = istream - 1 ; # REWIND!
-                    if idebug>0: print('    => this was not a stream! So back to stream #'+str(istream)+' !!!')
+                    ibatch = ibatch - 1 ; # REWIND!
+                    if idebug>0: print('    => this was not a batch! So back to batch #'+str(ibatch)+' !!!')
 
-            ### if Nok > min_nb_buoys_in_stream
+            ### if Nok > min_nb_buoys_in_batch
 
         else:
             print(' ==> no points to be found inside this period !!!')
@@ -237,23 +237,23 @@ if __name__ == '__main__':
     ### for jt in range(NTbin)
 
 
-    Nstreams   = istream+1
+    Nbatches   = ibatch+1
     Nbuoys_max = np.max(VNB_ini)
     Ncsrec_max = np.max(XNRc) ; # maximum number of valid consecutive records for a buoy
 
     if Ncsrec_max != 2:
         print('ERROR: `Ncsrec_max != 2` !'); exit(0)
 
-    # Now that we know how many streams and what is the maximum possible number of buoys into a stream,
+    # Now that we know how many batches and what is the maximum possible number of buoys into a batch,
     # we can reduce the arrays:
-    ZTc_ini = np.zeros( Nstreams                        ) - 999.
-    ZNB_ini = np.zeros( Nstreams             , dtype=int) - 999
-    ZIDs    = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given stream...
-    ZNRc    = np.zeros((Nstreams, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the number of records
-    Zmsk    = np.zeros((Nstreams, Nbuoys_max), dtype='i1')
-    ZIX0    = np.zeros((Nstreams, Nbuoys_max, Ncsrec_max), dtype=int) - 999
+    ZTc_ini = np.zeros( Nbatches                        ) - 999.
+    ZNB_ini = np.zeros( Nbatches             , dtype=int) - 999
+    ZIDs    = np.zeros((Nbatches, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given batch...
+    ZNRc    = np.zeros((Nbatches, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the number of records
+    Zmsk    = np.zeros((Nbatches, Nbuoys_max), dtype='i1')
+    ZIX0    = np.zeros((Nbatches, Nbuoys_max, Ncsrec_max), dtype=int) - 999
 
-    for js in range(Nstreams):
+    for js in range(Nbatches):
         (indOK,) = np.where(Xmsk[js,:]==1)
         NvB=VNB_ini[js]
         if len(indOK) != NvB:
@@ -275,9 +275,9 @@ if __name__ == '__main__':
         ZIX0[:,:,jr] = np.ma.masked_where( Zmsk==0, ZIX0[:,:,jr] )
     del Zmsk
 
-    mjt.streamSummaryRGPS(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
+    mjt.batchSummaryRGPS(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
 
-    print('\n *** Saving info about streams into: '+cf_npz_out+'!')
-    np.savez_compressed( cf_npz_out, Nstreams=Nstreams, ZNB_ini=ZNB_ini, ZTc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
+    print('\n *** Saving info about batches into: '+cf_npz_out+'!')
+    np.savez_compressed( cf_npz_out, Nbatches=Nbatches, ZNB_ini=ZNB_ini, ZTc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
 
 

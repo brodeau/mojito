@@ -163,7 +163,7 @@ if __name__ == '__main__':
     print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
 
 
-    kStreamName = np.zeros(nbFiles, dtype='U4')
+    kBatchName = np.zeros(nbFiles, dtype='U4')
     kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
     kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
 
@@ -190,13 +190,13 @@ if __name__ == '__main__':
 
         list_date.append(split('h',cdth)[0])
         
-        kStreamName[kf] = vf[1]
+        kBatchName[kf] = vf[1]
         #
     
         kiDate[kf] = rdate
         kNbPoints[kf] = nPnts
     
-        print('   * Stream: '+kStreamName[kf] )
+        print('   * Batch: '+kBatchName[kf] )
         print('   * Date = ',epoch2clock(kiDate[kf]))
         print('   * Nb. of points = ',kNbPoints[kf] )
             
