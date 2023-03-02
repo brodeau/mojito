@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # * Np: number of points of interst
     # * Nb: number of unique buoys of interest
     # * vIDsU0: unique IDs of the buoys of interest len=Nb  #fixme: sure?
-    NpT = len(vtime0) ; # Real length of the *0 arrays..
+    NpT = len(vtime0) ; # Actual length of the *0 arrays..
     
     # Arrays along batches and buoys:
     # In the following, both NbtchMax & Nb are excessive upper bound values....
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     IDXtakenG = []  ; # keeps memory of points (indices) that have already been used by previous batches
 
-    ibatch        = -1
+    ibatch = -1
     for jt in range(NTbin):
         #
         rTc = vTbin[jt,0] ; # center of the current time bin
