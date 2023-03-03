@@ -39,6 +39,8 @@ else:
     wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
 
 
+l_add_gaussian = False
+    
 
 def constructCstBins( rmin, rmax, wdthB, name='unknown', iverbose=0 ):
     #
@@ -93,7 +95,7 @@ def constructExpBins( rfexp, rmin, rmax, wbmin, name='unknown', iverbose=0 ):
 
 
 
-def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
+def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 ):
     '''
         * pBb, pBc: vectors for boundaries and center of bins
     '''
@@ -113,6 +115,9 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
         if iverbose>0: print(' * [computePDF()]: variable-width bins for '+cwhat+'!')
         zscal   = zbW[0]/zbW[:]
     #
+    if return_cleaned:
+        zXclean = []
+    
     zPDF = np.zeros(nBins)
     nPok = 0
     for iP in range(nbP):
@@ -136,15 +141,22 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', iverbose=0 ):
                 exit(0)
             zPDF[jf] = zPDF[jf] + 1.
             nPok = nPok + 1; # another valid point
+            #
+            if return_cleaned:
+                zXclean.append(zX)
+
+            
 
     # Normalization:
     if lvbw:
         zPDF[:] = zPDF[:]*zscal[:]
     #
     zPDF[:] = zPDF[:]/float(nPok)
-    
-    return nPok, zPDF
 
+    if return_cleaned:
+        return nPok, zPDF, np.array(zXclean)
+    else:
+        return nPok, zPDF
 
 
 
@@ -259,12 +271,13 @@ if __name__ == '__main__':
 
 
 
-    nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     ,  iverbose=idebug )    
+    #nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     ,  iverbose=idebug )
+    nPs, PDF_shr, ZshrClean = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear', return_cleaned=True   ,  iverbose=idebug )    
     
     nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
     nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
-    nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
-
+    nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug ) # 
+    
 
     cfroot = 'PDF_'+corigin+'_'+cperiod
 
@@ -281,7 +294,32 @@ if __name__ == '__main__':
     
     np.savez_compressed( cd_in+'/'+cfroot+'_convergence.npz', name='convergence', origin=corigin, period=cperiod,
                          Np=nPc, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_cnv )
-    
+
+
+    if l_add_gaussian:
+        from math import pi, sqrt
+        m_shear = np.mean(ZshrClean)
+        s_shear = mjt.StdDev( m_shear, ZshrClean )
+        print('LOLO: mean and sigma for shear =', m_shear, s_shear)
+        zE = (xbin_center_shr[:] - m_shear )/s_shear
+        #zE = xbin_center_shr[:]/s_shear
+
+        zIntShear = np.sum( PDF_shr[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )
+        print(' Integral of PDF of shear =', zIntShear)        
+        PDF_NormS = np.exp( -0.5 * zE[:]*zE[:] ) / ( s_shear * sqrt(2.*pi) )
+        zIntGauss = np.sum( PDF_NormS[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )        
+        zcorr = zIntShear/zIntGauss
+        print(' Integral of PDF of Gaussian =', zIntGauss)
+        
+        PDF_NormS = PDF_NormS*zcorr        
+        print(' New Integral of PDF of Gaussian =', np.sum( PDF_NormS[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) ))
+
+        
+        np.savez_compressed( cd_in+'/'+cfroot+'_GAUSSIAN-shear.npz',      name='shear',      origin=corigin, period=cperiod,
+                             Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_NormS )
+
+
+
 
     if iplot>0:
         cdir = './figs'
@@ -312,3 +350,9 @@ if __name__ == '__main__':
         kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPc, name='Convergence',
                              cfig=cdir+'/'+cfroot+'_convergence'+cxtra+'.png',      title=corigin, period=cperiod )
     
+        if l_add_gaussian:
+            kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_NormS, Np=nPs, name='Shear',
+                                cfig=cdir+'/loglog'+cfroot+'_GAUSSIAN-shear'+cxtra+'.png',      title=corigin, period=cperiod )
+
+            kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_NormS, Np=nPs, name='Shear',
+                                 cfig=cdir+'/'+cfroot+'_GAUSSIAN_shear'+cxtra+'.png',           title=corigin, period=cperiod )
