@@ -37,6 +37,10 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 FillValue = -9999.
 
+iUVstrategy = 0 ; #  What U,V should we use inside a given T-cell of the model?
+#                 #  * 0 => use the same MEAN velocity in the whole cell => U = 0.5*(U[j,i-1] + U[j,i]), U = 0.5*(V[j-1,i] + U[j,i])
+#                 #  * 1 => use the same NEAREST velocity in the whole cell => U = U[@ nearest U-point], V = V[@ nearest V-point]
+
 
 if __name__ == '__main__':
 
@@ -87,6 +91,10 @@ if __name__ == '__main__':
 
     # Getting model grid metrics and friends:
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
+
+    if iUVstrategy==1:
+        xYv, xXv, xYu, xXu = mjt.GetModelUVGrid( cf_mm )
+        
 
     # Allocating arrays for model data:
     (Nj,Ni) = np.shape( imaskt )
@@ -277,8 +285,31 @@ if __name__ == '__main__':
 
                 # ASSUMING THAT THE ENTIRE CELL IS MOVING AT THE SAME VELOCITY: THAT OF U-POINT OF CELL
                 # zU, zV = xUu[jT,iT], xVv[jT,iT] ; # because the F-point is the upper-right corner
-                zU = 0.5*(xUu[jT,iT]+xUu[jT,iT-1])
-                zV = 0.5*(xVv[jT,iT]+xVv[jT-1,iT])
+                if   iUVstrategy == 0:
+                    zU = 0.5*(xUu[jT,iT]+xUu[jT,iT-1])
+                    zV = 0.5*(xVv[jT,iT]+xVv[jT-1,iT])
+                    #
+                elif iUVstrategy == 1:
+                    # If the segment that goes from our buoy position to the F-point of the cell
+                    # intersects the segment that joins the 2 V-points of the cell (v[j-1,i],v[j,i]),
+                    # then it means that the nearest U-point is the one at `i-1` !
+                    Fpnt = [xYf[jT,iT],xXf[jT,iT]] ; # y,x coordinates of the F-point of the cell
+                    llum1 = mjt.intersect2Seg( [ry,rx], Fpnt,  [xYv[jT-1,iT],xXv[jT-1,iT]], [xYv[jT,iT],xXv[jT,iT]] )
+                    llvm1 = mjt.intersect2Seg( [ry,rx], Fpnt,  [xYu[jT,iT-1],xXu[jT,iT-1]], [xYu[jT,iT],xXu[jT,iT]] )
+                    if llum1:
+                        zU = xUu[jT,iT-1]
+                    else:
+                        zU = xUu[jT,iT]
+                    if llvm1:
+                        zV = xVv[jT-1,iT]
+                    else:
+                        zV = xVv[jT,iT]
+                    if idebug>-1:
+                        print( ' ++ Buoy position is:',ry,rx)
+                        print( ' ++ position of lhs & rhs U-point:',xYu[jT,iT-1])
+                        
+                        
+                                        
                 if idebug>0:
                     print('    =>> read velocity at ji,jj=',iT,jT)
                     print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')

@@ -185,6 +185,35 @@ def GetModelGrid( fNCmeshmask ):
     return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM
 
 
+def GetModelUVGrid( fNCmeshmask ):
+
+    chck4f( fNCmeshmask)
+    
+    # Reading mesh metrics into mesh-mask file:
+    with Dataset(fNCmeshmask) as id_mm:
+        zlonV = id_mm.variables['glamv'][0,:,:]
+        zlatV = id_mm.variables['gphiv'][0,:,:]
+        zlonU = id_mm.variables['glamu'][0,:,:]
+        zlatU = id_mm.variables['gphiu'][0,:,:]
+                
+    (nj,ni) = np.shape(zlonV)
+
+    zXv = np.zeros((nj,ni))
+    zYv = np.zeros((nj,ni))
+    zXu = np.zeros((nj,ni))
+    zYu = np.zeros((nj,ni))
+
+    # Conversion from Geographic coordinates (lat,lon) to Cartesian in km,
+    #  ==> same North-Polar-Stereographic projection as RGPS data...
+    zlonV = np.mod( zlonV, 360. )
+    zlonU = np.mod( zlonU, 360. )
+    zYv[:,:], zXv[:,:] = ConvertGeo2CartesianNPSkm(zlatT, zlonV)
+    zYf[:,:], zXu[:,:] = ConvertGeo2CartesianNPSkm(zlatF, zlonU)
+    del zlatF, zlonU
+    
+    return zYv, zXv, zYu, zXu
+
+
 
 
 def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[],
