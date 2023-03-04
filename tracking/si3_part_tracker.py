@@ -4,9 +4,9 @@
 
 '''
  TO DO:
-  
+
    *
-  
+
 '''
 
 from sys import argv, exit
@@ -16,7 +16,6 @@ from re import split
 
 from netCDF4 import Dataset
 
-from climporn import dump_2d_field, epoch2clock, clock2epoch
 import mojito   as mjt
 
 from shapely.geometry import Point
@@ -42,6 +41,8 @@ iUVstrategy = 0 ; #  What U,V should we use inside a given T-cell of the model?
 #                 #  * 1 => use the same NEAREST velocity in the whole cell => U = U[@ nearest U-point], V = V[@ nearest V-point]
 
 
+
+
 if __name__ == '__main__':
 
 
@@ -58,43 +59,29 @@ if __name__ == '__main__':
     cf_mm = argv[2]
     fNCseed = argv[3]
 
-    cstrSeed = str.replace( path.basename(fNCseed), 'SELECTION_', '' )
-    cstrSeed = str.replace( cstrSeed, '.nc', '' )
-    cstrBatch = split('_',path.basename(fNCseed))[2]
+    # Some strings and start/end date of Seeding input file:
+    idateSeedA, idateSeedB, SeedName, SeedBatch = mjt.SeedFileTimeInfo( fNCseed, iverbose=idebug )
 
-    mjt.chck4f(fNCseed)
-    print('\n *** Will read initial seeding positions in first record of file:\n      => '+fNCseed+' !')
-    ntr, zt = mjt.LoadNCtimeMJT( fNCseed, iverbose=idebug )
-    idate0 = zt[0]     ; cdate0 = epoch2clock(idate0)
-    idateN = zt[ntr-1] ; cdateN = epoch2clock(idateN)
-    print('    => earliest and latest time position in the file: '+cdate0+' - '+cdateN)
+    # Same for model input file + time records info:
+    Nt0, ztime_model, idateModA, idateModB, ModConf, ModExp = mjt.ModelFileTimeInfo( cf_uv, iverbose=idebug )
 
-    zdDate =  int( round( (idateN - idate0)/3600., 0 ) * 3600. )
-    print('    => rounded time span =>',zdDate/3600.,'hours')
-    idate0 =  int( round( idate0/3600., 0 ) * 3600. ) ; cdate0 = epoch2clock(idate0)
-    idateN = int( idate0 + zdDate )  ; cdateN = epoch2clock(idateN)
-    print('    ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
+    # What records of model data can we use, based on time info from 2 input files above:
+    Nt, kstrt, kstop = mjt.GetTimeSpan( rdt, ztime_model, idateSeedA, idateSeedB, idateModA, idateModB )
 
-    idateSeedA, cdateSeedA = idate0, cdate0
-    idateSeedB, cdateSeedB = idateN, cdateN
+
+
 
     cfdir = './figs/tracking'
     if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
     for cd in ['nc', 'npz' ]:
         if not path.exists(cd): mkdir(cd)
 
-    # Infer name of NEMO CONFIG and experiment from SI3 file:
-    vn = split('_',path.basename(cf_uv))
-    nconf, nexpr = vn[0], split('-',vn[1])[1]
-    print('    * NEMO config and experiment =', nconf, nexpr)
-
-
     # Getting model grid metrics and friends:
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
     if iUVstrategy==1:
         xYv, xXv, xYu, xXu = mjt.GetModelUVGrid( cf_mm )
-        
+
 
     # Allocating arrays for model data:
     (Nj,Ni) = np.shape( imaskt )
@@ -102,33 +89,10 @@ if __name__ == '__main__':
     xVv = np.zeros((Nj,Ni))
     xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
 
-    # Open Input SI3 data file
-    id_uv = Dataset(cf_uv)
-    Nt0 = id_uv.dimensions['time_counter'].size
-    if id_uv.variables['time_counter'].units != ctunits_expected:
-        print('ERROR: wrong units for time calendar in file:',cf_uv)
-        exit(0)
-    print('\n\n *** '+str(Nt0)+' records in input SI3 file!')
-    ztime_model = np.array( id_uv.variables['time_counter'][:] , dtype='i4' )
 
-    #
-    idateModA, idateModB = np.min(ztime_model), np.max(ztime_model)
-    print('  * First and last dates in SI3 output file:',epoch2clock(idateModA), epoch2clock(idateModB))
-
-    if idateSeedA < idateModA-rdt/2 or idateSeedA> idateModB-rdt/2:
-        print('PROBLEM: time in the seeding file ('+epoch2clock(idateSeedA)+') is outside of what model spans!')
-        exit(0)
-
-    kstrt = np.argmin(np.abs(ztime_model[:]-idateSeedA)) + 1
-    print('   => will start using record',kstrt,'of SI3 file =>',epoch2clock(ztime_model[kstrt]))
-    kstop = np.argmin(np.abs(ztime_model[:]-idateSeedB))
-    print('   => will stop at record',kstop,' =>',epoch2clock(ztime_model[kstop]))
-    Nt = kstop - kstrt + 1
-    print('   ==> '+str(Nt)+' model records')
-    print('   ==> that makes '+str((ztime_model[kstop]-ztime_model[kstrt])/(3600.*24))+' days of ice particule tracking.')
 
     # We need a name for the intermediate backup file:
-    cf_npz_itm = './npz/Initialized_buoys_'+cstrSeed+'.npz'
+    cf_npz_itm = './npz/Initialized_buoys_'+SeedName+'.npz'
 
 
     ############################
@@ -152,10 +116,11 @@ if __name__ == '__main__':
         # Going through whole initialization / seeding process
         # ----------------------------------------------------
 
-        xIC[:,:] = id_uv.variables['siconc'][0,:,:] ; # We need ice conc. at t=0 so we can cancel buoys accordingly
+        with Dataset(cf_uv) as ds_UVmod:
+            xIC[:,:] = ds_UVmod.variables['siconc'][0,:,:] ; # We need ice conc. at t=0 so we can cancel buoys accordingly
 
         zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=0, iverbose=idebug )
-        print('     => data is read at date =',epoch2clock(zt))
+        print('     => data is read at date =',mjt.epoch2clock(zt))
 
         print('\n shape of XseedG =',np.shape(XseedG))
 
@@ -197,28 +162,35 @@ if __name__ == '__main__':
     del xPosC0, xPosG0
 
     if iplot>0 and idebug>1:
-        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig=cfdir+'/INIT_Pos_buoys_'+cstrBatch+'_'+nexpr+'_'+'%4.4i'%(jt)+'.png',
+        mjt.ShowBuoysMap( 0, xPosG[0,:,1], xPosG[0,:,0], pvIDs=IDs, cfig=cfdir+'/INIT_Pos_buoys_'+SeedBatch+'_'+ModExp+'_'+'%4.4i'%(jt)+'.png',
                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title='IceTracker: Init Seeding' )
+
+
+
+
 
 
     ######################################
     # Loop along model data time records #
     ######################################
 
+    # Open Input SI3 data file
+    ds_UVmod = Dataset(cf_uv)
+
     for jt in range(Nt):
 
         jrec = jt + kstrt ; # access into netCDF file...
 
-        rtmod = id_uv.variables['time_counter'][jrec] ; # time of model data (center of the average period which should = rdt)
+        rtmod = ds_UVmod.variables['time_counter'][jrec] ; # time of model data (center of the average period which should = rdt)
         itime = int(rtmod - rdt/2.) ; # velocitie is average under the whole rdt, at the center!
-        ctime = epoch2clock(itime)
+        ctime = mjt.epoch2clock(itime)
         print('\n *** Reading record #'+str(jrec)+'/'+str(Nt0)+' in SI3 file ==> date =',
-              ctime,'(model:'+epoch2clock(int(rtmod))+')')
+              ctime,'(model:'+mjt.epoch2clock(int(rtmod))+')')
         vTime[jt] = itime
 
-        xIC[:,:] = id_uv.variables['siconc'][jrec,:,:]
-        xUu[:,:] = id_uv.variables['u_ice'][jrec,:,:]
-        xVv[:,:] = id_uv.variables['v_ice'][jrec,:,:]
+        xIC[:,:] = ds_UVmod.variables['siconc'][jrec,:,:]
+        xUu[:,:] = ds_UVmod.variables['u_ice'][jrec,:,:]
+        xVv[:,:] = ds_UVmod.variables['v_ice'][jrec,:,:]
 
         print('   *   current number of buoys alive = '+str(iAlive.sum()))
 
@@ -307,9 +279,9 @@ if __name__ == '__main__':
                     if idebug>-1:
                         print( ' ++ Buoy position is:',ry,rx)
                         print( ' ++ position of lhs & rhs U-point:',xYu[jT,iT-1])
-                        
-                        
-                                        
+
+
+
                 if idebug>0:
                     print('    =>> read velocity at ji,jj=',iT,jT)
                     print('    * ice velocity of the mesh: u,v =',zU, zV, 'm/s')
@@ -367,7 +339,7 @@ if __name__ == '__main__':
         print('\n')
     ### for jt in range(Nt)
 
-    id_uv.close()
+    ds_UVmod.close()
 
     vTime[Nt] = vTime[Nt-1] + int(rdt)
 
@@ -377,11 +349,11 @@ if __name__ == '__main__':
     xPosC = np.ma.masked_where( xmask==0, xPosC )
 
     # ==> time to save itime, xPosXX, xPosYY, xPosLo, xPosLa into a netCDF file !
-    cdt1, cdt2 = split(':',epoch2clock(vTime[0]))[0] , split(':',epoch2clock(vTime[Nt]))[0] ; # keeps at the hour precision...
+    cdt1, cdt2 = split(':',mjt.epoch2clock(vTime[0]))[0] , split(':',mjt.epoch2clock(vTime[Nt]))[0] ; # keeps at the hour precision...
     cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
     cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
-    corgn = 'NEMO-SI3_'+nconf+'_'+nexpr
-    cf_nc_out = './nc/'+corgn+'_tracking_'+cstrBatch+'_'+cdt1+'_'+cdt2+'.nc'
+    corgn = 'NEMO-SI3_'+ModConf+'_'+ModExp
+    cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+'_'+cdt1+'_'+cdt2+'.nc'
 
     kk = mjt.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
                                mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue, corigin=corgn )
@@ -395,15 +367,15 @@ if __name__ == '__main__':
                 zLon = np.ma.masked_where( xmask[jt,:,1]==0, xPosG[jt,:,1] )
                 zLat = np.ma.masked_where( xmask[jt,:,0]==0, xPosG[jt,:,0] )
                 mjt.ShowBuoysMap( vTime[jt], zLon, zLat, pvIDs=IDs,
-                                  cfig=cfdir+'/Pos_buoys_'+cstrBatch+'_'+nexpr+'_'+'%4.4i'%(jt)+'_'+epoch2clock(vTime[jt])+'.png',
+                                  cfig=cfdir+'/Pos_buoys_'+SeedBatch+'_'+ModExp+'_'+'%4.4i'%(jt)+'_'+mjt.epoch2clock(vTime[jt])+'.png',
                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1.,
-                                  title='IceTracker + SI3 '+nexpr+' u,v fields' )
+                                  title='IceTracker + SI3 '+ModExp+' u,v fields' )
                 del zLon, zLat
 
 
 
 
 
-    
-    print('        => first and final dates in simulated trajectories:',epoch2clock(vTime[0]),epoch2clock(vTime[-1]),'\n')
+
+    print('        => first and final dates in simulated trajectories:',mjt.epoch2clock(vTime[0]),mjt.epoch2clock(vTime[-1]),'\n')
 

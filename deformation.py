@@ -13,7 +13,6 @@ from re import split
 
 from scipy.spatial import Delaunay
 
-from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1
@@ -65,7 +64,7 @@ if __name__ == '__main__':
     #print('LOLO STOP [deformation.py] after `CheckTimeConsistencyQuads()`!'); exit(0)
     
     rtimeC = 0.5*(rTm1+rTm2)
-    ctimeC = epoch2clock(rtimeC)
+    ctimeC = mjt.epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
     rdt = rTm2 - rTm1
     if not l_accurate_time:
@@ -135,7 +134,7 @@ if __name__ == '__main__':
         std_max = 0.
         for jQ in range(nQ):
             z4t1, z4t2 = zTime1[jQ,:], zTime2[jQ,:]
-            #c4t = [ epoch2clock(z4t[i]) for i in range(4) ]
+            #c4t = [ mjt.epoch2clock(z4t[i]) for i in range(4) ]
             zstd1, zstd2 = mjt.StdDev( np.mean(z4t1), z4t1 ), mjt.StdDev( np.mean(z4t2), z4t2 )
             if zstd1 < t_dev_cancel and zstd2 < t_dev_cancel: idxKeep.append(jQ)
             #print(' jQ, 4 times, StdDev (h): ', jQ, c4t, zstd/3600. )

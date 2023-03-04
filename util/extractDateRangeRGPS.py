@@ -7,7 +7,6 @@ from os import path, environ, mkdir
 import numpy as np
 
 from re import split
-from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 idebug = 0
@@ -56,9 +55,9 @@ if __name__ == '__main__':
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 
-    idt1, idt2 = clock2epoch(cdt1), clock2epoch(cdt2)
+    idt1, idt2 = mjt.clock2epoch(cdt1), mjt.clock2epoch(cdt2)
     print( '   ===> in epoch time: ', idt1, 'to', idt2 )
-    print( '       ====> double check: ', epoch2clock(idt1), 'to',  epoch2clock(idt2),'\n')
+    print( '       ====> double check: ', mjt.epoch2clock(idt1), 'to',  mjt.epoch2clock(idt2),'\n')
 
     # nP, nS, ztime, zy, zx, zlat, zlon, kBIDs, kStrm
     Np0, Ns0, ztime0, zykm0, zxkm0, zlat0, zlon0, zIDs0, zStrm0 = mjt.LoadDataRGPS( cf_in, list_expected_var )

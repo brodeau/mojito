@@ -6,9 +6,7 @@ import numpy as np
 #from re import split
 from netCDF4 import Dataset
 
-#from climporn import epoch2clock, clock2epoch
-
-from .util import chck4f, ConvertGeo2CartesianNPSkm
+from .util import chck4f, epoch2clock, ConvertGeo2CartesianNPSkm
 
 
 
@@ -23,13 +21,13 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=N
 
     ldoQual   = ( np.shape(pqual)==(nP,) )
     ldoStream = ( Nstrm and np.shape(pSid)==(nP,) )
-    
+
     with Dataset(ncFile, 'w') as ds:
-        
+
         points  = ds.createDimension( "points", nP )
         if ldoStream:
             streams = ds.createDimension( "streams", Nstrm )
-        
+
         time   = ds.createVariable("time", "f8", ("points",), zlib=True, complevel=9)
         x      = ds.createVariable("x", "f8", ("points",), zlib=True, complevel=9)
         y      = ds.createVariable("y", "f8", ("points",), zlib=True, complevel=9)
@@ -37,7 +35,7 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=N
         lat    = ds.createVariable("lat", "f8", ("points",), zlib=True, complevel=9)
         index  = ds.createVariable("index", "long", ("points",), zlib=True, complevel=9)
         if ldoQual:
-            qual   = ds.createVariable("q_flag", "byte", ("points",), zlib=True, complevel=9)        
+            qual   = ds.createVariable("q_flag", "byte", ("points",), zlib=True, complevel=9)
         if ldoStream:
             idstream = ds.createVariable("idstream", "byte", ("points",), zlib=True, complevel=9)
             streams = ds.createVariable("streams", "byte", ("streams",) )
@@ -67,7 +65,7 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=N
         lat.setncattr('units', "degrees_north")
         lat.setncattr('long_name', "latitude coordinate of virtual buoy")
         lat.setncattr('standard_name', "latitude")
-        
+
         index[:] = pIDs[:]
         index.setncattr('long_name', "Id of virtual buoy")
 
@@ -77,16 +75,16 @@ def SaveRGPStoNC( ncFile, ptime, pIDs, pykm, pxkm, plat, plon, pqual=[], Nstrm=N
 
         if ldoStream:
             idstream[:] = pSid[:]
-            idstream.setncattr('long_name', "ID of the stream the virtual buoy belongs to")        
+            idstream.setncattr('long_name', "ID of the stream the virtual buoy belongs to")
 
             streams[:] = np.arange(Nstrm) + 1
             streams.setncattr('long_name', "IDs of existing streams")
-        
+
         ds.setncattr('title', 'RGPS trajectories')
-        ds.setncattr('reference', 'Kwok, Ronald. “The RADARSAT Geophysical Processor System.” (1998).')    
+        ds.setncattr('reference', 'Kwok, Ronald. “The RADARSAT Geophysical Processor System.” (1998).')
 
     print(' *** File '+ncFile+' generated!\n')
-    
+
     return 0
 
 
@@ -137,7 +135,7 @@ def LoadDataRGPS( cfile, iverbose=0 ):
         # Buoy stream:
         kStrm    = np.zeros(nP, dtype='i1')
         kStrm[:] = id_in.variables['idstream'][:]
-        
+
     zlon[:] = np.mod(zlon, 360.) ; # Longitudes in the [0:360] frame...
 
     return nP, nS, ztime, zy, zx, zlat, zlon, kBIDs, kStrm
@@ -147,7 +145,7 @@ def LoadDataRGPS( cfile, iverbose=0 ):
 def GetModelGrid( fNCmeshmask ):
 
     chck4f( fNCmeshmask)
-    
+
     # Reading mesh metrics into mesh-mask file:
     with Dataset(fNCmeshmask) as id_mm:
         kmaskt = id_mm.variables['tmask'][0,0,:,:]
@@ -157,7 +155,7 @@ def GetModelGrid( fNCmeshmask ):
         zlatT  = id_mm.variables['gphit'][0,:,:]
         ze1T   = id_mm.variables['e1t'][0,:,:] / 1000. ; # km
         ze2T   = id_mm.variables['e2t'][0,:,:] / 1000. ; # km
-                
+
     (nj,ni) = np.shape(kmaskt)
 
     kmaskt = np.array(kmaskt, dtype=int)
@@ -175,7 +173,7 @@ def GetModelGrid( fNCmeshmask ):
     zYt[:,:], zXt[:,:] = ConvertGeo2CartesianNPSkm(zlatT, zlonT)
     zYf[:,:], zXf[:,:] = ConvertGeo2CartesianNPSkm(zlatF, zlonF)
     del zlatF, zlonF
-    
+
     # Local resolution in km (for ):
     zResKM = np.zeros((nj,ni))
     zResKM[:,:] = np.sqrt( ze1T*ze1T + ze2T*ze2T )
@@ -188,14 +186,14 @@ def GetModelGrid( fNCmeshmask ):
 def GetModelUVGrid( fNCmeshmask ):
 
     chck4f( fNCmeshmask)
-    
+
     # Reading mesh metrics into mesh-mask file:
     with Dataset(fNCmeshmask) as id_mm:
         zlonV = id_mm.variables['glamv'][0,:,:]
         zlatV = id_mm.variables['gphiv'][0,:,:]
         zlonU = id_mm.variables['glamu'][0,:,:]
         zlatU = id_mm.variables['gphiu'][0,:,:]
-                
+
     (nj,ni) = np.shape(zlonV)
 
     zXv = np.zeros((nj,ni))
@@ -210,7 +208,7 @@ def GetModelUVGrid( fNCmeshmask ):
     zYv[:,:], zXv[:,:] = ConvertGeo2CartesianNPSkm(zlatT, zlonV)
     zYf[:,:], zXu[:,:] = ConvertGeo2CartesianNPSkm(zlatF, zlonU)
     del zlatF, zlonU
-    
+
     return zYv, zXv, zYu, zXu
 
 
@@ -258,7 +256,7 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
     if lSaveTime:
         x_tim  = f_out.createVariable('time_pos', 'i4',(cd_time,cd_buoy,), fill_value=fillVal, zlib=True, complevel=9)
         x_tim.units = tunits
-    #    
+    #
     v_buoy[:] = np.arange(Nb,dtype='i4')
     v_bid[:]  = pIDs[:]
     #
@@ -274,7 +272,7 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
             x_tim[jt,:] = xtime[jt,:]
     #
     if corigin:
-         f_out.Origin = corigin         
+         f_out.Origin = corigin
     f_out.About  = 'Lagrangian sea-ice drift'
     f_out.Author = 'Generated with `'+path.basename(argv[0])+'` of `mojito` (L. Brodeau, 2023)'
     f_out.close()
@@ -317,7 +315,7 @@ def LoadNCtimeMJT( cfile, iverbose=0 ):
             print(' ERROR [LoadNCtimeMJT()]: no variable `'+time+'` found into input file!'); exit(0)
 
         Nt = id_in.dimensions['time'].size
-                
+
         # Time record:
         ctunits = id_in.variables['time'].units
         if not ctunits == tunits_default:
@@ -327,7 +325,7 @@ def LoadNCtimeMJT( cfile, iverbose=0 ):
         ztime = id_in.variables['time'][:]
 
         print(' * [LoadNCtimeMJT()]: read the "time" of the '+str(Nt)+' records in file '+path.basename(cfile))
-        
+
     return Nt, ztime
 
 
@@ -360,7 +358,7 @@ def LoadNCdataMJT( cfile, krec=0, lmask=False, lGetTimePos=False, iverbose=0 ):
         if iverbose>0:
             print('\n *** Total number of records in the file = ', Nt)
             print('  *** Total number of buoys in the file = ', nP)
-                
+
         # Time record:
         ctunits = id_in.variables['time'].units
         if not ctunits == tunits_default:
@@ -372,7 +370,7 @@ def LoadNCdataMJT( cfile, krec=0, lmask=False, lGetTimePos=False, iverbose=0 ):
         # Buoys' IDs:
         kBIDs    = np.zeros(nP, dtype=int)
         kBIDs[:] = id_in.variables['id_buoy'][:]
-        
+
         # Coordinates:
         zlat  = id_in.variables['latitude'][krec,:]
         zlon  = id_in.variables['longitude'][krec,:]
@@ -417,4 +415,50 @@ def GetDimNCdataMJT( cfile ):
     return Nt, nP, corgn, ltimePos
 
 
+
+def SeedFileTimeInfo( fSeedNc, iverbose=0 ):
+    from re import split
+    #
+    cSeed = str.replace( path.basename(fSeedNc), 'SELECTION_', '' )
+    cSeed = str.replace( cSeed, '.nc', '' )
+    cBtch = split('_',path.basename(fSeedNc))[2]
+
+    chck4f(fSeedNc)
+    print('\n *** Will read initial seeding positions in first record of file:\n      => '+fSeedNc+' !')
+    ntr, zt = LoadNCtimeMJT( fSeedNc, iverbose=iverbose )
+    idate0 = zt[0]     ; cdate0 = epoch2clock(idate0)
+    idateN = zt[ntr-1] ; cdateN = epoch2clock(idateN)
+    print('    => earliest and latest time position in the file: '+cdate0+' - '+cdateN)
+
+    zdDate =  int( round( (idateN - idate0)/3600., 0 ) * 3600. )
+    print('    => rounded time span =>',zdDate/3600.,'hours')
+    idate0 =  int( round( idate0/3600., 0 ) * 3600. ) ; cdate0 = epoch2clock(idate0)
+    idateN = int( idate0 + zdDate )  ; cdateN = epoch2clock(idateN)
+    print('    ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
+
+    return idate0, idateN, cSeed, cBtch
+
+
+def ModelFileTimeInfo( fModelNc, iverbose=0 ):
+    #
+    from re import split
+    #
+    with Dataset(fModelNc) as ds_mod:
+        Nt = ds_mod.dimensions['time_counter'].size
+        if ds_mod.variables['time_counter'].units != tunits_default:
+            print('ERROR: wrong units for time calendar in file:',fModelNc)
+            exit(0)
+        ztime = np.array( ds_mod.variables['time_counter'][:] , dtype='i4' )
+    #
+    print('\n\n *** '+str(Nt)+' records in input MODEL file!')
+    #
+    idate0, idateN = np.min(ztime), np.max(ztime)
+    print('    * [ModelFileTimeInfo] First and last dates in MODEL input file:',epoch2clock(idate0), epoch2clock(idateN))
+    #
+    # Infer name of NEMO CONFIG and experiment from SI3 file:
+    vn = split('_',path.basename(fModelNc))
+    nconf, nexpr = vn[0], split('-',vn[1])[1]
+    print('    * [ModelFileTimeInfo] NEMO config and experiment =', nconf, nexpr)
+    #
+    return Nt, ztime, idate0, idateN, nconf, nexpr
 

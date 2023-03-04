@@ -15,9 +15,8 @@
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
-
 from re import split
-from climporn import epoch2clock, clock2epoch
+
 import mojito as mjt
 
 idebug = 0
@@ -81,9 +80,9 @@ if __name__ == '__main__':
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 
-    idt1, idt2 = clock2epoch(cdt1), clock2epoch(cdt2)
+    idt1, idt2 = mjt.clock2epoch(cdt1), mjt.clock2epoch(cdt2)
     print( '   ===> in epoch time: ', idt1, 'to', idt2 )
-    print( '       ====> double check: ', epoch2clock(idt1), 'to',  epoch2clock(idt2))
+    print( '       ====> double check: ', mjt.epoch2clock(idt1), 'to',  mjt.epoch2clock(idt2))
 
 
     # Load `distance to coast` data:
@@ -118,8 +117,8 @@ if __name__ == '__main__':
         rTa = vTbin[jt,1] ; # begining of the current time bin
         rTb = vTbin[jt,2] ; # end of the current time bin
         #
-        print('\n *** Selecting point pos. that exist at '+epoch2clock(rTc)+' +-'+str(int(dt_bin_sec/2./3600))+
-              'h => between',epoch2clock(rTa),'&',epoch2clock(rTb) )
+        print('\n *** Selecting point pos. that exist at '+mjt.epoch2clock(rTc)+' +-'+str(int(dt_bin_sec/2./3600))+
+              'h => between',mjt.epoch2clock(rTa),'&',mjt.epoch2clock(rTb) )
 
         (idxOK0,) = np.where( (vtime0>=rTa) & (vtime0<rTb) & (vIDs0.data>=0) )
 

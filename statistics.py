@@ -8,7 +8,6 @@ from glob import glob
 import numpy as np
 from re import split
 #
-from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1
@@ -209,7 +208,7 @@ if __name__ == '__main__':
         kNbPoints[kf] = nPnts
     
         print('   * Batch: '+kBatchName[kf] )
-        print('   * Date = ',epoch2clock(kiDate[kf]))
+        print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
         print('   * Nb. of points = ',kNbPoints[kf] )
             
         kf = kf+1

@@ -15,9 +15,8 @@
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
-
 from re import split
-from climporn import epoch2clock, clock2epoch
+
 import mojito as mjt
 
 idebug = 0
@@ -53,7 +52,7 @@ def __summary__( pNBini, pTcini, pIDs, pNRc ):
     print(' *** Number of identified batches: '+str(Nbtch))
     print(' *** Number of buoys selected in each batch:')
     for js in range(Nbtch):
-        cTc0  = epoch2clock(pTcini[js])
+        cTc0  = mjt.epoch2clock(pTcini[js])
         print('        * Batch #'+str(js)+' initiated at time bin centered around '+cTc0+' => has '+str(pNBini[js])+' buoys')
     print(' *** Max number of buoys possibly found in a batch = ',NbMax)
     print('     * shape of ZIDs =', np.shape(pIDs))
@@ -98,9 +97,9 @@ if __name__ == '__main__':
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 
-    idt1, idt2 = clock2epoch(cdt1), clock2epoch(cdt2)
+    idt1, idt2 = mjt.clock2epoch(cdt1), mjt.clock2epoch(cdt2)
     print( '   ===> in epoch time: ', idt1, 'to', idt2 )
-    print( '       ====> double check: ', epoch2clock(idt1), 'to',  epoch2clock(idt2))
+    print( '       ====> double check: ', mjt.epoch2clock(idt1), 'to',  mjt.epoch2clock(idt2))
 
     if Nforced_batch_length:
         if Nb_min_cnsctv > Nforced_batch_length:
@@ -150,7 +149,7 @@ if __name__ == '__main__':
         vIDs = np.ma.MaskedArray.compressed( ZIDs[jS,:] ) ; # valid IDs for current batch: shrinked, getting rid of masked points
         NvB  = ZNB_ini[jS]
         rTc  = ZTc_ini[jS]
-        cTc  = epoch2clock(rTc)
+        cTc  = mjt.epoch2clock(rTc)
 
         if NvB != len(vIDs): print('ERROR Z1!'); exit(0)
         print('\n *** Having a look at batch #'+cs+' initiated for time bin centered around '+cTc+' !')
@@ -221,12 +220,12 @@ if __name__ == '__main__':
             lBatchOk = ( rt>=vTbin[kp,1] and rt<vTbin[kp,2] )
             if not lBatchOk:
                 print(' WARNING: could not locate mean buoy time `rt` in the identified time bin :() ')
-                print('          => rt, and time bounds =', epoch2clock(rt), epoch2clock(vTbin[kp,1]), epoch2clock(vTbin[kp,2]))
+                print('          => rt, and time bounds =', mjt.epoch2clock(rt), mjt.epoch2clock(vTbin[kp,1]), mjt.epoch2clock(vTbin[kp,2]))
                 print('          => identified time bin is #'+str(kp+1)+' out of '+str(NTbin)+' in total')
                 print('          ==> forget this batch!\n')
                 break
             #
-            if idebug>1: print('      rt =',rt,' => ',epoch2clock(rt),' => nearest of VTbin =',epoch2clock(vTbin[kp,0]))
+            if idebug>1: print('      rt =',rt,' => ',mjt.epoch2clock(rt),' => nearest of VTbin =',mjt.epoch2clock(vTbin[kp,0]))
             VT[ir,:] = vTbin[kp,:]
             ir+=1
 
@@ -329,7 +328,7 @@ if __name__ == '__main__':
             #  * 1 file per batch
             #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
             #  * for the file name we chose the center of the bin used aka `VT[:,0]`
-            cdt1, cdt2 = split(':',epoch2clock(VT[ 0,0]))[0] , split(':',epoch2clock(VT[-1,0]))[0]  ; # keeps at the hour precision...
+            cdt1, cdt2 = split(':',mjt.epoch2clock(VT[ 0,0]))[0] , split(':',mjt.epoch2clock(VT[-1,0]))[0]  ; # keeps at the hour precision...
             cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
             cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
             cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'

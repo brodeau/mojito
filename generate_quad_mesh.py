@@ -14,7 +14,6 @@ import numpy as np
 from re import split
 from scipy.spatial import Delaunay
 
-from climporn import epoch2clock
 import mojito   as mjt
 
 idebug = 0
@@ -129,7 +128,7 @@ if __name__ == '__main__':
         else:
             vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:]                = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True, lGetTimePos=False )
         #
-        print( ' * jrec = ',jrec, ', mean date =',epoch2clock(vdate[jr]))    
+        print( ' * jrec = ',jrec, ', mean date =',mjt.epoch2clock(vdate[jr]))    
         if jr==0:
             vIDs[:] = zIDs[:]
         else:
@@ -140,8 +139,8 @@ if __name__ == '__main__':
     
     # Need some calendar info:
     NbDays = int( (vdate[1] - vdate[0]) / (3600.*24.) )
-    cdt1 = epoch2clock(vdate[0] )
-    cdt2 = epoch2clock(vdate[-1])
+    cdt1 = mjt.epoch2clock(vdate[0] )
+    cdt2 = mjt.epoch2clock(vdate[-1])
 
     print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
     print('        ==> nb of days =', NbDays)
@@ -186,21 +185,21 @@ if __name__ == '__main__':
             print('\n  DEBUG *** Record #'+str(vRec[jr])+':')
             for jc in range(NbP):
                 print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',vIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
-                       ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',epoch2clock(ztim[jc,jr]) )
+                       ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',mjt.epoch2clock(ztim[jc,jr]) )
                 if str(vIDs[jc])!=zPnm[jc]:
                     print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
         print('')
 
     
-    cdate0  = str.replace( epoch2clock(vdate[0], precision='D'), '-', '')
+    cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
 
     for jr in range(Nrec):
         jrec = vRec[jr]
 
         print('\n\n *** QUAD-MESH GENERATION => record #'+str(jrec)+': record = '+str(jr))
 
-        cdats  = epoch2clock(vdate[jr])
-        cdate  = str.replace( epoch2clock(vdate[jr], precision='D'), '-', '')
+        cdats  = mjt.epoch2clock(vdate[jr])
+        cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='D'), '-', '')
 
         cfbase = cfstr+'_'+cdate0+'t0_'+cdate+'_'+creskm+'km'
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)

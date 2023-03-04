@@ -14,6 +14,32 @@ def chck4f( cf ):
         print(' ERROR [chck4f()]: file '+cf+' does not exist!')
         exit(0)
 
+
+def epoch2clock( it, precision='s' ):
+    from datetime import datetime as dt
+    from datetime import timezone
+    #
+    it = int(it)
+    if   precision=='s':
+        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d_%H:%M:%S")
+    elif precision=='m':
+        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d_%H:%M")
+    elif precision=='h':
+        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d_%H")
+    elif precision=='D':
+        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d")
+    else:
+        print('ERROR [epoch2clock]: unknown precision "'+precision+'" !')
+        exit(0)
+    return str(ct)
+
+def clock2epoch( cdate ):
+    from datetime import datetime as dt
+    from datetime import timezone
+    it = dt.strptime(cdate, "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
+    return int(it.timestamp())
+
+        
 def degE_to_degWE( X ):
     '''
     # From longitude in 0 -- 360 frame to -180 -- +180 frame...
@@ -87,8 +113,6 @@ def Dist2Coast( lon0, lat0, plon, plat, pdist2coat ):
           * plat:       1D array of latitudes  assosiated to `pdist2coat`
           * pdist2coat: 2D array containing rasterized distance to coast (originally read in NC file) [km]
     '''
-    from climporn import degE_to_degWE
-    #
     rx = np.mod( lon0, 360. ) ; # [0:360] frame
     vx = np.mod( plon, 360. ) ; # [0:360] frame
     # Are we dangerously close to the [0--360] cut?
@@ -118,8 +142,6 @@ def TimeBins4Scanning( pdt1, pdt2, pdt,  iverbose=0 ):
                 *                        axe==1 => time at lower bound of bin ([s] UNIX epoch time)
                 *                        axe==2 => time at upper bound of bin ([s] UNIX epoch time)
     '''
-    if iverbose>0:
-        from climporn import epoch2clock
     #
     zhdt = pdt/2.
     #
@@ -462,7 +484,6 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
         * time_dev_from_mean_allowed: maximum time deviation from the mean allowed
     '''
     if iverbose>0:
-        from climporn import epoch2clock
         print('\n *** In file #'+str(kF)+':')
     #
     if len(np.shape(QD.PointTime))>1:

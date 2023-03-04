@@ -3,7 +3,7 @@ import numpy as np
 FillValue = -9999.
 
 def batchSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
-    from climporn import epoch2clock
+    from .util import epoch2clock
     #
     (Nbtch,NbMax) = np.shape(pIDs)
     if Nbtch != len(pNBini):
@@ -106,7 +106,7 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, devdtNom
                      1 -> this point (kidx) has successors in time but none is reasonably timed (based on dtNom & devdtNom)
                      2 -> a reasonably timed successor has been found
     '''
-    from climporn import epoch2clock
+    from .util import epoch2clock
     #
     idxScsr = -9999
     zt0     = -9999.
@@ -183,7 +183,7 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
                * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                * ztime   : array of dates associated with all these records [s]
     '''
-    from climporn import epoch2clock
+    from .util import epoch2clock
     #
     (idx_buoy,   ) = np.where( pBIDs0 == pBIDs0[kidx] )
     (idx_exclude,) = np.where( ptime0 < time_min )
@@ -223,7 +223,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
        Merge several npz files of the "considered identical" date into a single one!
         * t_ref: reference time for these files (epoch UNIX) [s]
     '''
-    from climporn import epoch2clock
+    from .util import epoch2clock
 
     nbf = len(list_npz_files)
 
@@ -487,7 +487,7 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
         zIDsMO = np.unique( pIDsRef0[idxMO] ); # unique IDs of the buoys that exist more than once in current time bin...
 
         if criterion=='successors':
-            #from climporn import epoch2clock
+            #from .util import epoch2clock
             # Checking that `ptimeRef0` is consistent with `ptime`
             if np.sum(np.abs(ptimeRef0[pidx0] - ptime)) != 0:
                 print('ERROR [ExcludeMultiOccurences]: `ptimeRef0[pidx0]` not equal to `ptime` !')
@@ -592,7 +592,7 @@ def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
         zadiff = np.abs(ptim[jrec,:]-t_mean)
         zdt = np.max(zadiff)/3600.
         if iverbose>0:
-            from climporn import epoch2clock
+            from .util import epoch2clock
             print('  * rec #',jrec,'of this batch:')
             print('    mean time for this record is:',epoch2clock(t_mean))
             print('    bin center time, and bounds:',epoch2clock(pVTb[jrec,0]),epoch2clock(pVTb[jrec,1]),epoch2clock(pVTb[jrec,2]))

@@ -23,10 +23,9 @@
 from sys import argv, exit
 from os import path, environ, mkdir
 import numpy as np
-
 from re import split
 from netCDF4 import Dataset
-from climporn import chck4f, epoch2clock, clock2epoch
+
 import mojito as mjt
 
 idebug = 2
@@ -87,14 +86,14 @@ if __name__ == '__main__':
     print("\n *** Date range to restrain data to:")
     print(" ==> "+cdt1+" to "+cdt2 )
     
-    rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
+    rdt1, rdt2 = mjt.clock2epoch(cdt1), mjt.clock2epoch(cdt2)
     print( "   ===> in epoch time: ", rdt1, "to", rdt2 )
-    print( "       ====> double check: ", epoch2clock(rdt1), "to",  epoch2clock(rdt2))
+    print( "       ====> double check: ", mjt.epoch2clock(rdt1), "to",  mjt.epoch2clock(rdt2))
 
 
     # Opening and inspecting the input file
     #######################################
-    chck4f(cf_in)
+    mjt.chck4f(cf_in)
 
     with Dataset(cf_in) as id_in:
 
@@ -185,7 +184,7 @@ if __name__ == '__main__':
             id_longest_rec = jid
         #print(idx_id)
         #for ii in idx_id:
-        #    print(' * time: ',epoch2clock( vtime0[ii]) )
+        #    print(' * time: ',mjt.epoch2clock( vtime0[ii]) )
 
     print('\n *** The buoy with most records is '+str(id_longest_rec)+', it has '+str(nRmax)+' of them.')
 
@@ -237,7 +236,7 @@ if __name__ == '__main__':
 
         # Trick we put the date vector at `pvIDs=` so the date is writen next to the buoy instead of ID!
         vtim = xtim[:,jr].data ; # `vtim` will contain `0s` rather than '--' for masked records        
-        cdates = np.array( [ '('+str(IDs2Follow[i])+')'+epoch2clock(vtim[i]) for i in range(nBf) ] , dtype='U32' )
+        cdates = np.array( [ '('+str(IDs2Follow[i])+')'+mjt.epoch2clock(vtim[i]) for i in range(nBf) ] , dtype='U32' )
         
         ik = mjt.ShowBuoysMap( rtime, xlon[:,jr], xlat[:,jr], pvIDs=cdates, cfig='buoys_RGPS_'+crec+'_'+ctime+'.png',
                                ms=15, ralpha=0.5, lShowDate=False )

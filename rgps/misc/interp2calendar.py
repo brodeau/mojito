@@ -19,7 +19,6 @@ import numpy as np
 from re import split
 from scipy import interpolate
 
-from climporn import epoch2clock, clock2epoch
 import mojito as mjt
 
 
@@ -99,12 +98,12 @@ if __name__ == '__main__':
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 
-    rdt1, rdt2 = clock2epoch(cdt1), clock2epoch(cdt2)
+    rdt1, rdt2 = mjt.clock2epoch(cdt1), mjt.clock2epoch(cdt2)
     print( '   ===> in epoch time: ', rdt1, 'to', rdt2 )
-    print( '       ====> double check: ', epoch2clock(rdt1), 'to',  epoch2clock(rdt2))
+    print( '       ====> double check: ', mjt.epoch2clock(rdt1), 'to',  mjt.epoch2clock(rdt2))
 
     rdtI = rdt1 + 0.5*dt_bin
-    print('\n *** We shall not select buoys that do not make it to at least',epoch2clock(rdtI))
+    print('\n *** We shall not select buoys that do not make it to at least',mjt.epoch2clock(rdtI))
 
     # Important we want the bins to be centered on the specified dates, so:
     rdtB1 = rdt1 - 0.5*dt_bin
@@ -113,7 +112,7 @@ if __name__ == '__main__':
     Nt, vTbin =   mjt.TimeBins4Scanning( rdtB1, rdt2, dt_bin, iverbose=0 )
     if idebug>0:
         for jt in range(Nt):
-            print('   --- jt: '+str(jt)+' => ',epoch2clock(vTbin[jt,0]),epoch2clock(vTbin[jt,1]),epoch2clock(vTbin[jt,2]))
+            print('   --- jt: '+str(jt)+' => ',mjt.epoch2clock(vTbin[jt,0]),mjt.epoch2clock(vTbin[jt,1]),mjt.epoch2clock(vTbin[jt,2]))
 
     # Now, for proper interpolation right from the start we request any selected buoy to have at least one position
     # under the period [rdtA1:rdt1]:
@@ -172,10 +171,10 @@ if __name__ == '__main__':
         # Get rid of buoys that pop up for the 1st time after rdtB1:
         if t1>rdt1 and vmask[jb]==1:
             vmask[jb] = 0
-            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (pops up after '+epoch2clock(rdt1)+'!)')
+            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (pops up after '+mjt.epoch2clock(rdt1)+'!)')
         if t2<rdtI and vmask[jb]==1:
             vmask[jb] = 0
-            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+epoch2clock(rdtI)+'!)')
+            if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (vanishes before '+mjt.epoch2clock(rdtI)+'!)')
 
         # Get rid of buoys that do not have at least 1 record point between rdtA1 and rdt1 (important for interpolation onto Vtbin[0,0]!)
         if l_exclude_early and vmask[jb]==1:
@@ -183,7 +182,7 @@ if __name__ == '__main__':
             if len(idxtp)==0:
                 vmask[jb] = 0
                 if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. between:'
-                                    +epoch2clock(rdtA1)+' & '+epoch2clock(rdt1)+')')
+                                    +mjt.epoch2clock(rdtA1)+' & '+mjt.epoch2clock(rdt1)+')')
         # Constructing `v1dat`:
         if vmask[jb]==1:
             jt1 = None
@@ -201,10 +200,10 @@ if __name__ == '__main__':
             if len(idxtp) == 0:
                 vmask[jb] = 0
                 if idebug>1: print('   --- excluding buoy #'+str(jb)+' with ID: ',jid,' (no pos. in 1st time bin:'
-                                    +epoch2clock(vTbin[0,1])+' & '+epoch2clock(vTbin[0,2])+')')
+                                    +mjt.epoch2clock(vTbin[0,1])+' & '+mjt.epoch2clock(vTbin[0,2])+')')
 
                 
-        if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+epoch2clock(t1)+' ==> '+epoch2clock(t2))
+        if idebug>0 and Nb<=20: print('      * buoy #'+str(jb)+' (id='+str(jid)+': '+mjt.epoch2clock(t1)+' ==> '+mjt.epoch2clock(t2))
 
     # For some unknown reasons:
     (idx_cncl,) = np.where( v1dat==0 ) ; # 0 is 1970/01/01 00:00 !
@@ -220,7 +219,7 @@ if __name__ == '__main__':
     print('\n *** UPDATE: based on date selection, there are '+str(Nb)+' buoys left to follow!')
 
     
-    #for jb in range(Nb): print(' 1st date =', jb, epoch2clock(v1dat[jb]))
+    #for jb in range(Nb): print(' 1st date =', jb, mjt.epoch2clock(v1dat[jb]))
 
     if l_drop_coastal:
         # For now, only at start time...
@@ -275,12 +274,12 @@ if __name__ == '__main__':
                     break
             if not lfound:
                 # It is a time unknown so far:                
-                tfamily.append(itim) ; #print('New time:',epoch2clock(itim))
+                tfamily.append(itim) ; #print('New time:',mjt.epoch2clock(itim))
             
         tfamily = np.array(tfamily,dtype=int)
         ntF = len(tfamily)
         print('We have '+str(ntF)+' different time family identified:')
-        for itim in tfamily: print(epoch2clock(itim))
+        for itim in tfamily: print(mjt.epoch2clock(itim))
     
         ibelongF = np.zeros(Nb, dtype='i1') ; # tells to what family a buoy belongs to...
         for jb in range(Nb):
@@ -299,7 +298,7 @@ if __name__ == '__main__':
             print(' * Family #'+str(jf)+' has '+str(vfam[jf])+' buoys!')
     
         kFw = np.argmax( vfam )
-        print(' Family '+str(kFw)+' wins! => ', epoch2clock(tfamily[kFw]) )
+        print(' Family '+str(kFw)+' wins! => ', mjt.epoch2clock(tfamily[kFw]) )
         if np.sum(vfam) != Nb:
             print('ERRO: `sum(vfam) != Nb` !!!',np.sum(vfam),Nb); exit(0)
 
@@ -311,7 +310,7 @@ if __name__ == '__main__':
         vIDs = np.ma.masked_where( vmask==0, vIDs )
         vIDs = np.ma.MaskedArray.compressed(vIDs)
         Nb   = len(vIDs)
-        print('\n *** UPDATE: based on limiting data to biggest family '+epoch2clock(tfamily[kFw])+': '+str(Nb)+' buoys left to follow!')
+        print('\n *** UPDATE: based on limiting data to biggest family '+mjt.epoch2clock(tfamily[kFw])+': '+str(Nb)+' buoys left to follow!')
 
         
     if l_time_offset_families:
@@ -384,9 +383,9 @@ if __name__ == '__main__':
             for Nt_b in range(Nt):
                 if vTbin[Nt_b,0] > rtend: break
             if idebug>1:
-                print('    * buoy :'+str(jid)+' does not make it to '+epoch2clock(rdt2))
-                print('      => dies at '+epoch2clock(rtend))
-                print('      ==> last index of vTbin to use is: '+str(Nt_b-1)+' => '+epoch2clock(vTbin[Nt_b-1,0]))
+                print('    * buoy :'+str(jid)+' does not make it to '+mjt.epoch2clock(rdt2))
+                print('      => dies at '+mjt.epoch2clock(rtend))
+                print('      ==> last index of vTbin to use is: '+str(Nt_b-1)+' => '+mjt.epoch2clock(vTbin[Nt_b-1,0]))
 
         if   interp_1d==0:
             fG = interpolate.interp1d(           vt, vlat0[idx], kind='nearest' )
@@ -532,7 +531,7 @@ if __name__ == '__main__':
 
         for jt in range(Nt):
             rt = vTbin[jt,0]
-            ct = epoch2clock(rt)
+            ct = mjt.epoch2clock(rt)
             print(' Ploting for '+ct+'!')
             cfig = './figs/SELECTION/t-interp_buoys_RGPS_'+ct+'.png'
             mjt.ShowBuoysMap( vTbin[jt,0], xlon[jt,:], xlat[jt,:], pvIDs=vIDs, cfig=cfig,

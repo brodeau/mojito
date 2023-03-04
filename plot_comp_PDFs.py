@@ -8,7 +8,6 @@ from glob import glob
 import numpy as np
 from re import split
 #
-from climporn import epoch2clock, clock2epoch
 import mojito   as mjt
 
 idebug=1

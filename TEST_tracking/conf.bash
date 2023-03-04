@@ -5,8 +5,8 @@ YEAR="1997"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
 NEMO_CONF="NANUK4"
-#NEMO_EXP="BBM00"
-NEMO_EXP="EVP00"
+NEMO_EXP="BBM00"
+#NEMO_EXP="EVP00"
 
 DT_BINS_H=72  ; # width of a bin for time interpolation (hours)
 
