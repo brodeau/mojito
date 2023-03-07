@@ -12,8 +12,6 @@ import numpy as np
 import mojito   as mjt
 
 
-
-
 # Quad as [ [x0,y0], [x1,y1], [x2,y2], [x3,y3] ]
 quad1 = np.array([ [0.,0.], [3.,0.], [4.,4.], [1.,3.5] ])
 
