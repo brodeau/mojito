@@ -38,7 +38,7 @@ case ${host} in
         #
         NJPAR=4       
         #
-        DATE2="${YEAR}0315"
+        DATE2="${YEAR}0131"
         #FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         #
         MARKER_SIZE=20

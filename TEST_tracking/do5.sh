@@ -11,7 +11,7 @@ for fv in "shear" "divergence" "convergence" "absDiv"; do
     nbf=`echo ${lst1} | wc -w`
     if [ ${nbf} -ne 1 ]; then echo "PROBLEM: more than 1 file in SI3 stuff!!!"; exit; fi
 
-    lst2=`\ls ../TEST_brgps/npz/PDF_RGPS_${YEAR}????-${YEAR}????_${fv}.npz`
+    lst2=`\ls ../TEST_rgps/npz/PDF_RGPS_${YEAR}????-${YEAR}????_${fv}.npz`
     nbf=`echo ${lst2} | wc -w`
     if [ ${nbf} -ne 1 ]; then echo "PROBLEM: more than 1 file in RGPS file!!!"; exit; fi
     

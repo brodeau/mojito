@@ -51,13 +51,20 @@ if __name__ == '__main__':
     print('#            MOJITO ICE PARTICULES TRACKER               #')
     print('##########################################################\n')
 
-    if not len(argv) in [4]:
-        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> <seeding_file.nc>')
+    if not len(argv) in [4,5]:
+        print('Usage: '+argv[0]+' <ice_file_velocities_SI3> <mesh_mask> <seeding_file.nc> (<#record_to_seed_with>)')
         exit(0)
 
     cf_uv = argv[1]
     cf_mm = argv[2]
     fNCseed = argv[3]
+    if len(argv)==5:
+        jrec = int(argv[4])
+    else:
+        jrec = 0
+        
+
+    
 
     # Some strings and start/end date of Seeding input file:
     idateSeedA, idateSeedB, SeedName, SeedBatch = mjt.SeedFileTimeInfo( fNCseed, iverbose=idebug )
@@ -119,7 +126,7 @@ if __name__ == '__main__':
         with Dataset(cf_uv) as ds_UVmod:
             xIC[:,:] = ds_UVmod.variables['siconc'][0,:,:] ; # We need ice conc. at t=0 so we can cancel buoys accordingly
 
-        zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=0, iverbose=idebug )
+        zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=jrec, iverbose=idebug )
         print('     => data is read at date =',mjt.epoch2clock(zt))
 
         print('\n shape of XseedG =',np.shape(XseedG))
@@ -278,9 +285,8 @@ if __name__ == '__main__':
                         zV = xVv[jT,iT]
                     if idebug>-1:
                         print( ' ++ Buoy position is:',ry,rx)
-                        print( ' ++ position of lhs & rhs U-point:',xYu[jT,iT-1])
-
-
+                        print( ' ++ position of lhs & rhs U-point:',xYu[jT,iT-1],xYu[jT,iT], ' llum1=',llum1)
+                        print( ' ++ position of lower & upper V-point:',xVv[jT-1,iT],xVv[jT,iT], ' llvm1=',llvm1)
 
                 if idebug>0:
                     print('    =>> read velocity at ji,jj=',iT,jT)
