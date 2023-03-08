@@ -16,8 +16,8 @@ from scipy.spatial import Delaunay
 
 import mojito   as mjt
 
-idebug = 1
-iplot  = 1 ; # Create figures to see what we are doing...
+idebug = 0
+iplot  = 0 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -54,8 +54,6 @@ if __name__ == '__main__':
     creskm = argv[3]
     reskm = float(creskm)
 
-    lNeed4SubSamp = ( reskm > 12. )
-    
     vcrec = split(',',lstrec)
     Nrec  = len(vcrec)
     vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
@@ -99,14 +97,6 @@ if __name__ == '__main__':
         print('ERROR: we do not know what to do with resolution `reskm` =', reskm) ; exit(0)
         #
         #rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
-
-
-
-    print(' *** Specified spatial scale is '+creskm+' km')
-    if lNeed4SubSamp:
-        print('   => the cloud of point will be sub-sampled!')
-    print('   => will retain quadrangles with an area: ',rQarea_min,'km^2 < A <',rQarea_max,'km^2')
-        
         
 
     # Loading the data for the 2 selected records:
@@ -219,129 +209,74 @@ if __name__ == '__main__':
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)
 
         cf_npzQ = './npz/Q-mesh_'+cfbase+'.npz'
-        cf_npzT = './npz/T-mesh_'+cfbase+'.npz'
 
-        
         if jr == 0:
 
-            #lili:
-            l_happy = False
-            itt     = 0
-            rfcorr  = 0.7
-            rdev    = 1.
-            while not l_happy:
-                itt = itt + 1
+            print('\n *** Delaunay triangulation for 1st record!')
 
-                if lNeed4SubSamp:
-                    
-                    # SUB-SAMPLING
-                    #  From experience we have to pick a scale significantly smaller that that of the desired
-                    #  quadrangles in order to obtain quadrangle of the correct size!
+            cf_npzT = './npz/T-mesh_'+cfbase+'.npz'
 
-                    if reskm==20.:
-                        rd_ss = 15.1
-                    else:
-                        rd_ss = rfcorr * reskm ; # Correct `reskm` to get closer to requested radius (based on QUADs to be generated)
-    
-                    print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km')                
-                    NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY, vIDs )
-                    
-                else:
-                    # No sub-sampling:
-                    NbPss = NbP                    
-                    zXYss = zXY.copy()
-                    idxKeep = np.arange(NbP)
-                    l_happy = True
+            # Generating triangular meshes out of the cloud of points for 1st record:
+            lOK = False
+            while not lOK:
 
+                TRI = Delaunay(zXY[:,:,jr])
                 
-                print('\n *** Delaunay triangulation for 1st record! pass #',itt)                    
-    
-                # Generating triangular meshes out of the cloud of points for 1st record:
-                lOK = False
-                while not lOK:
-    
-                    TRI = Delaunay(zXYss[:,:,jr])
-                    
-                    xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-                    (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
-                    xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-    
-                    # For some reasons, here, `xTpnts` can involve less points than the number of points
-                    # fed into Delaunay (zXYss), if it is the case we have to shrink `zXY`, `vIDs`, `zPnm`
-                    # accordingly...
-                    PntIdxInUse = np.unique( xTpnts.flatten() )
-                    NbPnew      = len(PntIdxInUse)
-                    lOK = ( NbPnew == NbPss )
-    
-                    if not lOK:
-                        if NbPnew > NbPss:
-                            print('ERROR: `NbPnew > NbPss` !!!'); exit(0)
-                        print('\n *** Need to cancel the '+str(NbPss-NbPnew)+' points that vanished in Delaunay triangulation!')
-                        mask  = np.zeros(  NbPss, dtype=int )
-                        zPntIdx0 = np.arange( NbPss, dtype=int )
-                        _,ind2keep,_ = np.intersect1d(zPntIdx0, PntIdxInUse, return_indices=True); # retain only indices of `zPntIdx0` that exist in `PntIdxInUse`
-                        mask[ind2keep] = 1
-                        if np.sum(mask) != NbPnew:
-                            print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
-                        zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
-                        del zPntIdx0, mask, ind2keep
-                        NbPss = NbPnew
-                        print('      => done! Only '+str(NbPss)+' points left in the game...')
-    
-                    del PntIdxInUse, NbPnew
-    
-                ### while not lOK
-                print('\n *** We have '+str(NbT)+' triangles! pass #',itt)
-    
-                
-                # Conversion to the `Triangle` class:
-                TRIAS = mjt.Triangle( zXYss[:,:,jr], xTpnts, xNeighborIDs, vIDs[idxKeep], ztim[idxKeep,jr], zPnm[idxKeep], origin=corigin )
-                del xTpnts, xNeighborIDs, TRI
-    
-                # Info on the triangles:
-                if idebug>0:
-                    zlngth = np.mean( TRIAS.lengths(), axis=1)
-                    zml = np.mean(zlngth)
-                    print('   => mean length and stdev of the sides of all triangles =',zml,mjt.StdDev( zml, zlngth ), 'km')
-                    del zlngth, zml
-                
-                # Merge triangles into quadrangles:
-                xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
-                                                                    ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                                    areaR=(rQarea_min,rQarea_max), idbglev=idebug )
-                #if len(xQpnts)<=0: exit(0)
-                #(NbQ,_) = np.shape(xQpnts)
-                #print('\n *** We have '+str(NbQ)+' quadrangles!')
-                l_someQuads = (len(xQpnts)>0)
-                #if len(xQpnts)<=0: exit(0)
-                
-                if l_someQuads:
-                    (NbQ,_) = np.shape(xQpnts)
-                    print('\n *** We have '+str(NbQ)+' quadrangles! pass #',itt)
+                xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
+                (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
+                xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
 
-                    # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-                    QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin )
-                        
-                    zsides = QUADS0.lengths()
-                    zareas = QUADS0.area()
-                    rl_average_side = np.mean(zsides)
-                    rl_average_scal = np.mean( np.sqrt(zareas) )
-                    rl_average_area = np.mean(zareas) ; rl_stdev_area = mjt.StdDev(rl_average_area, zareas)
-                    print('    ==> average scale (sqrt[A]) is '+str(round(rl_average_scal,3))+' km')
-                    print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
-                    print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
-                    del zareas, zsides
-                    #exit(0); #lolo
+                # For some reasons, here, `xTpnts` can involve less points than the number of points
+                # fed into Delaunay (zXY), if it is the case we have to shrink `zXY`, `vIDs`, `zPnm`
+                # accordingly...
+                PntIdxInUse = np.unique( xTpnts.flatten() )
+                NbPnew      = len(PntIdxInUse)
+                lOK = ( NbPnew == NbP )
 
+                if not lOK:
+                    if NbPnew > NbP:
+                        print('ERROR: `NbPnew > NbP` !!!'); exit(0)
+                    print('\n *** Need to cancel the '+str(NbP-NbPnew)+' points that vanished in Delaunay triangulation!')
+                    mask  = np.zeros(  NbP, dtype=int )
+                    zPntIdx0 = np.arange( NbP, dtype=int )
+                    _,ind2keep,_ = np.intersect1d(zPntIdx0, PntIdxInUse, return_indices=True); # retain only indices of `zPntIdx0` that exist in `PntIdxInUse`
+                    mask[ind2keep] = 1
+                    if np.sum(mask) != NbPnew:
+                        print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
+                    zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
+                    del zPntIdx0, mask, ind2keep
+                    NbP = NbPnew
+                    print('      => done! Only '+str(NbP)+' points left in the game...')
 
+                del PntIdxInUse, NbPnew
 
-            ### while not l_happy
-
+            ### while not lOK
+            print('\n *** We have '+str(NbT)+' triangles!')
 
             
+            # Conversion to the `Triangle` class:
+            TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, vIDs, ztim[:,jr], zPnm, origin=corigin )
+            del xTpnts, xNeighborIDs, TRI
+
+            # Info on the triangles:
+            if idebug>0:
+                zlngth = np.mean( TRIAS.lengths(), axis=1)
+                zml = np.mean(zlngth)
+                print('   => mean length and stdev of the sides of all triangles =',zml,mjt.StdDev( zml, zlngth ), 'km')
+                del zlngth, zml
+            
+            # Merge triangles into quadrangles:
+            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
+                                                                ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
+                                                                areaR=(rQarea_min,rQarea_max), idbglev=idebug )
+            if len(xQpnts)<=0: exit(0)
+
+            (NbQ,_) = np.shape(xQpnts)
+            print('\n *** We have '+str(NbQ)+' quadrangles!')
+
             # Save the triangular mesh info:
             mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', origin=corigin )
-            
+
             # To be used for other record, indices of Points to keep for Quads:
             _,ind2keep,_ = np.intersect1d(vIDs, vPids, return_indices=True); # retain only indices of `vIDs` that exist in `vPids`
 
@@ -396,10 +331,11 @@ if __name__ == '__main__':
 
         if iplot>0:
 
+            TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
             QUA = mjt.LoadClassPolygon( cf_npzQ, ctype='Q' )
 
-            if iplot>1 and path.exists(cf_npzT):
-                TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
+
+            if iplot>1:
                 # Show triangles together with the quadrangles on a map:
                 print('\n *** Launching Triangle+Quad plot!')
                 kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig=cfdir+'/fig02_Mesh_Quadrangles_'+cfbase+'.png',
