@@ -36,7 +36,7 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 FillValue = -9999.
 
-iUVstrategy = 0 ; #  What U,V should we use inside a given T-cell of the model?
+iUVstrategy = 1 ; #  What U,V should we use inside a given T-cell of the model?
 #                 #  * 0 => use the same MEAN velocity in the whole cell => U = 0.5*(U[j,i-1] + U[j,i]), U = 0.5*(V[j-1,i] + U[j,i])
 #                 #  * 1 => use the same NEAREST velocity in the whole cell => U = U[@ nearest U-point], V = V[@ nearest V-point]
 
@@ -283,10 +283,10 @@ if __name__ == '__main__':
                         zV = xVv[jT-1,iT]
                     else:
                         zV = xVv[jT,iT]
-                    if idebug>-1:
+                    if idebug>1:
                         print( ' ++ Buoy position is:',ry,rx)
-                        print( ' ++ position of lhs & rhs U-point:',xYu[jT,iT-1],xYu[jT,iT], ' llum1=',llum1)
-                        print( ' ++ position of lower & upper V-point:',xVv[jT-1,iT],xVv[jT,iT], ' llvm1=',llvm1)
+                        print( ' ++ position of lhs & rhs U-point:',xYu[jT,iT-1],xXu[jT,iT-1], xYu[jT,iT],xXu[jT,iT], ' llum1=',llum1)
+                        print( ' ++ position of lower & upper V-point:',xYv[jT,iT-1],xXv[jT,iT-1], xYv[jT,iT],xXv[jT,iT], ' llvm1=',llvm1)
 
                 if idebug>0:
                     print('    =>> read velocity at ji,jj=',iT,jT)

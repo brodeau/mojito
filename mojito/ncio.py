@@ -205,9 +205,9 @@ def GetModelUVGrid( fNCmeshmask ):
     #  ==> same North-Polar-Stereographic projection as RGPS data...
     zlonV = np.mod( zlonV, 360. )
     zlonU = np.mod( zlonU, 360. )
-    zYv[:,:], zXv[:,:] = ConvertGeo2CartesianNPSkm(zlatT, zlonV)
-    zYf[:,:], zXu[:,:] = ConvertGeo2CartesianNPSkm(zlatF, zlonU)
-    del zlatF, zlonU
+    zYv[:,:], zXv[:,:] = ConvertGeo2CartesianNPSkm(zlatV, zlonV)
+    zYu[:,:], zXu[:,:] = ConvertGeo2CartesianNPSkm(zlatU, zlonU)
+    del zlatV, zlonV, zlatU, zlonU
 
     return zYv, zXv, zYu, zXu
 
