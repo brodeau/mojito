@@ -33,8 +33,6 @@ for ff in ${list_nc}; do
         ${CMD}
         echo
     done
-    
-    #exit
 
 done
 

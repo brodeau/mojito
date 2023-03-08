@@ -16,8 +16,8 @@ from scipy.spatial import Delaunay
 
 import mojito   as mjt
 
-idebug = 1
-iplot  = 1 ; # Create figures to see what we are doing...
+idebug = 0
+iplot  = 2 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -34,6 +34,9 @@ rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+
+rtolQuadA        = 0.5 ; # +- tolerance in [km] to accept a given scale. Ex: 15.19 km is accepted for 15 km !!
+
 
 rzoom_fig = 5
 
@@ -77,7 +80,7 @@ if __name__ == '__main__':
         #
     elif reskm>17.5 and reskm<22.5:
         rQarea_min = 300.
-        rQarea_max = 510.
+        rQarea_max = 600.
         #
     elif reskm>20 and reskm<30:
         rQarea_min = 350.
@@ -243,13 +246,14 @@ if __name__ == '__main__':
                     else:
                         rd_ss = rfcorr * reskm ; # Correct `reskm` to get closer to requested radius (based on QUADs to be generated)
     
-                    print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km')                
-                    NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY, vIDs )
-                    
+                    print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km')
+                    #print('LOLO: shape(zXY) =',np.shape(zXY))
+                    NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[:,:,jr] )
+                    #exit(0)
                 else:
                     # No sub-sampling:
                     NbPss = NbP                    
-                    zXYss = zXY.copy()
+                    zXYss = zXY[:,:,jr].copy()
                     idxKeep = np.arange(NbP)
                     l_happy = True
 
@@ -260,7 +264,7 @@ if __name__ == '__main__':
                 lOK = False
                 while not lOK:
     
-                    TRI = Delaunay(zXYss[:,:,jr])
+                    TRI = Delaunay( zXYss )
                     
                     xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
                     (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
@@ -295,7 +299,7 @@ if __name__ == '__main__':
     
                 
                 # Conversion to the `Triangle` class:
-                TRIAS = mjt.Triangle( zXYss[:,:,jr], xTpnts, xNeighborIDs, vIDs[idxKeep], ztim[idxKeep,jr], zPnm[idxKeep], origin=corigin )
+                TRIAS = mjt.Triangle( zXYss, xTpnts, xNeighborIDs, vIDs[idxKeep], ztim[idxKeep,jr], zPnm[idxKeep], origin=corigin )
                 del xTpnts, xNeighborIDs, TRI
     
                 # Info on the triangles:
@@ -331,12 +335,55 @@ if __name__ == '__main__':
                     print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
                     print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
                     del zareas, zsides
-                    #exit(0); #lolo
 
+                    if lNeed4SubSamp:
+                        rdev_old = rdev
+                        rdev     = rl_average_scal - reskm
+                        l_happy  = ( abs(rdev) < rtolQuadA ) ; # average quadrangle scale (root square of area) is close to expected nominal scale
 
+                        # Surrender block:
+                        #if not l_happy:
+                        #    # If we are at the nominal scale:
+                        #    l_happy = ( int(reskm) == int(rd_nom_data) and itt>4 )
+                        #if not l_happy:
+                        #    l_happy = (itt>7)
+
+                        # Refining:
+                        if not l_happy:                                
+                            # Linear fit of actual correction as a function of `reskm`
+                            #rfc = 0.008*reskm + 0.56
+                            #rfc = 0.008*reskm + 0.7
+                            rfc = 0.008*reskm + 0.6                
+                            if itt==1: ralpha = (1.-rfc) / rdev ; # equivalent to a correction of `rfc`
+                            if itt>1 and copysign(1,rdev) == -copysign(1,rdev_old):
+                                ralpha = ralpha/1.3 ; # change of sign of deviation => we decrease alpha!
+                            # will go for a next round with a correction factor becoming increasingly smaller than 1:
+                            rfcorr = min( max(0.6 , rfcorr - ralpha * rdev ) , 0.95 )
+                            #rfcorr = min( max(0.5 , rfcorr - ralpha * rdev ) , 0.95 )
+                            print(' +++++ NEW itteration with: ralpha, rfcorr = ',ralpha, rfcorr)
+                        #
+                else:
+                    l_happy = True ; # we coud not build any QUAD so we move on anyways...
+                #
+                ### if l_someQuads
+                    
+                    
 
             ### while not l_happy
 
+            if iplot>0:
+                # We need to find a descent X and Y range for the figures:
+                vrngX = mjt.roundAxisRange( TRIAS.PointXY[:,0], rndKM=50. )
+                vrngY = mjt.roundAxisRange( TRIAS.PointXY[:,1], rndKM=50. )
+
+            
+            if iplot >1 and lNeed4SubSamp:
+                # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
+                # After and before subsampling
+                kk = mjt.ShowTQMesh( zXY[:,0,0], zXY[:,1,0], cfig=cfdir+'/00_'+cfbase+'_Original.png',
+                                     ppntIDs=vIDs[:], lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
+                kk = mjt.ShowTQMesh( zXYss[:,0], zXYss[:,1], cfig=cfdir+'/00_'+cfbase+'_SubSamp.png',
+                                     ppntIDs=vIDs[idxKeep], lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
             
             # Save the triangular mesh info:
@@ -347,24 +394,19 @@ if __name__ == '__main__':
 
 
             # Plots specific to `jrec==0`:
-            if iplot>0:
-                # We need to find a descent X and Y range for the figures:
-                vrngX = mjt.roundAxisRange( TRIAS.PointXY[:,0], rndKM=50. )
-                vrngY = mjt.roundAxisRange( TRIAS.PointXY[:,1], rndKM=50. )
-                #
-                if iplot>3:
-                    # Show all initial points (out of TrackIce):
-                    print('\n *** Launching initial cloud point plot!')
-                    kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig=cfdir+'/fig01a_cloud_points_'+cfbase+'.png',
-                                         ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
-                                         rangeX=vrngX, rangeY=vrngY )
-                if iplot>2:
-                    # Show triangles on a map:
-                    print('\n *** Launching Triangle plot!')
-                    kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=cfdir+'/fig01_Mesh_Triangles_'+cfbase+'.png',
-                                         ppntIDs=TRIAS.PointIDs,
-                                         TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
-                                         rangeX=vrngX, rangeY=vrngY )
+            if iplot>2:
+                # Show all initial points (out of TrackIce):
+                print('\n *** Launching initial cloud point plot!')
+                kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig=cfdir+'/fig01a_cloud_points_'+cfbase+'.png',
+                                     ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
+                                     rangeX=vrngX, rangeY=vrngY )
+            if iplot>1:
+                # Show triangles on a map:
+                print('\n *** Launching Triangle plot!')
+                kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=cfdir+'/fig01_Mesh_Triangles_'+cfbase+'.png',
+                                     ppntIDs=TRIAS.PointIDs,
+                                     TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
+                                     rangeX=vrngX, rangeY=vrngY )
                     
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
             QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin )
@@ -409,7 +451,7 @@ if __name__ == '__main__':
             if iplot>2:
                 # Show only points composing the quadrangles:
                 kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cfdir+'/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
-                                     ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
+                                     ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
             
             # Show only the quads with only the points that define them:
             print('\n *** Launching Quad-only plot!')
