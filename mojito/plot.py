@@ -529,12 +529,16 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     #ax.grid(color='k', linestyle='-', linewidth=0.2, zorder=0.1)
     #
     # Y-axis:
-    rinc = 100. ; # => dy of 0.01
-    ymax = ceil(rinc*np.max(ppdf))/rinc
-    plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
+    #rinc = 1. ; # => dy of 0.01
+    #ymax = ceil(rinc*np.max(ppdf))/rinc
+    #plt.yticks( np.arange(0.,ymax+1./rinc,1./rinc) )
+    #
+    ymax = 180. ; rinc= 20.
+    plt.yticks( np.arange(0.,ymax+rinc,rinc) )
+    #
     ax.set_ylim(0.,ymax)
     #ax.set_ylim(0.,np.max(ppdf))
-    ax.set_ylabel(r'Probability')
+    ax.set_ylabel(r'PDF')
     #
     # X-axis:
     plt.xticks( np.arange(0., xmax+dx, dx) )
@@ -605,7 +609,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     print('corigin =', origin)
     # For figure axes:
     xlog_min,xlog_max = 2.75e-3, 0.5
-    ylog_min,ylog_max = 5.e-6, 0.25
+    ylog_min,ylog_max = 5.e-3, 2.5e2
 
     ki = _initStyle_()
 
@@ -637,7 +641,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
 
     # Y-axis:
-    plt.ylabel('Probability', color='k')
+    plt.ylabel('PDF', color='k')
     ax.set_ylim(ylog_min, ylog_max)
             
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
