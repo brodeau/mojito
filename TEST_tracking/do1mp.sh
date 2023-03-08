@@ -33,7 +33,7 @@ for fnc in ${list_nc}; do
 
     ijob=$((ijob+1))
 
-    sleep 3
+    sleep 1
 
     if [ $((ijob%NJPAR)) -eq 0 ]; then
         echo "Waiting! (ijob = ${ijob})...."

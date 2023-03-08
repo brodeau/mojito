@@ -112,7 +112,8 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
     lvbw = (  np.sum(np.abs(zbW[1:]-zbW[:-1])) > 1.e-11 ) ; # Constant or variable-width bins?
     if lvbw:
         if iverbose>0: print(' * [computePDF()]: variable-width bins for '+cwhat+'!')
-        zscal   = zbW[0]/zbW[:]
+        #zscal   = zbW[0]/zbW[:]
+        zscal   = 1./zbW[:]
     #
     if return_cleaned:
         zXclean = []
@@ -319,6 +320,14 @@ if __name__ == '__main__':
 
 
 
+    
+    zIntShear = np.sum( PDF_shr[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )
+    print(' * Integral of PDF of shear =', round(zIntShear,2) )        
+
+    zIntDiv = np.sum( PDF_div[:]*(xbin_bounds_div[1:]-xbin_bounds_div[:-1]) )
+    print(' * Integral of PDF of divergence =', round(zIntDiv,2),'\n')        
+
+        
 
     if iplot>0:
         cdir = './figs'

@@ -56,7 +56,8 @@ case ${host} in
         #
         DT_BINS_H=6  ; # width of a bin for time sampling [hours]
         #
-        DATE2="${YEAR}0315"
+        #DATE2="${YEAR}0315"
+        DATE2="${YEAR}0115"
         #
         MARKER_SIZE=50
         ;;
