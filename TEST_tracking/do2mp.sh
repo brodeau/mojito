@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/generate_quad_mesh.py"
+EXE="python3 -u ${MOJITO_DIR}/generate_quad_mesh.py"
 
 LIST_RES=10; #fixme!
 
