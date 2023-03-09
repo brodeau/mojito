@@ -35,9 +35,10 @@ case ${host} in
         #DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
         #
         #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*10))
-        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
+        #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
         #
-        #DATE2="${YEAR}0115"
+        DT_BINS_H=6 ; DATE2="${YEAR}0131"
+        #
         MARKER_SIZE=10
         ;;
     "mcp-oceannext-01")

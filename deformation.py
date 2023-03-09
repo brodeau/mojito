@@ -157,14 +157,27 @@ if __name__ == '__main__':
 
     else:
         print(' *** There is no deviation in time in the 2-dimensional time array :)')
-    #exit(0)
 
 
 
+    # Now for some weird reasons time of a given buoy can be the same in the 2 quads:
+    zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
+    zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
+    zdT = zTime2-zTime1
+    #
+    if np.any(zdT==0.):
+        print('\n WARNING: time for some buoys is the same in the 2 records!')
+        (idxKeep,) = np.where( (zdT[:,0]>0.) & (zdT[:,1]>0.) & (zdT[:,2]>0.) & (zdT[:,3]>0.) )
+        idxKeep = np.array( idxKeep , dtype=int )
+        nQn = len(idxKeep)
+        print('   ==> '+str(nQ-nQn)+' quads /'+str(nQ)+' disregarded because they have the same time in both record !')
+        vidx1 = vidx1[idxKeep]
+        vidx2 = vidx2[idxKeep]
+        nQ = nQn
+    #
+    del zTime1, zTime2, zdT
 
 
-
-    
     # Coordinates of the 4 points of quadrangles for the 2 consecutive records:
     zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #  km !
     zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !

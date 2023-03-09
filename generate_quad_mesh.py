@@ -6,6 +6,16 @@
 #
 #    L. Brodeau, 2023
 #
+#
+#
+# TO DO:
+#       * find out why, sometimes, some buoys of some quads have exactly the same time
+#         in the 2 consecutive npz Quad files generated !!!
+#       => triggers this warning in `deformation.py` => `WARNING: time for some buoys is the same in the 2 records!`
+#         This is reproducible with the following in `conf.bash`:
+#          FILIN="RGPS_${YEAR}LIGHT.nc4"
+#          DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
+#
 ##################################################################
 
 from sys import argv, exit
