@@ -433,11 +433,21 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
     if np.shape(pXY2)!=(nq,n4,n2): print('ERROR [PDVfromPos()]: `pXY1` & `pXY2` do not agree in shape!'); exit(0)
     if np.shape(pA1 )!=(nq,) or np.shape(pA2)!=(nq,): print('ERROR [PDVfromPos()]: wrong shape for `pA1` or `pA2`!'); exit(0)
 
+    
     # Velocities at the 4 vertices at center of time interval:
     if np.shape(xtime1)==(nq,n4) and np.shape(xtime2)==(nq,n4):
-        print('   * [PDVfromPos()]: using accurate time of points for `dt` in estimate of velocities!')
+        print('   * [PDVfromPos()]: using accurate time of points for `dt` in estimate of velocities!')                        
         zdt = xtime2.copy() * 0.
         zdt = xtime2[:,:]-xtime1[:,:]
+        #
+        if np.any(zdt==0.):
+            from .util import epoch2clock
+            (idxBad,_) = np.where(zdt==0.)
+            for jq in idxBad:
+                print('  ==> jq, zdt[jq,0], xtime1[jq,0], xtime2[jq,0]=', zdt[jq,0], epoch2clock(xtime1[jq,0]), epoch2clock(xtime2[jq,0]) )
+            print(' ERROR [PDVfromPos]: `xtime1` and `xtime2` are identical for some points!!! (see above!)')
+            exit(0)
+        #
         zU = np.array( [ (pXY2[:,k,0] - pXY1[:,k,0])/zdt[:,k] for k in range(4) ] ).T ; # 1000 because X,Y in km !!!
         zV = np.array( [ (pXY2[:,k,1] - pXY1[:,k,1])/zdt[:,k] for k in range(4) ] ).T ; # 1000 because X,Y in km !!!
         del zdt
