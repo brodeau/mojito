@@ -36,8 +36,8 @@ ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH 
 
 FillValue = -9999.
 
-iUVstrategy = 0 ; #  What U,V should we use inside a given T-cell of the model?
-#                 #  * 0 => use the same MEAN velocity in the whole cell => U = 0.5*(U[j,i-1] + U[j,i]), U = 0.5*(V[j-1,i] + U[j,i])
+iUVstrategy = 1 ; #  What U,V should we use inside a given T-cell of the model?
+#                 #  * 0 => use the same MEAN velocity in the whole cell => U = 0.5*(U[j,i-1] + U[j,i]), V = 0.5*(V[j-1,i] + U[j,i])
 #                 #  * 1 => use the same NEAREST velocity in the whole cell => U = U[@ nearest U-point], V = V[@ nearest V-point]
 
 
