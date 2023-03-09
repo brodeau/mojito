@@ -391,6 +391,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
         for jP in range(nbP):
             ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=0.75*rsz_annot, zorder=520)
 
+    print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
     plt.close(1)
 
