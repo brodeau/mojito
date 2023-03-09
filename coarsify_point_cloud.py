@@ -163,6 +163,8 @@ if __name__ == '__main__':
 
     if reskm==20.:
         rd_ss = 15.1
+    elif reskm==40.:
+        rd_ss = 36.
     else:
         rd_ss = rfcorr * reskm ; # Correct `reskm` to get closer to requested radius (based on QUADs to be generated)
 

@@ -8,6 +8,9 @@ if [ "$1" = "0" ]; then
 elif [ "$1" = "1" ]; then
     rm -f figs/SELECTION/* nc/SELECTION_*${YEAR}*.nc npz/SELECTION_*${YEAR}*.npz
 
+elif [ "$1" = "c" ]; then
+    rm -f figs/coarsify/* nc/SELECTION_*${YEAR}*km.nc
+
 elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/*_SELECTION_RGPS_S*.err
 

@@ -4,6 +4,9 @@
 
 EXE="${MOJITO_DIR}/coarsify_point_cloud.py"
 
+ijob=0
+mkdir -p logs
+
 # Populating nc files we can use:
 list_nc=`\ls nc/SELECTION_RGPS_S???_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
@@ -27,30 +30,25 @@ for ff in ${list_nc}; do
     
     for res in ${LIST_RES}; do
 
-    
+
+        flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${res}km"
+
+        ijob=$((ijob+1))
+
         CMD="${EXE} ${ff} ${res}"
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD}
+        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+        sleep 1
         echo
+
+        if [ $((ijob%NJPAR)) -eq 0 ]; then
+            echo "Waiting! (ijob = ${ijob})...."
+            wait
+            echo; echo
+        fi
+
     done
 
 done
 
-#exit
-
-
-
-
-
-
-
-
-#if [ "$1" = "d" ]; then
-#    CMD="${EXE} ${FSI3IN} ${FNMM}"
-#else
-#CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 330" ; # NEMO SEED at HSS=15
-
-
-
-#fi
-
+wait

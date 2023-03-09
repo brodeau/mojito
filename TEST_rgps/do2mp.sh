@@ -4,8 +4,8 @@
 
 EXE="${MOJITO_DIR}/generate_quad_mesh.py"
 
-    ijob=0
-    mkdir -p logs
+ijob=0
+mkdir -p logs
 
 for res in ${LIST_RES}; do
 

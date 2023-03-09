@@ -35,8 +35,6 @@ rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
-rtolQuadA = 0.5 ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.19 km is accepted for 15 km !!
-
 rzoom_fig = 5
 
 
@@ -68,6 +66,12 @@ if __name__ == '__main__':
         cfdir = './figs/quadgener'
         if not path.exists(cfdir): mkdir(cfdir)
 
+
+    rtolQuadA = 0.75 * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
+
+
+    print('\n *** rtolQuadA = ',rtolQuadA,'km')
+    
     #########################################################################################################
 
 
@@ -79,9 +83,10 @@ if __name__ == '__main__':
         rQarea_min = 300.
         rQarea_max = 510.
         #
-    elif reskm>20 and reskm<30:
-        rQarea_min = 350.
-        rQarea_max = 950.
+    elif reskm>37.5 and reskm<42.5:
+        # 1600...
+        rQarea_min = 1300
+        rQarea_max = 2200
         #
     elif reskm>30 and reskm<40:
         rQarea_min =  800.
