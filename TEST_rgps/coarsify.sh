@@ -34,7 +34,6 @@ for ff in ${list_nc}; do
         echo
     done
 
-    exit
 done
 
 #exit
