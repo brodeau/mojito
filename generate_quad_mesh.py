@@ -34,6 +34,9 @@ rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+#
+rdev_scale = 0.2 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
+#                  # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
 
 rzoom_fig = 5
 
@@ -69,42 +72,12 @@ if __name__ == '__main__':
 
     rtolQuadA = 0.75 * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
-
-    print('\n *** rtolQuadA = ',rtolQuadA,'km')
+    print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
     
     #########################################################################################################
-
-
-    if reskm>7.5 and reskm<12.5:
-        rQarea_min =  60. ; # min area allowed for Quadrangle [km^2]
-        rQarea_max = 200. ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:1
-        #
-    elif reskm>17.5 and reskm<22.5:
-        rQarea_min = 300.
-        rQarea_max = 510.
-        #
-    elif reskm>37.5 and reskm<42.5:
-        # 1600...
-        rQarea_min = 1300
-        rQarea_max = 2200
-        #
-    elif reskm>30 and reskm<40:
-        rQarea_min =  800.
-        rQarea_max = 1800.
-        #
-    elif reskm>50 and reskm<70:
-        rQarea_min = 2000.
-        rQarea_max = 5000.        
-        #
-    elif reskm>200 and reskm<400:
-        rQarea_min =  10000.
-        rQarea_max = 50000.       
-        #
-    else:
-        print('ERROR: we do not know what to do with resolution `reskm` =', reskm) ; exit(0)
-        #
-        #rQarea_max = 18000. ; rzoom_fig = 2  ; # max area allowed for Quadrangle [km^2] VALID for NANUK4 HSS:10
-        
+    
+    rQarea_min, rQarea_max = (reskm*(1.-rdev_scale))**2, (reskm*(1.+rdev_scale))**2
+    print('\n *** Will retain quadrangles with an area comprised between '+str(round(rQarea_min),1)+' km^2 and '+str(round(rQarea_max),1)+' km^2')
 
     # Loading the data for the 2 selected records:
     Nt, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
