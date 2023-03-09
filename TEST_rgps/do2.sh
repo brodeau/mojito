@@ -44,21 +44,3 @@ for res in ${LIST_RES}; do
     done
 
 done
-
-#exit
-
-
-
-
-
-
-
-
-#if [ "$1" = "d" ]; then
-#    CMD="${EXE} ${FSI3IN} ${FNMM}"
-#else
-#CMD="${EXE}  ice_tracking.nc  ${FNMM} 0,72 330" ; # NEMO SEED at HSS=15
-
-
-
-#fi
