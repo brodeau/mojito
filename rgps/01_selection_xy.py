@@ -121,8 +121,8 @@ if __name__ == '__main__':
 
     with np.load(cf_npz_in) as data:
         Nbatches = data['Nbatches']
-        ZNB_ini  = data['ZNB_ini']
-        ZTc_ini  = data['ZTc_ini']
+        ZNB_ini  = data['NB_ini']
+        ZTc_ini  = data['Tc_ini']
         ZIDs     = data['IDs']
         ZNRc     = data['NRc']
         ZIX0     = data['ZIX0']

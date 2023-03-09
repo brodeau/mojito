@@ -663,3 +663,73 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 
+def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
+                 pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None,
+                 marker_size=None, title=None ):
+    '''
+    ### Show points, triangle, and quad meshes on the map!
+    ### => each quadrangle is filled with the appropriate color from colormap !!!
+    ###
+    ###
+    ###  * pX4, pY4: for each quad the coordinates of the 4 vertices!
+    ###
+    ###  * lGeoCoor: True   => we expect degrees for `pX4,pY4` => geographic (lon,lat) coordinates !
+    ###           False  => we expect km or m for `pX4,pY4` => cartesian coordinates !
+    ###
+    ###     Specify pX4_Q & pY4_Q when plotting QuadMesh when IDs are not those of the
+    ###     traingle world!
+    '''
+    from math import log
+
+    (nQ,) = np.shape(pF)
+    if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
+        print('\n *** ERROR [ShowDefQuad]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
+    
+    kk = _initStyle_(fntzoom=zoom)
+
+    # Colormap:
+    if   cwhat=='shr':
+        cm = plt.cm.get_cmap('viridis')
+    elif   cwhat=='tot':
+        cm = plt.cm.get_cmap('inferno')
+    elif   cwhat=='UMc':
+        cm = plt.cm.get_cmap('plasma')
+    else:
+        cm = plt.cm.get_cmap('RdBu')
+    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
+
+    # Cartesian coordinates (x,y)
+    (xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( np.mean( pX4[:,:], axis=1 ), np.mean( pY4[:,:], axis=1 ),
+                                                               zoom=zoom, rangeX=rangeX, rangeY=rangeY )
+
+    fig = plt.figure(num=1, figsize=vfig, facecolor='white')
+
+    zix = 1.5*dx/Lx
+    ziy = 1.5*dy/Ly
+    if unit: ziy = 4.2*dy/Ly
+    ax = plt.axes( [ zix, ziy, 1.-(dx/Lx+zix), 1.-(dy/Ly+ziy) ], facecolor='0.75')
+        
+    plt.axis([ xA,xB , yA,yB ])
+
+    for jQ in range(nQ):
+
+        if not np.isnan(pF[jQ]):
+            znorm = cn(pF[jQ])
+            #print('LOLO: => normalized =',znorm)
+            colrgb = cm(znorm)
+            #print('LOLO: => colrgb =',colrgb)
+        
+            plt.fill( pX4[jQ,:], pY4[jQ,:], facecolor=colrgb, edgecolor='w', linewidth=0.1 )
+            
+    if title:
+        ax.annotate(title, xy=(0.1, ziy+0.05), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+    if unit:
+        # => triggers the colorbar
+        ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
+        clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
+        clb.set_label(unit, **cfont_clb)
+
+    plt.savefig(cfig)
+    plt.close(1)
+    return 0
+

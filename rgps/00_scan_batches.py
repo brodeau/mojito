@@ -277,6 +277,6 @@ if __name__ == '__main__':
     mjt.batchSummaryRGPS(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
 
     print('\n *** Saving info about batches into: '+cf_npz_out+'!')
-    np.savez_compressed( cf_npz_out, Nbatches=Nbatches, ZNB_ini=ZNB_ini, ZTc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
+    np.savez_compressed( cf_npz_out, Nbatches=Nbatches, NB_ini=ZNB_ini, Tc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
 
 

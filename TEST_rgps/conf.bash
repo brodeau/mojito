@@ -11,9 +11,9 @@ DATE1="${YEAR}0101"
 DATE2="${YEAR}0430"
 
 #LIST_RES="10 20 30"
-#LIST_RES="10"
+LIST_RES="10"
 #LIST_RES="20"
-LIST_RES="40"
+#LIST_RES="40"
 
 FILIN="RGPS_${YEAR}.nc4"
 
@@ -26,7 +26,7 @@ case ${host} in
     "merlat")
         NJPAR=7
         export DATA_DIR="/MEDIA/data"
-        #FILIN="RGPS_${YEAR}LIGHT.nc4"
+        FILIN="RGPS_${YEAR}LIGHT.nc4"
         #FILIN="RGPS_1996-12-21_1997-02-01.nc4"
         #
         #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
@@ -35,7 +35,7 @@ case ${host} in
         #DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
         #
         #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*10))
-        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=24 ; DATE2="${YEAR}0115"
+        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
         #
         #DATE2="${YEAR}0115"
         MARKER_SIZE=10
