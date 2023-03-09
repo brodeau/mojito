@@ -17,7 +17,7 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 
 idebug = 0
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -34,6 +34,8 @@ rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
 rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+
+rtolQuadA = 0.5 ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.19 km is accepted for 15 km !!
 
 rzoom_fig = 5
 
@@ -305,6 +307,22 @@ if __name__ == '__main__':
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
             QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin )
 
+
+            # Some info about the spatial scales of quadrangles:
+            print('\n *** About our quadrangles:')
+            zsides = QUADS0.lengths()
+            zareas = QUADS0.area()
+            rl_average_side = np.mean(zsides)
+            rl_average_scal = np.mean( np.sqrt(zareas) )
+            rl_average_area = np.mean(zareas) ; rl_stdev_area = mjt.StdDev(rl_average_area, zareas)
+            print('    ==> average scale (sqrt[A]) is '+str(round(rl_average_scal,3))+' km')
+            print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
+            print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
+            del zareas, zsides
+            if abs(rl_average_scal-reskm) > rtolQuadA:
+                print(' ERROR: this avergae scale is too different from the '+creskm+' km expected!!!')
+                exit(0)
+            
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q', origin=corigin )
 
