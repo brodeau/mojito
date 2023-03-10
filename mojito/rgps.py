@@ -13,9 +13,7 @@ def AllowedDevFromDT0( pbin_dt ):
     if pbin_dt < dt0_RGPS:
         zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]                              
     else:
-        #zmax_dev_dt0 = dt0_RGPS/6 ; # => ~ 12 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
-        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
-        #fixme
+        zmax_dev_dt0 = dt0_RGPS/3 ; # => ~ 24 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
     #
     return int(zmax_dev_dt0)
 
