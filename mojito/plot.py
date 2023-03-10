@@ -712,14 +712,10 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
     plt.axis([ xA,xB , yA,yB ])
 
     for jQ in range(nQ):
-
         if not np.isnan(pF[jQ]):
             znorm = cn(pF[jQ])
-            #print('LOLO: => normalized =',znorm)
             colrgb = cm(znorm)
-            #print('LOLO: => colrgb =',colrgb)
-        
-            plt.fill( pX4[jQ,:], pY4[jQ,:], facecolor=colrgb, edgecolor='w', linewidth=0.1 )
+            plt.fill( pX4[jQ,:], pY4[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
             
     if title:
         ax.annotate(title, xy=(0.1, ziy+0.05), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
@@ -729,6 +725,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
 
+    print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
     plt.close(1)
     return 0
