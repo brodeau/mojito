@@ -60,12 +60,9 @@ case ${host} in
         #
         NJPAR=30
         #
-        DT_BINS_H=6  ; # width of a bin for time sampling [hours]
+        #DT_BINS_H=6 ; DATE2="${YEAR}0315"
+        DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0103" ; DATE2="${YEAR}0115"
         #
-        #DATE2="${YEAR}0315"
-        DATE2="${YEAR}0115"
-        #
-        MARKER_SIZE=50
         ;;
     *)
         echo "Unsupported host: ${host} !"
