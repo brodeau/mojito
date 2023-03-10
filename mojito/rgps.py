@@ -127,13 +127,15 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
                      0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
                      1 -> this point (kidx) has successors in time but none is reasonably timed (based on dt0_RGPS & devdtNom)
                      2 -> a reasonably timed successor has been found
+
+        "VUCR" => Valid UpComing Record !
     '''
     from .util import epoch2clock
     #
     idxUC = -9999
-    zt0     = -9999.
-    zts     = -9999.
-    nbROK   = 0
+    zt0   = -9999.
+    zts   = -9999.
+    nbROK = 0
     zidx0_recs = []
     
     kID = pBIDs0[kidx]                     ; # the ID of the buoy we are dealing with
@@ -150,28 +152,22 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
         ztR1  = zt0 + dt0_RGPS - devdtNom ; # Reasonable lower time bond for successor point
         ztR2  = zt0 + dt0_RGPS + devdtNom ; # Reasonable upper time bond for successor point
         #
-        print('LOLO [VUCR]')
-        print('LOLO [VUCR]: current bin starts at',epoch2clock(time_min))
-        print('LOLO [VUCR]: firt found occurence of buoy is at ',epoch2clock(zt0))
-        print('LOLO [VUCR]: we expect valid upcoming position to be between',epoch2clock(ztR1),'and',epoch2clock(ztR2))
-
-
+        #print('LOLO [VUCR]')
+        #print('LOLO [VUCR]: current bin starts at',epoch2clock(time_min))
+        #print('LOLO [VUCR]: firt found occurence of buoy is at ',epoch2clock(zt0))
+        #print('LOLO [VUCR]: we expect valid upcoming position to be between',epoch2clock(ztR1),'and',epoch2clock(ztR2))
+        #
         ll1 = (ptime0[idxBuoy]>ztR1)
         ll2 = (ptime0[idxBuoy]<ztR2)
-        
-        lHasSuccessor = np.any( ll1 & ll2 ) ; # ignore the 1st record !!!
-
-        print('LOLO [VUCR]: lHasSuccessor =',lHasSuccessor)
-        
-        if lHasSuccessor:
+        lHasVUCR = np.any( ll1 & ll2 ) ; # 1st record is ignored by definition
+        #
+        if lHasVUCR:
             nbROK   = 2
             (idxS,) = np.where( ll1 & ll2 )
             if len(idxS)>1:
-                print('LOLO [VUCR]: More than 1 candidate !!!')
                 ii = np.argmin( np.abs(ptime0[idxBuoy[idxS]] - (zt0 + dt0_RGPS)) )
                 idxUC = idxS[ii]
             else:
-                print('LOLO [VUCR]: ONLY 1 candidate !!!')
                 idxUC = idxS[0]
             #
             idxUC = idxBuoy[idxUC] ; # in the ref0 frame!
@@ -186,19 +182,17 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
         else:
             zidx0_recs = np.array([idxST], dtype=int)
 
-        ### if lHasSuccessor
-            
+        ### if lHasVUCR            
         # Sanity check for times of the records:
-        if lHasSuccessor:
-            ztime = ptime0[zidx0_recs]
-            print('LOLO [VUCR]: time#1 =',epoch2clock(ztime[0]))
-            print('LOLO [VUCR]: time#2 =',epoch2clock(ztime[1]))
-            print('LOLO [VUCR]: time gap =',round((ztime[1]-ztime[0])/(24*3600),1),' days!')
-            if ztime[1] == ztime[0]:
-                print('ERROR: equal!!!!'); exit(0)
-                
+        #if lHasVUCR:
+        #    ztime = ptime0[zidx0_recs]
+        #    print('LOLO [VUCR]: time#1 =',epoch2clock(ztime[0]))
+        #    print('LOLO [VUCR]: time#2 =',epoch2clock(ztime[1]))
+        #    print('LOLO [VUCR]: time gap =',round((ztime[1]-ztime[0])/(24*3600),1),' days!')
+        #    if ztime[1] == ztime[0]:
+        #        print('ERROR: equal!!!!'); exit(0)
     ### if len(idxBuoy) > 1
-        
+    #
     return nbROK, zidx0_recs, np.array([zt0, zts])
 
 
