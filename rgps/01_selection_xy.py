@@ -217,7 +217,7 @@ if __name__ == '__main__':
         #    => so VT contains the mean date for all buoys at a given record but
         #       corresponding to a value taken from VTbin
         VT = np.zeros( (NCRmax,3), dtype=int )
-        ir=0
+        jr=0
         for rt in vtim:
             kp = np.argmin( np.abs(vTbin[:,0]-rt) )
             lBatchOk = ( rt>=vTbin[kp,1] and rt<vTbin[kp,2] )
@@ -229,8 +229,8 @@ if __name__ == '__main__':
                 break
             #
             if idebug>1: print('      rt =',rt,' => ',mjt.epoch2clock(rt),' => nearest of VTbin =',mjt.epoch2clock(vTbin[kp,0]))
-            VT[ir,:] = vTbin[kp,:]
-            ir+=1
+            VT[jr,:] = vTbin[kp,:]
+            jr+=1
 
         if lBatchOk:
             # Now, in each record of the batch we should exclude buoys which time position is not inside the expected time bin
@@ -330,8 +330,8 @@ if __name__ == '__main__':
             # GENERATION OF COMPREHENSIVE NETCDF FILE:
             #  * 1 file per batch
             #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
-            #  * for the file name we chose the center of the bin used aka `VT[:,0]`
-            cdt1, cdt2 = split(':',mjt.epoch2clock(VT[ 0,0]))[0] , split(':',mjt.epoch2clock(VT[-1,0]))[0]  ; # keeps at the hour precision...
+            #  * for the file name we chose the time bin bounds of scanned period
+            cdt1, cdt2 = split(':',mjt.epoch2clock(VT[0,1]))[0] , split(':',mjt.epoch2clock(VT[-1,2]))[0]  ; # keeps at the hour precision...
             cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
             cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
             cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
