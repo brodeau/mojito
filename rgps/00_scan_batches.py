@@ -169,28 +169,28 @@ if __name__ == '__main__':
                         print('WOW! `jidx in IDXtakenG` !!!'); exit(0)
                     #if not jidx in IDXtakenG:
 
-                    nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), max_dev_dt_Nmnl )
+                    nbRecOK, idx0_recs, vt1b = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), max_dev_dt_Nmnl )
 
                     if nbRecOK==0:
                         IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
                         #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
 
                     # * nbRecOK : number of valid consecutive records for this buoy
-                    # * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
+                    # * idx0_recs : array of location indices (in the raw data arrays) for these valid records of this buoy
                     # * vt1b    : array of dates associated with all these records [s]
                     
                     if nbRecOK == 2:
                         # We want the buoy to be located at least `MinDistFromLand` km off the coast
-                        it1 = idx0_id[0]    ; # initial position for the buoy
+                        it1 = idx0_recs[0]    ; # initial position for the buoy
                         rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
                         if rd_ini > MinDistFromLand:
-                            IDXofStr.append(idx0_id[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
+                            IDXofStr.append(idx0_recs[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
                             #
                             NBinStr += 1   ; # this is another valid buoy for this batch
                             Xmsk[ibatch,jb] = 1                ; # flag for valid point
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
                             XNRc[ibatch,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
-                            XIX0[ibatch,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
+                            XIX0[ibatch,jb,:nbRecOK] = idx0_recs[:nbRecOK] ; # indices for these valid records of this buoy
                         ### if rd_ini > MinDistFromLand
                     else:
                         iBcnl_CR += 1

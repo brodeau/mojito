@@ -13,7 +13,9 @@ def AllowedDevFromDT0( pbin_dt ):
     if pbin_dt < dt0_RGPS:
         zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]                              
     else:
-        zmax_dev_dt0 = dt0_RGPS/6 ; # => ~ 12 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]                          
+        #zmax_dev_dt0 = dt0_RGPS/6 ; # => ~ 12 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
+        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
+        #fixme
     #
     return int(zmax_dev_dt0)
 
@@ -115,8 +117,13 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, l_doYX=False ):
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
 
 
-def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
+def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
     '''
+        * time_min: time of the lower bound of the considered time bin [s]
+        * kidx:     integer => the index that access selected point in the `*0` original arrays like `ptime0` or `pBIDs0`!
+        * ptime0:   unmasked original time array data
+        * pBIDs0:   masked original array of IDs (it is masked outside the whole period of interest)
+    
        RETURNS:
             * nbROK: number of ok records for this point
                      0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
@@ -125,55 +132,76 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
     '''
     from .util import epoch2clock
     #
-    idxScsr = -9999
+    idxUC = -9999
     zt0     = -9999.
     zts     = -9999.
     nbROK   = 0
-    #print( 'LOLO: [ValidNextRecord] 0: dt0_RGPS, devdtNom =',dt0_RGPS/3600, devdtNom/3600)
-
-    kID = pBIDs0[kidx]
-    (idxBuoy,) = np.where( pBIDs0 == kID )
-    #print( 'LOLO: [ValidNextRecord] 1: we have '+str(len(idxBuoy))+' buoy positions,',str(len(np.unique(idxBuoy))) )
-    #print(' LOLO: dates for all these positions:')
-    #print(' Buoy ID =',kID)
-    #print(' idxBuoy =',idxBuoy,' time:')
-    #for ki in idxBuoy:
-    #    print(epoch2clock(ptime0[ki]),end=' ')
-    #print('')
+    zidx0_recs = []
+    
+    kID = pBIDs0[kidx]                     ; # the ID of the buoy we are dealing with
+    (idxBuoy,) = np.where( pBIDs0 == kID ) ; # `idxBuoy` => indices that access all the positions of this buoy within the period of interest
     
     if len(idxBuoy) > 1:
         # Ok, now we know that this point is not the mono-occurence of a mono-record buoy (in the whole period not only in the bin)
-        # We focus on time location of this buoy after the begining of current bin:
+        nbROK = 1
+        # Now, we focus on time location of this buoy after the begining of current bin:
         (idxBuoy,) = np.where( (ptime0>=time_min) & (pBIDs0 == kID) )
         #
-        zt0  = ptime0[idxBuoy[0]] ; # the first time position in this bin
-        ztR1 = zt0 + dt0_RGPS - devdtNom ; # Reasonable lower time bond for successor point
-        ztR2 = zt0 + dt0_RGPS + devdtNom ; # Reasonable lower time bond for successor point
-        nbROK   = 1
-        lHasSuccessor = np.any( (ptime0[idxBuoy]>ztR1) & (ptime0[idxBuoy]<ztR2) )
+        idxST = idxBuoy[0] 
+        zt0   = ptime0[idxST] ; # the first time position inside this bin
+        ztR1  = zt0 + dt0_RGPS - devdtNom ; # Reasonable lower time bond for successor point
+        ztR2  = zt0 + dt0_RGPS + devdtNom ; # Reasonable upper time bond for successor point
         #
+        print('LOLO [VUCR]')
+        print('LOLO [VUCR]: current bin starts at',epoch2clock(time_min))
+        print('LOLO [VUCR]: firt found occurence of buoy is at ',epoch2clock(zt0))
+        print('LOLO [VUCR]: we expect valid upcoming position to be between',epoch2clock(ztR1),'and',epoch2clock(ztR2))
+
+
+        ll1 = (ptime0[idxBuoy]>ztR1)
+        ll2 = (ptime0[idxBuoy]<ztR2)
+        
+        lHasSuccessor = np.any( ll1 & ll2 ) ; # ignore the 1st record !!!
+
+        print('LOLO [VUCR]: lHasSuccessor =',lHasSuccessor)
+        
         if lHasSuccessor:
             nbROK   = 2
-            (idxS,) = np.where( (ptime0[idxBuoy]>ztR1) & (ptime0[idxBuoy]<ztR2) )
-            if len(idxS)!=1:
-                #print(' [ValidNextRecord()]: point has more than 1 possible successor!!!')
-                #print(' Point is:',epoch2clock(zt0))
-                #print(' successor are:')
-                #for zt in ptime0[idxBuoy[idxS]]: print(epoch2clock(zt))
+            (idxS,) = np.where( ll1 & ll2 )
+            if len(idxS)>1:
+                print('LOLO [VUCR]: More than 1 candidate !!!')
                 ii = np.argmin( np.abs(ptime0[idxBuoy[idxS]] - (zt0 + dt0_RGPS)) )
-                idxScsr = idxS[ii]
-                #print(' => selected:',epoch2clock(ptime0[idxBuoy[idxScsr]]) ); exit(0)
+                idxUC = idxS[ii]
             else:
-                idxScsr = idxS[0]
+                print('LOLO [VUCR]: ONLY 1 candidate !!!')
+                idxUC = idxS[0]
             #
-            idxScsr = idxBuoy[idxScsr] ; # in the ref0 frame!
-            zts = ptime0[idxScsr]
+            idxUC = idxBuoy[idxUC] ; # in the ref0 frame!
+            zts = ptime0[idxUC]
 
-            if idxScsr in pidxIgnore:
-                print('ERROR [ValidNextRecord()] `idxScsr` is forbidden by `pidxIgnore`! ')
+            if idxUC in pidxIgnore:
+                print('ERROR [ValidUpComingRecord()] `idxUC` is forbidden by `pidxIgnore`! ')
                 exit(0)            
-    #
-    return nbROK, np.array([kidx, idxScsr], dtype=int), np.array([zt0, zts])
+            #
+            zidx0_recs = np.array([idxST, idxUC], dtype=int)
+            
+        else:
+            zidx0_recs = np.array([idxST], dtype=int)
+
+        ### if lHasSuccessor
+            
+        # Sanity check for times of the records:
+        if lHasSuccessor:
+            ztime = ptime0[zidx0_recs]
+            print('LOLO [VUCR]: time#1 =',epoch2clock(ztime[0]))
+            print('LOLO [VUCR]: time#2 =',epoch2clock(ztime[1]))
+            print('LOLO [VUCR]: time gap =',round((ztime[1]-ztime[0])/(24*3600),1),' days!')
+            if ztime[1] == ztime[0]:
+                print('ERROR: equal!!!!'); exit(0)
+                
+    ### if len(idxBuoy) > 1
+        
+    return nbROK, zidx0_recs, np.array([zt0, zts])
 
 
 
