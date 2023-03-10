@@ -33,11 +33,9 @@ for res in ${LIST_RES}; do
             exit
         fi
 
-
-
-
-
         CMD="${EXE} ${ff} 0,1 ${res}"
+        echo
+        echo "####################################################################################################"
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
         ${CMD}
         echo

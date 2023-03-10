@@ -182,7 +182,7 @@ if __name__ == '__main__':
     NbRM = nBmax-NbP
     print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
 
-    if NbRM>0:        
+    if NbRM>0:
         zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
 
         

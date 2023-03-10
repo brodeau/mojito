@@ -165,8 +165,12 @@ if __name__ == '__main__':
         rd_ss = 15.1
     elif reskm==40.:
         rd_ss = 36.
+    elif reskm==80.:
+        rd_ss = 75.
     else:
-        rd_ss = rfcorr * reskm ; # Correct `reskm` to get closer to requested radius (based on QUADs to be generated)
+        print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
+        exit(0)
+        
 
     print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
     #print('LOLO: shape(zXY) =',np.shape(zXY))
@@ -215,11 +219,11 @@ if __name__ == '__main__':
             # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
             # Before subsampling
             kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
-                                 ppntIDs=vIDs[:], lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
+                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
             
             # After subsampling
             kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
-                                 ppntIDs=vIDs[idxKeep], lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
+                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[idxKeep], 
 
             
             # B: same, but on projection with geographic coordinates

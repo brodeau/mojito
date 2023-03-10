@@ -6,16 +6,16 @@ from sys import exit
 
 class Triangle:
 
-    def __init__( self,  xPcoor, xTPntIdx, xTnbgh, vPIDs, vPtime, vPnames, origin='unknown' ):
+    def __init__( self,  pXYkm, xTPntIdx, xTnbgh, vPIDs, vPtime, vPnames, origin='unknown' ):
         '''
                `nP` points => `nT` Triangles!
 
-            * xPcoor:   [(nP,2] array of floats]  the coordinates of the nP points that define the Triangles
+            * pXYkm:   [(nP,2] array of floats]  the coordinates of the nP points that define the Triangles
             * xTPntIdx: [(nT,3] array of integers] the 3 point indices composing the triangle, in counter-clockwize
             * xTnbgh:   [(nT,3] array of integers] the 3 indices of the 3 neighbor triangles
-            * vPIDs:    [(nP)  vector of integers] an integer to identify each point as in xPcoor
+            * vPIDs:    [(nP)  vector of integers] an integer to identify each point as in pXYkm
             * vPtime:   [(nP)  vector of floats] epoch/unix time corresponding to buoy's position
-            * vPnames:  [(nP)  vector of strings]  a string to identify each point as in xPcoor
+            * vPnames:  [(nP)  vector of strings]  a string to identify each point as in pXYkm
 
                          C
                          o
@@ -31,7 +31,7 @@ class Triangle:
         '''
         cEM = 'ERROR: [polygons.Triangle] =>'
         #
-        (nP,nd2) = np.shape(xPcoor)
+        (nP,nd2) = np.shape(pXYkm)
         if nd2!=2:
             print(cEM+' problem in the shape of coordinate array!'); exit(0)
         (nT,nd3) = np.shape(xTPntIdx)
@@ -51,7 +51,7 @@ class Triangle:
         if len(zvPntIdx) != nP:
             print(cEM+' problem with the number of points at play deduced from `xTPntIdx`', len(zvPntIdx), nP); exit(0)
 
-        zTcoor = np.array([ [ xPcoor[i,:] for i in xTPntIdx[jT,:] ] for jT in range(nT) ]) ; # for each Triangle the 3 coordinates of 3 points [nQ,3,2]
+        zTcoor = np.array([ [ pXYkm[i,:] for i in xTPntIdx[jT,:] ] for jT in range(nT) ]) ; # for each Triangle the 3 coordinates of 3 points [nQ,3,2]
 
         # Integers:
         self.nP        = nP ; # number of points making the triangles
@@ -64,7 +64,7 @@ class Triangle:
         self.PointTime    = np.array( vPtime )               ; # point time  => shape = (nP)
         self.PointNames   = np.array( vPnames, dtype='U32' ) ; # point names => shape = (nP)
         self.PointIdx     = zvPntIdx                         ; # indices of all the points making the triangles => shape = (nP)
-        self.PointXY      = np.array(xPcoor)                 ; # Coordinates of all the points making the triangles => shape = (nP,2)
+        self.PointXY      = np.array(pXYkm)                 ; # Coordinates of all the points making the triangles => shape = (nP,2)
         self.TriIDs       = np.array([i for i in range(nT)], dtype=int); # IDs of the triangles => shape = (nT)
         self.MeshVrtcPntIdx = np.array(xTPntIdx, dtype=int)                ; # 3 point indices composing the triangles, CCW => shape = (nT,3)
         self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 3 points composing the triangle => shape = (nT,3,2)
@@ -90,13 +90,13 @@ class Triangle:
 
 class Quadrangle:
 
-    def __init__( self,  xPcoor, xQPntIdx, vPIDs, vPtime, vQnames, vQIDs=[], date='unknown', origin='unknown' ):
+    def __init__( self,  pXYkm, xQPntIdx, vPIDs, vPtime, vQnames, vQIDs=[], date='unknown', origin='unknown' ):
         '''
                => `nQ` Quadrangles!
 
-            * xPcoor:   [(nP,2] array of floats] the coordinates of the nP points that define the Quads
+            * pXYkm:   [(nP,2] array of floats] the coordinates of the nP points that define the Quads
             * xQPntIdx: [(nQ,4] array of integers] the 4 point indices composing the quad, in counter-clockwize
-            * vPIDs:    [(nP)  vector of integers] an integer to identify each point as in xPcoor
+            * vPIDs:    [(nP)  vector of integers] an integer to identify each point as in pXYkm
             * vPtime:    [(nP)  vector of floats] epoch/unix time corresponding to buoy's position
             * vQnames:  [(nQ)  vector of strings]  a string to identify each quadrangle
             * vQIDs:    [(nQ)  vector of integers] force IDs of quadrangle to this instead of using 0 to nQ !!!
@@ -120,7 +120,7 @@ class Quadrangle:
         '''
         cEM = 'ERROR: [polygons.Quadrangle] =>'
         #        
-        (nP,nd2) = np.shape(xPcoor)
+        (nP,nd2) = np.shape(pXYkm)
         if nd2!=2:
             print(cEM+' problem in the shape of coordinate array!'); exit(0)
         (nQ,nd4) = np.shape(xQPntIdx)
@@ -137,7 +137,7 @@ class Quadrangle:
         if len(zvPntIdx) != nP:
             print(cEM+' problem with the number of points at play deduced from `xQPntIdx`: ',len(zvPntIdx),nP); exit(0)
 
-        zTcoor = np.array([ [ xPcoor[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
+        zTcoor = np.array([ [ pXYkm[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
 
         l_force_Q_IDs = (len(vQIDs) == nQ)
 
@@ -151,7 +151,7 @@ class Quadrangle:
         self.PointIDs     = np.array( vPIDs,   dtype=int )   ; # point IDs   => shape = (nP)
         self.PointTime    = np.array( vPtime )               ; # point time  => shape = (nP)        
         self.PointIdx     = zvPntIdx                         ; # indices of all the points making the quadrangles => shape = (nP)
-        self.PointXY      = np.array(xPcoor)                             ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
+        self.PointXY      = np.array(pXYkm)                 ; # Coordinates of all the points making the quadrangles => shape = (nP,2)
         if l_force_Q_IDs:
             self.QuadIDs       = np.array(vQIDs, dtype=int); # IDs of the quadrangles => shape = (nQ)
         else:
@@ -286,11 +286,11 @@ def LoadClassPolygon( cfile, ctype='Q' ):
 
 
 
-def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
+def RecycleQuads( pXY, pTime, pIDs, pQDS,  iverbose=0 ):
     '''
-          pCoor:  new coordinates of the cloud of points (nP,2)
-          pTime:  new time for these points              (nP)
-          pIDs :  IDs of points as in `pCoor`            (nP)
+          pXY  :  updated coordinates of the cloud of points (nP,2)
+          pTime:  new time for these points                  (nP)
+          pIDs :  IDs of points as in `pXY`                  (nP)
           pQDS :  Quad class based on the previous cloud of points
 
         => Returns: all arrays necessary to define the new Quad class based on the new location of the points
@@ -298,64 +298,71 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
     cEM = 'ERROR: [polygons.RecycleQuads] =>'
 
 
+    (nP1,_) = np.shape(pXY)    
+    if np.shape(pTime) != (nP1,) or np.shape(pIDs) != (nP1,):
+        print(cEM+' problem of shape for `pTime` or `pIDs` !'); exit(0)
+    
     nP0     = pQDS.nP
     nQ0     = pQDS.nQ
 
-    if np.shape(pTime) != np.shape(pIDs): print(cEM+' `shape(pTime) != shape(pIDs)` !'); exit(0)
-    
-    zQVids_0 = pQDS.MeshVrtcPntIdx.copy() ; # (nQ,4)
-    zPids_0  = pQDS.PointIDs.copy()       ; # (nP) All point IDs involved in initial polpulation of Quads
-    zQnms_0  = pQDS.QuadNames.copy()      ; # (nQ)
-    zQids_0  = pQDS.QuadIDs.copy()        ; # (nQ)   All Quad IDs involved in initial polpulation of Quads
+    ##lolo: debug
+    #jPf = 25491
+    #print('LOLO [RecycleQuads]: following point '+str(jPf))
+    #(idxPf,) = np.where( pIDs  == jPf )
+    #zxyrPf_in = pXY[idxPf,:]
+    #print('LOLO [RecycleQuads]: zxyrPf as input argument (pXY) (for 2nd rec)=> ',zxyrPf_in)
+    ##lolo.
 
+    zQ4idx_0 = pQDS.MeshVrtcPntIdx.copy() ; # (nQ,4)
+    zPids_0  = pQDS.PointIDs.copy()       ; # (nP) All point IDs involved in initial population of Quads
+    zQnms_0  = pQDS.QuadNames.copy()      ; # (nQ)
+    zQids_0  = pQDS.QuadIDs.copy()        ; # (nQ)   All Quad IDs involved in initial population of Quads
+
+    ##lolo:                                                                                                                                                       
+    #(idxPf,) = np.where( zPids_0 == jPf )
+    #QxyPf1 = pQDS.PointXY[idxPf,:]
+    #print('LOLO [RecycleQuads]: QxyPf from former QUAD (for 1st rec)',QxyPf1)
+    ## => that's okay! controlled!
+    ##lolo.
+    
     lst_PIDs_aliv = []
     lst_QIDs_aliv = []
 
     for jQ in range(nQ0):
         l_Survived = True
         idQuad = zQids_0[jQ]
-        if iverbose>0: print('\n --- Quad #'+str(jQ)+' with ID '+str(idQuad)+':')
     
         # Indices & IDs of the 4 points involved in this Quad:
-        v4Pind = zQVids_0[jQ,:]
-        v4Pids = np.array( [ zPids_0[i] for i in v4Pind ], dtype=int )
+        v4Pidx = zQ4idx_0[jQ,:]
+        v4Pids = np.array( [ zPids_0[i] for i in v4Pidx ], dtype=int )
 
-        # If any of the 4 points involved in this Quad does not exist in current cloud point:
-        for jid in v4Pids:
-            if not jid in pIDs:
-                if iverbose>0:
-                    print('     => point with ID '+str(jid)+' does not exist anymore in this record')
-                    print('     ===> quad with ID '+str(idQuad)+' is forgotten...')
-                l_Survived = False
-                break
+        # If any of the 4 point IDs involved in this Quad does not exist in current cloud point, the Quad did not make it...
+        kIDs = np.intersect1d(v4Pids, pIDs); # retain only values of `v4Pids` that exist in `pIDs`
+        l_Survived = ( len(kIDs) == 4 )
     
         if l_Survived:
             # Current Quad still exists in this record...
-            if iverbose>0: print('     => still exists at current record :)!')
             lst_QIDs_aliv.append(idQuad)
             lst_PIDs_aliv.append(v4Pids)
 
-    zQids_aliv = np.array(lst_QIDs_aliv)
-    zPIDs_aliv = np.unique(np.array(lst_PIDs_aliv)) ; # we probably break the initial order...
+    zQids_aliv = np.array(lst_QIDs_aliv, dtype=int)
+    zPIDs_aliv = np.unique(np.array(lst_PIDs_aliv, dtype=int)) ; # we probably break the initial order...
     nQ = len(zQids_aliv)
     nP = len(zPIDs_aliv)
 
-    if iverbose>1:
-        print('  => IDs of  quads still involved:', zQids_aliv)                
-        print('  => IDs of points still involved:', zPIDs_aliv)                
-    del v4Pind, v4Pids, lst_QIDs_aliv, lst_PIDs_aliv
+    del v4Pidx, v4Pids, lst_QIDs_aliv, lst_PIDs_aliv
     
-    print('\n *** At present record, we have '+str(nQ)+' Quads / '+str(nQ0)+' that survived!')
-    print('        and  '+str(nP)+' points  / '+str(nP0)+' involved...')
+    print(' * [RecycleQuads]: at present record, we have '+str(nQ)+' Quads / '+str(nQ0)+' that survived!')
+    print('                   and  '+str(nP)+' points  / '+str(nP0)+' involved...')
     
     # * xQpnts remains the same! That's the whole point!!!
     # * xQcoor should be updated with the new point coordinates at this record:
 
     if nQ < nQ0:
-        print('\n *** nQ < nQ0 => need to shrink arrays! :(')
-        zPcoor = np.zeros((nP,2))              ; # coordinates of the nP points
+        print(' * [RecycleQuads]: nQ < nQ0 => need to shrink arrays! :(')
+        zXY = np.zeros((nP,2))              ; # coordinates of the nP points
         zPtime = np.zeros( nP   )              ; # time of the nP points
-        zQVids = np.zeros((nQ,4), dtype=int)   ; # indices (to be used in xCoor) of the 4 points composing the Quad
+        zQ4idx = np.zeros((nQ,4), dtype=int)   ; # indices (to be used in xCoor) of the 4 points composing the Quad
         zPids  = np.zeros(nP)                  ; # IDs of points
         zQnms  = np.zeros(nQ,     dtype='U32') ; # Quad names
         zQids  = np.zeros(nQ,     dtype=int)   ; # Quad IDs
@@ -372,7 +379,7 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
 
                 (ip,) = np.where(pIDs==idPoint)
                 if len(ip)!=1: print(cEM+'  Z1'); exit(0)
-                zPcoor[jP,:] = pCoor[ip[0],:]
+                zXY[jP,:] = pXY[ip[0],:]
                 zPtime[jP]   = pTime[ip[0]]
         del lst_pntID_used
         if jP != nP-1: print(cEM+'  Z2'); exit(0)
@@ -384,12 +391,10 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
             l_Survived = True
             idQuad = zQids_0[jQp]
             # Indices & IDs of the 4 points involved in this Quad:
-            v4Pind = zQVids_0[jQp,:]
-            v4Pids = np.array( [ zPids_0[i] for i in v4Pind ], dtype=int )
-            for jid in v4Pids:
-                if not jid in pIDs:
-                    l_Survived = False
-                    break
+            v4Pidx = zQ4idx_0[jQp,:]
+            v4Pids = np.array( [ zPids_0[i] for i in v4Pidx ], dtype=int )
+            kIDs = np.intersect1d(v4Pids, pIDs); # retain only values of `v4Pids` that exist in `pIDs`
+            l_Survived = ( len(kIDs) == 4 )
             if l_Survived:
                 # Current Quad still exists in this record...
                 jQ = jQ+1
@@ -398,30 +403,56 @@ def RecycleQuads( pCoor, pTime, pIDs, pQDS,  iverbose=0 ):
                 zQids[jQ]    = zQids_0[jQp]
                 # Tricky for `xQpnts` as we must also update the new point indices in the new frame [0,nP-1]
                 for jp in range(4):
-                    iPidx = v4Pind[jp]         ; # this index is valid for 0ious go, i.e. in the frame [0,nP0-1]
+                    iPidx = v4Pidx[jp]         ; # this index is valid for 0ious go, i.e. in the frame [0,nP0-1]
                     iPids = zPids_0[iPidx]  ; # => IDs of the corresponding point
                     (ip,) = np.where( zPids == iPids ) ; # => index of this point in the frame [0,nP-1] ; #fixme
                     if len(ip)!=1: print(cEM+'  Z5'); exit(0)
-                    zQVids[jQ,jp] = ip[0]
+                    zQ4idx[jQ,jp] = ip[0]
 
                     
     elif nQ == nQ0:
-        print('\n *** nQ == nQ0 => NO need to shrink arrays! :D ')
+        print(' * [RecycleQuads]: `nQ == nQ0` => NO need to shrink arrays! :D ')
         
-        # Only zPcoor must be modified, taking into consideration new coordinates of the point cloud        
-        zQVids = zQVids_0
-        zPids = zPids_0
+        # Only zXY must be modified, taking into consideration new coordinates of the point cloud        
+        zQ4idx = zQ4idx_0
+        zPids  = zPids_0
         zQnms  = zQnms_0
         zQids  = zQids_0
         #
-        zPcoor = np.zeros((nP,2))
+        zXY = np.zeros((nP,2))
         zPtime = np.zeros( nP )
-        _,ind2keep,_ = np.intersect1d(pIDs, zPids, return_indices=True); # retain only indices of `pIDs` that exist in `zPids`
-        zPcoor[:,:] = pCoor[ind2keep,:]
-        zPtime[:]   = pTime[ind2keep]
-        
+        #print('LOLO: pIDs =',pIDs, len(pIDs), len(np.unique(pIDs)))
+        #print('LOLO: zPids =',zPids, len(zPids), len(np.unique(zPids)))
+        #print('LOLO: nP, len(zPids) =',nP,len(zPids))
+
+        # This loop seems stupid, could have done a `_,ind2keep,_ = np.intersect1d(pIDs, zPids_0, return_indices=True)`
+        # but for some reasons, some fuck-ups with this intersect1d !!! (and not linked to the unique option)
+        for jP in range(nP):
+            (idx,) = np.where(pIDs==zPids[jP])
+            zXY[jP,:]  =   pXY[idx,:]
+            zPtime[jP] = pTime[idx]        
+        #lolo
+        #([iii],) = np.where( (pXY[:,0]>-649.79) & (pXY[:,0]<-649.78) )
+        #print('LOLO: in pXY, position of our point is iii =',iii, 'pIDs[iii] =', pIDs[iii])
+        #([iii],) = np.where( (zXY[:,0]>-649.79) & (zXY[:,0]<-649.78) )
+        #print('LOLO: in zXY, position of our point is iii =',iii, 'zPids[iii] =', zPids[iii])
+        #print(ind2keep)
+
     else:
         print(cEM+' : nQ > nQ0!!!'); exit(0)
 
-    return zPcoor, zPtime, zQVids, zPids, zQnms, zQids
+    ##lolo: end control:
+    #(idxPf,) = np.where( zPids  == jPf )
+    #zxyrPf1 = zXY[idxPf,:]
+    #print('LOLO [RecycleQuads]: zxyrPf1 as returned => ',zxyrPf1)
+    #if np.sum( np.abs(zxyrPf1 - zxyrPf_in) ) != 0. :
+    #    print('LOLO [RecycleQuads]: FUCK UP at 2nd record!!!!')
+    #    print('LOLO [RecycleQuads]: Good expected coor. were:',zxyrPf_in)
+    #    print('LOLO [RecycleQuads]:  => in the returned XY array we have:',zxyrPf1)
+    #    exit(0)
+    #else:
+    #    print('LOLO [RecycleQuads]: coor at rec=1 well conserved! :)')
+    ##lolo.                                                                                                                                                       
+
+    return zXY, zPtime, zQ4idx, zPids, zQnms, zQids
 
