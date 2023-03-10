@@ -37,8 +37,6 @@ l_drop_overlap = True
 #
 rd_tol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `l_drop_overlap`
 
-FillValue = -9999.
-
 #================================================================================================
 
 
@@ -105,17 +103,15 @@ if __name__ == '__main__':
         if Nb_min_cnsctv > Nforced_batch_length:
             print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_batch_length` !'); exit(0)
 
-    # Build scan time axis willingly at relative high frequency (dt_bin_sec << dt_buoy_Nmnl)
+    # Build binning time axis:
     NTbin, vTbin = mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
 
 
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
-    Np, Nb, vIDsWP, vtime0, vIDs0, vlat0, vlon0, vykm0, vxkm0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, l_doYX=True )
+    Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0, vykm0, vxkm0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, l_doYX=True )
     # * Np: number of points of interst
     # * Nb: number of unique buoys of interest
-    # * vIDsWP: unique IDs of the buoys of interest
-
-
+    # * vIDsU0: unique IDs of the buoys of interest
 
     print('\n *** Opening "selected batches" data into '+cf_npz_in+'!')
 
@@ -171,11 +167,11 @@ if __name__ == '__main__':
         #####################################################################
 
         nBpR = np.zeros( NCRmax      , dtype=int) ; # number of remaining buoys at given record
-        xXkm = np.zeros((NCRmax,NvB)) + FillValue
-        xYkm = np.zeros((NCRmax,NvB)) + FillValue
-        xlon = np.zeros((NCRmax,NvB)) + FillValue
-        xlat = np.zeros((NCRmax,NvB)) + FillValue
-        xtim = np.zeros((NCRmax,NvB)) + FillValue      ; # the exact time for each buoy!
+        xXkm = np.zeros((NCRmax,NvB)) + mjt.FillValue
+        xYkm = np.zeros((NCRmax,NvB)) + mjt.FillValue
+        xlon = np.zeros((NCRmax,NvB)) + mjt.FillValue
+        xlat = np.zeros((NCRmax,NvB)) + mjt.FillValue
+        xtim = np.zeros((NCRmax,NvB)) + mjt.FillValue      ; # the exact time for each buoy!
         xmsk = np.zeros((NCRmax,NvB) , dtype='i1')  ; # the mask for exluding buoys that stick out in time...
         xix0 = np.zeros((NCRmax,NvB) , dtype=int)  ;
 
@@ -184,14 +180,11 @@ if __name__ == '__main__':
             nvr = ZNRc[jS,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
             if Nforced_batch_length:
                 nvr = min( nvr, Nforced_batch_length )
-            #
             if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
             xix0[0:nvr,jb] = ZIX0[jS,jb,0:nvr] ; #lolo # all consecutive point position (indices as in `*0` arrays) for thi buoy
             #
-            #(idx0_id,) = np.where( vIDs0 == vIDs[jb])
-            #indv = idx0_id[0:nvr] ; # from record `nvr` onward buoy has been canceled (due to rogue time / expected time)
-            indv = xix0[0:nvr,jb].copy() #
+            indv = xix0[0:nvr,jb].copy()
             #
             xXkm[0:nvr,jb] = vxkm0[indv]
             xYkm[0:nvr,jb] = vykm0[indv]
@@ -200,6 +193,16 @@ if __name__ == '__main__':
             xlat[0:nvr,jb] = vlat0[indv]
             xtim[0:nvr,jb] = vtime0[indv]
 
+        ###
+
+        # Testing time between 1st and 2nd record:
+        zdt = xtim[1,:] - xtim[0,:]
+        if np.any( zdt == 0. ):
+            print('ERROR: some identical times between 1st and 2nd records!!!')
+            (idxFU,) = np.where( zdt == 0. )
+            print('  => for '+str(len(idxFU))+' points!')
+            exit(0)
+        del zdt
 
         nBpR[:] = [ np.sum(xmsk[jr,:]) for jr in range(NCRmax) ] ; # How many buoys still present at each record?
         if np.max(nBpR) != NvB: print('ERROR: max(nBpR) != NvB !'); exit(0)
@@ -335,7 +338,7 @@ if __name__ == '__main__':
     
             print('   * Batch =',jS,' => saving '+cf_nc_out)
             kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
-                                       xtime=xtim, fillVal=FillValue, corigin='RGPS' )
+                                       xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
             
 
     ### for jS in range(Nbatches)

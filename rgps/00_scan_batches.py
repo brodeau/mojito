@@ -23,17 +23,11 @@ idebug = 0
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
-dt_Nmnl         = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
-#                             # => attention must be paid to `max_dev_dt_Nmnl` later in the code...
-
 NbtchMax  =  200 ; # Max number of Batches, guess!, just for dimensionning array before knowing!!!
 
 min_nb_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
 
 MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
-
-FillValue = -9999.
-
 
 #================================================================================================
 
@@ -61,12 +55,7 @@ if __name__ == '__main__':
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
 
-    # Adjustements that depend on the width of bins:
-    if dt_bin_sec < dt_Nmnl:
-        max_dev_dt_Nmnl = 6*3600 ; # => 6 hours! maximum allowed deviation from the `dt_Nmnl` between 2 consecutive records of buoy [s]
-    else:
-        max_dev_dt_Nmnl = dt_Nmnl/3 ; # => ~ 1 day ! maximum allowed deviation from the `dt_Nmnl` between 2 consecutive records of buoy [s]
-
+    max_dev_dt_Nmnl = mjt.AllowedDevFromDT0( dt_bin_sec )
     print('\n *** Max. allowed deviation in time from the `dt_Nmnl` between 2 consec. points to select =',max_dev_dt_Nmnl/3600,'hours')
     
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
@@ -96,7 +85,8 @@ if __name__ == '__main__':
     Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, l_doYX=False )
     # * Np: number of points of interst
     # * Nb: number of unique buoys of interest
-    # * vIDsU0: unique IDs of the buoys of interest len=Nb  #fixme: sure?
+    # * vIDsU0: unique IDs of the buoys of interest
+
     NpT = len(vtime0) ; # Actual length of the *0 arrays..
     
     # Arrays along batches and buoys:
@@ -133,7 +123,7 @@ if __name__ == '__main__':
             # => need to keep only one position:
 
             Nok0, idxOK0 = mjt.EMO2( zIDsOK0, ztimOK0, vIDs0, vtime0, idxOK0, rTc, criterion='nearest',
-                                     dtNom=dt_Nmnl, devdtNom=max_dev_dt_Nmnl, iverbose=1 )
+                                     devdtNom=max_dev_dt_Nmnl, iverbose=1 )
             del zIDsOK0, ztimOK0
             print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
 
@@ -179,8 +169,7 @@ if __name__ == '__main__':
                         print('WOW! `jidx in IDXtakenG` !!!'); exit(0)
                     #if not jidx in IDXtakenG:
 
-                    nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG),
-                                                                  dt_Nmnl, max_dev_dt_Nmnl )
+                    nbRecOK, idx0_id, vt1b = mjt.ValidNextRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), max_dev_dt_Nmnl )
 
                     if nbRecOK==0:
                         IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy

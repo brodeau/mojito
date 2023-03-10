@@ -1,6 +1,23 @@
 import numpy as np
 
+dt0_RGPS = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]                                                                       
+
+
 FillValue = -9999.
+
+
+def AllowedDevFromDT0( pbin_dt ):
+    '''
+       * pbin_dt: time width of the chosen time bins [s]
+    '''
+    if pbin_dt < dt0_RGPS:
+        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]                              
+    else:
+        zmax_dev_dt0 = dt0_RGPS/6 ; # => ~ 12 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]                          
+    #
+    return int(zmax_dev_dt0)
+
+
 
 def batchSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
     from .util import epoch2clock
@@ -98,12 +115,12 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, l_doYX=False ):
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
 
 
-def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, devdtNom ):
+def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
     '''
        RETURNS:
             * nbROK: number of ok records for this point
                      0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
-                     1 -> this point (kidx) has successors in time but none is reasonably timed (based on dtNom & devdtNom)
+                     1 -> this point (kidx) has successors in time but none is reasonably timed (based on dt0_RGPS & devdtNom)
                      2 -> a reasonably timed successor has been found
     '''
     from .util import epoch2clock
@@ -112,7 +129,7 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, devdtNom
     zt0     = -9999.
     zts     = -9999.
     nbROK   = 0
-    #print( 'LOLO: [ValidNextRecord] 0: dtNom, devdtNom =',dtNom/3600, devdtNom/3600)
+    #print( 'LOLO: [ValidNextRecord] 0: dt0_RGPS, devdtNom =',dt0_RGPS/3600, devdtNom/3600)
 
     kID = pBIDs0[kidx]
     (idxBuoy,) = np.where( pBIDs0 == kID )
@@ -130,8 +147,8 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, devdtNom
         (idxBuoy,) = np.where( (ptime0>=time_min) & (pBIDs0 == kID) )
         #
         zt0  = ptime0[idxBuoy[0]] ; # the first time position in this bin
-        ztR1 = zt0 + dtNom - devdtNom ; # Reasonable lower time bond for successor point
-        ztR2 = zt0 + dtNom + devdtNom ; # Reasonable lower time bond for successor point
+        ztR1 = zt0 + dt0_RGPS - devdtNom ; # Reasonable lower time bond for successor point
+        ztR2 = zt0 + dt0_RGPS + devdtNom ; # Reasonable lower time bond for successor point
         nbROK   = 1
         lHasSuccessor = np.any( (ptime0[idxBuoy]>ztR1) & (ptime0[idxBuoy]<ztR2) )
         #
@@ -143,7 +160,7 @@ def ValidNextRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, dtNom, devdtNom
                 #print(' Point is:',epoch2clock(zt0))
                 #print(' successor are:')
                 #for zt in ptime0[idxBuoy[idxS]]: print(epoch2clock(zt))
-                ii = np.argmin( np.abs(ptime0[idxBuoy[idxS]] - (zt0 + dtNom)) )
+                ii = np.argmin( np.abs(ptime0[idxBuoy[idxS]] - (zt0 + dt0_RGPS)) )
                 idxScsr = idxS[ii]
                 #print(' => selected:',epoch2clock(ptime0[idxBuoy[idxScsr]]) ); exit(0)
             else:
@@ -296,13 +313,13 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
     return 0
 
 
-def EMO2( pIDs, ptime, pIDsRef0, ptimeRef0, pidx0, binTctr, criterion='nearest', dtNom=3600*24*3, devdtNom=3600*6, iverbose=0 ):
+def EMO2( pIDs, ptime, pIDsRef0, ptimeRef0, pidx0, binTctr, criterion='nearest', devdtNom=3600*6, iverbose=0 ):
     '''
          For many possible reasons the same buoy ID can have multiple time-position occurences in a given time bin
          (especially if wide bin)
          => we need to keep only one of these occurences of the most approriate location within this time bin
          => one of the selection process is too look which of these multi-occuring positions is more promising
-            in terms of upcomming position after about 3 days (`dtNom`) !
+            in terms of upcomming position after about 3 days (`dt0_RGPS`) !
     INPUT:
             * pIDs     : 1D array of integers containing buoy IDs with possible multi-occurence of certain IDs
             * ptime    : 1D array of real containing epoch time date associated to each buoy [s] (UNIX time)
@@ -364,7 +381,7 @@ def EMO2( pIDs, ptime, pIDsRef0, ptimeRef0, pidx0, binTctr, criterion='nearest',
             jm = 0
             for idx0 in idxMlt0:
                 zt0 = ptimeRef0[idx0]
-                ztf_ideal = zt0 + dtNom
+                ztf_ideal = zt0 + dt0_RGPS
                 (idxFuture0,) = np.where( (pIDsRef0==jMO) & (ptimeRef0>zt0) )
                 if len(idxFuture0)>0:
                     zdevFideal = np.abs(ptimeRef0[idxFuture0] - ztf_ideal)
@@ -437,7 +454,7 @@ def EMO2( pIDs, ptime, pIDsRef0, ptimeRef0, pidx0, binTctr, criterion='nearest',
 
 
 def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='nearest',
-                            ptimeRef0=[], dtNom=None, devdtNom=None, iverbose=0 ):
+                            ptimeRef0=[], devdtNom=None, iverbose=0 ):
     '''
          For many possible reasons the same buoy ID can exist more than once in `pIDs`,
          => we need to keep only one occurence of the location index of these points,
@@ -464,8 +481,8 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
         print('ERROR [ExcludeMultiOccurences]: criterion "'+criterion+'" is unknown!')
         exit(0)
     #
-    if criterion=='successors' and (not np.shape(ptimeRef0)==np.shape(pIDsRef0) or not dtNom or not devdtNom):
-         print('ERROR [ExcludeMultiOccurences]: with "'+criterion+'" criterion, you must provide `ptimeRef0` array and `dtNom` and `devdtNom`!')
+    if criterion=='successors' and (not np.shape(ptimeRef0)==np.shape(pIDsRef0) or not dt0_RGPS or not devdtNom):
+         print('ERROR [ExcludeMultiOccurences]: with "'+criterion+'" criterion, you must provide `ptimeRef0` array and `dt0_RGPS` and `devdtNom`!')
          exit(0)        
     #
     (Nok0,) = np.shape(pIDs)
@@ -516,7 +533,7 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
                 for idx0 in idxMlt0:
                     #print(' * idx0 =', idx0,':')
                     zt0 = ptimeRef0[idx0]
-                    ztf_ideal = zt0 + dtNom
+                    ztf_ideal = zt0 + dt0_RGPS
                     #print('   => time =',epoch2clock(zt0), '  ==> successor ideal time =',epoch2clock(ztf_ideal))
                     (idxFuture0,) = np.where( (pIDsRef0==jMO) & (ptimeRef0>zt0) )
                     if len(idxFuture0)>0:

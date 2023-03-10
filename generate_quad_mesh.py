@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 print('ERROR: ID fuck up in input file!') ; exit(0)
         jr=jr+1
 
-    
+            
     # Need some calendar info:
     NbDays = int( (vdate[1] - vdate[0]) / (3600.*24.) )
     cdt1 = mjt.epoch2clock(vdate[0] )
@@ -138,6 +138,24 @@ if __name__ == '__main__':
     print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
     print('        ==> nb of days =', NbDays)
 
+
+    # Some sanity controls on time
+    if Nt==2:
+        zdt = vdate[1] - vdate[0]
+        print('     => based on these 2 dates the "mean" `dt` =',round(zdt/(3600*24),1),' days')
+        # ===> dt_Nmnl, max_dev_dt_Nmnl
+
+    
+    if lTimePos and Nt==2:
+        # Time control:
+        zzt = timePos[1,:] - timePos[0,:]
+        if np.any( zzt == 0. ):
+            print('ERROR: some identical times in the 1st and 2nd records!!!')
+            (idxFU,) = np.where( zzt == 0. )
+            print('  => for '+str(len(idxFU))+' points!')
+            exit(0)
+        del zzt
+    
 
     # STUPID: #fixme
     zXY   = np.zeros( (nBmax,2,Nrec) )
