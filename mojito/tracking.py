@@ -1,9 +1,5 @@
-#
-import numpy as np
-#
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
 
+import numpy as np
 
 rmin_conc = 0.1 ; # ice concentration below which we disregard the point...
 
@@ -40,10 +36,42 @@ def GetTimeSpan( dt, vtime_mod, iSdA, iSdB, iMdA, iMdB, iverbose=0 ):
 
 
 
+def IsInsideQuadrangle( y, x, quad ):
+    '''
+        * quad: shape(4,2) [ [y0,x0], [y1,x1], [y2,x2], [y3,x3] ]    
+    '''
+    n = len(quad)
+    if len(quad) != 4:
+        print('ERROR: `len(quad) !=: 4`') ; exit(0)
+    #
+    lInside = False
+    p2x = 0.0
+    z2y = 0.0
+    xints = 0.0
+    [z1y,z1x] = quad[0,:]
+    #
+    for i in range(n+1):
+        z2y,z2x = quad[i%n,:]
+        if y > min(z1y,z2y):
+            if y <= max(z1y,z2y):
+                if x <= max(z1x,z2x):
+                    if z1y != z2y:
+                        xints = (y-z1y)*(z2x-z1x)/(z2y-z1y) + z1x
+                    if z1x == z2x or x <= xints:
+                        lInside = not lInside
+        #
+        z1y, z1x = z2y, z2x
+        #
+    return lInside
+
+
+
+
+
 # Future fancy "Find containing cell"!
 
 
-def LocateTheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
+def TheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
     ''' 
         # LOLO: I want it to use Lat,Lon rather than Y,X !!!
 
@@ -88,9 +116,9 @@ def LocateTheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
         [jf1,jf2,jf3,jf4] = [ jT-1, jT-1, jT, jT  ]
         [if1,if2,if3,if4] = [ iT-1, iT,   iT, iT-1 ]                    
         #
-        PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
-                          (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
-        lPin = IsInsideCell(zy, zx, PolF)
+        zquad = np.array( [ [pYf[jf1,if1],pXf[jf1,if1]], [pYf[jf2,if2],pXf[jf2,if2]],
+                            [pYf[jf3,if3],pXf[jf3,if3]], [pYf[jf4,if4],pXf[jf4,if4]] ] )
+        lPin = IsInsideQuadrangle( zy, zx, zquad )
         #
     if iverbose>0:
         if kp>1 and lPin: print('        => option #'+str(kp)+' did work!  :)')
@@ -147,8 +175,9 @@ def FCC( pntCoord, Ys, Xs, pLatC, pLonC, cellType='T', rd_found_km=10., resolkm=
             print('     ==> nearest '+cP0+'-point for ',zlat,zlon,' on target grid:', jX, iX, '==> lat,lon:',
                   round(Ys[jX,iX],3), round(Xs[jX,iX],3))
 
-
-        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = LocateTheCell( (zy,zx), (jX,iX), pLatC, pLonC, iverbose=iverbose )
+        # Here problem is to have `TheCell` working using Lat,Lon rather than projected Y,X as it is done in `FindContainingCell` !!!
+        exit(0)
+        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = TheCell( (zlat,zlon), (jX,iX), pLatC, pLonC, iverbose=iverbose )
         #
         if not lPin:
             print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
@@ -237,15 +266,6 @@ def NearestPoint( pntYX, Ys, Xs, rd_found_km=10., resolkm=[], ji_prv=(), np_box_
         if ivrb>0: print('            => last tested distance criterions =', rfnd,' km')
         jy, jx = -1,-1        
     return [jy,jx]
-
-
-def IsInsideCell( py, px, CellPolygon ):
-    '''
-         * py, px     : global (not local to the cell) y,x position [m] or [km]
-         * CellPolygon: shapely polygon object of a quadrangle mesh constructed with same unit as px and py
-    '''
-    pnt  = Point(py,px)
-    return CellPolygon.contains(pnt)
 
 
 def _ccw_( pcA, pcB, pcC ):
@@ -345,9 +365,9 @@ def FindContainingCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
         [jf1,jf2,jf3,jf4] = [ jT-1, jT-1, jT, jT  ]
         [if1,if2,if3,if4] = [ iT-1, iT,   iT, iT-1 ]                    
         #
-        PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
-                          (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
-        lPin = IsInsideCell(zy, zx, PolF)
+        zquad = np.array( [ [pYf[jf1,if1],pXf[jf1,if1]], [pYf[jf2,if2],pXf[jf2,if2]],
+                            [pYf[jf3,if3],pXf[jf3,if3]], [pYf[jf4,if4],pXf[jf4,if4]] ] )
+        lPin = IsInsideQuadrangle( zy, zx, zquad )
         #
     if iverbose>0:
         if kp>1 and lPin: print('        => option #'+str(kp)+' did work!  :)')
@@ -359,6 +379,7 @@ def FindContainingCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
 def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=[], iverbose=0 ):
     '''
     '''
+    from time import time
     #
     (nP,n2) = np.shape(pSG)
     #
@@ -373,6 +394,8 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=
     zjiT    = np.zeros((nP,2),   dtype=int)
     zJIvrt  = np.zeros((nP,2,4), dtype=int)
     kcancel = np.zeros( nP ,     dtype='i1') + 1
+
+    time_start = time()
     
     for jP in range(nP):
 
@@ -415,7 +438,9 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=
                 if iverbose>0: print('        ===> I CANCEL buoy '+str(pIDs[jP])+'!!! (NO proper F-point cell found)')
                         
     ### for jP in range(nP)
-
+    time_stop = time()
+    print(' * [SeedInit]: number of seconds it took to locate all the points in a target grid cell:', time_stop-time_start )
+    
     # Now we can shrink the arrays based on `kcancel`
     iKeep = np.arange(nP,dtype=int)
     nPn   = np.sum(kcancel)
@@ -622,6 +647,8 @@ def nemoSeed( pmskT, platT, plonT, pIC, khss=1, fmsk_rstrct=None ):
     del zmsk,zlat,zlon
         
     return zLatLon
+
+
 
 
 

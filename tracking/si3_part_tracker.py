@@ -13,15 +13,9 @@ from sys import argv, exit
 from os import path, mkdir
 import numpy as np
 from re import split
-
 from netCDF4 import Dataset
-
-import mojito   as mjt
-
-from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
-
 from math import atan2,pi
+import mojito   as mjt
 
 idebug=0
 iplot=1
@@ -148,7 +142,7 @@ if __name__ == '__main__':
     xmask  = np.zeros((Nt+1,nP,2), dtype='i1')
     xPosC  = np.zeros((Nt+1,nP,2)) + FillValue  ; # x-position of buoy along the Nt records [km]
     xPosG  = np.zeros((Nt+1,nP,2)) + FillValue
-    vCELLs   = np.zeros(nP, dtype=Polygon) ; # stores for each buoy the polygon object associated to the current mesh/cell
+    vMesh  = np.zeros((nP,4,2))   ; # stores for each buoy the 4 points defining the cell (coordinates of 4 surrounding F-points)
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
 
     # Initial values for some arrays:
@@ -213,28 +207,10 @@ if __name__ == '__main__':
                         print('     ==> 4 corner points of our mesh (anti-clockwise, starting from BLC) =',
                               [ [jbl,ibl],[jbr,ibr],[jur,iur],[jul,iul] ])
 
-                    # The current mesh/cell as a shapely polygon object:
-                    vCELLs[jP] = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
-                                            (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
+                    # The current mesh/cell:
+                    vMesh[jP,:,:] = [ [xYf[jbl,ibl],xXf[jbl,ibl]], [xYf[jbr,ibr],xXf[jbr,ibr]],
+                                      [xYf[jur,iur],xXf[jur,iur]], [xYf[jul,iul],xXf[jul,iul]] ]
 
-                    if idebug>0:
-                        # Control if we are dealing with the proper cell/mesh
-                        #   * buoy location ?
-                        if not mjt.IsInsideCell(ry, rx, vCELLs[jP]):
-                            print('\nPROBLEM: buoy location is not inside the expected mesh!!!')
-                            print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
-                                   (xYf[jul,iul],xXf[jul,iul])])
-                            exit(0)
-                        #
-                        #    * T-point @ center of mesh ?
-                        if not mjt.IsInsideCell( xYt[jnT,inT], xXt[jnT,inT], vCELLs[jP]):
-                            print('\nPROBLEM: T-point is not inside the expected mesh!!!')
-                            print([(xYf[jbl,ibl],xXf[jbl,ibl]), (xYf[jbr,ibr],xXf[jbr,ibr]), (xYf[jur,iur],xXf[jur,iur]),
-                                   (xYf[jul,iul],xXf[jul,iul])])
-                            exit(0)
-
-                        print('     +++ control of location of point inside selected cell successfuly passed! :D')
-                        #if jt>0: exit(0); #fixme rm!
                 ### if not lStillIn[jP]
                 ###########################################################################################################################
 
@@ -294,7 +270,7 @@ if __name__ == '__main__':
                 xmask[jt+1,jP,:] = [    1  ,    1   ]
 
                 # Is it still inside our mesh:
-                lSI = mjt.IsInsideCell(ry_nxt, rx_nxt, vCELLs[jP])
+                lSI = mjt.IsInsideQuadrangle( ry_nxt, rx_nxt, vMesh[jP,:,:] )
                 lStillIn[jP] = lSI
                 if idebug>0: print('      ==> Still inside the same mesh???',lSI)
 
@@ -309,15 +285,6 @@ if __name__ == '__main__':
 
                     # Update the mesh indices according to the new host cell:
                     VRTCS[jP,:,:],vJIt[jP,:] = mjt.UpdtInd4NewCell( inhc, VRTCS[jP,:,:], vJIt[jP,:] )
-                    # LOLO DEBUG: test if `UpdtInd4NewCell` does a good job:
-                    #[ [ jbl, jbr, jur, jul ], [ ibl, ibr, iur, iul ] ] = VRTCS[jP,:,:]
-                    #zzf = Polygon( [ (xYf[jbl,ibl],xXf[jbl,ibl]) , (xYf[jbr,ibr],xXf[jbr,ibr]) ,
-                    #                        (xYf[jur,iur],xXf[jur,iur]) , (xYf[jul,iul],xXf[jul,iul]) ] )
-                    #if not mjt.IsInsideCell( ry_nxt, rx_nxt, zzf ):
-                    #    print('FUCK UP!!!')
-                    #    exit(0)
-                    #else:
-                    #    print('INSIDE cell :D')
 
                     # Based on updated new indices, some buoys might get killed:
                     icncl = mjt.Survive( IDs[jP], vJIt[jP,:], imaskt, pIceC=xIC,  iverbose=idebug )

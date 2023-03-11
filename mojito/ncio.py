@@ -324,7 +324,7 @@ def LoadNCtimeMJT( cfile, iverbose=0 ):
             exit(0)
         ztime = id_in.variables['time'][:]
 
-        print(' * [LoadNCtimeMJT()]: read the "time" of the '+str(Nt)+' records in file '+path.basename(cfile))
+        print(' * [LoadNCtimeMJT] => reading "time" for the '+str(Nt)+' records in file '+path.basename(cfile))
 
     return Nt, ztime
 
@@ -445,17 +445,16 @@ def SeedFileTimeInfo( fSeedNc, iverbose=0 ):
     cBtch = split('_',path.basename(fSeedNc))[2]
 
     chck4f(fSeedNc)
-    print('\n *** Will read initial seeding positions in first record of file:\n      => '+fSeedNc+' !')
     ntr, zt = LoadNCtimeMJT( fSeedNc, iverbose=iverbose )
     idate0 = zt[0]     ; cdate0 = epoch2clock(idate0)
     idateN = zt[ntr-1] ; cdateN = epoch2clock(idateN)
-    print('    => earliest and latest time position in the file: '+cdate0+' - '+cdateN)
+    print(' * [SeedFileTimeInfo] => earliest and latest time position in the file: '+cdate0+' - '+cdateN)
 
     zdDate =  int( round( (idateN - idate0)/3600., 0 ) * 3600. )
-    print('    => rounded time span =>',zdDate/3600.,'hours')
+    print(' * [SeedFileTimeInfo] => rounded time span =>',zdDate/3600.,'hours')
     idate0 =  int( round( idate0/3600., 0 ) * 3600. ) ; cdate0 = epoch2clock(idate0)
     idateN = int( idate0 + zdDate )  ; cdateN = epoch2clock(idateN)
-    print('    ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
+    print(' * [SeedFileTimeInfo]  ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
 
     return idate0, idateN, cSeed, cBtch
 
