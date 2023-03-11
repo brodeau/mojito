@@ -11,14 +11,12 @@ DATE1="${YEAR}0101"
 DATE2="${YEAR}0430"
 
 #LIST_RES="10 20 30"
-#LIST_RES="10"
-LIST_RES="20"
+LIST_RES="10"
+#LIST_RES="20"
 #LIST_RES="40"
 #LIST_RES="80"
 
 FILIN="RGPS_${YEAR}.nc4"
-
-MARKER_SIZE=10
 
 NJPAR=4 ; # number of jobs we can launch in //
 
@@ -37,10 +35,9 @@ case ${host} in
         #
         #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*10))
         #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
+        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=24 ; DATE2="${YEAR}0115"
+        #DT_BINS_H=6 ; DATE2="${YEAR}0131"
         #
-        DT_BINS_H=6 ; DATE2="${YEAR}0131"
-        #
-        MARKER_SIZE=10
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
@@ -54,7 +51,6 @@ case ${host} in
         #
         #DATE1="${YEAR}0103_00:00" ; DATE2="${YEAR}0119"; DT_BINS_H=$((24*7))
         #
-        MARKER_SIZE=20
         ;;
     "frazilo")
         export DATA_DIR="/data"

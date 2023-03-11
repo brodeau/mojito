@@ -67,7 +67,7 @@ for cres in ${LIST_RES}; do
                 flog=`basename ${fQ1}`
                 flog=`echo ${flog} | sed -e s/".npz"/""/g`
 
-                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2)) ${MARKER_SIZE}"
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
                 echo "  ==> ${CMD}"; echo
                 ${CMD}
                 echo; echo

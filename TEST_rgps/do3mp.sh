@@ -70,7 +70,7 @@ for cres in ${LIST_RES}; do
 
                 ijob=$((ijob+1))
 
-                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2)) ${MARKER_SIZE}"
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
                 echo "  ==> ${CMD}"; echo
                 ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
                 echo; echo

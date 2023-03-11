@@ -16,9 +16,6 @@ DATE2="${YEAR}0430"
 #LIST_RES="10 20 30"
 #LIST_RES="10"
 
-MARKER_SIZE=10
-
-
 FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod.nc4"
 
 NJPAR=4 ; # number of jobs we can launch in //
@@ -28,10 +25,9 @@ case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
         #
-        DATE2="${YEAR}0201"
+        DATE2="${YEAR}0115"
         FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         #
-        MARKER_SIZE=20
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
@@ -41,7 +37,6 @@ case ${host} in
         DATE2="${YEAR}0131"
         #FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod_LIGHT480.nc4"
         #
-        MARKER_SIZE=20
         ;;
     "frazilo")
         export DATA_DIR="/data"
@@ -51,9 +46,7 @@ case ${host} in
         DATE2="${YEAR}0315"
         #DATE2="${YEAR}0110"
         #SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
-
         #
-        MARKER_SIZE=5
         ;;
     *)
         echo "Unsupported host: ${host} !"

@@ -40,6 +40,24 @@ def GetTimeSpan( dt, vtime_mod, iSdA, iSdB, iMdA, iMdB, iverbose=0 ):
 
 
 
+# Future fancy "Find containing cell"!
+def FCC():
+    '''
+        Provided an input geographic coordinate, locate the target grid mesh cell containing 
+        this point.
+        The target grid mesh is of type Arakawa C-grid, typically a NEMO/ORCA type of grid
+
+    RETURNS:
+            * j,i : indices of the grid mesh cell containing the target point
+                    => -1,-1 if something went wrong or point was not found
+
+    '''
+    #
+    return 0
+    
+
+
+
 def NearestPoint( pcoor_trg, Ys, Xs, rd_found_km=10., resolkm=[], j_prv=None, i_prv=None, np_box_r=10, max_itr=5 ):
     '''
     # * pcoor_trg : GPS coordinates (lat,lon) of target point    ([real],[real])
@@ -238,6 +256,7 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=
         zlat,zlon  = pSG[jP,0], pSG[jP,1] ; # degrees!
         zy  ,zx    = pSC[jP,0], pSC[jP,1] ; # km !
         zic = 1.
+        
         # 1/ Nearest T-point on NEMO grid:
         [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, resolkm=pResolKM, max_itr=10 )
 

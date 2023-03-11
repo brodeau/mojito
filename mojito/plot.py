@@ -664,8 +664,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
-                 pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None,
-                 marker_size=None, title=None ):
+                 pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None, title=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ### => each quadrangle is filled with the appropriate color from colormap !!!

@@ -15,7 +15,7 @@ from scipy.spatial import Delaunay
 
 import mojito   as mjt
 
-idebug=0
+idebug=1
 iplot=1
 
 #l_accurate_time=False
@@ -38,17 +38,12 @@ zoom=1
 
 if __name__ == '__main__':
 
-    if not len(argv) in [4,5]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> (<marker_size>)')
+    if not len(argv) in [4]:
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)>')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
     time_dev_max= float(argv[3])
-    #
-    marker_size=None
-    if len(argv) == 5:
-        marker_size = int(argv[4])
-
 
     if iplot>0:
         cdir = './figs/deformation'
@@ -204,46 +199,29 @@ if __name__ == '__main__':
     zry = [ np.min(zY)-25. , np.max(zY)+25. ]
 
 
-    if idebug>0 and iplot>0:
-        # DEBUG: show velocities at each 4 vertices of each Quad:
-        zzx = zX.flatten()
-        zzy = zY.flatten()
-        zzu = zU.flatten()
-        zzv = zV.flatten()
-        #
-        zcoor0 = np.array([ zzx, zzy ]).T        
-        _,idx_uniq = np.unique(zcoor0, axis=0, return_index=True) ; # index location to get rid of clones... (because lot of the same points are used by the same quads)
-        del zcoor0
-
-        zzx = zzx[idx_uniq]
-        zzy = zzy[idx_uniq]
-        zzu = zzu[idx_uniq]
-        zzv = zzv[idx_uniq]
-        #
-        mjt.ShowDeformation( zzx, zzy, zzu, cfig=cdir+'/zvU4_'+cfnm+figSfx, cwhat='U4',
-                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zzx, zzy, zzv, cfig=cdir+'/zvV4_'+cfnm+figSfx, cwhat='V4',
-                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zzx, zzy, np.sqrt(zzu*zzu+zzv*zzv), cfig=cdir+'/zUM4_'+cfnm+figSfx, cwhat='UMc',
-                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        #
-        del zzx, zzy, zzu, zzv
-
     # Coordinates of barycenter of Quads at center of time interval:
     zXc = np.mean( zX[:,:], axis=1 )
     zYc = np.mean( zY[:,:], axis=1 )
 
+    
     if idebug>1 and iplot>0:
         # Velocities of barycenter of Quads at center of time interval:
         zUc = np.mean( zU[:,:], axis=1 )
         zVc = np.mean( zV[:,:], axis=1 )
         #
-        mjt.ShowDeformation( zXc, zYc, zUc, cfig=cdir+'/zvUc_'+cfnm+figSfx, cwhat='Uc',
-                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zXc, zYc, zVc, cfig=cdir+'/zvVc_'+cfnm+figSfx, cwhat='Vc',
-                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
-        mjt.ShowDeformation( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
-                             pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, marker_size=marker_size, unit='m/s' )
+        mjt.ShowDefQuad( zXc, zYc, zUc, cfig=cdir+'/zvUc_'+cfnm+figSfx, cwhat='Uc',
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
+        mjt.ShowDefQuad( zXc, zYc, zVc, cfig=cdir+'/zvVc_'+cfnm+figSfx, cwhat='Vc',
+                             pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
+        mjt.ShowDefQuad( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
+                             pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
+
+        #mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        #                 pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        #                 title=corigin+': divergence' )
+
+
+        
         #
         del zUc, zVc
 
@@ -277,29 +255,13 @@ if __name__ == '__main__':
         # Filled quads:
         mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                          pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title=corigin+': divergence' )
+                         title=corigin+': divergence' )
 
         mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
                          pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title=corigin+': shear' )
+                         title=corigin+': shear' )
 
         mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
                          pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         marker_size=marker_size, title=corigin+': total deformation' )
-        
-        #mjt.ShowDeformation( zXc, zYc, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-        #                     pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-        #                     marker_size=marker_size, title=corigin+': divergence' )
-        #mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
-        #                     pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-        #                     marker_size=marker_size, title=corigin+': shear' )
-        #mjt.ShowDeformation( zXc, zYc, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
-        #                     pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-        #                     marker_size=marker_size, title=corigin+': total deformation' )
-
-
-
-
-
-        
+                         title=corigin+': total deformation' )
     ###

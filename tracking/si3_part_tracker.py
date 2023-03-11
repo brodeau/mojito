@@ -62,9 +62,6 @@ if __name__ == '__main__':
         jrec = int(argv[4])
     else:
         jrec = 0
-        
-
-    
 
     # Some strings and start/end date of Seeding input file:
     idateSeedA, idateSeedB, SeedName, SeedBatch = mjt.SeedFileTimeInfo( fNCseed, iverbose=idebug )
@@ -76,8 +73,6 @@ if __name__ == '__main__':
     Nt, kstrt, kstop = mjt.GetTimeSpan( rdt, ztime_model, idateSeedA, idateSeedB, idateModA, idateModB )
 
 
-
-
     cfdir = './figs/tracking'
     if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
     for cd in ['nc', 'npz' ]:
@@ -87,16 +82,14 @@ if __name__ == '__main__':
     imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
     if iUVstrategy==1:
+        # Get extra U,V-point metrics:
         xYv, xXv, xYu, xXu = mjt.GetModelUVGrid( cf_mm )
-
 
     # Allocating arrays for model data:
     (Nj,Ni) = np.shape( imaskt )
     xUu = np.zeros((Nj,Ni))
     xVv = np.zeros((Nj,Ni))
     xIC = np.zeros((Nj,Ni)) ; # Sea-ice concentration
-
-
 
     # We need a name for the intermediate backup file:
     cf_npz_itm = './npz/Initialized_buoys_'+SeedName+'.npz'
@@ -106,9 +99,8 @@ if __name__ == '__main__':
     # Initialization / Seeding #
     ############################
 
-
     if path.exists(cf_npz_itm):
-
+        # We save a lot of energy by using the previously generated intermediate backup file:        
         print('\n *** We found file '+cf_npz_itm+' here! So using it and skeeping first stage!')
         with np.load(cf_npz_itm) as data:
             nP    = data['nP']
@@ -127,9 +119,7 @@ if __name__ == '__main__':
             xIC[:,:] = ds_UVmod.variables['siconc'][0,:,:] ; # We need ice conc. at t=0 so we can cancel buoys accordingly
 
         zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=jrec, iverbose=idebug )
-        print('     => data is read at date =',mjt.epoch2clock(zt))
-
-        print('\n shape of XseedG =',np.shape(XseedG))
+        print('     => data used for seeding is read at date =',mjt.epoch2clock(zt),'\n        (shape of XseedG =',np.shape(XseedG),')')
 
         (nP,_) = np.shape(XseedG)
 
