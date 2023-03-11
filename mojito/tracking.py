@@ -41,39 +41,169 @@ def GetTimeSpan( dt, vtime_mod, iSdA, iSdB, iMdA, iMdB, iverbose=0 ):
 
 
 # Future fancy "Find containing cell"!
-def FCC():
+
+
+def LocateTheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
+    ''' 
+        # LOLO: I want it to use Lat,Lon rather than Y,X !!!
+
+        Based on the nearest T-point, find the cell/mesh (defined as the polygon that
+        joins 4 neighbor F-points) that contains the target point.
+        
+        Mind: the indices of the T-point we return is that of the center of the
+              identified cell! And in very unusual cases, this is not the same
+              as the nearest T-point provided as an input...
+       Input:
+        * pyx      : (y,x) target point cartesian coordinates [km]
+        * kjiT     : (j,i) indices of nearest T-point to (y,x) that was found...
+        * pYf, pXf : 2D arrays of cartesian coordinates of the model F-point grid
+       Output:
+        * lPin    : success or not (boolean)
+        * [jT,iT] : actual T-point at the center of the identified cell
+        * [[jf1,jf2,jf3,jf4],[if1,if2,if3,if4]]: the 4 F-points that make the vertices
+                                                 of the identified cell (ConterClockwize starting from BLC)
+    '''
+    (zy,zx) = pyx
+    (kj,ki) = kjiT
+    #
+    lPin = False
+    kp=0             ; # pass counter
+    while (not lPin) and (kp<5):
+        kp = kp + 1
+        if iverbose>0 and kp>1: print('  * [SeedInit()] search for proper F-cell => test option #'+str(kp)+'!')
+        if   kp==1:
+            jT,iT =kj,ki   ; # Normal case!!! 99% of all cases !!!
+        elif kp==2:
+            jT,iT =kj,ki+1 ; # maybe F-cell is the one next to the right?
+        elif kp==3:
+            jT,iT =kj+1,ki ; # maybe F-cell is the one next above?
+        elif kp==4:
+            jT,iT =kj,ki-1 ; # maybe F-cell is the one next to the left?
+        elif kp==5:
+            jT,iT =kj-1,ki ; # maybe F-cell is the one next below?
+        #
+        # Based on this @center T-point (here `jT,iT`), the proper cell/mesh
+        # should be the polygon defined by the 4 following F-points:
+        # (indexing is anti-clockwize, starting from bottom left F-point)
+        [jf1,jf2,jf3,jf4] = [ jT-1, jT-1, jT, jT  ]
+        [if1,if2,if3,if4] = [ iT-1, iT,   iT, iT-1 ]                    
+        #
+        PolF = Polygon( [ (pYf[jf1,if1],pXf[jf1,if1]) , (pYf[jf2,if2],pXf[jf2,if2]) ,
+                          (pYf[jf3,if3],pXf[jf3,if3]) , (pYf[jf4,if4],pXf[jf4,if4]) ] )
+        lPin = IsInsideCell(zy, zx, PolF)
+        #
+    if iverbose>0:
+        if kp>1 and lPin: print('        => option #'+str(kp)+' did work!  :)')
+    #
+    return lPin, [jT,iT], [[jf1,jf2,jf3,jf4],[if1,if2,if3,if4]]
+
+
+
+
+
+# Ys, Xs => pLat0, pLon0
+# CALL:      pntID=pIDs[jP]
+def FCC( pntCoord, Ys, Xs, pLatC, pLonC, cellType='T', rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5,
+         pntID=None, iverbose=0 ):
     '''
         Provided an input geographic coordinate, locate the target grid mesh cell containing 
         this point.
         The target grid mesh is of type Arakawa C-grid, typically a NEMO/ORCA type of grid
 
+    INPUT:
+             * pntCoord : GPS coordinates (lat,lon) of target point    ([real],[real])
+             * Ys        : array of source grid lat.  @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
+             * Xs        : array of source grid long. @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
+             * pLatC     : array of source grid lat.  @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
+             * pLonC     : array of source grid long. @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
+             * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
+                           because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
     RETURNS:
-            * j,i : indices of the grid mesh cell containing the target point
-                    => -1,-1 if something went wrong or point was not found
-
+             * j,i : indices of the grid mesh cell containing the target point
+                     => -1,-1 if something went wrong or point was not found
     '''
+    (zlat,zlon) = pntCoord
+    
+    lbla = ( iverbose>0 and pntID )
+    
+    cP0 = 'cellType'   ; # string for type of center point 
+    if cellType=='T':
+        cPC = 'F'      ; # string for type of corner points
+    elif cellType=='F':
+        cPC = 'T'      ; # string for type of corner points
+    else:
+        print('ERROR [FCC]: for now we just expect the mesh to be centered on "T" or "F" points.')
+        exit(0)
+
+    icancel = 0
+    
+    # First, find the nearest point we are looking for
+    [jX,iX] = NearestPoint( pntCoord, Ys, Xs, rd_found_km=rd_found_km, resolkm=resolkm,
+                            ji_prv=ji_prv, np_box_r=np_box_r, max_itr=max_itr )
+
+    if jX>0 and iX>0:
+        # Ok a nearest point was found!                
+        if iverbose>0:
+            print('     ==> nearest '+cP0+'-point for ',zlat,zlon,' on target grid:', jX, iX, '==> lat,lon:',
+                  round(Ys[jX,iX],3), round(Xs[jX,iX],3))
+
+
+        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = LocateTheCell( (zy,zx), (jX,iX), pLatC, pLonC, iverbose=iverbose )
+        #
+        if not lPin:
+            print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
+            print('         => when lookin for point:',zlat,zlon)
+            kcancel[jP] = 0
+            if iverbose>0: print('        ===> I CANCEL buoy '+str(pntID)+'!!! (NO proper F-point cell found)')
+
+
+            
+
+
+    else:
+        if lbla: print('  [FCC]      ===> I CANCEL buoy '+str(pntID)+'!!! (NO nearest '+cP0+'-point found for ',zlat,zlon,')')
+
+
+
+
+        
+                        
+    #if kcancel[jP] == 1:            
+    #    # Tests for canceling buoy or not:
+    #    icncl = Survive( pntID, [jX,iX] , maskT, pIceC=xIceConc, iverbose=iverbose )
+    #    if icncl>0: kcancel[jP] = 0
+        
+    #if kcancel[jP] == 1:
+        # Everything is okay, now we locate the cell/mesh (polygon joining 4 F-points) that includes
+        # our target point (zy,zx)
+
+
+
+
+
     #
     return 0
     
 
 
 
-def NearestPoint( pcoor_trg, Ys, Xs, rd_found_km=10., resolkm=[], j_prv=None, i_prv=None, np_box_r=10, max_itr=5 ):
+def NearestPoint( pntYX, Ys, Xs, rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5 ):
     '''
-    # * pcoor_trg : GPS coordinates (lat,lon) of target point    ([real],[real])
+    # * pntYX : GPS coordinates (lat,lon) of target point    ([real],[real])
     # * Ys        : array of source grid latitude            2D numpy.array [real]
     # * Xs        : array of source grid longitude           2D numpy.array [real]
     # * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
     #               because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
     '''
     from .util import Haversine
-    (yT,xT) = pcoor_trg
+    (yT,xT) = pntYX
     (Ny,Nx) = Ys.shape
     #
     l2Dresol = ( np.shape(resolkm)==(Ny,Nx) )
-    #
-    lbox = ( j_prv and i_prv )
+    #    
+    lbox = ( len(ji_prv)==2 )
     if lbox:
+        (j_prv,i_prv) = ji_prv
         j1, j2 = max(j_prv-np_box_r,0), min(j_prv+np_box_r+1,Ny)
         i1, i2 = max(i_prv-np_box_r,0), min(i_prv+np_box_r+1,Nx)
     else:
