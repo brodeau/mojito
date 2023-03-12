@@ -129,55 +129,60 @@ def TheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
 
 
 
-# Ys, Xs => pLat0, pLon0
+# This is to become a generic "Find containing Cell" for NEMO...
+# => can be used to find the T-centric cell (with 4 vertices being F-points)
+# => or to find the F-centric cell (with 4 vertices being T-points) => what we need for linear interpolation of a T-field onto point inside this cell...
 # CALL:      pntID=pIDs[jP]
-def FCC( pntCoord, platT, plonT, pLatF, pLonF, cellType='T', rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5,
-         pntID=None, iverbose=0 ):
+def FCC( pntGcoor, pLat, pLon, pLatC, pLonC, cellType='T', rd_found_km=10., resolkm=[],
+         ji_prv=(), np_box_r=10, max_itr=5, pntID=None, iverbose=0 ):
     '''
-        Provided an input geographic coordinate, locate the target grid mesh cell containing 
-        this point.
-        The target grid mesh is of type Arakawa C-grid, typically a NEMO/ORCA type of grid
+        Provided an input target-point geographic coordinates, locate the grid mesh cell that
+        includes this point.
+        The grid mesh is of type Arakawa C-grid, typically a NEMO/ORCA type of grid...
 
     INPUT:
-             * pntCoord : GPS coordinates (lat,lon) of target point    ([real],[real])
-             * platT        : array of source grid lat.  @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
-             * plonT        : array of source grid long. @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
-             * pLatF     : array of source grid lat.  @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
-             * pLonF     : array of source grid long. @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
-             * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
+             * pntGcoor  : GPS coordinates (lat,lon) of target point    ([real],[real])
+             * pLat      : array of source grid lat.  @T/F-points if `cellType='T/F'`) [real]
+             * pLon      : array of source grid long. @T/F-points if `cellType='T/F'`) [real]
+             * pLatC     : array of source grid lat.  @F/T-points if `cellType='T/F'`) [real]
+             * pLonC     : array of source grid long. @F/T-points if `cellType='T/F'`) [real]
+             * resolkm   : array of source grid approximate local resolution [km] [real]
                            because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
     RETURNS:
              * j,i : indices of the grid mesh cell containing the target point
                      => -1,-1 if something went wrong or point was not found
     '''
-    (zlat,zlon) = pntCoord
+    (zlat,zlon) = pntGcoor
     
     lbla = ( iverbose>0 and pntID )
     
-    cP0 = 'cellType'   ; # string for type of center point 
+    cP0 = cellType      ; # string for type of center point 
     if cellType=='T':
-        cPC = 'F'      ; # string for type of corner points
+        cP4C = 'F'      ; # string for type of corner/vertices points
     elif cellType=='F':
-        cPC = 'T'      ; # string for type of corner points
+        cP4C = 'T'      ; # string for type of corner/vertcices points
     else:
         print('ERROR [FCC]: for now we just expect the mesh to be centered on "T" or "F" points.')
         exit(0)
 
     icancel = 0
     
-    # First, find the nearest point we are looking for
-    [jX,iX] = NearestPoint( pntCoord, platT, plonT, rd_found_km=rd_found_km, resolkm=resolkm,
-                            ji_prv=ji_prv, np_box_r=np_box_r, max_itr=max_itr )
+    # First, find the nearest `cellType`-point to `pntGcoor`:
+    (jX, iX) = NearestPoint( pntGcoor, pLat, pLon, rd_found_km=rd_found_km, resolkm=resolkm,
+                             ji_prv=ji_prv, np_box_r=np_box_r, max_itr=max_itr )
 
-    if jX>0 and iX>0:
+    if jX>=0 and iX>=0:
         # Ok a nearest point was found!                
         if iverbose>0:
             print('     ==> nearest '+cP0+'-point for ',zlat,zlon,' on target grid:', jX, iX, '==> lat,lon:',
-                  round(platT[jX,iX],3), round(plonT[jX,iX],3))
+                  round(pLat[jX,iX],3), round(pLon[jX,iX],3))
 
         # Here problem is to have `TheCell` working using Lat,Lon rather than projected Y,X as it is done in `FindContainingCell` !!!
+        # => we apply a stereographic projection of a litle region centered on the nearest point!
+
+        
         exit(0)
-        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = TheCell( (zlat,zlon), (jX,iX), pLatF, pLonF, iverbose=iverbose )
+        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = TheCell( (zlat,zlon), (jX,iX), pLatC, pLonC, iverbose=iverbose )
         #
         if not lPin:
             print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
@@ -216,21 +221,25 @@ def FCC( pntCoord, platT, plonT, pLatF, pLonF, cellType='T', rd_found_km=10., re
 
 
 
-def NearestPoint( pntYX, Ys, Xs, rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5 ):
+def NearestPoint( pntGcoor, pLat, pLon, rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5 ):
     '''
-    # * pntYX : GPS coordinates (lat,lon) of target point    ([real],[real])
-    # * Ys        : array of source grid latitude            2D numpy.array [real]
-    # * Xs        : array of source grid longitude           2D numpy.array [real]
+    # * pntGcoor : GPS coordinates (lat,lon) of target point    ([real],[real])
+    # * pLat        : array of source grid latitude            2D numpy.array [real]
+    # * pLon        : array of source grid longitude           2D numpy.array [real]
     # * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
     #               because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
     '''
     from .util import Haversine
-    (yT,xT) = pntYX
-    (Ny,Nx) = Ys.shape
     #
+    (Ny,Nx) = pLat.shape
+    if np.shape(pLon) != (Ny,Nx):
+        print('ERROR [NearestPoint]: `pLat` & `pLon` do not have the same shape!')
+        exit(0)
     l2Dresol = ( np.shape(resolkm)==(Ny,Nx) )
-    #    
-    lbox = ( len(ji_prv)==2 )
+    lbox     = ( len(ji_prv)==2 )
+    #
+    (latP,lonP) = pntGcoor
+    #        
     if lbox:
         (j_prv,i_prv) = ji_prv
         j1, j2 = max(j_prv-np_box_r,0), min(j_prv+np_box_r+1,Ny)
@@ -247,7 +256,7 @@ def NearestPoint( pntYX, Ys, Xs, rd_found_km=10., resolkm=[], ji_prv=(), np_box_
         igo = igo + 1
         if lbox and igo>1:
             (j1,i1 , j2,i2) = (0,0 , Ny,Nx) ; # Falling back on whole domain for second pass...
-        xd = Haversine( yT, xT,  Ys[j1:j2,i1:i2], Xs[j1:j2,i1:i2] )
+        xd = Haversine( latP, lonP,  pLat[j1:j2,i1:i2], pLon[j1:j2,i1:i2] )
         jy, jx = find_ji_of_min( xd )
         #
         if igo==1 and l2Dresol: rfnd = 0.5*resolkm[jy,jx]
@@ -262,10 +271,11 @@ def NearestPoint( pntYX, Ys, Xs, rd_found_km=10., resolkm=[], ji_prv=(), np_box_
         jy, jx = jy+j1, jx+i1 ; # found in the zoom box => translate to indices in whole domain:
     #
     if jy<0 or jx<0 or jy>=Ny or jx>=Nx or igo==max_itr:
-        if ivrb>0: print('    WARNING [NearestPoint()]: did not find a nearest point for target point ',yT,xT,' !')
+        if ivrb>0: print('    WARNING [NearestPoint()]: did not find a nearest point for target point ',latP,lonP,' !')
         if ivrb>0: print('            => last tested distance criterions =', rfnd,' km')
-        jy, jx = -1,-1        
-    return [jy,jx]
+        jy, jx = -1,-1
+    #
+    return (jy, jx)
 
 
 def _ccw_( pcA, pcB, pcC ):
@@ -411,7 +421,7 @@ def SeedInit( pIDs, pSG, pSC, platT, plonT, pYf, pXf, pResolKM, maskT, xIceConc=
         zic = 1.
         
         # 1/ Nearest T-point on NEMO grid:
-        [jT, iT] = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, resolkm=pResolKM, max_itr=10 )
+        (jT, iT) = NearestPoint( (zlat,zlon), platT, plonT, rd_found_km=rFoundKM, resolkm=pResolKM, max_itr=10 )
 
         if jT<0 or iT<0:
             kcancel[jP] = 0
