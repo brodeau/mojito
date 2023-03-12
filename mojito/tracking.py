@@ -131,7 +131,7 @@ def TheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
 
 # Ys, Xs => pLat0, pLon0
 # CALL:      pntID=pIDs[jP]
-def FCC( pntCoord, Ys, Xs, pLatC, pLonC, cellType='T', rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5,
+def FCC( pntCoord, platT, plonT, pLatF, pLonF, cellType='T', rd_found_km=10., resolkm=[], ji_prv=(), np_box_r=10, max_itr=5,
          pntID=None, iverbose=0 ):
     '''
         Provided an input geographic coordinate, locate the target grid mesh cell containing 
@@ -140,10 +140,10 @@ def FCC( pntCoord, Ys, Xs, pLatC, pLonC, cellType='T', rd_found_km=10., resolkm=
 
     INPUT:
              * pntCoord : GPS coordinates (lat,lon) of target point    ([real],[real])
-             * Ys        : array of source grid lat.  @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
-             * Xs        : array of source grid long. @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
-             * pLatC     : array of source grid lat.  @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
-             * pLonC     : array of source grid long. @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
+             * platT        : array of source grid lat.  @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
+             * plonT        : array of source grid long. @ center of mesh (T-point if `cellType='T'`) 2D numpy.array [real]
+             * pLatF     : array of source grid lat.  @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
+             * pLonF     : array of source grid long. @ 4 vertices of mesh (F-point if `cellType='T'`) 2D numpy.array [real]
              * resolkm   : array of source grid approximate local resolution [km] 2D numpy.array [real]
                            because grids like ORCA of NEMO can have strong spatial heterogenity of resolution...
     RETURNS:
@@ -166,18 +166,18 @@ def FCC( pntCoord, Ys, Xs, pLatC, pLonC, cellType='T', rd_found_km=10., resolkm=
     icancel = 0
     
     # First, find the nearest point we are looking for
-    [jX,iX] = NearestPoint( pntCoord, Ys, Xs, rd_found_km=rd_found_km, resolkm=resolkm,
+    [jX,iX] = NearestPoint( pntCoord, platT, plonT, rd_found_km=rd_found_km, resolkm=resolkm,
                             ji_prv=ji_prv, np_box_r=np_box_r, max_itr=max_itr )
 
     if jX>0 and iX>0:
         # Ok a nearest point was found!                
         if iverbose>0:
             print('     ==> nearest '+cP0+'-point for ',zlat,zlon,' on target grid:', jX, iX, '==> lat,lon:',
-                  round(Ys[jX,iX],3), round(Xs[jX,iX],3))
+                  round(platT[jX,iX],3), round(plonT[jX,iX],3))
 
         # Here problem is to have `TheCell` working using Lat,Lon rather than projected Y,X as it is done in `FindContainingCell` !!!
         exit(0)
-        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = TheCell( (zlat,zlon), (jX,iX), pLatC, pLonC, iverbose=iverbose )
+        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = TheCell( (zlat,zlon), (jX,iX), pLatF, pLonF, iverbose=iverbose )
         #
         if not lPin:
             print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')

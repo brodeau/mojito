@@ -179,7 +179,6 @@ def GetModelGrid( fNCmeshmask ):
     zResKM = np.zeros((nj,ni))
     zResKM[:,:] = np.sqrt( ze1T*ze1T + ze2T*ze2T )
     del ze1T, ze2T
-    #ii = dump_2d_field( 'res_km.nc', zResKM, xlon=zlonT, xlat=zlatT, name='resolution', unit='km' )
 
     return kmaskt, zlatT, zlonT, zYt, zXt, zYf, zXf, zResKM
 
