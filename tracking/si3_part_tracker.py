@@ -120,7 +120,6 @@ if __name__ == '__main__':
 
         zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=jrec, iverbose=idebug )
         print('     => data used for seeding is read at date =',mjt.epoch2clock(zt),'\n        (shape of XseedG =',np.shape(XseedG),')')
-        exit(0)
         
         (nP,_) = np.shape(XseedG)
 

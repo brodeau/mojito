@@ -57,8 +57,8 @@ case ${host} in
         #
         NJPAR=30
         #
-        #DT_BINS_H=6 ; DATE2="${YEAR}0315"
-        DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0103" ; DATE2="${YEAR}0115"
+        DT_BINS_H=6 ; DATE2="${YEAR}0315"
+        #DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0103" ; DATE2="${YEAR}0115"
         #
         ;;
     *)

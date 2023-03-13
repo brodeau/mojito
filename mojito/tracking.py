@@ -34,7 +34,7 @@ def GetTimeSpan( dt, vtime_mod, iSdA, iMdA, iMdB, iStop=None, iverbose=0 ):
     print('    * [GetTimeSpan]: will start using model record',kt0,'of SI3 file =>',epoch2clock(vtime_mod[kt0]))
     #
     if ltStop:
-        ktN = np.argmin(np.abs(vtime_mod[:]-iSdB))
+        ktN = np.argmin(np.abs(vtime_mod[:]-iStop))
     else:
         ktN = len(vtime_mod) - 1        
     print('    * [GetTimeSpan]: will stop at record',ktN,' =>',epoch2clock(vtime_mod[ktN]))
