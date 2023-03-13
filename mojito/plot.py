@@ -619,16 +619,16 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     if origin!='RGPS': ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
         
-    plt.loglog(pbinc[:], ppdf[:], 'o', linestyle='-', linewidth=4, markersize=10, fillstyle='none', color='k', label=origin, zorder=5)
+    plt.loglog(pbinc[:], ppdf[:], 'o', linestyle='-', linewidth=6, markersize=10, fillstyle='none', color='k', label=origin, zorder=5)
 
     if l_comp2:
         if origin2!='RGPS': ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-        plt.loglog(pbinc[:], ppdf2[:], 'o', markersize=10, color='0.4', linestyle='-', linewidth=3,  label=origin2, zorder=10)
+        plt.loglog(pbinc[:], ppdf2[:], 'D', markersize=9, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=origin2, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     if l_comp3:
         if origin3!='RGPS': ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=10, color='0.6', linestyle='--', linewidth=3, label=origin3, zorder=10)
+        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=12, color='0.65', linestyle='--', linewidth=4, label=origin3, zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 

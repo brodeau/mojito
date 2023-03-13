@@ -463,7 +463,8 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
 
     # Area of quadrangles at center of time interval:
     zA = np.zeros(nq) - 999.
-    zA[:] = 0.5*( pA1 + pA2 ) ; #* 1.e6 ; # 1.e6 => from km^2 to m^2
+    #zA[:] = 0.5*( pA1 + pA2 ) ; #* 1.e6 ; # 1.e6 => from km^2 to m^2
+    zA[:] = pA1 ; #* 1.e6 ; # 1.e6 => from km^2 to m^2
     if iverbose>1:
         print('')
         for jQ in range(0,nq,100):
@@ -475,7 +476,7 @@ def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
     zdUdxy = np.zeros((nq,2))
     zdVdxy = np.zeros((nq,2))
     for jQ in range(nq):
-        zd = 1./(2*zA[jQ])
+        zd = 1./(2.*zA[jQ])
         zdUdxy[jQ,0] =  np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
         zdUdxy[jQ,1] = -np.sum( np.array([ (zU[jQ,(k+1)%4] + zU[jQ,k]) * (zX[jQ,(k+1)%4] - zX[jQ,k]) for k in range(4) ]) ) * zd
         zdVdxy[jQ,0] =  np.sum( np.array([ (zV[jQ,(k+1)%4] + zV[jQ,k]) * (zY[jQ,(k+1)%4] - zY[jQ,k]) for k in range(4) ]) ) * zd
