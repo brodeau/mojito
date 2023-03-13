@@ -30,8 +30,8 @@ min_nb_buoys_in_batch = 200 ; # minimum number of buoys for considering a batch 
 
 Nb_min_buoys = min_nb_buoys_in_batch ; # minimum number of buoys necessary to keep a given record of a given batch, when saving files and figures
 
-l_drop_tooclose = False ; # PR: keep the one with the longest record...
-NbPass = 2  # number of passes...
+#l_drop_tooclose = False ; # PR: keep the one with the longest record...
+#NbPass = 2  # number of passes...
 #
 l_drop_overlap = True
 #
@@ -88,9 +88,9 @@ if __name__ == '__main__':
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given batch, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
 
-    if l_drop_overlap and l_drop_tooclose:
-        print(' ERROR: you cannot use `l_drop_overlap` and `l_drop_tooclose`! Choose one of the two!!!')
-        exit(0)
+    #if l_drop_overlap and l_drop_tooclose:
+    #    print(' ERROR: you cannot use `l_drop_overlap` and `l_drop_tooclose`! Choose one of the two!!!')
+    #    exit(0)
 
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
@@ -266,20 +266,20 @@ if __name__ == '__main__':
                 #print('new shape =', np.shape(xmsk))
                 
     
-            if l_drop_tooclose:
-                jr = 0 ; # we work with first record !!!
-                #
-                NvB, idxK = mjt.CancelTooClose( jr, rd_tol_km, xlat, xlon, xmsk, NbPass=2 )
-                #
-                xmsk = xmsk[jr:,idxK]
-                xlat = xlat[jr:,idxK]
-                xlon = xlon[jr:,idxK]
-                xYkm = xYkm[jr:,idxK]
-                xXkm = xXkm[jr:,idxK]
-                xtim = xtim[jr:,idxK]
-                vIDs =     vIDs[idxK]
-                del idxK
-                print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow!')
+            #if l_drop_tooclose:
+            #    jr = 0 ; # we work with first record !!!
+            #    #
+            #    NvB, idxK = mjt.CancelTooClose( jr, rd_tol_km, xlat, xlon, xmsk, NbPass=2 )
+            #    #
+            #    xmsk = xmsk[jr:,idxK]
+            #    xlat = xlat[jr:,idxK]
+            #    xlon = xlon[jr:,idxK]
+            #    xYkm = xYkm[jr:,idxK]
+            #    xXkm = xXkm[jr:,idxK]
+            #    xtim = xtim[jr:,idxK]
+            #    vIDs =     vIDs[idxK]
+            #    del idxK
+            #    print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow!')
     
     
             # The one to keep!!!
