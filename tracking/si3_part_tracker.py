@@ -26,10 +26,6 @@ toDegrees = 180./pi
 
 isubsamp_fig = 72 ; # frequency, in number of model records, we spawn a figure on the map (if idebug>2!!!)
 
-ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
-
-FillValue = -9999.
-
 iUVstrategy = 1 ; #  What U,V should we use inside a given T-cell of the model?
 #                 #  * 0 => use the same MEAN velocity in the whole cell => U = 0.5*(U[j,i-1] + U[j,i]), V = 0.5*(V[j-1,i] + U[j,i])
 #                 #  * 1 => use the same NEAREST velocity in the whole cell => U = U[@ nearest U-point], V = V[@ nearest V-point]
@@ -64,8 +60,18 @@ if __name__ == '__main__':
     Nt0, ztime_model, idateModA, idateModB, ModConf, ModExp = mjt.ModelFileTimeInfo( cf_uv, iverbose=idebug )
 
     # What records of model data can we use, based on time info from 2 input files above:
-    Nt, kstrt, kstop = mjt.GetTimeSpan( rdt, ztime_model, idateSeedA, idateSeedB, idateModA, idateModB )
-
+    date_stop = None
+    if idateSeedB - idateSeedA >= 3600.:
+        # => there are more than 1 record in the file we use for seeding!!!
+        #    ==> which means we are likely to do replicate the exact same thing using the model data
+        #    ==> so we stop at `idateSeedB` !!!
+        date_stop = idateSeedB
+    #
+    Nt, kstrt, kstop = mjt.GetTimeSpan( rdt, ztime_model, idateSeedA, idateModA, idateModB , iStop=date_stop )
+    #
+    if Nt<1:
+        print(' QUITTING since no matching model records!')
+        exit(0)
 
     cfdir = './figs/tracking'
     if iplot>0 and not path.exists(cfdir): mkdir(cfdir)
@@ -114,7 +120,8 @@ if __name__ == '__main__':
 
         zt, zIDs, XseedG, XseedC = mjt.LoadNCdataMJT( fNCseed, krec=jrec, iverbose=idebug )
         print('     => data used for seeding is read at date =',mjt.epoch2clock(zt),'\n        (shape of XseedG =',np.shape(XseedG),')')
-
+        exit(0)
+        
         (nP,_) = np.shape(XseedG)
 
         # We want an ID for each seeded buoy:
@@ -140,8 +147,8 @@ if __name__ == '__main__':
     iAlive = np.zeros(      nP , dtype='i1') + 1 ; # tells if a buoy is alive (1) or zombie (0) (discontinued)
     vTime  = np.zeros( Nt+1, dtype=int ) ; # UNIX epoch time associated to position below
     xmask  = np.zeros((Nt+1,nP,2), dtype='i1')
-    xPosC  = np.zeros((Nt+1,nP,2)) + FillValue  ; # x-position of buoy along the Nt records [km]
-    xPosG  = np.zeros((Nt+1,nP,2)) + FillValue
+    xPosC  = np.zeros((Nt+1,nP,2)) + mjt.FillValue  ; # x-position of buoy along the Nt records [km]
+    xPosG  = np.zeros((Nt+1,nP,2)) + mjt.FillValue
     vMesh  = np.zeros((nP,4,2))   ; # stores for each buoy the 4 points defining the cell (coordinates of 4 surrounding F-points)
     lStillIn = np.zeros(nP, dtype=bool) ; # tells if a buoy is still within expected mesh/cell..
 
@@ -319,7 +326,7 @@ if __name__ == '__main__':
     cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+'_'+cdt1+'_'+cdt2+'.nc'
 
     kk = mjt.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
-                               mask=xmask[:,:,0], tunits=ctunits_expected, fillVal=FillValue, corigin=corgn )
+                               mask=xmask[:,:,0], corigin=corgn )
 
 
 

@@ -2,7 +2,7 @@ import numpy as np
 
 dt0_RGPS = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]                                                                       
 
-FillValue = -9999.
+from .ncio import FillValue
 
 def AllowedDevFromDT0( pbin_dt ):
     '''

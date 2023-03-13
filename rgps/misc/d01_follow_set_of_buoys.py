@@ -36,8 +36,6 @@ cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
-ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
-
 dt_buoy = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 dt_scan =    6*3600 ; # time increment while scanning for valid time intervals
 dt_tolr = dt_scan/2. ; # time interval aka tolerance `+-dt_tolr` to consider two byoys are synchronized (Bouchat et al. 2021) [s]
@@ -111,8 +109,8 @@ if __name__ == '__main__':
 
         # Time records:
         ctunits = id_in.variables['time'].units
-        if not ctunits == ctunits_expected:
-            print(" ERROR: we expect '"+ctunits_expected+"' as units for the time record vector, yet we have: "+ctunits)
+        if not ctunits == mjt.tunits_default:
+            print(" ERROR: we expect '"+mjt.tunits_default+"' as units for the time record vector, yet we have: "+ctunits)
             exit(0)
         vtime0 = id_in.variables['time'][:]
 

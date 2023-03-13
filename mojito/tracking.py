@@ -16,7 +16,13 @@ def find_ji_of_min(x):
 
 
 
-def GetTimeSpan( dt, vtime_mod, iSdA, iSdB, iMdA, iMdB, iverbose=0 ):
+def GetTimeSpan( dt, vtime_mod, iSdA, iMdA, iMdB, iStop=None, iverbose=0 ):
+    '''
+         * iStop: date at which to stop !
+                  => if not provided we stop at latest model date!!!
+    '''
+    ltStop = ( iStop )
+    #    
     # Confrontation of time info seeding and model:
     from .util import epoch2clock
     #
@@ -25,8 +31,12 @@ def GetTimeSpan( dt, vtime_mod, iSdA, iSdB, iMdA, iMdB, iverbose=0 ):
         exit(0)
     #
     kt0 = np.argmin(np.abs(vtime_mod[:]-iSdA)) + 1
-    print('    * [GetTimeSpan]: will start using record',kt0,'of SI3 file =>',epoch2clock(vtime_mod[kt0]))
-    ktN = np.argmin(np.abs(vtime_mod[:]-iSdB))
+    print('    * [GetTimeSpan]: will start using model record',kt0,'of SI3 file =>',epoch2clock(vtime_mod[kt0]))
+    #
+    if ltStop:
+        ktN = np.argmin(np.abs(vtime_mod[:]-iSdB))
+    else:
+        ktN = len(vtime_mod) - 1        
     print('    * [GetTimeSpan]: will stop at record',ktN,' =>',epoch2clock(vtime_mod[ktN]))
     Nt = ktN - kt0 + 1
     print('       ==> '+str(Nt)+' model records')

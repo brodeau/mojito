@@ -215,7 +215,7 @@ def GetModelUVGrid( fNCmeshmask ):
 
 
 def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[],
-                      tunits=tunits_default, fillVal=None, corigin=None ):
+                      tunits=tunits_default, fillVal=FillValue, corigin=None ):
     '''
     '''
     print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')

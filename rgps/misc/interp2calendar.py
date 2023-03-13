@@ -36,8 +36,6 @@ cdt_pattern = 'YYYY-MM-DD_00:00:00' ; # pattern for dates
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
-ctunits_expected = 'seconds since 1970-01-01 00:00:00' ; # we expect UNIX/EPOCH time in netCDF files!
-
 idebug = 0
 idebug_interp = 0
 iplot = 1          ; # show the result in figures?
@@ -525,7 +523,7 @@ if __name__ == '__main__':
     xXkm = np.ma.masked_where( xmsk==0, xXkm )
 
     # GENERATION OF COMPREHENSIVE NETCDF FILE:
-    kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk, tunits=ctunits_expected, fillVal=FillValue, corigin='RGPS' )
+    kk = mjt.ncSaveCloudBuoys( cf_out, vTbin[:,0], vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk, fillVal=FillValue, corigin='RGPS' )
 
     if iplot>0:
 
