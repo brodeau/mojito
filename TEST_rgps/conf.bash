@@ -10,15 +10,12 @@ DT_BINS_H=12  ; # width of a bin for time sampling [hours]
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0430"
 
-#LIST_RES="10 20 30"
-LIST_RES="10"
-#LIST_RES="20"
-#LIST_RES="40"
-#LIST_RES="80"
-
 FILIN="RGPS_${YEAR}.nc4"
 
 NJPAR=4 ; # number of jobs we can launch in //
+
+
+RESKM=10
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
@@ -59,7 +56,11 @@ case ${host} in
         #
         NJPAR=30
         #
-        DT_BINS_H=6 ; DATE2="${YEAR}0315"
+        #DT_BINS_H=6 ; DATE2="${YEAR}0315" ; RESKM=10 ; #scale 10km
+        #DT_BINS_H=24 ; DATE2="${YEAR}0115" ; RESKM=20 ; #scale 20km
+        #
+        DT_BINS_H=$((24*9)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0131" ; #RESKM=200
+        #
         #DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0103" ; DATE2="${YEAR}0115"
         #
         ;;

@@ -61,7 +61,7 @@ if __name__ == '__main__':
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
     
     # File to save work in:
-    cf_npz_out = './npz/RGPS_batch_selection_'+cdtS1+'_'+cdtS2+'.npz'
+    cf_npz_out = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'.npz'
 
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given batch, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`

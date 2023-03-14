@@ -28,53 +28,50 @@ echo ${list_btch}
 nbs=`echo ${list_btch} | wc -w`
 echo " ==> ${nbs} batches!" ; echo
 
-for cres in ${LIST_RES}; do
 
-    echo; echo
-    echo " *** ${cres} km ***"
-    echo
+echo; echo
+echo " *** ${RESKM} km ***"
+echo
 
-    for cbtch in ${list_btch}; do
+for cbtch in ${list_btch}; do
 
-        #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-        list=`\ls npz/Q-mesh_RGPS_${cbtch}_${YEAR}????t0_${YEAR}????_*km.npz`
-        nbf=`echo ${list} | wc -w`
+    #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
+    list=`\ls npz/Q-mesh_RGPS_${cbtch}_${YEAR}????t0_${YEAR}????_*km.npz`
+    nbf=`echo ${list} | wc -w`
 
-        echo " *** Number of files for Batch ${cbtch} = ${nbf}"
+    echo " *** Number of files for Batch ${cbtch} = ${nbf}"
 
-        list_date_ref=""
-        for ff in ${list}; do
-            date_ref=`echo ${ff} | cut -d_ -f4`
-            list_date_ref+=" ${date_ref}"
-        done
-        list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+    list_date_ref=""
+    for ff in ${list}; do
+        date_ref=`echo ${ff} | cut -d_ -f4`
+        list_date_ref+=" ${date_ref}"
+    done
+    list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
 
-        echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
+    echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
 
-        for dr in ${list_date_ref}; do
-            echo
-            lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_${dr}_${YEAR}????_${cres}km.npz` )
-            nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
-            
-            if [ ${nf} -eq 2 ]; then
+    for dr in ${list_date_ref}; do
+        echo
+        lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_${dr}_${YEAR}????_${RESKM}km.npz` )
+        nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
 
-                fQ1=${lst[0]}
-                fQ2=${lst[1]}
-                echo " ==> will use:"
-                echo " * ${fQ1}"
-                echo " * ${fQ2}"
-                
-                flog=`basename ${fQ1}`
-                flog=`echo ${flog} | sed -e s/".npz"/""/g`
+        if [ ${nf} -eq 2 ]; then
 
-                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
-                echo "  ==> ${CMD}"; echo
-                ${CMD}
-                echo; echo
+            fQ1=${lst[0]}
+            fQ2=${lst[1]}
+            echo " ==> will use:"
+            echo " * ${fQ1}"
+            echo " * ${fQ2}"
 
-            fi
+            flog=`basename ${fQ1}`
+            flog=`echo ${flog} | sed -e s/".npz"/""/g`
 
-        done
+            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+            echo "  ==> ${CMD}"; echo
+            ${CMD}
+            echo; echo
+
+        fi
 
     done
 

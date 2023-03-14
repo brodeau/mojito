@@ -27,27 +27,22 @@ for ff in ${list_nc}; do
         exit
     fi
 
-    
-    for res in ${LIST_RES}; do
 
+    flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
 
-        flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${res}km"
+    ijob=$((ijob+1))
 
-        ijob=$((ijob+1))
+    CMD="${EXE} ${ff} ${RESKM}"
+    echo "    ==> will launch:"; echo "     ${CMD}"; echo
+    ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+    sleep 1
+    echo
 
-        CMD="${EXE} ${ff} ${res}"
-        echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
-        sleep 1
-        echo
-
-        if [ $((ijob%NJPAR)) -eq 0 ]; then
-            echo "Waiting! (ijob = ${ijob})...."
-            wait
-            echo; echo
-        fi
-
-    done
+    if [ $((ijob%NJPAR)) -eq 0 ]; then
+        echo "Waiting! (ijob = ${ijob})...."
+        wait
+        echo; echo
+    fi
 
 done
 

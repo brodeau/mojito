@@ -3,7 +3,7 @@
 . ./conf.bash
 
 if [ "$1" = "0" ]; then
-    rm -f ./npz/RGPS_*${YEAR}*.npz
+    rm -f ./npz/RGPS_batch_selection_dt${DT_BINS_H}h_*${YEAR}*.npz
     
 elif [ "$1" = "1" ]; then
     rm -f figs/SELECTION/* nc/SELECTION_*${YEAR}*.nc npz/SELECTION_*${YEAR}*.npz
