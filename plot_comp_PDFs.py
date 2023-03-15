@@ -111,7 +111,7 @@ if __name__ == '__main__':
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
                             title=cName+': '+corig+' vs '+corig2, period=cperiod, origin=corig,
-                            ppdf2=PDF2, origin2=corig2 )    
+                            ppdf2=PDF2, Np2=nP2, origin2=corig2 )    
     
     elif l3files:
 
@@ -120,7 +120,7 @@ if __name__ == '__main__':
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
                             title=cName+': '+corig+' vs '+corig2+' vs '+corig2, period=cperiod, origin=corig,
-                            ppdf2=PDF2, origin2=corig2, ppdf3=PDF3, origin3=corig3 )
+                            ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
     
     else:
         # log-log and histogram:

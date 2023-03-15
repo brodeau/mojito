@@ -437,7 +437,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     ziy = 1.5*dy/Ly
     if unit: ziy = 4.2*dy/Ly
     ax = plt.axes( [ zix, ziy, 1.-(dx/Lx+zix), 1.-(dy/Ly+ziy) ], facecolor='0.75')
-        
+
     plt.axis([ xA,xB , yA,yB ])
 
     # Pixel size:
@@ -447,7 +447,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
             rrm = int( max( abs(rangeX[1]-rangeX[0]) , abs(rangeY[1]-rangeY[0]) ) )
             marker_size = 1710000./rrm
     marker_size = marker_size*500./Ly
-            
+
     # Showing points:
     plt.scatter( pX, pY, c=pF, s=marker_size, marker='s', cmap=cm, norm=cn )
 
@@ -579,7 +579,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
-    print(' * [PlotPDFdef()]: created figure '+cfig)    
+    print(' * [PlotPDFdef()]: created figure '+cfig)
     return 0
 
 
@@ -587,8 +587,8 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
                title=None, period=None, origin=None,
-               ppdf2=[], origin2=None,
-               ppdf3=[], origin3=None ):
+               ppdf2=[], Np2=None, origin2=None,
+               ppdf3=[], Np3=None, origin3=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
@@ -603,14 +603,14 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
     rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
-    
+
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
 
-    print('corigin =', origin)
+    print('origin =', origin)
     # For figure axes:
     xlog_min,xlog_max = 2.75e-3, 0.5
-    ylog_min,ylog_max = 5.e-3, 2.5e2
+    ylog_min,ylog_max = 5.e-3, 3.5e2
 
     ki = _initStyle_()
 
@@ -618,17 +618,29 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     if origin!='RGPS': ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
-        
-    plt.loglog(pbinc[:], ppdf[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label=origin, zorder=5)
+
+    clbl = origin
+    if Np and origin:
+        clbl = origin+' (N = '+str(Np)+')'
+
+    plt.loglog(pbinc[:], ppdf[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label=clbl, zorder=5)
 
     if l_comp2:
+        clbl = origin2
+        if Np2 and origin2:
+            origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
+            clbl = origin2+' (N = '+str(Np2)+')'
         if origin2!='RGPS': ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-        plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=origin2, zorder=10)
+        plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=clbl, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
     if l_comp3:
+        clbl = origin3
+        if Np3 and origin3:
+            origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
+            clbl = origin3+' (N = '+str(Np3)+')'
         if origin3!='RGPS': ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=origin3, zorder=10)
+        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
@@ -644,10 +656,10 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     # Y-axis:
     plt.ylabel('PDF', color='k')
     ax.set_ylim(ylog_min, ylog_max)
-            
+
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
-    
+
     if Np and not (l_comp2 or l_comp3):
         ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
     if period:
@@ -657,7 +669,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
-    print(' * [LogPDFdef()]: created figure '+cfig)    
+    print(' * [LogPDFdef()]: created figure '+cfig)
     return 0
 
 
@@ -683,7 +695,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
     (nQ,) = np.shape(pF)
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
         print('\n *** ERROR [ShowDefQuad]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
-    
+
     kk = _initStyle_(fntzoom=zoom)
 
     # Colormap:
@@ -707,7 +719,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
     ziy = 1.5*dy/Ly
     if unit: ziy = 4.2*dy/Ly
     ax = plt.axes( [ zix, ziy, 1.-(dx/Lx+zix), 1.-(dy/Ly+ziy) ], facecolor='0.75')
-        
+
     plt.axis([ xA,xB , yA,yB ])
 
     for jQ in range(nQ):
@@ -715,7 +727,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
             znorm = cn(pF[jQ])
             colrgb = cm(znorm)
             plt.fill( pX4[jQ,:], pY4[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-            
+
     if title:
         ax.annotate(title, xy=(0.1, ziy+0.05), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     if unit:
