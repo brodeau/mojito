@@ -106,8 +106,8 @@ def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):
 
 
 
-def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png', ms=5, ralpha=0.5,
-              caller='unknown', rzoom=1., title=None ):
+def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png',
+              ms=5, ralpha=0.5, caller='unknown', rzoom=1., title=None ):
     '''
         IN:
             * pt     => the date as epoch/unix time (integer)
@@ -305,8 +305,6 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
     ###  * pnames:  (len=nP) name (string) for each point
     ###  * ppntIDs: (len=nP) ID (integer)  for each point
     '''
-    from math import log
-
     zrat = 1./zoom
     kk = _initStyle_(fntzoom=zoom)
 
@@ -412,8 +410,6 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     ###     Specify pX_Q & pY_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
-    from math import log
-
     zrat = 1./zoom
     kk = _initStyle_(fntzoom=zoom)
 
@@ -690,8 +686,6 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
     ###     Specify pX4_Q & pY4_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
-    from math import log
-
     (nQ,) = np.shape(pF)
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
         print('\n *** ERROR [ShowDefQuad]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
@@ -740,4 +734,88 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
     plt.savefig(cfig)
     plt.close(1)
     return 0
+
+
+
+
+
+def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
+                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None, title=None ):
+    '''
+    ### Show points, triangle, and quad meshes on the map!
+    ### => each quadrangle is filled with the appropriate color from colormap !!!
+    ###
+    ###
+    ###  * pX4, pY4: for each quad the coordinates of the 4 vertices!
+    ###
+    ###  * lGeoCoor: True   => we expect degrees for `pX4,pY4` => geographic (lon,lat) coordinates !
+    ###           False  => we expect km or m for `pX4,pY4` => cartesian coordinates !
+    ###
+    ###     Specify pX4_Q & pY4_Q when plotting QuadMesh when IDs are not those of the
+    ###     traingle world!
+    '''
+    from .util import ConvertCartesianNPSkm2Geo
+    #from cartopy.crs import PlateCarree, NorthPolarStereo
+    #
+
+    (nQ,) = np.shape(pF)
+    if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
+        print('\n *** ERROR [ShowDefQuad]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
+
+    kk = _initStyle_(fntzoom=zoom)
+
+    # Need lat,lon from pX4, pY4 !
+    #crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    #crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
+    
+    zlat, zlon = ConvertCartesianNPSkm2Geo( pY4, pX4 )
+
+    # Colormap:
+    if   cwhat=='shr':
+        cm = plt.cm.get_cmap('viridis')
+    elif   cwhat=='tot':
+        cm = plt.cm.get_cmap('inferno')
+    elif   cwhat=='UMc':
+        cm = plt.cm.get_cmap('plasma')
+    else:
+        cm = plt.cm.get_cmap('RdBu')
+    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
+
+
+    PROJ = Basemap(llcrnrlon=vp[2], llcrnrlat=vp[3], urcrnrlon=vp[4], urcrnrlat=vp[5], \
+                   resolution=vp[9], area_thresh=1000., projection='stere', \
+                   lat_0=vp[6], lon_0=vp[7], epsg=None)
+
+
+    fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
+    ax  = plt.axes(vsporg, facecolor='w')
+
+    x0,y0 = PROJ(zlon,zlat)
+
+    for jQ in range(nQ):
+        if not np.isnan(pF[jQ]):
+            znorm = cn(pF[jQ])
+            colrgb = cm(znorm)
+            plt.fill( x0[jQ,:], y0[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
+
+    PROJ.drawcoastlines(linewidth=0.5)
+    PROJ.fillcontinents(color='grey') #, alpha=0)
+    PROJ.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
+    PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
+
+
+            
+    if title:
+        ax.annotate(title, xy=(0.05, 0.8), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+    #if unit:
+    #    # => triggers the colorbar
+    #    ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
+    #    clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
+    #    clb.set_label(unit, **cfont_clb)
+
+    print('     ===> saving figure: '+cfig)
+    plt.savefig(cfig)
+    plt.close(1)
+    return 0
+
 

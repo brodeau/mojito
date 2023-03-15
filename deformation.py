@@ -251,17 +251,32 @@ if __name__ == '__main__':
 
     # Some plots:
     if iplot>0:
+        
+        # Filled quads projected on the Arctic map:
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+                                  pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': divergence' )
 
-        # Filled quads:
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
+                                  pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': shear' )
+
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
+                                  pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': total deformation' )
+
+        # Filled quads projected on RGPS projection (Cartesian):
         mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-                         pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         title=corigin+': divergence' )
+                                  pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': divergence' )
 
         mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
-                         pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         title=corigin+': shear' )
+                                  pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': shear' )
 
         mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
-                         pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                         title=corigin+': total deformation' )
-    ###
+                                  pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': total deformation' )
+
+
+        ###
