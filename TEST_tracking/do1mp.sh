@@ -5,9 +5,9 @@
 EXE="${MOJITO_DIR}/tracking/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
-dirin="${MOJITO_DIR}/TEST_rgps/nc"; echo ${dirin}
+echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}"
 
-list_nc=`\ls ${dirin}/SELECTION_RGPS_*_${YEAR}????h??_${YEAR}????h??.nc`
+list_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_*_${YEAR}????h??_${YEAR}????h??.nc`
 
 nbf=`echo ${list_nc} | wc -w`
 

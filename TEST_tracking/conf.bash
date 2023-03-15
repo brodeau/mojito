@@ -8,8 +8,6 @@ NEMO_CONF="NANUK4"
 NEMO_EXP="BBM00"
 #NEMO_EXP="EVP00"
 
-DT_BINS_H=72  ; # width of a bin for time interpolation (hours)
-
 DATE1="${YEAR}0101"
 
 #LIST_RES="10 20 30"
@@ -48,6 +46,8 @@ case ${host} in
         exit
 esac
 
+
+DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps/nc"
 
 #export FNCSEED="${MOJITO_DIR}/TEST_rgps/${FNCSEED}"
 ##export FNCSEED="${DATA_DIR}/data/mojito/seeding_from_rgps/${FNCSEED}"
