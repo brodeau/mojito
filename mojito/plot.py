@@ -787,7 +787,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div',
                    lat_0=vp[6], lon_0=vp[7], epsg=None)
 
 
-    fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
+    fig = plt.figure(num=1, figsize=(7.54*1.3, 7.2*1.3), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor='w')
 
     x0,y0 = PROJ(zlon,zlat)
@@ -806,7 +806,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div',
 
             
     if title:
-        ax.annotate(title, xy=(0.05, 0.8), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+        ax.annotate(title, xy=(0.6, 0.95), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     #if unit:
     #    # => triggers the colorbar
     #    ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])

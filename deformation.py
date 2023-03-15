@@ -253,15 +253,15 @@ if __name__ == '__main__':
     if iplot>0:
         
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                                   pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence' )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
                                   pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear' )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
                                   pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation' )
 
