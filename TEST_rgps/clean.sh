@@ -21,8 +21,8 @@ elif [ "$1" = "4" ]; then
     rm -f npz/PDF_*.npz figs/*PDF_*.*
     
 elif [ "$1" = "all" ]; then
-    rm npz/* *.out *.err *~ \#*
-    rm -rf figs logs
+    rm -f *.out *.err *~ \#*
+    rm -rf figs logs nc
 
 else
     echo "Tell me something!"
