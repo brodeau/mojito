@@ -19,6 +19,8 @@ figs
 *.new
 *.bak
 *.svg
+*.odp
+*.pdf
 
 
 # Distribution / packaging
