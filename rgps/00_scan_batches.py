@@ -62,7 +62,10 @@ if __name__ == '__main__':
     
     # File to save work in:
     cf_npz_out = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'.npz'
-
+    if path.exists(cf_npz_out):
+        print('\n *** File '+cf_npz_out+' is already here!!! I have nothing to do!')
+        exit(0)
+    
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given batch, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
 
