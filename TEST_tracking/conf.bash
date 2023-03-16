@@ -10,9 +10,6 @@ NEMO_EXP="BBM00"
 
 DATE1="${YEAR}0101"
 
-#LIST_RES="10 20 30"
-#LIST_RES="10"
-
 FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0331_icemod.nc4"
 
 NJPAR=4 ; # number of jobs we can launch in //

@@ -1,15 +1,16 @@
 #!/bin/bash
 
+. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 EXE="python3 -u ${MOJITO_DIR}/generate_quad_mesh.py"
 
-LIST_RES=10; #fixme!
-
 NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 
 # Populating nc files we can use:
-list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_S???_${YEAR}????h??_${YEAR}????h??.nc`
+cxtraRES=""
+if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_S???_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} batches!"
 
@@ -32,31 +33,22 @@ for ff in ${list_nc}; do
 
     lstrec="0,$((Nr-1))"
 
-    for res in ${LIST_RES}; do
+    flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
 
-        flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${res}km"
+    ijob=$((ijob+1))
 
-        ijob=$((ijob+1))
+    CMD="${EXE} ${ff} ${lstrec} ${RESKM}"
+    echo "    ==> will launch:"; echo "     ${CMD}"; echo
+    ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+    sleep 1
+    echo
 
-        CMD="${EXE} ${ff} ${lstrec} ${res}"
-        echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
-        sleep 1
-        echo
-        
-        if [ $((ijob%NJPAR)) -eq 0 ]; then
-            echo "Waiting! (ijob = ${ijob})...."
-            wait
-            echo; echo
-        fi
-        
-    done
-    
+    if [ $((ijob%NJPAR)) -eq 0 ]; then
+        echo "Waiting! (ijob = ${ijob})...."
+        wait
+        echo; echo
+    fi
+
 done
 
 wait
-
-
-
-
-

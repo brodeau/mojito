@@ -1,17 +1,22 @@
 #!/bin/sh
 
+. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 EXE="${MOJITO_DIR}/tracking/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
-echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}"
+echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
+cxtraRES=""
+if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
 
-list_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_*_${YEAR}????h??_${YEAR}????h??.nc`
+list_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_*_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
 
 nbf=`echo ${list_nc} | wc -w`
 
 echo " *** We have ${nbf} files !"
+
+echo ${list_nc}
 
 mkdir -p ./logs
 
