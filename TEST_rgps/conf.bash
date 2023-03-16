@@ -62,8 +62,10 @@ case ${host} in
         #DT_BINS_H=24 ; DATE2="${YEAR}0115" ; RESKM=20 ; #scale 20km
         #
         # 80km:
-        DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => ???? points for shear !!!        
-        #DT_BINS_H=$((24*9)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; #RESKM=200
+        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 2296 points for shear !!!
+        DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 3913 points for shear !!!        
+        #
+        #DT_BINS_H=$((24*9)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; #RESKM=200 ;
         #
         #DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0103" ; DATE2="${YEAR}0115"
         #
