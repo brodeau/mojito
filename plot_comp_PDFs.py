@@ -29,13 +29,16 @@ if __name__ == '__main__':
     with np.load(cf_in) as data:
         cname = str(data['name'])
         corig = str(data['origin'])
+        reskm = int(data['reskm_nmnl'])
         cperiod = str(data['period'])
         nP    = data['Np']
         xbin_bounds = data['xbin_bounds']
         xbin_center = data['xbin_center']
         PDF   = data['PDF']
-    print(' * cname =', cname)
-    print(' * cperiod =', cperiod)
+    print(' * name =', cname)
+    print(' * orig =', corig)
+    print(' * reskm =', reskm)
+    print(' * period =', cperiod)
     print(' * nP =', nP)
 
     if l2files or l3files:
@@ -44,13 +47,16 @@ if __name__ == '__main__':
         with np.load(cf_in2) as data:
             cname2 = str(data['name'])
             corig2 = str(data['origin'])
+            reskm2 = int(data['reskm_nmnl'])
             cperiod2 = str(data['period'])
             nP2    = data['Np']
             xbin_bounds2 = data['xbin_bounds']
             xbin_center2 = data['xbin_center']
             PDF2   = data['PDF']
-        print('\n * cname_2 =', cname)
-        print(' * cperiod_2 =', cperiod)
+        print('\n * name_2 =', cname)
+        print(' * orig_2 =', corig)
+        print(' * reskm_2 =', reskm)        
+        print(' * period_2 =', cperiod)
         print(' * nP_2 =', nP)
         if cname2!=cname:
             print('ERROR: `cname2!=cname` !',cname2,cname)
@@ -66,13 +72,16 @@ if __name__ == '__main__':
         with np.load(cf_in3) as data:
             cname3 = str(data['name'])
             corig3 = str(data['origin'])
+            reskm3 = int(data['reskm_nmnl'])
             cperiod3 = str(data['period'])
             nP3    = data['Np']
             xbin_bounds3 = data['xbin_bounds']
             xbin_center3 = data['xbin_center']
             PDF3   = data['PDF']
-        print('\n * cname_3 =', cname)
-        print(' * cperiod_3 =', cperiod)
+        print('\n * name_3 =', cname)
+        print(' * orig_3 =', corig)
+        print(' * reskm_3 =', reskm)
+        print(' * period_3 =', cperiod)
         print(' * nP_3 =', nP)
         if cname3!=cname:
             print('ERROR: `cname3!=cname` !',cname3,cname)
@@ -82,7 +91,8 @@ if __name__ == '__main__':
             #or cperiod3!=cperiod
             exit(0)
 
-
+    exit(0)
+            
         
     if   cname == 'Divergence':
         cName = '|Divergence|'

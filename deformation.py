@@ -69,11 +69,15 @@ if __name__ == '__main__':
     chh = split(':',vclck[1])[0]
     cclck = str.replace( vclck[0],'-','')+'h'+chh
 
-    
+    reskm, reskm2 = QUA1.reskm_nmnl, QUA2.reskm_nmnl
+    if reskm != reskm2:
+        print('ERROR: quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
+        exit(0)
+    print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
+        
     # Comprehensive name for npz and figs to save later on:
-    corigin = QUA1.origin
-    
-    cfnm = corigin
+    corigin = QUA1.origin    
+    cfnm    = corigin
 
     # Some info from npz file name:
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
@@ -87,15 +91,8 @@ if __name__ == '__main__':
         print('FIXME: unknow origin: ',corigin); exit(0)
         
     cfnm += '_'+cbatch
-    cfnm += '_'+cclck
-        
-    creskm = ''
-    cc1 = split('km.',cf1)[0] ; cc1 = split('_',cc1)[-1]
-    cc2 = split('km.',cf2)[0] ; cc2 = split('_',cc2)[-1]
-    if cc1==cc2 and cc1.isdigit() and cc2.isdigit():
-        creskm = '_'+cc1+'km'
-        print('\n *** We have a resolution from names of files => '+cc1+' km !')
-        cfnm += creskm
+    cfnm += '_'+cclck        
+    cfnm += '_'+str(reskm)+'km'
         
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
@@ -246,37 +243,38 @@ if __name__ == '__main__':
 
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nQ,
-                         Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, origin=corigin )
+                         Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, origin=corigin, reskm_nmnl=reskm )
 
 
     # Some plots:
     if iplot>0:
+        cresinfo = '('+str(reskm)+' km)'
         
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                                   pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': divergence' )
+                                  title=corigin+': divergence '+cresinfo )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
                                   pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': shear' )
+                                  title=corigin+': shear '+cresinfo )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
                                   pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': total deformation' )
+                                  title=corigin+': total deformation '+cresinfo )
 
         # Filled quads projected on RGPS projection (Cartesian):
         mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                                   pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': divergence' )
+                                  title=corigin+': divergence '+cresinfo )
 
         mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
                                   pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': shear' )
+                                  title=corigin+': shear '+cresinfo )
 
         mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
                                   pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': total deformation' )
+                                  title=corigin+': total deformation '+cresinfo )
 
 
         ###

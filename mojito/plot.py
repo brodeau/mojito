@@ -603,7 +603,6 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
 
-    print('origin =', origin)
     # For figure axes:
     xlog_min,xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-3, 3.5e2

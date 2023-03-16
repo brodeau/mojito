@@ -304,7 +304,7 @@ if __name__ == '__main__':
                                          rangeX=vrngX, rangeY=vrngY )
                     
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin )
+            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin, reskm_nmnl=reskm )
 
 
             # Some info about the spatial scales of quadrangles:
@@ -323,7 +323,7 @@ if __name__ == '__main__':
                 exit(0)
             
             # Save the quadrangular mesh info:
-            mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q', origin=corigin )
+            mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q', origin=corigin, reskm_nmnl=reskm )
 
 
             #######################################################################################################
@@ -337,10 +337,10 @@ if __name__ == '__main__':
             xQcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin )
+            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin, reskm_nmnl=reskm )
 
             # Save the quadrangular mesh info:
-            mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', origin=corigin )
+            mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', origin=corigin, reskm_nmnl=reskm )
 
             del QUADS
 
