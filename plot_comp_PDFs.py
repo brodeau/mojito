@@ -63,7 +63,6 @@ if __name__ == '__main__':
             exit(0)
         if np.sum(np.abs(xbin_bounds2-xbin_bounds))!=0:
             print('ERROR: PDF in file 2 looks too different than in first file in terms of bin bounds?...')
-            #or cperiod2!=cperiod
             exit(0)
 
     if l3files:
@@ -91,9 +90,6 @@ if __name__ == '__main__':
             #or cperiod3!=cperiod
             exit(0)
 
-    exit(0)
-            
-        
     if   cname == 'Divergence':
         cName = '|Divergence|'
     elif cname == 'divergence':
