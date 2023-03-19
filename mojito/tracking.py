@@ -133,7 +133,7 @@ def TheCell( pyx, kjiT, pYf, pXf, iverbose=0 ):
     if iverbose>0:
         if kp>1 and lPin: print('        => option #'+str(kp)+' did work!  :)')
     #
-    return lPin, [jT,iT], [[jf1,jf2,jf3,jf4],[if1,if2,if3,if4]]
+    return lPin, [jT,iT], np.array( [ [jf1,if1],[jf2,if2],[jf3,if3],[jf4,if4] ], dtype=int )
 
 
 
@@ -161,7 +161,13 @@ def FCC( pntGcoor, pLat, pLon, pLatC, pLonC, cellType='T', rd_found_km=10., reso
     RETURNS:
              * j,i : indices of the grid mesh cell containing the target point
                      => -1,-1 if something went wrong or point was not found
+
+    TODO: must take care of boundaries when doing local square box!
+
     '''
+    from .proj import NorthStereoProj
+    nhb = 2 ; # half width of local box in number of points...
+    #
     (zlat,zlon) = pntGcoor
     
     lbla = ( iverbose>0 and pntID )
@@ -187,46 +193,37 @@ def FCC( pntGcoor, pLat, pLon, pLatC, pLonC, cellType='T', rd_found_km=10., reso
             print('     ==> nearest '+cP0+'-point for ',zlat,zlon,' on target grid:', jX, iX, '==> lat,lon:',
                   round(pLat[jX,iX],3), round(pLon[jX,iX],3))
 
-        # Here problem is to have `TheCell` working using Lat,Lon rather than projected Y,X as it is done in `FindContainingCell` !!!
-        # => we apply a stereographic projection of a litle region centered on the nearest point!
 
+        # To avoid having problem working with `lat,lon` we apply a polar stereographic projection to
+        # a small square domain that surround the nearest point found:
+        #  * lat,lon => y,k (km)        
+        zYC, zXC = NorthStereoProj( pLatC[jX-nhb:jX+3,iX-nhb:iX+3], pLonC[jX-nhb:jX+3,iX-nhb:iX+3],
+                                        lam0=pLon[jX,iX], phi0=pLat[jX,iX] )
+
+        # Projected target point:
+        zy0, zx0 = NorthStereoProj( np.array([zlat]) , np.array([zlon]),
+                                    lam0=pLon[jX,iX], phi0=pLat[jX,iX] )
+            
+        lPin, [jM,iM], KVRTCS = TheCell( (zy0,zx0), (nhb,nhb), zYC, zXC, iverbose=2 )
         
-        exit(0)
-        lPin, [jM,iM], [[jc1,jc2,jc3,jc4],[ic1,ic2,ic3,ic4]] = TheCell( (zlat,zlon), (jX,iX), pLatC, pLonC, iverbose=iverbose )
-        #
+        # Back to the global frame
+        jX = jM + jX - nhb
+        iX = iM + iX - nhb
+        KVRTCS[:,0] = KVRTCS[:,0] + jX - nhb
+        KVRTCS[:,1] = KVRTCS[:,1] + iX - nhb
+        
         if not lPin:
             print('WARNING [SeedInit()]: could not find the proper F-point cell!!!')
             print('         => when lookin for point:',zlat,zlon)
-            kcancel[jP] = 0
-            if iverbose>0: print('        ===> I CANCEL buoy '+str(pntID)+'!!! (NO proper F-point cell found)')
-
-
-            
-
+            icancel = 0
 
     else:
-        if lbla: print('  [FCC]      ===> I CANCEL buoy '+str(pntID)+'!!! (NO nearest '+cP0+'-point found for ',zlat,zlon,')')
-
-
-
-
-        
-                        
-    #if kcancel[jP] == 1:            
-    #    # Tests for canceling buoy or not:
-    #    icncl = Survive( pntID, [jX,iX] , maskT, pIceC=xIceConc, iverbose=iverbose )
-    #    if icncl>0: kcancel[jP] = 0
-        
-    #if kcancel[jP] == 1:
-        # Everything is okay, now we locate the cell/mesh (polygon joining 4 F-points) that includes
-        # our target point (zy,zx)
-
-
-
+        if iverbose>0:
+            print('  [FCC] ==> NO nearest '+cP0+'-point found for ',zlat,zlon,'!')
 
 
     #
-    return 0
+    return [jX,iX], KVRTCS
     
 
 

@@ -159,7 +159,7 @@ def GetModelGrid( fNCmeshmask ):
 
     (nj,ni) = np.shape(kmaskt)
 
-    kmaskt = np.array(kmaskt, dtype=int)
+    kmaskt = np.array(kmaskt, dtype='i1')
 
 
     zXt = np.zeros((nj,ni))

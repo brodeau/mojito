@@ -462,15 +462,15 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
 
 
-
-def PlotMesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_name='mesh.png', pcoor_extra=(-999.,-999.), label_extra=None ):
+def Plot1Mesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_name='mesh.png',
+               pcoor_extra=(-999.,-999.), label_extra=None ):
     '''
     isrc_msh: 2D integer array of shape (4,2)
     wghts:    1D real array of shape (4,)
     pcoor_extra: just an extra point to show on the figure....
     '''
     (yT,xT)                             = pcoor_trg
-    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
+    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]    
     #
     fig = plt.figure(num = 1, figsize=[14,10], facecolor='w', edgecolor='k')
     ax = plt.axes([0.09, 0.07, 0.6, 0.9])
