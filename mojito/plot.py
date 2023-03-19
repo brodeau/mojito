@@ -462,10 +462,11 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
 
 
-def Plot1Mesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_name='mesh.png',
-               pcoor_extra=(-999.,-999.), label_extra=None ):
+def Plot1Mesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], pcoor_cntr=(),
+               fig_name='mesh.png', pcoor_extra=(-999.,-999.), label_extra=None ):
     '''
     isrc_msh: 2D integer array of shape (4,2)
+    pcoor_cntr : (lat,lon) of T (or F) point at center of F-defined (or T-defined) cell
     wghts:    1D real array of shape (4,)
     pcoor_extra: just an extra point to show on the figure....
     '''
@@ -484,7 +485,11 @@ def Plot1Mesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], fig_na
         plt.plot( [ Xs[ja,ia],Xs[jb,ib] ], [ Ys[ja,ia],Ys[jb,ib] ], linestyle='-', color='k', marker=None, ms=10, label=None)
         # The point:
         plt.plot( [ Xs[ja,ia] ], [ Ys[ja,ia] ], marker='o', ms=10, label=vnames[i] )
-
+        
+    if len(pcoor_cntr)==2:
+        (yC,xC) = pcoor_cntr
+        plt.plot( [     xC    ], [     yC    ], marker='o', ms=10, color='k', label='center' ) ; # target point !
+        
     if pcoor_extra!=(-999.,-999.):
         (yE,xE) = pcoor_extra
         plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label=label_extra ) ; # target point !

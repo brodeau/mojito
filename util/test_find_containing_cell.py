@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
 
     ik = mjt.Plot1Mesh( (rlat,rlon), xlatF, xlonF, kVert, vnames=['llc','lrc','urc','ulc'],
+                        pcoor_cntr=(xlatT[jN,iN], xlonT[jN,iN]),
                         fig_name='mesh.png', pcoor_extra=(-999.,-999.), label_extra=None )
 
     
