@@ -32,7 +32,7 @@ case ${host} in
         #
         #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*10))
         #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
-        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=24 ; DATE2="${YEAR}0115" ; RESKM=40
+        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=24 ; DATE2="${YEAR}0115" ; RESKM=10
         #DT_BINS_H=6 ; DATE2="${YEAR}0131"
         #
         ;;
