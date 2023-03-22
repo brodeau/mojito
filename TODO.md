@@ -1,5 +1,11 @@
 
 
+* in TEST_trackin/SI3_only, apparently proble for: `[GetTimeSpan]: will start using model record ...` says 1 record too late!!!
+
+
+
+
+
 * Use the nearest U and V point in ice part tracker! And not `0.5(U(i-1)+U(i))` as for now !!!
 
 * Use `A` at `t` and not `A` at centered time `t+0.5*dt`, when estimating partial derivatives??? (Anton and Pierre say I should!)
