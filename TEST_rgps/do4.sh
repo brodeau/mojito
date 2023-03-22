@@ -4,7 +4,7 @@
 
 EXE="${MOJITO_DIR}/statistics.py"
 
-CMD="${EXE} npz RGPS"
+CMD="${EXE} npz ${DT_BINS_H} ${RESKM}"
 echo "  ==> ${CMD}"; echo
 ${CMD}
 echo; echo

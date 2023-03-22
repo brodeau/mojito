@@ -11,7 +11,7 @@ if [ ${RESKM} -eq 10 ]; then csf=""; fi
 
 
 # Populating nc files we can use:
-list_nc=`\ls nc/SELECTION_RGPS_S???_${YEAR}????h??_${YEAR}????h??${csf}.nc`
+list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${csf}.nc`
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} batches!"
 
@@ -36,4 +36,5 @@ for ff in ${list_nc}; do
     echo "    ==> will launch:"; echo "     ${CMD}"; echo
     ${CMD}
     echo
+    exit
 done

@@ -85,12 +85,14 @@ if __name__ == '__main__':
 
     if corigin == 'RGPS':
         cbatch =  split('_',cf1)[2]
+        cdtbin =  '_'+split('_',cf1)[3]
     elif split('_',corigin)[0] == 'NEMO-SI3':
         cbatch =  split('_',cf1)[4]
+        cdtbin = '' ; #fixme!
     else:
         print('FIXME: unknow origin: ',corigin); exit(0)
         
-    cfnm += '_'+cbatch
+    cfnm += '_'+cbatch+cdtbin
     cfnm += '_'+cclck        
     cfnm += '_'+str(reskm)+'km'
         

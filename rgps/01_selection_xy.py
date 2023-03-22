@@ -71,11 +71,12 @@ if __name__ == '__main__':
     if not narg in [5]:
         print('Usage: '+argv[0]+' <file_RGPS.nc> <YYYYMMDD(_HH:MM)1> <YYYYMMDD(_HH:MM)2> <dt_binning (hours)>')
         exit(0)
-    cf_in    =     argv[1]
-    cdate1   =     argv[2]
-    cdate2   =     argv[3]
-    idtbin_h = int(argv[4])
+    cf_in    = argv[1]
+    cdate1   = argv[2]
+    cdate2   = argv[3]
+    cdtbin_h = argv[4]
     ####################################################################################################
+    idtbin_h = int(cdtbin_h)
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
 
@@ -320,7 +321,7 @@ if __name__ == '__main__':
             xtim = np.ma.masked_where( xmsk==0, xtim )
             vIDs = np.ma.masked_where( xmsk[0,:]==0, vIDs )
     
-            cout_root = 'SELECTION_RGPS_S'+'%3.3i'%(jS)
+            cout_root = 'SELECTION_RGPS_S'+'%3.3i'%(jS)+'_dt'+cdtbin_h
     
             if iplot>0:
                 # Batch time evolution on Arctic map:

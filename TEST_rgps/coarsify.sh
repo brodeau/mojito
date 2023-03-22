@@ -8,7 +8,7 @@ ijob=0
 mkdir -p logs
 
 # Populating nc files we can use:
-list_nc=`\ls nc/SELECTION_RGPS_S???_${YEAR}????h??_${YEAR}????h??.nc`
+list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} batches!"
 
