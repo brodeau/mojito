@@ -269,7 +269,6 @@ def LoadClassPolygon( cfile, ctype='Q' ):
     PointIDs       = data['PointIDs']
     PointTime      = data['PointTime']
     origin        = str(data['origin'])
-    reskm_nmnl     = int(data['reskm_nmnl'])
 
     (nPoly,nVrtc) = np.shape(MeshVrtcPntIdx)
 
@@ -285,6 +284,7 @@ def LoadClassPolygon( cfile, ctype='Q' ):
             print('ERROR: [polygons.LoadPolygon()] => wrong number of vertices for a quadrangle:',nVrtc); exit(0)
         QuadNames = data['QuadNames']
         QuadIDs   = data['QuadIDs']
+        reskm_nmnl= int(data['reskm_nmnl'])
         POLY = Quadrangle( PointXY, MeshVrtcPntIdx, PointIDs, PointTime, QuadNames, vQIDs=QuadIDs, date=cdate,
                            origin=origin, reskm_nmnl=reskm_nmnl )
 
