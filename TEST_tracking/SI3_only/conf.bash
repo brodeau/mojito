@@ -10,6 +10,7 @@ NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg1"
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0131"
 
+iHSS=1
 
 NJPAR=4 ; # number of jobs we can launch in //
 

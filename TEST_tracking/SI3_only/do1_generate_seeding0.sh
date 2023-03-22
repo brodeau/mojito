@@ -3,10 +3,7 @@
 . ./conf.bash
 
 EXE1="${MOJITO_DIR}/tracking/generate_idealized_seeding.py"
-EXE2="${MOJITO_DIR}/tracking/si3_part_tracker.py"
-
-
-iHSS=10
+EXE2="python3 -u ${MOJITO_DIR}/tracking/si3_part_tracker.py"
 
 YYYY=`echo ${DATE1} | cut -c1-4`
 MM=`echo ${DATE1} | cut -c5-6`
