@@ -19,7 +19,7 @@ echo $NDATE1
 LDATE1="${NDATE1}_00:00:00"
 echo
 
-fout="./nc/mojito_seeding_nemo_Tpoint_${NDATE1}.nc"
+fout="./nc/mojito_seeding_nemo_Tpoint_${NDATE1}_HSS${iHSS}.nc"
 
 if [ ! -f ${fout} ]; then
     ${EXE1} ${LDATE1} ${FNMM},${iHSS}

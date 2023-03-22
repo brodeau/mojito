@@ -10,7 +10,7 @@
 from sys import argv, exit
 from os import path, mkdir, makedirs
 import numpy as np
-#from re import split
+from re import split
 
 import mojito   as mjt
 
@@ -30,16 +30,22 @@ if __name__ == '__main__':
     print('')
 
     if not len(argv) in [2,3]:
-        print('Usage: '+argv[0]+' <YYYY-MM-DD_hh:mm:ss> (<mesh_mask>(for NEMO))')
+        print('Usage: '+argv[0]+' <YYYY-MM-DD_hh:mm:ss> (<mesh_mask>,<iHSS> (for NEMO))')
         exit(0)
 
     cdate0 = argv[1]
 
     lNEMO = ( len(argv)==3 )
     if lNEMO:
-        cf_mm = argv[2]
+        cvf = split(',',argv[2])
+        cf_mm = cvf[0]
         seeding_type='nemo_Tpoint'
+        iHSS = int(cvf[1])
+        if iHSS<1 or iHSS>20:
+            print('ERROR: chosen horizontal subsampling makes no sense iHSS=',iHSS)
+            exit(0)
 
+        
     
 
     if lNEMO:
@@ -92,7 +98,7 @@ if __name__ == '__main__':
     #print('\n * New shape of XseedG =',np.shape(XseedG))
 
     makedirs( './nc', exist_ok=True )
-    foutnc = './nc/mojito_seeding_'+seeding_type+'_'+mjt.epoch2clock(zTime[0], precision='D')+'.nc'
+    foutnc = './nc/mojito_seeding_'+seeding_type+'_'+mjt.epoch2clock(zTime[0], precision='D')+'_HSS'+str(iHSS)+'.nc'
     
     print('\n *** Saving seeding file for date =',mjt.epoch2clock(zTime[0]))
     
