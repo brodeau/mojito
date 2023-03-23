@@ -244,7 +244,7 @@ def NewHostCell( kcross, pP1, pP2, ji4vert, pY, pX,  iverbose=0 ):
 
 
 
-def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
+def UpdtInd4NewCell( knhc, ji4vert, kjiT, iverbose=0 ):
     '''
         Update the mesh indices according to the new host cell
     '''
@@ -253,14 +253,14 @@ def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
         ji4vert[0,:] = ji4vert[0,:] - 1
         kjiT[0] = kjiT[0]-1
     elif knhc==5:
-        print(' * [UpdtInd4NewCell()]: WE HAVE A 5 !!!!')
+        if iverbose>0: print(' * [UpdtInd4NewCell()]: WE HAVE A 5 !!!!')
         # went left + down
         ji4vert[1,:] = ji4vert[1,:] - 1
         ji4vert[0,:] = ji4vert[0,:] - 1
         kjiT[1] = kjiT[1]-1
         kjiT[0] = kjiT[0]-1
     elif knhc==6:
-        print(' * [UpdtInd4NewCell()]: WE HAVE A 6 !!!!')
+        if iverbose>0: print(' * [UpdtInd4NewCell()]: WE HAVE A 6 !!!!')
         # went right + down
         ji4vert[1,:] = ji4vert[1,:] + 1
         ji4vert[0,:] = ji4vert[0,:] - 1
@@ -275,14 +275,14 @@ def UpdtInd4NewCell( knhc, ji4vert, kjiT ):
         ji4vert[0,:] = ji4vert[0,:] + 1
         kjiT[0] = kjiT[0]+1
     elif knhc==7:
-        print(' * [UpdtInd4NewCell()]: WE HAVE A 7 !!!!')
+        if iverbose>0: print(' * [UpdtInd4NewCell()]: WE HAVE A 7 !!!!')
         # went right + up
         ji4vert[1,:] = ji4vert[1,:] + 1
         ji4vert[0,:] = ji4vert[0,:] + 1
         kjiT[1] = kjiT[1]+1
         kjiT[0] = kjiT[0]+1
     elif knhc==8:
-        print(' * [UpdtInd4NewCell()]: WE HAVE A 8 !!!!')
+        if iverbose>0: print(' * [UpdtInd4NewCell()]: WE HAVE A 8 !!!!')
         # went right + up
         ji4vert[1,:] = ji4vert[1,:] - 1
         ji4vert[0,:] = ji4vert[0,:] + 1
