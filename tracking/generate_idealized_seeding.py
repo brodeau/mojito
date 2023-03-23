@@ -17,14 +17,12 @@ import mojito   as mjt
 idebug=0
 iplot=1
 
-# `seeding_type` is overriden if a NC file is specified (3rd argument) when calling this script...
-#seeding_type='nemo_Tpoint' ; 
 seeding_type='debug' ; # By default, ha
 
 iHSS=15 ; # horizontal sub-sampling for NEMO points initialization...
 
 ldo_coastal_clean = True
-MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
+MinDistFromLand  = 200 ; # how far from the nearest coast should our buoys be? [km]
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 l_CentralArctic = True ; # only keep points of the central Arctic
@@ -38,39 +36,53 @@ if __name__ == '__main__':
             print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
         fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
     
-    if not len(argv) in [2,3]:
-        print('Usage: '+argv[0]+' <YYYY-MM-DD_hh:mm:ss> (<mesh_mask>,<iHSS> (for NEMO))')
+    if not len(argv) in [2,3,5]:
+        print('Usage: '+argv[0]+' <YYYY-MM-DD_hh:mm:ss> (<mesh_mask>,<iHSS>) (<si3_output>) (<rec#>[if si3_output])')
         exit(0)
 
     cdate0 = argv[1]
 
-    lNEMO = ( len(argv)==3 )
-    if lNEMO:
+    lnemoMM  = ( len(argv)==3 )
+    lnemoSI3 = ( len(argv)==5 )
+    
+    if lnemoMM or lnemoSI3:
         cvf = split(',',argv[2])
         cf_mm = cvf[0]
-        seeding_type='nemo_Tpoint'
         iHSS = int(cvf[1])
         if iHSS<1 or iHSS>20:
             print('ERROR: chosen horizontal subsampling makes no sense iHSS=',iHSS)
             exit(0)
-
         
-    
+    if lnemoMM:
+        seeding_type = 'nemoTmm'
+    elif lnemoSI3:
+        seeding_type = 'nemoTsi3'
+        cf_si3 = argv[3]
+        krec = int(argv[4])
+        if krec<0:
+            print('ERROR: chosen record to read is < 0!',krec)
+            exit(0)
 
-    if lNEMO:
+
+    if lnemoMM or lnemoSI3:
         # Getting model grid metrics and friends:
         imaskt, xlatT, xlonT, xYt, xXt, xYf, xXf, xResKM = mjt.GetModelGrid( cf_mm )
 
+    if lnemoSI3:
+        xIC = mjt.GetModelSeaIceConc( cf_si3, krec=krec, expected_shape=np.shape(imaskt) )
+        #
+    elif lnemoMM:
         # A fake sea-ice concentration:
-        #xIC[:,:] = id_uv.variables['siconc'][0,:,:] ; # We need ice conc. at t=0 so we can cancel buoys accordingly
         xIC = np.ones( np.shape(imaskt) )
 
+
+    
     ############################
     # Initialization / Seeding #
     ############################
 
 
-    if seeding_type=='nemo_Tpoint':
+    if seeding_type in ['nemoTmm','nemoTsi3']:
         XseedG = mjt.nemoSeed( imaskt, xlatT, xlonT, xIC, khss=iHSS, fmsk_rstrct=None )
         #
     elif seeding_type=='debug':

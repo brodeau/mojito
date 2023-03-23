@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-fin=`\ls ./nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_nemo_${DATE1}h00_${YEAR}????h??.nc`
+fin=`\ls ./nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_nemoTsi3_${DATE1}h00_${YEAR}????h??.nc`
 
 
 if [ `echo ${fin} | wc -w ` -ne 1 ]; then
