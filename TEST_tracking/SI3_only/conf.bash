@@ -5,7 +5,8 @@ YEAR="2016"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
 NEMO_CONF="NANUK4"
-NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg1"
+#NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg1"
+NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg2"
 
 export DATE1="${YEAR}0101"
 export DATE2="${YEAR}0131"
@@ -14,12 +15,16 @@ export iHSS=1 ; RESKM=12
 
 NJPAR=4 ; # number of jobs we can launch in //
 
+FREQ_AN_DAYS=3 ; # frequency in days of the deformation analysis...
+
+
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
         #export iHSS=6 ; RESKM=73
         export iHSS=4 ; RESKM=49
+        Ndays=6
         #
         ;;
     "mcp-oceannext-01")
@@ -31,6 +36,7 @@ case ${host} in
     "frazilo")
         #export DATA_DIR="/data"
         export DATA_DIR="/home/data/laurent/tmp"
+        Ndays=31
         #
         NJPAR=30
         #

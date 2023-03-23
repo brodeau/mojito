@@ -162,16 +162,22 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 
 if __name__ == '__main__':
 
-    if not len(argv) in [4]:
+    if not len(argv) in [3,4]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm>')
         exit(0)
+
+    lPrefix = (len(argv)==3)
     cd_in  = argv[1]
-    cdtbin = argv[2]
-    creskm = argv[3]
 
+    if lPrefix:
+        cprfx = argv[2]
+        listnpz = np.sort( glob(cd_in+'/'+cprfx+'*.npz') )
+    else:
+        cdtbin = argv[2]
+        creskm = argv[3]
+        listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*_dt'+cdtbin+'*'+creskm+'km.npz') )
 
-    # Polpulating deformation files available:
-    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*_dt'+cdtbin+'*'+creskm+'km.npz') )
+    # Polpulating deformation files available:    
     nbFiles = len(listnpz)
     print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
 
@@ -224,9 +230,10 @@ if __name__ == '__main__':
     cdt1, cdt2 = list_date[0],list_date[-1]
     cperiod = cdt1+'-'+cdt2
 
-    if str(reskm) != creskm:
-        print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
-        exit(0)
+    if not lPrefix:
+        if str(reskm) != creskm:
+            print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
+            exit(0)
     
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
@@ -282,8 +289,13 @@ if __name__ == '__main__':
     nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
     nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
     nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug ) # 
-        
-    cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod
+
+
+
+    if lPrefix:
+        cfroot = 'PDF_'+corigin+'_'+str(reskm)+'km_'+cperiod
+    else:
+        cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
 
     
     # Saving in `npz` files:

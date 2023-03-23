@@ -7,14 +7,12 @@ EXE="${MOJITO_DIR}/deformation.py"
 
 mkdir -p logs
 
+ijob=0
 
 # Populating the batches available:
 listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_${YEAR}????t0_${YEAR}????_*km.npz`
 
 echo "${listQ}"
-
-
-
 
 echo; echo
 echo " *** ${RESKM} km ***"
@@ -48,14 +46,23 @@ for dr in ${list_date_ref}; do
         echo " * ${fQ1}"
         echo " * ${fQ2}"
 
-        flog=`basename ${fQ1}`
-        flog=`echo ${flog} | sed -e s/".npz"/""/g`
+        flog="quadgen_${NEMO_CONF}-${NEMO_EXP}_${RESKM}_${dr}"
+
+        ijob=$((ijob+1))
 
         CMD="${EXE} ${fQ1} ${fQ2} 0"
         echo "  ==> ${CMD}"; echo
-        ${CMD}
+        ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
         echo; echo
+
+        if [ $((ijob%NJPAR)) -eq 0 ]; then
+            echo "Waiting! (ijob = ${ijob})...."
+            wait
+            echo; echo
+        fi
 
     fi
 
 done
+
+wait
