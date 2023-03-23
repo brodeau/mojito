@@ -18,7 +18,8 @@ host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
-        export iHSS=6 ; RESKM=73
+        #export iHSS=6 ; RESKM=73
+        export iHSS=4 ; RESKM=49
         #
         ;;
     "mcp-oceannext-01")
