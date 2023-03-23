@@ -104,25 +104,25 @@ def Haversine( plat, plon, xlat, xlon ):
 
 
 
-def Dist2Coast( lon0, lat0, plon, plat, pdist2coat ):
+def Dist2Coast( rlon, rlat, plon, plat, pdist2coat ):
     '''
        Returns the distance to the nearest coast of a given point (lon,lat)
         INPUT:
-          * lon0, lat0: coordinates (scalars) [degrees East], [degrees West]
+          * rlon, rlat: coordinates (scalars) [degrees East], [degrees West]
           * plon:       1D array of longitudes assosiated to `pdist2coat`
           * plat:       1D array of latitudes  assosiated to `pdist2coat`
           * pdist2coat: 2D array containing rasterized distance to coast (originally read in NC file) [km]
     '''
-    rx = np.mod( lon0, 360. ) ; # [0:360] frame
+    rx = np.mod( rlon, 360. ) ; # [0:360] frame
     vx = np.mod( plon, 360. ) ; # [0:360] frame
     # Are we dangerously close to the [0--360] cut?
     #  => then will work in the [-180:180] frame:
     if rx > 355.:
         rx = degE_to_degWE( rx )
         vx = degE_to_degWE( vx )
-        #print(' lon0, lat0 =', rx, lat0)
+        #print(' rlon, rlat =', rx, rlat)
     ip = np.argmin( np.abs(  vx[:] - rx  ) )
-    jp = np.argmin( np.abs(plat[:] - lat0) )
+    jp = np.argmin( np.abs(plat[:] - rlat) )
     #print(' ip, jp =', ip, jp)
     #print(' Nearest lon, lat =', plon[ip], plat[jp])
     del vx, rx
@@ -391,7 +391,7 @@ def StdDev( pmean, pX ):
 
 
 
-def Geo2CartNPSkm1D( pcoorG ):
+def Geo2CartNPSkm1D( pcoorG, lat0=70., lon0=-45. ):
     '''
          => from Geo coor. (lon,lat)[degrees] to cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj!
     '''
@@ -402,15 +402,17 @@ def Geo2CartNPSkm1D( pcoorG ):
         print(' ERROR [Geo2CartNPSkm1D()]: input array `pcoorG` has a wrong a shape!')
         exit(0)
     #
+    print('LOLO Geo2CartNPSkm1D => lat0, lon0 =', lat0, lon0)
+    
     crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
-    crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    crs_trg = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     #
     zx,zy,_ = crs_trg.transform_points(crs_src, pcoorG[:,1], pcoorG[:,0]).T
     #
     return np.array([ zy/1000., zx/1000. ]).T
 
 
-def CartNPSkm2Geo1D( pcoorC ):
+def CartNPSkm2Geo1D( pcoorC, lat0=70., lon0=-45. ):
     '''
          => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
     '''
@@ -421,7 +423,7 @@ def CartNPSkm2Geo1D( pcoorC ):
         print(' ERROR [CartNPSkm2Geo1D()]: input array `pcoorC` has a wrong a shape!')
         exit(0)    
     #
-    crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    crs_src = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     #
     zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*pcoorC[:,1], 1000.*pcoorC[:,0]).T
@@ -431,7 +433,7 @@ def CartNPSkm2Geo1D( pcoorC ):
 
 
 
-def ConvertGeo2CartesianNPSkm( plat, plon ):
+def ConvertGeo2CartesianNPSkm( plat, plon, lat0=70., lon0=-45. ):
     '''
          => from Geo coor. (lon,lat)[degrees] to cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj!
     '''
@@ -439,7 +441,7 @@ def ConvertGeo2CartesianNPSkm( plat, plon ):
     from cartopy.crs import PlateCarree, NorthPolarStereo
     #
     crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
-    crs_trg = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    crs_trg = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     #
     ndim = len(np.shape(plon))
     #
@@ -452,14 +454,14 @@ def ConvertGeo2CartesianNPSkm( plat, plon ):
 
 
 
-def ConvertCartesianNPSkm2Geo( pY, pX ):
+def ConvertCartesianNPSkm2Geo( pY, pX, lat0=70., lon0=-45. ):
     '''
          => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
     '''
     #
     from cartopy.crs import PlateCarree, NorthPolarStereo
     #
-    crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
+    crs_src = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     #
     ndim = len(np.shape(pX))

@@ -27,6 +27,8 @@ ldo_coastal_clean = True
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
+l_CentralArctic = True ; # only keep points of the central Arctic
+
 if __name__ == '__main__':
 
     print('')
@@ -98,13 +100,27 @@ if __name__ == '__main__':
         mask = mjt.MaskCoastal( XseedG, rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc, convArray='C' )
         print(' * Need to remove '+str(nP-np.sum(mask))+' points because too close to land! ('+str(MinDistFromLand)+'km)')
         nP = np.sum(mask) ; # new size once buoys too close to land removed...
-        idxKeep    = np.where(mask==1)
+        (idxKeep,) = np.where(mask==1)
         zIDs = zIDs[idxKeep]
         XseedG =  np.array( [ np.squeeze(XseedG[idxKeep,0]), np.squeeze(XseedG[idxKeep,1]) ] ).T
         del idxKeep
         
-    XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
     
+    if l_CentralArctic:
+        #zYXkm = mjt.Geo2CartNPSkm1D( XseedG, lat0=50., lon0=180. )        
+        #zdistP = np.sqrt( zYXkm[:,0]*zYXkm[:,0] + zYXkm[:,1]*zYXkm[:,1] )
+        #print(zdistP[::10])
+        #(idxKeep,) = np.where(zdistP<1000.)
+        #(idxKeep,) = np.where( (XseedG[:,0]>82.) | ((np.mod(XseedG[:,1],360.)>120.) & (np.mod(XseedG[:,1],360.)<280.)) )
+        (idxKeep,) = np.where( (XseedG[:,0]>70.) & (np.mod(XseedG[:,1],360.)>120.) & (np.mod(XseedG[:,1],360.)<280.) | (XseedG[:,0]>82.) )
+        nP = len(idxKeep)
+        zIDs = zIDs[idxKeep]
+        XseedG =  np.array( [ np.squeeze(XseedG[idxKeep,0]), np.squeeze(XseedG[idxKeep,1]) ] ).T
+        del idxKeep
+
+        
+    XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
+        
     XseedG = np.reshape( XseedG, (1,nP,2) )
     XseedC = np.reshape( XseedC, (1,nP,2) )
     
