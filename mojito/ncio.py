@@ -212,6 +212,24 @@ def GetModelUVGrid( fNCmeshmask ):
     return zYv, zXv, zYu, zXu
 
 
+def GetModelSeaIceConc( fNCsi3, name='siconc', krec=0, expected_shape=[] ):
+
+    chck4f( fNCsi3)
+
+    print('    * [GetModelSeaIceConc]: reading "'+name+'" at record '+str(krec)+' in '+fNCsi3+' !')
+    with Dataset(fNCsi3) as id_si3:
+        zsic   = id_si3.variables[name][krec,:,:]
+        
+    if len(expected_shape)>0:
+        if np.shape(zsic) != expected_shape:
+            print('ERROR [GetModelSeaIceConc]: wrong shape for sea-ice concentration read:',np.shape(zsic),', expected:',expected_shape)
+            sys.exit(0)
+            
+    return zsic
+
+
+
+
 
 
 def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[],
