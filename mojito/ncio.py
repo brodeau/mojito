@@ -323,7 +323,7 @@ def LoadNCtimeMJT( cfile, iverbose=0 ):
             exit(0)
         ztime = id_in.variables['time'][:]
 
-        print(' * [LoadNCtimeMJT] => reading "time" for the '+str(Nt)+' records in file '+path.basename(cfile))
+        print('    * [LoadNCtimeMJT] => reading "time" ('+str(Nt)+' records) in file '+path.basename(cfile))
 
     return Nt, ztime
 
@@ -447,13 +447,13 @@ def SeedFileTimeInfo( fSeedNc, iverbose=0 ):
     ntr, zt = LoadNCtimeMJT( fSeedNc, iverbose=iverbose )
     idate0 = zt[0]     ; cdate0 = epoch2clock(idate0)
     idateN = zt[ntr-1] ; cdateN = epoch2clock(idateN)
-    print(' * [SeedFileTimeInfo] => earliest and latest time position in the file: '+cdate0+' - '+cdateN)
+    print('    * [SeedFileTimeInfo] => earliest and latest time position in the SEED file: '+cdate0+' - '+cdateN)
 
     zdDate =  int( round( (idateN - idate0)/3600., 0 ) * 3600. )
-    print(' * [SeedFileTimeInfo] => rounded time span =>',zdDate/3600.,'hours')
+    print('    * [SeedFileTimeInfo] => rounded time span =>',zdDate/3600.,'hours')
     idate0 =  int( round( idate0/3600., 0 ) * 3600. ) ; cdate0 = epoch2clock(idate0)
     idateN = int( idate0 + zdDate )  ; cdateN = epoch2clock(idateN)
-    print(' * [SeedFileTimeInfo]  ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
+    print('    * [SeedFileTimeInfo]  ==> will actually use rounded to the hour! => '+cdate0+' - '+cdateN)
 
     return idate0, idateN, cSeed, cBtch
 
@@ -469,15 +469,19 @@ def ModelFileTimeInfo( fModelNc, iverbose=0 ):
             exit(0)
         ztime = np.array( ds_mod.variables['time_counter'][:] , dtype='i4' )
     #
-    print('\n\n *** '+str(Nt)+' records in input MODEL file!')
+    print('    * [ModelFileTimeInfo] => '+str(Nt)+' records in input MODEL file!')
     #
     idate0, idateN = np.min(ztime), np.max(ztime)
-    print('    * [ModelFileTimeInfo] First and last dates in MODEL input file:',epoch2clock(idate0), epoch2clock(idateN))
+    
+    print('    * [ModelFileTimeInfo] => earliest and latest time position in the MODEL file: '
+          +epoch2clock(idate0)+' - '+epoch2clock(idateN))
     #
+    zdDate =  int( round( (idateN - idate0)/3600., 0 ) * 3600. )
+    print('    * [ModelFileTimeInfo] => rounded time span =>',zdDate/3600.,'hours')
     # Infer name of NEMO CONFIG and experiment from SI3 file:
     vn = split('_',path.basename(fModelNc))
     nconf, nexpr = vn[0], split('-',vn[1])[1]
-    print('    * [ModelFileTimeInfo] NEMO config and experiment =', nconf, nexpr)
+    print('    * [ModelFileTimeInfo] => NEMO config and experiment =', nconf, nexpr)
     #
     return Nt, ztime, idate0, idateN, nconf, nexpr
 

@@ -563,8 +563,9 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
 
 
 
-def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc' ):
+def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc', convArray='F' ):
     '''
+        * pGC: shape(n,2) => coordinates in the form [ lon, lat ] if convArray='F' or [ lat, lon ] if convArray='C' !
         * rMinDistFromLand: minimum distance to coast allowed [km]
         * fNCdist2coast   : netCDF file containing "distance to coast" info
     
@@ -579,21 +580,21 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
         print('ERROR [MaskCoastal()]: rMinDistFromLand<=0 !!!'); exit(0)
 
     (nB,_) = np.shape(pGC)
-
-    mask1d = np.zeros(nB, dtype=int) + 1
+    zcoor = np.zeros(np.shape(pGC))    
+    if convArray == 'C':
+        zcoor[:,:] = np.array( [ pGC[:,1], pGC[:,0] ] ).T
+    else:
+        zcoor[:,:] = np.array( pGC )
     
-    if len(mask) > 0:
-        if len(mask)!=nB:
-            print('ERROR [MaskCoastal()]: shape problem => `len(mask)!=nB` !!!'); exit(0)        
+    mask1d = np.zeros(nB, dtype='i1') + 1
+    if np.shape(mask) == (nB,):
         mask1d[:] = mask[:]            
         
     vlon_dist, vlat_dist, xdist = LoadDist2CoastNC( fNCdist2coast ) ; # Load `distance to coast` data...
 
-    mask1d = np.zeros(nB, dtype=int) + 1
-    
     for jb in range(nB):
         if mask1d[jb]==1:
-            rD = Dist2Coast( pGC[jb,0], pGC[jb,1], vlon_dist, vlat_dist, xdist )
+            rD = Dist2Coast( zcoor[jb,0], zcoor[jb,1], vlon_dist, vlat_dist, xdist )
             if rD < rMinDistFromLand:
                 mask1d[jb] = 0
     

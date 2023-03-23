@@ -60,10 +60,10 @@ if __name__ == '__main__':
         
     # Some strings and start/end date of Seeding input file:
     idateSeedA, idateSeedB, SeedName, SeedBatch = mjt.SeedFileTimeInfo( fNCseed, iverbose=idebug )
-
+    
     # Same for model input file + time records info:
     Nt0, ztime_model, idateModA, idateModB, ModConf, ModExp = mjt.ModelFileTimeInfo( cf_uv, iverbose=idebug )
-
+    
     # What records of model data can we use, based on time info from 2 input files above:
     date_stop = None
     if idateSeedB - idateSeedA >= 3600.:
@@ -186,7 +186,7 @@ if __name__ == '__main__':
         rtmod = ds_UVmod.variables['time_counter'][jrec] ; # time of model data (center of the average period which should = rdt)
         itime = int(rtmod - rdt/2.) ; # velocitie is average under the whole rdt, at the center!
         ctime = mjt.epoch2clock(itime)
-        print('\n *** Reading record #'+str(jrec)+'/'+str(Nt0)+' in SI3 file ==> date =',
+        print('\n *** Reading record #'+str(jrec+1)+'/'+str(Nt0)+' in SI3 file ==> date =',
               ctime,'(model:'+mjt.epoch2clock(int(rtmod))+')')
         vTime[jt] = itime
 

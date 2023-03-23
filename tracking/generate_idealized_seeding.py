@@ -8,7 +8,7 @@
 '''
 
 from sys import argv, exit
-from os import path, mkdir, makedirs
+from os import path, mkdir, makedirs, environ
 import numpy as np
 from re import split
 
@@ -23,12 +23,19 @@ seeding_type='debug' ; # By default, ha
 
 iHSS=15 ; # horizontal sub-sampling for NEMO points initialization...
 
-
+ldo_coastal_clean = True
+MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
+fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
 if __name__ == '__main__':
 
     print('')
-
+    if ldo_coastal_clean:
+        cdata_dir = environ.get('DATA_DIR')
+        if cdata_dir==None:
+            print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
+        fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
+    
     if not len(argv) in [2,3]:
         print('Usage: '+argv[0]+' <YYYY-MM-DD_hh:mm:ss> (<mesh_mask>,<iHSS> (for NEMO))')
         exit(0)
@@ -82,21 +89,25 @@ if __name__ == '__main__':
     zIDs = np.array([ i+1 for i in range(nP) ] , dtype=int)
 
     zTime = np.array( [ mjt.clock2epoch(cdate0) ], dtype='i4' )    
-    #print(mjt.clock2epoch(cdate0))
-
-    XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
+    print('\n * Requested initialization date =', mjt.epoch2clock(zTime[0]))
     
     print( zIDs  )
     print( zTime )
 
-
-
-
+    if ldo_coastal_clean:
+        mask = mjt.MaskCoastal( XseedG, rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc, convArray='C' )
+        print(' * Need to remove '+str(nP-np.sum(mask))+' points because too close to land! ('+str(MinDistFromLand)+'km)')
+        nP = np.sum(mask) ; # new size once buoys too close to land removed...
+        idxKeep    = np.where(mask==1)
+        zIDs = zIDs[idxKeep]
+        XseedG =  np.array( [ np.squeeze(XseedG[idxKeep,0]), np.squeeze(XseedG[idxKeep,1]) ] ).T
+        del idxKeep
+        
+    XseedC = mjt.Geo2CartNPSkm1D( XseedG ) ; # same for seeded initial positions, XseedG->XseedC
+    
     XseedG = np.reshape( XseedG, (1,nP,2) )
     XseedC = np.reshape( XseedC, (1,nP,2) )
     
-    #print('\n * New shape of XseedG =',np.shape(XseedG))
-
     makedirs( './nc', exist_ok=True )
     foutnc = './nc/mojito_seeding_'+seeding_type+'_'+mjt.epoch2clock(zTime[0], precision='D')+'_HSS'+str(iHSS)+'.nc'
     
@@ -104,7 +115,6 @@ if __name__ == '__main__':
     
     kk = mjt.ncSaveCloudBuoys( foutnc, zTime, zIDs, XseedC[:,:,0], XseedC[:,:,1], XseedG[:,:,0], XseedG[:,:,1],
                                corigin='idealized_seeding' )
-
 
     if iplot>0:
 

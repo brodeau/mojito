@@ -21,9 +21,7 @@ fout="./nc/mojito_seeding_nemo_Tpoint_${NDATE1}_HSS${iHSS}.nc"
 if [ ! -f ${fout} ]; then
     ${EXE1} ${LDATE1} ${FNMM},${iHSS}
 fi
-
-
-
+exit
 
 # Actually that the ice tracker that should look inside the nc file to get date 1 and 2:
 CMD="${EXE2} ${FSI3IN} ${FNMM} ${fout}" ; # with nc file for init seed...
