@@ -7,8 +7,8 @@ MOJITO_DIR="${HOME}/DEV/mojito"
 NEMO_CONF="NANUK4"
 NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg1"
 
-DATE1="${YEAR}0101"
-DATE2="${YEAR}0131"
+export DATE1="${YEAR}0101"
+export DATE2="${YEAR}0131"
 
 export iHSS=1
 
@@ -18,7 +18,7 @@ host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
         export DATA_DIR="/MEDIA/data"
-        export iHSS=6
+        export iHSS=6 ; RESKM=73
         #
         ;;
     "mcp-oceannext-01")
@@ -55,4 +55,9 @@ export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_
 
 mkdir -p ./figs ./npz
 
+YYYY=`echo ${DATE1} | cut -c1-4`
+MM=`echo ${DATE1} | cut -c5-6`
+DD=`echo ${DATE1} | cut -c7-8`
+export NDATE1="${YYYY}-${MM}-${DD}"
+export LDATE1="${NDATE1}_00:00:00"
 
