@@ -5,8 +5,12 @@ YEAR="2016"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
 NEMO_CONF="NANUK4"
-#NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg1"
-NEMO_EXP="BBM2300" ; SBDIR="00000001-00002976_crndg2"
+#NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976"; cxtra="crndg2nc1"
+#NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976" ; cxtra="nc1"
+NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976" ; cxtra="nc0p5"
+NEMO_EXP=${NEMO_EXP0}${cxtra}
+
+
 
 export DATE1="${YEAR}0101"
 export DATE2="${YEAR}0131"
@@ -38,7 +42,8 @@ case ${host} in
         export DATA_DIR="/home/data/laurent/tmp"
         Ndays=31
         #
-        NJPAR=30
+        #NJPAR=30
+        NJPAR=1
         #
         #SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
         #
@@ -54,9 +59,7 @@ DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps/nc"
 
 FSI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${DATE1}_${DATE2}_icemod.nc4"
 
-export FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}_ICE-${NEMO_EXP}-S/${SBDIR}/${FSI3IN}"
-
-#export FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}/${FSI3IN}"
+export FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}_ICE-${NEMO_EXP0}-S/${SBDIR}${cxtra}/${FSI3IN}"
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
 
