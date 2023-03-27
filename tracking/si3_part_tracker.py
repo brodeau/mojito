@@ -57,7 +57,11 @@ if __name__ == '__main__':
     print(fNCseed)
     csfkm = '_'+split( '_', split('\.',fNCseed)[-2] )[-1]
     if csfkm[-2:]!='km': csfkm = ''
-        
+    # Time bin used for RGPS:
+    cdtbin = '_'+split( '_', split('\.',fNCseed)[-2] )[-4]
+    if cdtbin[1:3]!='dt': cdtbin= ''
+
+    
     # Some strings and start/end date of Seeding input file:
     idateSeedA, idateSeedB, SeedName, SeedBatch = mjt.SeedFileTimeInfo( fNCseed, iverbose=idebug )
     
@@ -327,7 +331,7 @@ if __name__ == '__main__':
     cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
     cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
     corgn = 'NEMO-SI3_'+ModConf+'_'+ModExp
-    cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
+    cf_nc_out = './nc/'+corgn+'_tracking_'+SeedBatch+cdtbin+'_'+cdt1+'_'+cdt2+csfkm+'.nc'
 
     kk = mjt.ncSaveCloudBuoys( cf_nc_out, vTime, IDs, xPosC[:,:,0], xPosC[:,:,1], xPosG[:,:,0], xPosG[:,:,1],
                                mask=xmask[:,:,0], corigin=corgn )

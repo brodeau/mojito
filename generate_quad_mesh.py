@@ -95,9 +95,11 @@ if __name__ == '__main__':
     elif split('_',corigin)[0] == 'NEMO-SI3':
         sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the batch
         cfstr = sl[0]+'_'+sl[1]+'_'+sl[2]+'_'+sl[4]
-        cdtbin = '' ; #fixme?
+        cdtbin = '_'+split('_', path.basename(cf_nc_in))[-4] ; print('         > cdtbin =',cdtbin)
     else:
         print('FIXME for corigin = '+corigin+' !!!'); exit(0)
+    if cdtbin[1:3]!='dt':
+        print('ERROR: we could not figure out `cdtbin`!'); exit
     cfstr += cdtbin
         
     if np.any(vRec>=Nt):

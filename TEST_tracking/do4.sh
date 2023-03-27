@@ -1,5 +1,6 @@
 #!/bin/bash
 
+. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 EXE="${MOJITO_DIR}/statistics.py"
@@ -10,7 +11,7 @@ EXE="${MOJITO_DIR}/statistics.py"
 #fi
 #FIN="$1"
 
-CMD="${EXE} ./npz ${NEMO_EXP}"
+CMD="${EXE} ./npz ${DT_BINS_H} ${RESKM}"
 
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo

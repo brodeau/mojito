@@ -16,6 +16,8 @@ nbf=`echo ${list_nc} | wc -w`
 
 echo " *** We have ${nbf} files !"
 
+echo ${list_nc}
+
 for fnc in ${list_nc}; do
 
     fb=`basename ${fnc}`

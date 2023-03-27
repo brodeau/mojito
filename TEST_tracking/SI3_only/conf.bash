@@ -7,7 +7,8 @@ MOJITO_DIR="${HOME}/DEV/mojito"
 NEMO_CONF="NANUK4"
 #NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976"; cxtra="crndg2nc1"
 #NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976" ; cxtra="nc1"
-NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976" ; cxtra="nc0p5"
+#NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976" ; cxtra="nc0p5"
+NEMO_EXP0="BBM2300" ; SBDIR="00000001-00002976" ; cxtra="ref23"
 NEMO_EXP=${NEMO_EXP0}${cxtra}
 
 
@@ -42,8 +43,8 @@ case ${host} in
         export DATA_DIR="/home/data/laurent/tmp"
         Ndays=31
         #
-        #NJPAR=30
-        NJPAR=1
+        NJPAR=30
+        #NJPAR=1
         #
         #SI3IN="${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${YEAR}0101_${YEAR}0205_icemod.nc4" ; # 1 month !!!
         #

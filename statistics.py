@@ -199,18 +199,11 @@ if __name__ == '__main__':
         fb = path.basename(ff)
         vf = split('_',fb)
 
-        if corigin == 'RGPS':
-            cdateh = split('-',vf[4])[0]
-        elif split('_',corigin)[0] == 'NEMO-SI3':
-            cdateh = split('-',vf[5])[0]
-        else:
-            print('FIXME: unknow origin: ',corigin); exit(0)
-        #
 
+        cdateh = split('-',vf[-2])[0]
         list_date.append(split('h',cdateh)[0])
         
-        kBatchName[kf] = vf[1]
-        #
+        kBatchName[kf] = vf[-4]
     
         kiDate[kf] = rdate
         kNbPoints[kf] = nPnts
@@ -218,7 +211,7 @@ if __name__ == '__main__':
         print('   * Batch: '+kBatchName[kf] )
         print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
         print('   * Nb. of points = ',kNbPoints[kf] )
-            
+
         kf = kf+1
     
     print('\n')
