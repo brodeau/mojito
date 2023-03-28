@@ -30,6 +30,7 @@ if __name__ == '__main__':
         cname = str(data['name'])
         corig = str(data['origin'])
         reskm = int(data['reskm_nmnl'])
+        dtbin = int(data['dtbin'])
         cperiod = str(data['period'])
         nP    = data['Np']
         xbin_bounds = data['xbin_bounds']
@@ -38,6 +39,7 @@ if __name__ == '__main__':
     print(' * name =', cname)
     print(' * orig =', corig)
     print(' * reskm =', reskm)
+    print(' * dtbin =', dtbin)
     print(' * period =', cperiod)
     print(' * nP =', nP)
 
@@ -48,16 +50,18 @@ if __name__ == '__main__':
             cname2 = str(data['name'])
             corig2 = str(data['origin'])
             reskm2 = int(data['reskm_nmnl'])
+            dtbin2 = int(data['dtbin'])
             cperiod2 = str(data['period'])
             nP2    = data['Np']
             xbin_bounds2 = data['xbin_bounds']
             xbin_center2 = data['xbin_center']
             PDF2   = data['PDF']
-        print('\n * name_2 =', cname)
-        print(' * orig_2 =', corig)
-        print(' * reskm_2 =', reskm)        
-        print(' * period_2 =', cperiod)
-        print(' * nP_2 =', nP)
+        print('\n * name_2 =', cname2)
+        print(' * orig_2 =', corig2)
+        print(' * reskm_2 =', reskm2)
+        print(' * dtbin_2 =', dtbin2)
+        print(' * period_2 =', cperiod2)
+        print(' * nP_2 =', nP2)
         if cname2!=cname:
             print('ERROR: `cname2!=cname` !',cname2,cname)
             exit(0)
@@ -72,16 +76,18 @@ if __name__ == '__main__':
             cname3 = str(data['name'])
             corig3 = str(data['origin'])
             reskm3 = int(data['reskm_nmnl'])
+            dtbin3 = int(data['dtbin'])
             cperiod3 = str(data['period'])
             nP3    = data['Np']
             xbin_bounds3 = data['xbin_bounds']
             xbin_center3 = data['xbin_center']
             PDF3   = data['PDF']
-        print('\n * name_3 =', cname)
-        print(' * orig_3 =', corig)
-        print(' * reskm_3 =', reskm)
-        print(' * period_3 =', cperiod)
-        print(' * nP_3 =', nP)
+        print('\n * name_3 =', cname3)
+        print(' * orig_3 =', corig3)
+        print(' * reskm_3 =', reskm3)
+        print(' * dtbin_3 =', dtbin3)
+        print(' * period_3 =', cperiod3)
+        print(' * nP_3 =', nP3)
         if cname3!=cname:
             print('ERROR: `cname3!=cname` !',cname3,cname)
             exit(0)
@@ -105,6 +111,29 @@ if __name__ == '__main__':
     
     cfname = cName
     if cname == 'Divergence': cfname = 'AbsDiv'    
+
+
+    # Simplifying name of experiments in certain cases:
+    # NEMO-SI3_NANUK4 -> SI3
+    corig = str.replace( corig, 'NEMO-SI3_NANUK4', 'SI3' )
+    corig = str.replace( corig, '_', '-')
+    cSclKM = str(reskm)+'km'
+    if l2files:
+        corig2 = str.replace( corig2, 'NEMO-SI3_NANUK4', 'SI3' )
+        corig2 = str.replace( corig2, '_', '-' )
+        if not reskm2==reskm: cSclKM = ''
+    if l3files:
+        corig3 = str.replace( corig3, 'NEMO-SI3_NANUK4', 'SI3' )
+        corig3 = str.replace( corig3, '_', '-' )
+        if not( reskm2==reskm and reskm3==reskm ): cSclKM = ''
+
+
+    cfxtraScl, cnxtraScl = '', ''
+    if cSclKM != '':
+        cfxtraScl = '_'+cSclKM
+        cnxtraScl = ', scale = '+cSclKM
+        
+
         
     cdir = './figs'
     if not path.exists(cdir): mkdir(cdir)
@@ -112,11 +141,11 @@ if __name__ == '__main__':
     
     if   l2files:
 
-        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cperiod
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cperiod+cfxtraScl
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
-                            title=cName+': '+corig+' vs '+corig2, period=cperiod, origin=corig,
+                            title=cName+': '+corig+' vs '+corig2+cnxtraScl, period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2 )    
     
     elif l3files:
@@ -125,16 +154,16 @@ if __name__ == '__main__':
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
-                            title=cName+': '+corig+' vs '+corig2+' vs '+corig2, period=cperiod, origin=corig,
+                            title=cName+': '+corig+' vs '+corig2+' vs '+corig2+cnxtraScl, period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
     
     else:
         # log-log and histogram:
-        cfroot = 'PDF_'+corig+'_'+cfname+'_'+cperiod
+        cfroot = 'PDF_'+corig+'_'+cfname+'_'+cperiod+cfxtraScl
         
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
-                            title=cName, period=cperiod )    
+                            title=cName+cnxtraScl, period=cperiod )    
     
         kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/'+cfroot+'.'+iffrmt,
-                             title=cName+': '+corig, period=cperiod )
+                             title=cName+': '+corig+cnxtraScl, period=cperiod )
     
