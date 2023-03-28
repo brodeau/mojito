@@ -10,7 +10,7 @@ NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 # Populating nc files we can use:
 cxtraRES=""
 if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
-list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_S???_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
+list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} batches!"
 
