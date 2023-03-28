@@ -127,10 +127,11 @@ if __name__ == '__main__':
         corig3 = str.replace( corig3, '_', '-' )
         if not( reskm2==reskm and reskm3==reskm ): cSclKM = ''
         
-    cfxtraScl, cnxtraScl = '', ''
+    cfxtraScl, cnxtraScl, cscale = '', '', ''
     if cSclKM != '':
         cfxtraScl = '_'+cSclKM
-        cnxtraScl = ', scale = '+cSclKM
+        cscale    = 'scale = '+cSclKM
+        cnxtraScl = ', '+cscale
         
 
         
@@ -144,7 +145,7 @@ if __name__ == '__main__':
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
-                            title=cName+': '+corig+' vs '+corig2+cnxtraScl, period=cperiod, origin=corig,
+                            title=cName+': '+cscale, period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2 )    
     
     elif l3files:
@@ -153,7 +154,7 @@ if __name__ == '__main__':
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
-                            title=cName+': '+corig+' vs '+corig2+' vs '+corig2+cnxtraScl, period=cperiod, origin=corig,
+                            title=cName+': '+cscale, period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
     
     else:
