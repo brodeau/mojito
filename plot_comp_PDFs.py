@@ -118,7 +118,7 @@ if __name__ == '__main__':
     corig = str.replace( corig, 'NEMO-SI3_NANUK4', 'SI3' )
     corig = str.replace( corig, '_', '-')
     cSclKM = str(reskm)+'km'
-    if l2files:
+    if l2files or l3files:
         corig2 = str.replace( corig2, 'NEMO-SI3_NANUK4', 'SI3' )
         corig2 = str.replace( corig2, '_', '-' )
         if not reskm2==reskm: cSclKM = ''
@@ -126,8 +126,7 @@ if __name__ == '__main__':
         corig3 = str.replace( corig3, 'NEMO-SI3_NANUK4', 'SI3' )
         corig3 = str.replace( corig3, '_', '-' )
         if not( reskm2==reskm and reskm3==reskm ): cSclKM = ''
-
-
+        
     cfxtraScl, cnxtraScl = '', ''
     if cSclKM != '':
         cfxtraScl = '_'+cSclKM
@@ -150,7 +149,7 @@ if __name__ == '__main__':
     
     elif l3files:
 
-        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cperiod
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cperiod+cfxtraScl
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=cdir+'/loglog'+cfroot+'.'+iffrmt,
