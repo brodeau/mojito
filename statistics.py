@@ -232,7 +232,17 @@ if __name__ == '__main__':
         if str(reskm) != creskm:
             print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
             exit(0)
-            
+
+    # For large scales, we must increase the size of bins:
+    if   reskm >= 50. and reskm < 100.:
+        wVbin_min = 2.*wVbin_min
+        rfexp_bin = rfexp_bin*1.5
+    elif reskm >= 100. and reskm < 200.:
+        wVbin_min = 4.*wVbin_min
+        rfexp_bin = rfexp_bin*2.
+    if reskm >= 50.:
+        print('\n * Increased the width of bins and exp growth!!! Because large scale! wVbin_min, rfexp_bin =',wVbin_min, rfexp_bin)
+    
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
     ZDiv = np.zeros(nP)
