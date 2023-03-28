@@ -28,13 +28,9 @@ fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
 
 # Selection of appropriate quadrangles:
-#rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]
-#rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
 rTang_min =   5. ; # minimum angle tolerable in a triangle [degree]
 rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
 #
-#rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
-#rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
 rQang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
@@ -42,7 +38,7 @@ rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 b
 rdev_scale = 0.25 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
 #                   # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
 
-rzoom_fig = 5
+rzoom_fig = 4
 
 
 if __name__ == '__main__':
@@ -74,6 +70,8 @@ if __name__ == '__main__':
         if not path.exists(cfdir): mkdir(cfdir)
 
     rtolQuadA = 0.75 * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
+    if reskm>150:
+        rtolQuadA = 10.
 
     print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
     
