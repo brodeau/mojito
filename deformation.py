@@ -15,7 +15,7 @@ from scipy.spatial import Delaunay
 
 import mojito   as mjt
 
-idebug=1
+idebug=0
 iplot=1
 
 #l_accurate_time=False
