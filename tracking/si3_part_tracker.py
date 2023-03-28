@@ -56,11 +56,13 @@ if __name__ == '__main__':
     # Info about resolution from the seeding file name?
     print(fNCseed)
     csfkm = '_'+split( '_', split('\.',fNCseed)[-2] )[-1]
-    if csfkm[-2:]!='km': csfkm = ''
+    kres=-4
+    if csfkm[-2:]!='km':
+        csfkm, kres = '', -3
     # Time bin used for RGPS:
-    cdtbin = '_'+split( '_', split('\.',fNCseed)[-2] )[-4]
-    if cdtbin[1:3]!='dt': cdtbin= ''
-
+    cdtbin = '_'+split( '_', split('\.',fNCseed)[-2] )[kres]
+    if cdtbin[1:3]!='dt':
+        print('ERROR: we could not figure out `cdtbin`!'); exit(0)
     
     # Some strings and start/end date of Seeding input file:
     idateSeedA, idateSeedB, SeedName, SeedBatch = mjt.SeedFileTimeInfo( fNCseed, iverbose=idebug )
