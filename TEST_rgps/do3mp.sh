@@ -85,3 +85,5 @@ for cbtch in ${list_btch}; do
     done
 
 done
+
+wait

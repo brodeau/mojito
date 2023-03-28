@@ -63,15 +63,15 @@ case ${host} in
         # 20km:
         #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=20 ; # => 47806  points for shear !!!
         # 40km:
-        DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=40 ; # =>   points for shear !!!
+        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=40 ; # =>   points for shear !!!
         # 80km:
-        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 2296 points for shear !!!
-        #DT_BINS_H=24 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 2408 points for shear !!!
         #DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 3913 points for shear !!!
-        #DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 951 points for shear !!!        
-        # 200km:
-        #DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=200 ; # =>  32 points for shear !!!
-        #DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=200 ; # =>     points for shear !!!        
+        ###DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 2296 points for shear !!!
+        ###DT_BINS_H=24 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 2408 points for shear !!!
+        ###DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 951 points for shear !!!        
+        # 160km:
+        DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=160 ; # =>  277   points for shear !!!        
+        ###DT_BINS_H=$((24*7)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=160 ; # =>  Less!!! points for shear !!!        
         #
         #
         ;;
