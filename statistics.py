@@ -228,11 +228,11 @@ if __name__ == '__main__':
     cperiod = cdt1+'-'+cdt2
 
     if not lPrefix:
-        dtbin=int(cdtbin[2:])
+        dtbin=int(cdtbin)
         if str(reskm) != creskm:
             print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
             exit(0)
-        
+            
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
     ZDiv = np.zeros(nP)
