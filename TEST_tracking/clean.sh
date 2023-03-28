@@ -4,7 +4,7 @@
 
 if [ "$1" = "1" ]; then
     rm -f figs/tracking/*${NEMO_EXP}*
-    rm -f ./nc/*${NEMO_EXP}*_tracking_${YEAR}*.nc npz/Initialized_buoys*.npz
+    rm -f ./nc/*${NEMO_EXP}*_tracking_${YEAR}*.nc
 
 elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/*${NEMO_EXP}* npz/[TQ]-mesh_*${NEMO_EXP}*.npz logs/out_S*__*.out
@@ -16,7 +16,7 @@ elif [ "$1" = "4" ]; then
     rm -f npz/PDF_*${NEMO_EXP}*.npz figs/*PDF*${NEMO_EXP}*.*
     
 elif [ "$1" = "all" ]; then
-    rm -rf figs npz logs *.png *.nc *.svg *.pdfa nc
+    rm -rf figs npz logs *.png *.nc *.svg *.pdf nc
 
 else
     echo "Tell me something!"
