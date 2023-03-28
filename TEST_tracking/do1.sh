@@ -10,7 +10,7 @@ echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RES
 cxtraRES=""
 if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
 
-list_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_*_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
+list_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
 
 nbf=`echo ${list_nc} | wc -w`
 
