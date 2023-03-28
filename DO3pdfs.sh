@@ -2,6 +2,7 @@
 
 EXE="./plot_comp_PDFs.py"
 
+#RESKM=20
 RESKM=40
 DT_BINS_H=6
 
