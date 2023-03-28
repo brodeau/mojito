@@ -164,14 +164,18 @@ if __name__ == '__main__':
 
     if not len(argv) in [3,4]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm>')
+        print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
         exit(0)
 
+    
     lPrefix = (len(argv)==3)
     cd_in  = argv[1]
 
     if lPrefix:
         cprfx = argv[2]
         listnpz = np.sort( glob(cd_in+'/'+cprfx+'*.npz') )
+        cdtbin, creskm = '', ''
+        dtbin = 0
     else:
         cdtbin = argv[2]
         creskm = argv[3]
@@ -224,10 +228,11 @@ if __name__ == '__main__':
     cperiod = cdt1+'-'+cdt2
 
     if not lPrefix:
+        dtbin=int(cdtbin[2:])
         if str(reskm) != creskm:
             print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
             exit(0)
-    
+        
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
     ZDiv = np.zeros(nP)
@@ -293,19 +298,19 @@ if __name__ == '__main__':
     
     # Saving in `npz` files:
     np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
     
     np.savez_compressed( cd_in+'/'+cfroot+'_absDiv.npz', name='Divergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
                          Np=nPD, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
     
     np.savez_compressed( cd_in+'/'+cfroot+'_divergence.npz', name='divergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
                          Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
     
     np.savez_compressed( cd_in+'/'+cfroot+'_convergence.npz', name='convergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
                          Np=nPc, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_cnv )
 
 
@@ -329,7 +334,7 @@ if __name__ == '__main__':
 
         
         np.savez_compressed( cd_in+'/'+cfroot+'_GAUSSIAN-shear.npz',      name='shear',      origin=corigin,
-                             reskm_nmnl=reskm, period=cperiod,
+                             reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
                              Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_NormS )
 
 
