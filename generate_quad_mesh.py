@@ -88,20 +88,22 @@ if __name__ == '__main__':
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
     
     # We need a string to name the output files:
+    kdt = -4
+    if creskm=='10': kdt = -3
     if corigin == 'RGPS':
         cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the batch
-        cdtbin = '_'+split('_', path.basename(cf_nc_in))[3] ; print('         > cdtbin =',cdtbin)
+        cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
         
     elif split('_',corigin)[0] == 'NEMO-SI3':
         sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the batch
         cfstr = sl[0]+'_'+sl[1]+'_'+sl[2]+'_'+sl[4]
-        cdtbin = '_'+split('_', path.basename(cf_nc_in))[-4] ; print('         > cdtbin =',cdtbin)
+        cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
     else:
         print('FIXME for corigin = '+corigin+' !!!'); exit(0)
     if cdtbin[1:3]!='dt':
-        print('ERROR: we could not figure out `cdtbin`!'); exit
+        print('ERROR: we could not figure out `cdtbin`!'); exit(0)
     cfstr += cdtbin
-        
+
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
     #
