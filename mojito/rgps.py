@@ -1,6 +1,6 @@
 import numpy as np
 
-dt0_RGPS = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]                                                                       
+dt0_RGPS = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 days [s]
 
 from .ncio import FillValue
 
@@ -9,7 +9,7 @@ def AllowedDevFromDT0( pbin_dt ):
        * pbin_dt: time width of the chosen time bins [s]
     '''
     if pbin_dt < dt0_RGPS:
-        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]                              
+        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
     else:
         zmax_dev_dt0 = dt0_RGPS/3 ; # => ~ 24 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
     #
@@ -77,7 +77,7 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, l_doYX=False ):
      * nPr: number of points of interst
      * nBu: number of unique buoys of interest
      * zIDsU: unique IDs of the buoys of interest
-    
+
     '''
     from .ncio import LoadDataRGPS
 
@@ -106,7 +106,7 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, l_doYX=False ):
     nPr = np.sum(zmsk0)
     print('   * [LD4TR] after time-range-exclusion we have '+str(nPr)+' / '+str(Np0)+' points.')
     del zmsk0, lcond
-    
+
     if l_doYX:
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0, zykm0, zxkm0
     else:
@@ -119,12 +119,13 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
         * kidx:     integer => the index that access selected point in the `*0` original arrays like `ptime0` or `pBIDs0`!
         * ptime0:   unmasked original time array data
         * pBIDs0:   masked original array of IDs (it is masked outside the whole period of interest)
-    
+
        RETURNS:
             * nbROK: number of ok records for this point
                      0 -> this buoy (kID) has a mono record in the whole period (not only in the bin) => should be canceled
                      1 -> this point (kidx) has successors in time but none is reasonably timed (based on dt0_RGPS & devdtNom)
                      2 -> a reasonably timed successor has been found
+            * zidx0_recs: valid records including this one aka `kidx` in first position
 
         "VUCR" => Valid UpComing Record !
     '''
@@ -132,28 +133,26 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
     #
     idxUC = -9999
     zt0   = -9999.
-    zts   = -9999.
     nbROK = 0
     zidx0_recs = []
-    
+
     kID = pBIDs0[kidx]                     ; # the ID of the buoy we are dealing with
-    (idxBuoy,) = np.where( pBIDs0 == kID ) ; # `idxBuoy` => indices that access all the positions of this buoy within the period of interest
-    
+    (idxBuoy,) = np.where( (ptime0>=time_min) & (pBIDs0 == kID) )
+
+    # If time bins are wide, `idxBuoy` can contain indices before (smaller than) `kidx`, so clean this:
+    if len(idxBuoy) > 0:
+        if idxBuoy[0]<kidx:
+            (idxKeep,) = np.where(idxBuoy>=kidx)
+            idxBuoy = idxBuoy[idxKeep]
+
     if len(idxBuoy) > 1:
         # Ok, now we know that this point is not the mono-occurence of a mono-record buoy (in the whole period not only in the bin)
         nbROK = 1
-        # Now, we focus on time location of this buoy after the begining of current bin:
-        (idxBuoy,) = np.where( (ptime0>=time_min) & (pBIDs0 == kID) )
         #
-        idxST = idxBuoy[0] 
+        idxST = idxBuoy[0]
         zt0   = ptime0[idxST] ; # the first time position inside this bin
         ztR1  = zt0 + dt0_RGPS - devdtNom ; # Reasonable lower time bond for successor point
         ztR2  = zt0 + dt0_RGPS + devdtNom ; # Reasonable upper time bond for successor point
-        #
-        #print('LOLO [VUCR]')
-        #print('LOLO [VUCR]: current bin starts at',epoch2clock(time_min))
-        #print('LOLO [VUCR]: firt found occurence of buoy is at ',epoch2clock(zt0))
-        #print('LOLO [VUCR]: we expect valid upcoming position to be between',epoch2clock(ztR1),'and',epoch2clock(ztR2))
         #
         ll1 = (ptime0[idxBuoy]>ztR1)
         ll2 = (ptime0[idxBuoy]<ztR2)
@@ -169,29 +168,27 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
                 idxUC = idxS[0]
             #
             idxUC = idxBuoy[idxUC] ; # in the ref0 frame!
-            zts = ptime0[idxUC]
 
             if idxUC in pidxIgnore:
                 print('ERROR [ValidUpComingRecord()] `idxUC` is forbidden by `pidxIgnore`! ')
-                exit(0)            
+                exit(0)
             #
             zidx0_recs = np.array([idxST, idxUC], dtype=int)
-            
+
         else:
             zidx0_recs = np.array([idxST], dtype=int)
 
-        ### if lHasVUCR            
-        # Sanity check for times of the records:
-        #if lHasVUCR:
-        #    ztime = ptime0[zidx0_recs]
-        #    print('LOLO [VUCR]: time#1 =',epoch2clock(ztime[0]))
-        #    print('LOLO [VUCR]: time#2 =',epoch2clock(ztime[1]))
-        #    print('LOLO [VUCR]: time gap =',round((ztime[1]-ztime[0])/(24*3600),1),' days!')
-        #    if ztime[1] == ztime[0]:
-        #        print('ERROR: equal!!!!'); exit(0)
+        #if len(zidx0_recs) > 1:
+        if zidx0_recs[0] != kidx:
+            print('ERROR: [ValidUpComingRecord] => something wrong! `zidx0_recs[0] != kidx`')
+            print('  => kidx       =', kidx)
+            print('  => idxBuoy    =', idxBuoy)
+            print('  => zidx0_recs =',zidx0_recs)
+            exit(0)
+
     ### if len(idxBuoy) > 1
     #
-    return nbROK, zidx0_recs, np.array([zt0, zts])
+    return nbROK, zidx0_recs
 
 
 
@@ -228,7 +225,7 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
     #
     ztime  = ptime0[idx_keep] ; # all time records for this particular buoy
     if np.any( ztime<=time_min ):
-        print('ERROR: ValidCnsctvRecordsBuoy => `np.any( ztime<=time_min )` !!!!'); exit(0)
+        print('ERROR: [ValidCnsctvRecordsBuoy] => `np.any( ztime<=time_min )` !!!!'); exit(0)
     #
     nbR1b = len(idx_keep)      ; # n. of time records for this particulat buoy
     #
@@ -376,8 +373,8 @@ def EMO2( pIDs, ptime, pIDsRef0, ptimeRef0, pidx0, binTctr, criterion='nearest',
     # Unique buoys ?
     _, idxU = np.unique(pIDs, return_index=True)
     NokU    = len(idxU) ; # NokU is the number of buoys once multi-occurences are removed!
-    np2rm   = Nok0-NokU    
-    
+    np2rm   = Nok0-NokU
+
     if np2rm>0:
         if iverbose>0: print('    * [EMO2] => ',NokU,'unique buoy IDs in array featuring ',Nok0,' buoy IDs! => '+str(np2rm)+' points to exclude!')
         #
@@ -432,7 +429,7 @@ def EMO2( pIDs, ptime, pIDsRef0, ptimeRef0, pidx0, binTctr, criterion='nearest',
                         jk = iis[ np.argmin(np.abs(ptime[idxMlt[iis]]-binTctr)) ]
                     elif criterion=='first':
                         jk = iis[0]
-                    elif criterion=='last':                    
+                    elif criterion=='last':
                         jk = iis[-1]
             # ----------------
             #
@@ -501,7 +498,7 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
     #
     if criterion=='successors' and (not np.shape(ptimeRef0)==np.shape(pIDsRef0) or not dt0_RGPS or not devdtNom):
          print('ERROR [ExcludeMultiOccurences]: with "'+criterion+'" criterion, you must provide `ptimeRef0` array and `dt0_RGPS` and `devdtNom`!')
-         exit(0)        
+         exit(0)
     #
     (Nok0,) = np.shape(pIDs)
     if np.shape(ptime)!=(Nok0,):
@@ -527,7 +524,7 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
             if np.sum(np.abs(ptimeRef0[pidx0] - ptime)) != 0:
                 print('ERROR [ExcludeMultiOccurences]: `ptimeRef0[pidx0]` not equal to `ptime` !')
                 exit(0)
-        
+
         # Analysis:
         idxRMall = []
         for jMO in zIDsMO:
@@ -571,8 +568,8 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
                     jk = np.argmin( ptime[idxMlt] )
                 else:
                     (iis,) = np.where(isuccess==1)
-                    jk = iis[0] ; # keeping first of the winners...                    
-            #   
+                    jk = iis[0] ; # keeping first of the winners...
+            #
             jKeep = idxMlt[jk]
             idxRM = np.setdiff1d( idxMlt, [jKeep] ) ; # exclude `jKeep` from idxMlt
             idxRM0 = pidx0[idxRM]; # translate in the `pidx0` frame!!!! IMPORTANT !!!!
@@ -580,7 +577,7 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
             #
             #print('FINAL we keep time:', epoch2clock(ptimeRef0[pidx0[jKeep]]),'!')
             #for idx in idxRM0:
-            #    print('FINAL we delete time:', epoch2clock(ptimeRef0[idx]),'!\n')            
+            #    print('FINAL we delete time:', epoch2clock(ptimeRef0[idx]),'!\n')
         #
         idxRMall = np.array(idxRMall, dtype=int)
         if len(idxRMall)!=np2rm:
@@ -597,22 +594,27 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
 
 
 
-def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
+###def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
+def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
     from .util import StdDev
     '''
        * cbtch: string to identufy current batch
-       * ptim:  2D masked time array  (NCRmax,NvB) or original RGPS time positions [s]
-       * pVTb:  "almost 1D" time array (NCRmax,3) of time bins used [s]
-       * pmsk:  2D mask array (NCRmax,NvB) for canceled points (int)
-       * pBpR:  1D (NCRmax) array of the number of buoys alive at each record (int)
+       * ptim:  2D masked time array  (NRmax,NvB) or original RGPS time positions [s]
+       * pmsk:  2D mask array (NRmax,NvB) for canceled points (int)
+       * pBpR:  1D (NRmax) array of the number of buoys alive at each record (int)
        * tdev_max: max authorized time deviation from the mean for a buoy [s]
     '''
-
-    
     # Now, in each record of the batch we should exclude buoys which time position is not inside the expected time bin
     # or is just too far away from the mean of all buoys
     # => if such a buoy is canceld at batch # k, it should also be canceled at following records
-    (NRmax,_) = np.shape(pmsk)
+    (NRmax,nB) = np.shape(ptim)
+    #if np.shape(pVTb)!=(NRmax,3):
+    #    print('ERROR [BatchTimeSanityCheck]: wrong shape for `pVTb`',np.shape(pVTb)); exit(0)
+    if np.shape(pmsk)!=(NRmax,nB):
+        print('ERROR [BatchTimeSanityCheck]: wrong shape for `pmsk`',np.shape(pmsk)); exit(0)
+    if np.shape(pBpR)!=(NRmax,):
+        print('ERROR [BatchTimeSanityCheck]: wrong shape for `pBpR`',np.shape(pBpR)); exit(0)
+
     zmsk = pmsk.copy()
     zBpR = pBpR.copy()
     #for jr in range(NRmax):
@@ -625,42 +627,42 @@ def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
         t_mean = np.mean(ptim[jrec,:])
         rStdDv = StdDev(t_mean, ptim[jrec,:])
         zadiff = np.abs(ptim[jrec,:]-t_mean)
-        zdt = np.max(zadiff)/3600.
+        zdtworse = np.max(zadiff)/3600.
         if iverbose>0:
             from .util import epoch2clock
             print('  * rec #',jrec,'of this batch:')
-            print('    mean time for this record is:',epoch2clock(t_mean))
-            print('    bin center time, and bounds:',epoch2clock(pVTb[jrec,0]),epoch2clock(pVTb[jrec,1]),epoch2clock(pVTb[jrec,2]))
+            print('    mean time for this record is:              ',epoch2clock(t_mean))
+            #print('    bin used (lb,c,hb) =>',epoch2clock(pVTb[jrec,1])+' | '+epoch2clock(pVTb[jrec,0])+' | '+epoch2clock(pVTb[jrec,2]))
             print('    standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
-            print('     ==> furthest point is '+str(round(zdt,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
-        #
-        # Outside of the bin?
-        idx_rmA = []
-        lcancel = np.any( ptim[jrec,:]<pVTb[jrec,1] ) or np.any( ptim[jrec,:] > pVTb[jrec,2] )
-        if lcancel:
-            (idx_rm_m,) , (idx_rm_p,) = np.where( ptim[jrec,:]<pVTb[jrec,1] ) ,  np.where( ptim[jrec,:]>pVTb[jrec,2] )
-            idx_rmA = np.concatenate([ idx_rm_m , idx_rm_p ])
+            print('     ==> furthest point is '+str(round(zdtworse,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
 
-            if np.sum(zmsk[jrec:,idx_rmA])>0:
-                #print('INSIDE before / rec.',jrec,': zBpR[jrec], sum(zmsk[jrec,:]) =',zBpR[jrec], np.sum(zmsk[jrec,:]))
-                #print('INSIDE before / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))
-                if iverbose>0:
-                    print('    WARNING: the time position of some buoys are outside of that of the expected time bin!!!')
-                    print('    ==> we have to cancel '+str(len(idx_rmA))+' points / '+str(np.sum(zmsk[jrec,:])))
-                jr = jrec
-                if jrec<2:
-                    kFU += 1 ; # => means fields will be shrinked later on...
-                    jr=0  ; # if 2nd record (jrec=1) to be canceled then the 1st record becomes useless!
-                #zBpR[jr:] = zBpR[jr:] - len(idx_rmA)
-                zmsk[jr:,idx_rmA] = 0 ; # This and following records!!!
-                #print('INSIDE after / rec.',jrec,': zBpR[jrec], sum(zmsk[jrec,:]) =',zBpR[jrec], np.sum(zmsk[jrec,:]))
-                #print('INSIDE after / rec.',jrec+1,': zBpR[jrec+1], sum(zmsk[jrec+1,:]) =',zBpR[jrec+1], np.sum(zmsk[jrec+1,:]))
+        ## Outside of the bin?
+        ## => mind that with wide time bins the second record can still be inside the first bin !!!
+        ##zoutside = (ptim[jrec,:]<pVTb[jrec,1]) | (ptim[jrec,:] > pVTb[jrec,2])
+        #zoutside = (ptim[jrec,:]<pVTb[0,1]) | (ptim[jrec,:] > pVTb[jrec,2]) ; # => using 0 rather than jrec in `pVTb` !!!
+        #lOutside = np.any( zoutside )
+        #if lOutside:
+        #    print(' ERROR [BatchTimeSanityCheck]: the time position of some buoys are outside of what seems reasonable!!!')
+        #    (idx_rmO,) = np.where( zoutside )
+        #    print('    =>  jrec, ptim[jrec,idx_rmO] =', jrec, np.array( [ epoch2clock(ptim[jrec,i]) for i in idx_rmO ] ) )
+        #    print('    => pVTb[0,1], pVTb[jrec,1]',epoch2clock(pVTb[0,1]), epoch2clock(pVTb[jrec,1]))
+        #    print('    =>     pVTb[jrec,2]', epoch2clock(pVTb[jrec,2]))
+        #    exit(0)
+        #    #(idx_rmO,) = np.where( zoutside )
+        #    #if np.sum(zmsk[jrec:,idx_rmO])>0:
+        #    #    if iverbose>0:
+        #    #        print(' WARNING [BatchTimeSanityCheck]: the time position of some buoys are outside of that of the expected time bin!!!')
+        #    #        print('    ==> we have to cancel '+str(len(idx_rmO))+' points / '+str(np.sum(zmsk[jrec,:])))
+        #    #    jr = jrec
+        #    #    if jrec<2:
+        #    #        kFU += 1 ; # => means fields will be shrinked later on...
+        #    #        jr=0  ; # if 2nd record (jrec=1) to be canceled then the 1st record becomes useless!
+        #    #    zmsk[jr:,idx_rmO] = 0 ; # This and following records!!!
 
-        #
         # Too far from the mean?
         idx_rmB = []
-        lcancel = np.any(zadiff>tdev_max)
-        if lcancel:
+        lTooFar = np.any(zadiff>tdev_max)
+        if lTooFar:
             (idx_rmB,) = np.where( zadiff>tdev_max )
             if np.sum(zmsk[jrec:,idx_rmB])>0:
                 if iverbose>0:
@@ -684,6 +686,4 @@ def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
     #        exit(0)
 
     return kFU, zmsk, zBpR
-
-
 

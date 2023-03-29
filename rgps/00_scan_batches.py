@@ -57,15 +57,15 @@ if __name__ == '__main__':
 
     max_dev_dt_Nmnl = mjt.AllowedDevFromDT0( dt_bin_sec )
     print('\n *** Max. allowed deviation in time from the `dt_Nmnl` between 2 consec. points to select =',max_dev_dt_Nmnl/3600,'hours')
-    
+
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
-    
+
     # File to save work in:
     cf_npz_out = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'.npz'
     if path.exists(cf_npz_out):
         print('\n *** File '+cf_npz_out+' is already here!!! I have nothing to do!')
         exit(0)
-    
+
     max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given batch, a point should not be further in time
     #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     # * vIDsU0: unique IDs of the buoys of interest
 
     NpT = len(vtime0) ; # Actual length of the *0 arrays..
-    
+
     # Arrays along batches and buoys:
     # In the following, both NbtchMax & Nb are excessive upper bound values....
     VTc_ini = np.zeros( NbtchMax                ) - 999.; # time at center of time bin that first detected this batch
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
         zIDsOK0 = vIDs0[idxOK0]
         ztimOK0 = vtime0[idxOK0]
-        Nok0 = len(idxOK0)        
+        Nok0 = len(idxOK0)
         print('     => after "inside time bin" selection: '+str(Nok0)+' pos. involving '+str(len(np.unique(zIDsOK0)))+' different buoys!')
 
         if Nok0>0:
@@ -147,13 +147,13 @@ if __name__ == '__main__':
                     exit(0)
                 print('     => '+str(Nok)+' buoys still in the game! ('+str(Nok0-Nok)+' removed because index already in use...)')
 
-                
+
             #---------------------------------------------------------------------------------------------------------------------
             NBinStr  = 0     ; # number of buoys in the batch
             IDXofStr = []  ; # keeps memory of buoys that are already been included, but only at the batch level
 
             iBcnl_CR = 0  ; # counter for buoys excluded because of consecutive records...
-            
+
             if Nok >= min_nb_buoys_in_batch:
 
                 ibatch += 1 ; # that's a new batch
@@ -161,27 +161,26 @@ if __name__ == '__main__':
 
                 # Now, loop on all the remaining point positions involved in this time bin:
                 jb = -1              ; # buoy index
-
                 for jidx in idxOK:
 
                     jb += 1
-                    
+
                     jID = vIDs0[jidx]
 
                     if jidx in IDXtakenG:
-                        print('WOW! `jidx in IDXtakenG` !!!'); exit(0)
+                        print('WOW! `jidx in IDXtakenG` !!!'); exit(0) ; #fixme
                     #if not jidx in IDXtakenG:
 
-                    nbRecOK, idx0VUCR, vt1b = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), max_dev_dt_Nmnl )
+                    nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), max_dev_dt_Nmnl )
 
                     if nbRecOK==0:
                         IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
                         #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
 
                     # * nbRecOK : number of valid consecutive records for this buoy
-                    # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy
-                    # * vt1b    : array of dates associated with all these records [s]
-                    
+                    # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy, including the present
+                    #              `jidx` index at first position !
+
                     if nbRecOK == 2:
                         # We want the buoy to be located at least `MinDistFromLand` km off the coast
                         it1 = idx0VUCR[0]    ; # initial position for the buoy
