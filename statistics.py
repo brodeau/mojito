@@ -162,8 +162,8 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 
 if __name__ == '__main__':
 
-    if not len(argv) in [3,4]:
-        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm>')
+    if not len(argv) in [3,5]:
+        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
         print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
         exit(0)
 
@@ -179,7 +179,8 @@ if __name__ == '__main__':
     else:
         cdtbin = argv[2]
         creskm = argv[3]
-        listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*_dt'+cdtbin+'*'+creskm+'km.npz') )
+        cidorg = argv[4]
+        listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*'+creskm+'km.npz') )
 
     # Polpulating deformation files available:    
     nbFiles = len(listnpz)

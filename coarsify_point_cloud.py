@@ -166,11 +166,11 @@ if __name__ == '__main__':
     elif reskm==40.:
         rd_ss = 36.
     elif reskm==80.:
-        rd_ss = 75.
+        rd_ss = 73.
     elif reskm==160.:
         rd_ss = 145.
     elif reskm==320.:
-        rd_ss = 310.
+        rd_ss = 305.
     else:
         print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
         exit(0)

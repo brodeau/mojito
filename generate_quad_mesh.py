@@ -70,9 +70,11 @@ if __name__ == '__main__':
         if not path.exists(cfdir): mkdir(cfdir)
 
     rtolQuadA = 0.75 * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
-    if reskm>150:
-        rtolQuadA = 10.
-
+    if reskm>70.:
+        rtolQuadA = 0.75 * (reskm/20.)**1.25
+    if reskm>300.:
+        rtolQuadA = 32.
+        
     print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
     
     #########################################################################################################
