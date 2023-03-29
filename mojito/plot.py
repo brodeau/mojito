@@ -586,7 +586,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
 
 
-def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
+def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=None,
                title=None, period=None, origin=None,
                ppdf2=[], Np2=None, origin2=None,
                ppdf3=[], Np3=None, origin3=None ):
