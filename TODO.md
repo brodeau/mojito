@@ -1,4 +1,6 @@
 
+* add the reading and use (inside `01_selection_xy.py`) of the new array `jtBinN` saved in 1st npz file by `00_scan_batches.py`
+
 
 * in TEST_trackin/SI3_only, apparently proble for: `[GetTimeSpan]: will start using model record ...` says 1 record too late!!!
 
