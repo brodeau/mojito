@@ -91,8 +91,8 @@ if __name__ == '__main__':
 
     # Arrays along batches and buoys:
     # In the following, both NbtchMax & Nb are excessive upper bound values....
-    VTc_ini = np.zeros( NbtchMax     ,    type=int ) - 999 ; # time at center of time bin that first detected this batch ;#fixme: #rm because `VjtBinN` does the job!
-    VjtBinN = np.zeros( NbtchMax     ,    type=int ) - 999 ; # index that accesses the relevant time bin for the batch
+    VTc_ini = np.zeros( NbtchMax     ,    dtype=int) - 999 ; # time at center of time bin that first detected this batch ;#fixme: #rm because `VjtBinN` does the job!
+    VjtBinN = np.zeros( NbtchMax     ,    dtype=int) - 999 ; # index that accesses the relevant time bin for the batch
     VNB_ini = np.zeros( NbtchMax,         dtype=int) - 999 ; # n. of valid buoys at inititialization of each batch
     XIDs    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores buoys IDs in use in a given batch
     XNRc    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores the number of records for each buoy in a given batch
