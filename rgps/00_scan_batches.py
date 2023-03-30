@@ -66,9 +66,6 @@ if __name__ == '__main__':
         print('\n *** File '+cf_npz_out+' is already here!!! I have nothing to do!')
         exit(0)
 
-    max_t_dev_allowed_in_bin = dt_bin_sec/2.01 ; # Inside a given time bin of a given batch, a point should not be further in time
-    #                                           # to the time mean of all points of this time bin than `max_t_dev_allowed_in_bin`
-
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 
@@ -94,7 +91,8 @@ if __name__ == '__main__':
 
     # Arrays along batches and buoys:
     # In the following, both NbtchMax & Nb are excessive upper bound values....
-    VTc_ini = np.zeros( NbtchMax                ) - 999.; # time at center of time bin that first detected this batch
+    VTc_ini = np.zeros( NbtchMax     ,    type=int ) - 999 ; # time at center of time bin that first detected this batch ;#fixme: #rm because `VjtBinN` does the job!
+    VjtBinN = np.zeros( NbtchMax     ,    type=int ) - 999 ; # index that accesses the relevant time bin for the batch
     VNB_ini = np.zeros( NbtchMax,         dtype=int) - 999 ; # n. of valid buoys at inititialization of each batch
     XIDs    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores buoys IDs in use in a given batch
     XNRc    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores the number of records for each buoy in a given batch
@@ -205,6 +203,7 @@ if __name__ == '__main__':
                     print('   +++ C O N F I R M E D   V A L I D   B A T C H   #'+str(ibatch)+' +++ => selected '+str(NBinStr)+' buoys!')
                     VNB_ini[ibatch] = NBinStr
                     VTc_ini[ibatch] = rTc
+                    VjtBinN[ibatch] = jt
                     # Only now can we register the points indices we used into `IDXtakenG`:
                     IDXtakenG.extend(IDXofStr)
                 else:
@@ -236,7 +235,8 @@ if __name__ == '__main__':
 
     # Now that we know how many batches and what is the maximum possible number of buoys into a batch,
     # we can reduce the arrays:
-    ZTc_ini = np.zeros( Nbatches                        ) - 999.
+    ZTc_ini = np.zeros( Nbatches             , dtype=int) - 999
+    ZjtBinN = np.zeros( Nbatches             , dtype=int) - 999
     ZNB_ini = np.zeros( Nbatches             , dtype=int) - 999
     ZIDs    = np.zeros((Nbatches, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given batch...
     ZNRc    = np.zeros((Nbatches, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the number of records
@@ -250,13 +250,14 @@ if __name__ == '__main__':
             print('ERROR: len(indOK) != NvB !!!'); exit(0)
         #
         ZTc_ini[js]     = VTc_ini[js]
+        ZjtBinN[js]     = VjtBinN[js]
         ZNB_ini[js]     = VNB_ini[js]
         Zmsk[js,:NvB]   = Xmsk[js,indOK] ; # #fixme: crash in big run with message below:
         ZIDs[js,:NvB]   = XIDs[js,indOK]
         ZNRc[js,:NvB]   = XNRc[js,indOK]
         ZIX0[js,:NvB,:] = XIX0[js,indOK,:Ncsrec_max] ; #fixme okay?
 
-    del Xmsk, VTc_ini, VNB_ini, XIDs, XNRc, XIX0
+    del Xmsk, VTc_ini, VNB_ini, VjtBinN, XIDs, XNRc, XIX0
 
     # Masking arrays:
     ZIDs = np.ma.masked_where( Zmsk==0, ZIDs )
@@ -268,6 +269,6 @@ if __name__ == '__main__':
     mjt.batchSummaryRGPS(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
 
     print('\n *** Saving info about batches into: '+cf_npz_out+'!')
-    np.savez_compressed( cf_npz_out, Nbatches=Nbatches, NB_ini=ZNB_ini, Tc_ini=ZTc_ini, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
+    np.savez_compressed( cf_npz_out, Nbatches=Nbatches, NB_ini=ZNB_ini, Tc_ini=ZTc_ini, jtBinN=ZjtBinN, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
 
 
