@@ -235,7 +235,10 @@ if __name__ == '__main__':
             exit(0)
 
     # For large scales, we must increase the size of bins:
-    if   reskm >= 50. and reskm < 100.:
+    if   reskm >= 35. and reskm < 50.:
+        wVbin_min = 1.5*wVbin_min
+        rfexp_bin = rfexp_bin*1.2
+    elif reskm >= 50. and reskm < 100.:
         wVbin_min = 2.*wVbin_min
         rfexp_bin = rfexp_bin*1.5
     elif reskm >= 100. and reskm < 200.:
