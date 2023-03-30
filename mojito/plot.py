@@ -612,20 +612,31 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     xlog_min, xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-3, 3.5e2
     rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
-    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']    
+    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
+    lmask_tiny, lmask_tiny2, lmask_tiny2 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
+    
     if reskm:
         if reskm>70 and reskm<100:         
             ylog_min = 5.e-2
             xlog_max = 0.15
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+            rycut_tiny =0.5e-1
+            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
+        elif reskm>150 and reskm<200:         
+            ylog_min = 1.e-1
+            xlog_max = 0.1
+            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+            rycut_tiny =1.e-1
+            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
             
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
-    if origin!='RGPS': ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
+    if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
 
     clbl = origin
     if Np and origin:
@@ -638,7 +649,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         if Np2 and origin2:
             origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
             clbl = origin2+' (N = '+str(Np2)+')'
-        if origin2!='RGPS': ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+        if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
         plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=clbl, zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
@@ -647,7 +658,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         if Np3 and origin3:
             origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
             clbl = origin3+' (N = '+str(Np3)+')'
-        if origin3!='RGPS': ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
         plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
