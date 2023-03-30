@@ -594,7 +594,6 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
 
 
 
-###def BatchTimeSanityCheck( cbtch, ptim, pVTb, pmsk, pBpR, tdev_max, iverbose=0):
 def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
     from .util import StdDev
     '''
@@ -614,7 +613,7 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
         print('ERROR [BatchTimeSanityCheck]: wrong shape for `pmsk`',np.shape(pmsk)); exit(0)
     if np.shape(pBpR)!=(NRmax,):
         print('ERROR [BatchTimeSanityCheck]: wrong shape for `pBpR`',np.shape(pBpR)); exit(0)
-
+    #
     zmsk = pmsk.copy()
     zBpR = pBpR.copy()
     #for jr in range(NRmax):
