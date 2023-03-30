@@ -21,7 +21,7 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 
 idebug = 0
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 2 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 

@@ -244,7 +244,10 @@ if __name__ == '__main__':
     elif reskm >= 100. and reskm < 200.:
         wVbin_min = 4.*wVbin_min
         rfexp_bin = rfexp_bin*2.
-    if reskm >= 50.:
+    elif reskm >= 200. and reskm < 400.:
+        wVbin_min = 6.*wVbin_min
+        rfexp_bin = rfexp_bin*3.
+    if reskm >= 35.:
         print('\n * Increased the width of bins and exp growth!!! Because large scale! wVbin_min, rfexp_bin =',wVbin_min, rfexp_bin)
     
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    

@@ -102,6 +102,9 @@ if __name__ == '__main__':
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
 
+    dtbin = int(cdtbin[3:])*3600
+    print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
+    
     if l_accurate_time:
         figSfx='_tbuoy.png'
     else:
@@ -120,6 +123,11 @@ if __name__ == '__main__':
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 
+
+    # We can adapt `t_dev_cancel` to the scale we are dealing with:
+    if reskm>300:
+        t_dev_cancel = dtbin
+        print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
 
     if rStD1>10. and rStD2>10.:
         # => 10 s means 0.s !!!
