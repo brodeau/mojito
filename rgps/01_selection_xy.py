@@ -155,13 +155,13 @@ if __name__ == '__main__':
         cTc  = mjt.epoch2clock(rTc)
 
         #lolo #fixme: to supress once we use `jtBinN` rather than `Tc_ini`:
-        #zTbin_bounds = np.zeros((Ncsrec_max,2), dtype=int)        
-        #([jt_bin],) = np.where(vTbin[:,0]==rTc)
-        #rTa, rTb    = vTbin[jt_bin,1], vTbin[jt_bin,2]
-        #print('LOLO: jt_bin = ',jt_bin)
-        #print('LOLO: => rTc = ', mjt.epoch2clock(vTbin[jt_bin,0]))
-        #print('LOLO: => rTa, rTb = ', mjt.epoch2clock(rTa), mjt.epoch2clock(rTb))
-        #zTbin_bounds[0,:] = [ rTa, rTb ]
+        zTbin_bounds = np.zeros((Ncsrec_max,2), dtype=int)        
+        ([jt_bin],) = np.where(vTbin[:,0]==rTc)
+        rTa, rTb    = vTbin[jt_bin,1], vTbin[jt_bin,2]
+        print('LOLO: jt_bin = ',jt_bin)
+        print('LOLO: => rTc = ', mjt.epoch2clock(vTbin[jt_bin,0]))
+        print('LOLO: => rTa, rTb = ', mjt.epoch2clock(rTa), mjt.epoch2clock(rTb))
+        zTbin_bounds[0,:] = [ rTa, rTb ]
         #lolo!
         
         if NvB != len(vIDs): print('ERROR Z1!'); exit(0)
@@ -247,13 +247,15 @@ if __name__ == '__main__':
             #
             if idebug>1: print('      rt =',rt,' => ',mjt.epoch2clock(rt),' => nearest of VTbin =',mjt.epoch2clock(vTbin[kp,0]))
             VT[jr,:] = vTbin[kp,:]
+            if jr>=1: zTbin_bounds[jr,:] = vTbin[kp,1:]
+            #
             jr+=1
 
         if lBatchOk:
             # Now, in each record of the batch we should exclude buoys which time position is just too far
             # away from the mean of all buoys
             # => if such a buoy is canceld at batch # k, it should also be canceled at following records
-            iFU, xmsk, nBpR = mjt.BatchTimeSanityCheck( cs, ztim, xmsk, nBpR, max_t_dev_allowed_in_bin,  iverbose=2 )
+            iFU, xmsk, nBpR = mjt.BatchTimeSanityCheck( cs, ztim, xmsk, nBpR, max_t_dev_allowed_in_bin, zTbin_bounds,  iverbose=2 )
             #
             del ztim
 
