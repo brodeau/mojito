@@ -69,7 +69,12 @@ for cbtch in ${list_btch}; do
             
             ijob=$((ijob+1))
 
-            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+            if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600*2/3))"
+            else
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+            fi
+
             echo "  ==> ${CMD}"; echo
             ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
             echo; echo
