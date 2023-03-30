@@ -170,7 +170,7 @@ if __name__ == '__main__':
     elif reskm==160.:
         rd_ss = 145.
     elif reskm==320.:
-        rd_ss = 305.
+        rd_ss = 295.
     else:
         print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
         exit(0)
