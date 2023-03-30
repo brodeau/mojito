@@ -66,13 +66,19 @@ for cbtch in ${list_btch}; do
             cdt2=`echo ${fQ2} | cut -d_ -f5`
             flog="S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
 
-            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+            if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
+                #CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600*2/3))"
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
+            else
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+            fi
+
             echo "  ==> ${CMD}"; echo
             ${CMD}
             echo; echo
 
         fi
-
+        exit
     done
 
 done
