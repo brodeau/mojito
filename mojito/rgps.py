@@ -636,8 +636,11 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, pTbin_bounds,  iver
             #print('  * [BTSC]: bin used (lb,c,hb) =>',epoch2clock(pVTb[jrec,1])+' | '+epoch2clock(pVTb[jrec,0])+' | '+epoch2clock(pVTb[jrec,2]))
             print('  * [BTSC]: standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
             print('  * [BTSC]:  ==> furthest point is '+str(round(zdtworse,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
-
+        
         ## Outside of the bin?
+        if t_mean<pTbin_bounds[jrec,0] or t_mean>pTbin_bounds[jrec,1]:
+            print(' ERROR [BatchTimeSanityCheck]: mean time for selected points does not fall inside expected bin!!!')
+            exit(0)
         ## => mind that with wide time bins the second record can still be inside the first bin !!!
         ##zoutside = (ptim[jrec,:]<pVTb[jrec,1]) | (ptim[jrec,:] > pVTb[jrec,2])
         #zoutside = (ptim[jrec,:]<pVTb[0,1]) | (ptim[jrec,:] > pVTb[jrec,2]) ; # => using 0 rather than jrec in `pVTb` !!!
