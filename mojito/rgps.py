@@ -594,7 +594,7 @@ def ExcludeMultiOccurences( pIDs, ptime, pIDsRef0, pidx0, binTctr, criterion='ne
 
 
 
-def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
+def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, pTbin_bounds,  iverbose=0):
     from .util import StdDev
     '''
        * cbtch: string to identufy current batch
@@ -602,6 +602,7 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
        * pmsk:  2D mask array (NRmax,NvB) for canceled points (int)
        * pBpR:  1D (NRmax) array of the number of buoys alive at each record (int)
        * tdev_max: max authorized time deviation from the mean for a buoy [s]
+       * pTbin_bounds: array (NRmax,2) of bounds of time bin in which each record was IDed (2 records can be in the same time bin if dt_bin was big !!!)
     '''
     # Now, in each record of the batch we should exclude buoys which time position is not inside the expected time bin
     # or is just too far away from the mean of all buoys
@@ -620,7 +621,7 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
     #    print('SUMMARY BEFORE/ rec.',jr,': zBpR[jr], sum(zmsk[jr,:]) =',zBpR[jr], np.sum(zmsk[jr,:]))
     #
     kFU = 0
-    if iverbose>0: print('  * [BatchTimeSanityCheck]: time location sanity test and fix for batch #'+str(cbtch))
+    if iverbose>0: print('  * [BTSC]: time location sanity test and fix for batch #'+str(cbtch))
     for jrec in range(NRmax):
         # At this record, the time position of all buoys of this batch is: ztim[jrec,:]
         t_mean = np.mean(ptim[jrec,:])
@@ -629,11 +630,12 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
         zdtworse = np.max(zadiff)/3600.
         if iverbose>0:
             from .util import epoch2clock
-            print('  * rec #',jrec,'of this batch:')
-            print('    mean time for this record is:              ',epoch2clock(t_mean))
-            #print('    bin used (lb,c,hb) =>',epoch2clock(pVTb[jrec,1])+' | '+epoch2clock(pVTb[jrec,0])+' | '+epoch2clock(pVTb[jrec,2]))
-            print('    standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
-            print('     ==> furthest point is '+str(round(zdtworse,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
+            print('  * [BTSC]: rec #',jrec,'of this batch:')
+            print('  * [BTSC]: mean time for this record is:',epoch2clock(t_mean))
+            print('  * [BTSC]: bounds of time bin used:',epoch2clock(pTbin_bounds[jrec,0]), epoch2clock(pTbin_bounds[jrec,1]))
+            #print('  * [BTSC]: bin used (lb,c,hb) =>',epoch2clock(pVTb[jrec,1])+' | '+epoch2clock(pVTb[jrec,0])+' | '+epoch2clock(pVTb[jrec,2]))
+            print('  * [BTSC]: standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
+            print('  * [BTSC]:  ==> furthest point is '+str(round(zdtworse,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
 
         ## Outside of the bin?
         ## => mind that with wide time bins the second record can still be inside the first bin !!!
@@ -643,15 +645,15 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
         #if lOutside:
         #    print(' ERROR [BatchTimeSanityCheck]: the time position of some buoys are outside of what seems reasonable!!!')
         #    (idx_rmO,) = np.where( zoutside )
-        #    print('    =>  jrec, ptim[jrec,idx_rmO] =', jrec, np.array( [ epoch2clock(ptim[jrec,i]) for i in idx_rmO ] ) )
-        #    print('    => pVTb[0,1], pVTb[jrec,1]',epoch2clock(pVTb[0,1]), epoch2clock(pVTb[jrec,1]))
-        #    print('    =>     pVTb[jrec,2]', epoch2clock(pVTb[jrec,2]))
+        #    print('  * [BTSC]: =>  jrec, ptim[jrec,idx_rmO] =', jrec, np.array( [ epoch2clock(ptim[jrec,i]) for i in idx_rmO ] ) )
+        #    print('  * [BTSC]: => pVTb[0,1], pVTb[jrec,1]',epoch2clock(pVTb[0,1]), epoch2clock(pVTb[jrec,1]))
+        #    print('  * [BTSC]: =>     pVTb[jrec,2]', epoch2clock(pVTb[jrec,2]))
         #    exit(0)
         #    #(idx_rmO,) = np.where( zoutside )
         #    #if np.sum(zmsk[jrec:,idx_rmO])>0:
         #    #    if iverbose>0:
         #    #        print(' WARNING [BatchTimeSanityCheck]: the time position of some buoys are outside of that of the expected time bin!!!')
-        #    #        print('    ==> we have to cancel '+str(len(idx_rmO))+' points / '+str(np.sum(zmsk[jrec,:])))
+        #    #        print('  * [BTSC]: ==> we have to cancel '+str(len(idx_rmO))+' points / '+str(np.sum(zmsk[jrec,:])))
         #    #    jr = jrec
         #    #    if jrec<2:
         #    #        kFU += 1 ; # => means fields will be shrinked later on...
@@ -665,8 +667,8 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, iverbose=0):
             (idx_rmB,) = np.where( zadiff>tdev_max )
             if np.sum(zmsk[jrec:,idx_rmB])>0:
                 if iverbose>0:
-                    print('    WARNING: the time position of some buoys are too far from time mean of all buoys of this bin!!!')
-                    print('    ==> we have to cancel '+str(len(idx_rmB))+' points / '+str(np.sum(zmsk[jrec,:])))
+                    print('  * [BTSC]: WARNING: the time pos. of some buoys too far from time mean of all buoys of this record of this batch!')
+                    print('  * [BTSC]: ==> we have to cancel '+str(len(idx_rmB))+' points / '+str(np.sum(zmsk[jrec,:])))
                 jr = jrec
                 if jrec<2:
                     kFU += 1 ; # => means fields will be shrinked later on...
