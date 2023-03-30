@@ -616,6 +616,13 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     lmask_tiny, lmask_tiny2, lmask_tiny2 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
     
     if reskm:
+        if reskm>30 and reskm<50:         
+            ylog_min = 3.e-2
+            xlog_max = 0.2
+            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
+            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
+            rycut_tiny =3.e-2
+            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
         if reskm>70 and reskm<100:         
             ylog_min = 5.e-2
             xlog_max = 0.15
