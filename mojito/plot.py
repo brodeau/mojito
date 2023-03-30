@@ -641,9 +641,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
             rycut_tiny =0.7e-1
 
-
-    if reskm>30:
-        lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
+        if reskm>30:
+            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
     
     ki = _initStyle_()
 

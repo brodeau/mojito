@@ -124,8 +124,8 @@ if __name__ == '__main__':
 
 
 
-    # We can adapt `t_dev_cancel` to the scale we are dealing with:
-    if reskm>300:
+    # When not at the nominal scale, we can adapt `t_dev_cancel` to the scale we are dealing with:
+    if reskm>15:
         t_dev_cancel = dtbin
         print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
 
