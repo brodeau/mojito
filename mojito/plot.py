@@ -613,31 +613,38 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     ylog_min,ylog_max = 5.e-3, 3.5e2
     rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
     cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
-    lmask_tiny, lmask_tiny2, lmask_tiny2 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
+    lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
     
     if reskm:
-        if reskm>30 and reskm<50:         
+        if reskm>30 and reskm<70:         
             ylog_min = 3.e-2
             xlog_max = 0.2
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
             rycut_tiny =3.e-2
-            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-        if reskm>70 and reskm<100:         
+        if reskm>=70 and reskm<120:         
             ylog_min = 5.e-2
             xlog_max = 0.15
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
             rycut_tiny =0.5e-1
-            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-        elif reskm>150 and reskm<200:         
+        elif reskm>=120 and reskm<240:
             ylog_min = 1.e-1
             xlog_max = 0.1
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
             rycut_tiny =1.e-1
-            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-            
+        elif reskm>=240 and reskm<480:
+            ylog_min = 0.8e-1
+            xlog_max = 0.1
+            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+            rycut_tiny =0.7e-1
+
+
+    if reskm>30:
+        lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
+    
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
