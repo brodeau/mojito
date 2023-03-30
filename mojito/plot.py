@@ -607,11 +607,19 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
-
+    
     # For figure axes:
-    xlog_min,xlog_max = 2.75e-3, 0.5
+    xlog_min, xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-3, 3.5e2
-
+    rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
+    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']    
+    if reskm:
+        if reskm>70 and reskm<100:         
+            ylog_min = 5.e-2
+            xlog_max = 0.15
+            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+            
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
@@ -647,8 +655,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
     ax.set_xlim(xlog_min, xlog_max)
-    ax.set_xticks([0.005, 0.01, 0.05, 0.1, 0.5])
-    ax.set_xticklabels(['0.005', '0.01', '0.05', '0.1', '0.5'])
+    ax.set_xticks(rxlabs)
+    ax.set_xticklabels(cxlabs)
     #plt.tick_params(axis='x', which='minor')
     #from matplotlib.ticker import FormatStrFormatter
     #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
