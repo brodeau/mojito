@@ -164,7 +164,7 @@ if __name__ == '__main__':
     if reskm==20.:
         rd_ss = 15.1
     elif reskm==40.:
-        rd_ss = 36.
+        rd_ss = 35.
     elif reskm==80.:
         rd_ss = 73.
     elif reskm==160.:
