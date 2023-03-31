@@ -262,6 +262,11 @@ if __name__ == '__main__':
 
     # Some plots:
     if iplot>0:
+
+        if corigin != 'RGPS':
+            corigin = str.replace( corigin,'NEMO-','')
+            corigin = str.replace( corigin,'_NANUK4_','-')
+        
         cresinfo = '('+str(reskm)+' km)'
 
         nmproj=NameArcticProj
@@ -278,6 +283,7 @@ if __name__ == '__main__':
                                   pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
+    if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
         mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                                   pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
