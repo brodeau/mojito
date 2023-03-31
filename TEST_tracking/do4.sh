@@ -5,15 +5,15 @@
 
 EXE="${MOJITO_DIR}/statistics.py"
 
-#if [ "$1" = "" ]; then
-#    echo "USAGE: $0 <file_pos_mojito.nc>"
-#    exit
-#fi
-#FIN="$1"
+for NEMO_EXP in ${LIST_NEMO_EXP}; do
+    echo; echo
 
-CMD="${EXE} ./npz ${DT_BINS_H} ${RESKM} NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}"
+    CMD="${EXE} ./npz ${DT_BINS_H} ${RESKM} NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}"
 
-echo
-echo " *** About to launch:"; echo "     ${CMD}"; echo
+    echo
+    echo " *** About to launch:"; echo "     ${CMD}"; echo
 
-${CMD}
+    ${CMD}
+
+
+done
