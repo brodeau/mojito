@@ -640,6 +640,12 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
             rycut_tiny =0.7e-1
+        elif reskm>=480 and reskm<700:
+            ylog_min = 0.8
+            xlog_max = 0.1
+            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+            rycut_tiny =0.7
 
         if reskm>30:
             lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
