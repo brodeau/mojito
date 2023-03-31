@@ -503,6 +503,10 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
     #
     if np.any(zadiff>time_dev_from_mean_allowed):
         print('ERROR [CheckTimeConsistencyQuads()]: some points read in file #'+str(kF)+' are too far (in time) from mean time!')
+        print('                                     => max allowed deviation =',time_dev_from_mean_allowed/3600,'hours')
+        (idxFU,) = np.where(zadiff>time_dev_from_mean_allowed)
+        dmaxFU = np.max(zadiff[idxFU])
+        print('                                     => max found here =',dmaxFU/3600,'hours')
         exit(0)
     else:
         if iverbose>0: print('     => ok! No points further than '+str(time_dev_from_mean_allowed/60.)+' minutes from mean...')

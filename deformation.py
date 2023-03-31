@@ -16,7 +16,8 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 
 idebug=0
-iplot=1
+iplot=1 ; NameArcticProj='SmallArctic'
+
 
 #l_accurate_time=False
 l_accurate_time=True
@@ -262,17 +263,18 @@ if __name__ == '__main__':
     # Some plots:
     if iplot>0:
         cresinfo = '('+str(reskm)+' km)'
-        
+
+        nmproj=NameArcticProj
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
                                   pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
                                   pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
                                   pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 

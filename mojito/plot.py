@@ -43,9 +43,6 @@ msPoints = 8  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
-# Projection:
-#vp =  ['Arctic', 'stere', -60., 40., 122., 57.,    75.,  -12., 10., 'h' ]  # Big Arctic + Northern Atlantic
-vp =  ['Arctic', 'stere', -80., 68., 138.5, 62.,    90.,  -12., 10., 'h' ]  # North Pole Arctic (zoom)
 
 
 
@@ -68,10 +65,28 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(16.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(20.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(14.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
     return 0
+
+def _SelectArcticProjExtent_( nameProj ):
+    #
+    # Stereographice projections:
+    if   nameProj=='BigArctic':
+        NProj =  [ -60., 40., 122., 57.,    75.,  -12., 10., 'h', 'stere' ]  # Big Arctic + Northern Atlantic
+        LocTtl = (0.6, 0.95)
+        #
+    elif nameProj=='CentralArctic':
+        NProj =  [ -80., 68., 138.5, 62.,    90.,  -12., 10., 'h', 'stere' ]  # North Pole CentralArctic (zoom)
+        LocTtl = (0.6, 0.95)
+        #
+    elif nameProj=='SmallArctic':
+        NProj =  [ -90.7, 70.9, 149.3, 68.,    90.,  -12., 10., 'h', 'stere' ]  # North Pole CentralArctic (zoom)
+        LocTtl = (0.025, 0.925)
+        #
+    return LocTtl, NProj
+
 
 def roundAxisRange( pR, rndKM=None ):
     from math import floor,ceil
@@ -164,7 +179,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
         ax.annotate(' Nb. buoys = '+str(NbValid), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
     if title:
-        ax.annotate(title, xy=(0.5, 0.965), xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
+        ax.annotate(title, xy=LocTitle, xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
 
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
@@ -173,7 +188,8 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     return 0
 
 
-def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1., title=None ):
+def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='CentralArctic', cnmfig=None,
+                  ms=5, ralpha=0.5, lShowDate=True, zoom=1., title=None ):
     '''
         IN:
             * pt    => the date as epoch/unix time (integer)
@@ -189,9 +205,10 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
 
     cp.fig_style( zoom, clr_top=color_top )
 
-    PROJ = Basemap(llcrnrlon=vp[2], llcrnrlat=vp[3], urcrnrlon=vp[4], urcrnrlat=vp[5], \
-                   resolution=vp[9], area_thresh=1000., projection='stere', \
-                   lat_0=vp[6], lon_0=vp[7], epsg=None)
+    LocTitle, NP = _SelectArcticProjExtent_( nmproj )
+    PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
+                   resolution=NP[7], area_thresh=1000., projection=NP[8], \
+                   lat_0=NP[4], lon_0=NP[5], epsg=None)
 
     if lShowDate:
         ct = cp.epoch2clock(pt)
@@ -207,7 +224,8 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', cnmfig=None
 
 
 
-def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, ralpha=0.5, clock_res='s', NminPnts=100 ):
+def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj='CentralArctic',
+                       ms=5, ralpha=0.5, clock_res='s', NminPnts=100 ):
     '''
         IN:
             * pvt   => vector of length Nt containing the dates as epoch/unix time (integer)
@@ -227,9 +245,10 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', ms=5, r
 
     cp.fig_style( rzoom, clr_top=color_top )
 
-    PROJ = Basemap(llcrnrlon=vp[2], llcrnrlat=vp[3], urcrnrlon=vp[4], urcrnrlat=vp[5], \
-                   resolution=vp[9], area_thresh=1000., projection='stere', \
-                   lat_0=vp[6], lon_0=vp[7], epsg=None)
+    LocTitle, NP = _SelectArcticProjExtent_( nmproj )
+    PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
+                   resolution=NP[7], area_thresh=1000., projection=NP[8], \
+                   lat_0=NP[4], lon_0=NP[5], epsg=None)
 
     Nt = len(pvt)
 
@@ -781,7 +800,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
 
 
-def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
+def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
                           pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None, title=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
@@ -824,9 +843,11 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div',
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
 
 
-    PROJ = Basemap(llcrnrlon=vp[2], llcrnrlat=vp[3], urcrnrlon=vp[4], urcrnrlat=vp[5], \
-                   resolution=vp[9], area_thresh=1000., projection='stere', \
-                   lat_0=vp[6], lon_0=vp[7], epsg=None)
+
+    LocTitle, NP = _SelectArcticProjExtent_( nmproj )    
+    PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
+                   resolution=NP[7], area_thresh=1000., projection=NP[8], \
+                   lat_0=NP[4], lon_0=NP[5], epsg=None)
 
 
     fig = plt.figure(num=1, figsize=(7.54*1.3, 7.2*1.3), dpi=None, facecolor=col_bg, edgecolor=col_bg)
@@ -848,7 +869,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div',
 
             
     if title:
-        ax.annotate(title, xy=(0.6, 0.95), xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+        ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     #if unit:
     #    # => triggers the colorbar
     #    ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
