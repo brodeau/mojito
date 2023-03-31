@@ -76,6 +76,8 @@ if __name__ == '__main__':
         rtolQuadA = 0.75 * (reskm/20.)**1.25
     if reskm>=300.:
         rtolQuadA = 32.
+    if reskm>=600.:
+        rtolQuadA = 64.
         
     print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
     

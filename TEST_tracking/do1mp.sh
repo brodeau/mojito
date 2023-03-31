@@ -10,42 +10,49 @@ echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RES
 cxtraRES=""
 if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
 
-list_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
+list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
 
-nbf=`echo ${list_nc} | wc -w`
+nbf=`echo ${list_seed_nc} | wc -w`
 
-echo " *** We have ${nbf} files !"
-
-echo ${list_nc}
+echo " *** We have ${nbf} seeding files !"
+echo ${list_seed_nc}
 
 mkdir -p ./logs
 
 ijob=0
 
-for fnc in ${list_nc}; do
+for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
-    fb=`basename ${fnc}`
-    echo "   * File: ${fb} :"
 
-    # Actually that the ice tracker that should look inside the nc file to get date 1 and 2:
-    CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
-    echo
-    echo " *** About to launch:"; echo "     ${CMD}"; echo
+    DIR_FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}"
+    FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod.nc4"
 
-    clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
+    for fnc in ${list_seed_nc}; do
 
-    ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
+        fb=`basename ${fnc}`
+        echo "   * File: ${fb} :"
 
-    ijob=$((ijob+1))
+        # Actually that the ice tracker that should look inside the nc file to get date 1 and 2:
+        CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
+        echo
+        echo " *** About to launch:"; echo "     ${CMD}"; echo
 
-    sleep 1
+        clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
 
-    if [ $((ijob%NJPAR)) -eq 0 ]; then
-        echo "Waiting! (ijob = ${ijob})...."
-        wait
-        echo; echo
-    fi
-    
+        ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
+
+        ijob=$((ijob+1))
+
+        sleep 1
+
+        if [ $((ijob%NJPAR)) -eq 0 ]; then
+            echo "Waiting! (ijob = ${ijob})...."
+            wait
+            echo; echo
+        fi
+
+    done
+
 done
 
 wait

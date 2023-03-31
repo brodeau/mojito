@@ -247,6 +247,9 @@ if __name__ == '__main__':
     elif reskm >= 200. and reskm < 400.:
         wVbin_min = 6.*wVbin_min
         rfexp_bin = rfexp_bin*3.
+    elif reskm >= 400. and reskm < 700.:
+        wVbin_min = 8.*wVbin_min
+        rfexp_bin = rfexp_bin*2.5
     if reskm >= 35.:
         print('\n * Increased the width of bins and exp growth!!! Because large scale! wVbin_min, rfexp_bin =',wVbin_min, rfexp_bin)
     
