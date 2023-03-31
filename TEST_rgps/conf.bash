@@ -70,9 +70,9 @@ case ${host} in
         #DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=160 ; # =>  329   points for shear !!!        
         #DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=160 ; # =>  Less!!! points for shear !!!
         # 320km:
-        #DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=320 ; # =>    points for shear !!!
+        DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=320 ; # =>    points for shear !!!
         # 640km:
-        DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=640 ; # =>    points for shear !!!
+        #DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=640 ; # =>    points for shear !!!
         #
         ;;
     *)
