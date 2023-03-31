@@ -245,8 +245,8 @@ if __name__ == '__main__':
         wVbin_min = 4.*wVbin_min
         rfexp_bin = rfexp_bin*2.
     elif reskm >= 200. and reskm < 400.:
-        wVbin_min = 6.*wVbin_min
-        rfexp_bin = rfexp_bin*3.
+        wVbin_min = 7.*wVbin_min
+        rfexp_bin = rfexp_bin*2.2
     elif reskm >= 400. and reskm < 700.:
         wVbin_min = 8.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
