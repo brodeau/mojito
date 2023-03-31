@@ -73,7 +73,7 @@ for cbtch in ${list_btch}; do
                 #CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600*2/3))"
                 CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
             else
-                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2))"
+                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
             fi
 
             echo "  ==> ${CMD}"; echo

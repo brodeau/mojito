@@ -70,8 +70,8 @@ if __name__ == '__main__':
 
     vclck = split('_',ctimeC)
     chh = split(':',vclck[1])[0]
-    cclck = str.replace( vclck[0],'-','')+'h'+chh
-
+    cclck = str.replace( vclck[0],'-','')+'-'+chh+'h'
+    
     reskm, reskm2 = QUA1.reskm_nmnl, QUA2.reskm_nmnl
     if reskm != reskm2:
         print('ERROR: quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     cfnm += '_'+cbatch+cdtbin
     cfnm += '_'+cclck        
     cfnm += '_'+str(reskm)+'km'
-
+    
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
 
