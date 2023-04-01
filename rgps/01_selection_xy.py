@@ -77,14 +77,13 @@ if __name__ == '__main__':
     cdtbin_h = argv[4]
     
     idtbin_h = int(cdtbin_h)
-    dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
-    #                                     # scanning for valid etime intervals
     #
     # Inside a given record of a given batch, a point should not be further in time from the mean of all points than:
     if narg==6:
         max_t_dev_allowed_in_bin = int(argv[5])*3600
     else:
-        max_t_dev_allowed_in_bin = dt_bin_sec/2.01
+        from math import floor
+        max_t_dev_allowed_in_bin = floor( (idtbin_h*3600)/2.01 )
     ####################################################################################################
 
     print('\n *** Maximum time deviation from the mean at a given batch record allowed =', round(max_t_dev_allowed_in_bin/3600.,1),'hours!')
@@ -110,10 +109,6 @@ if __name__ == '__main__':
         if Nb_min_cnsctv > Nforced_batch_length:
             print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_batch_length` !'); exit(0)
 
-    # Build binning time axis:
-    NTbin, vTbin = mjt.TimeBins4Scanning( idt1, idt2, dt_bin_sec, iverbose=idebug-1 )
-
-
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
     Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0, vykm0, vxkm0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, l_doYX=True )
     # * Np: number of points of interst
@@ -123,26 +118,31 @@ if __name__ == '__main__':
     print('\n *** Opening "selected batches" data into '+cf_npz_in+'!')
 
     with np.load(cf_npz_in) as data:
-        Nbatches = data['Nbatches']
-        ZNB_ini  = data['NB_ini']
-        ZTc_ini  = data['Tc_ini']
-        ZIDs     = data['IDs']
-        ZNRc     = data['NRc']
-        ZIX0     = data['ZIX0']
+        dt_bin_sec = int( data['dt_bin_sec'] )
+        vTbin      = data['vTbin']
+        Nbatches   = data['Nbatches']
+        ZNB_ini    = data['NB_ini']
+        ZjtBinN    = data['jtBinN']
+        ZIDs       = data['IDs']
+        ZNRc       = data['NRc']
+        ZIX0       = data['ZIX0']
+
+    if dt_bin_sec != idtbin_h*3600:
+        print('ERROR: `dt_bin_sec` in npz file does not agree with that at command line!',dt_bin_sec, idtbin_h*3600)
+        exit(0)
+    
+    (NTbin,_) = np.shape(vTbin)
+    
     # For some reason, masked shit not preserved via savez/load...
     ZIDs = np.ma.masked_where( ZIDs<0, ZIDs )
     ZNRc = np.ma.masked_where( ZNRc<0, ZNRc )
-    #
-    print('      => we have '+str(Nbatches)+' batches!')
-
 
     Ncsrec_max = np.max(ZNRc) ; # maximum number of valid consecutive records for a buoy
     for jr in range(Ncsrec_max):
         ZIX0[:,:,jr] = np.ma.masked_where( ZIX0[:,:,jr]==-999, ZIX0[:,:,jr] ) ; # fixme: check!
 
-
     # Reminder of what we found with previous script:
-    mjt.batchSummaryRGPS( ZNB_ini, ZTc_ini, ZIDs, ZNRc )
+    mjt.batchSummaryRGPS( vTbin, ZNB_ini, ZjtBinN, ZIDs, ZNRc )
 
 
     # Loop along batches:
@@ -151,21 +151,13 @@ if __name__ == '__main__':
         cs   = str(jS)
         vIDs = np.ma.MaskedArray.compressed( ZIDs[jS,:] ) ; # valid IDs for current batch: shrinked, getting rid of masked points
         NvB  = ZNB_ini[jS]
-        rTc  = ZTc_ini[jS]
-        cTc  = mjt.epoch2clock(rTc)
-
-        #lolo #fixme: to supress once we use `jtBinN` rather than `Tc_ini`:
-        zTbin_bounds = np.zeros((Ncsrec_max,2), dtype=int)        
-        ([jt_bin],) = np.where(vTbin[:,0]==rTc)
-        rTa, rTb    = vTbin[jt_bin,1], vTbin[jt_bin,2]
-        print('LOLO: jt_bin = ',jt_bin)
-        print('LOLO: => rTc = ', mjt.epoch2clock(vTbin[jt_bin,0]))
-        print('LOLO: => rTa, rTb = ', mjt.epoch2clock(rTa), mjt.epoch2clock(rTb))
+        jt_bin = ZjtBinN[jS]        
+        rTc, rTa, rTb  = vTbin[jt_bin,0], vTbin[jt_bin,1], vTbin[jt_bin,2]
+        zTbin_bounds = np.zeros((Ncsrec_max,2), dtype=int)
         zTbin_bounds[0,:] = [ rTa, rTb ]
-        #lolo!
         
         if NvB != len(vIDs): print('ERROR Z1!'); exit(0)
-        print('\n *** Having a look at batch #'+cs+' initiated for time bin centered around '+cTc+' !')
+        print('\n *** Having a look at batch #'+cs+' initiated for time bin centered around '+mjt.epoch2clock(rTc)+' !')
 
         if Nforced_batch_length:
             NCRmax = Nforced_batch_length

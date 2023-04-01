@@ -78,7 +78,7 @@ for cbtch in ${list_btch}; do
             echo; echo
 
         fi
-        exit
+
     done
 
 done

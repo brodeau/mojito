@@ -17,8 +17,8 @@ def AllowedDevFromDT0( pbin_dt ):
 
 
 
-def batchSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
-    from .util import epoch2clock
+def batchSummaryRGPS( pTbin, pNBini, pidxBinN, pIDs, pNRc ):
+    from .util import epoch2clock as ep2c
     #
     (Nbtch,NbMax) = np.shape(pIDs)
     if Nbtch != len(pNBini):
@@ -29,8 +29,9 @@ def batchSummaryRGPS( pNBini, pTcini, pIDs, pNRc ):
     print(' *** Number of identified batches: '+str(Nbtch))
     print(' *** Number of buoys selected in each batch:')
     for js in range(Nbtch):
-        cTc0  = epoch2clock(pTcini[js])
+        cTc0, cTcA, cTcB  = ep2c(pTbin[pidxBinN[js],0]), ep2c(pTbin[pidxBinN[js],1]), ep2c(pTbin[pidxBinN[js],2])
         print('        * Batch #'+str(js)+' initiated at time bin centered around '+cTc0+' => has '+str(pNBini[js])+' buoys')
+        print('                         => bounds of time bin: '+cTcA+' -- '+cTcB)
     print(' *** Max number of buoys possibly found in a batch = ',NbMax)
     print('     * shape of ZIDs =', np.shape(pIDs))
     print('     * shape of ZNRc =', np.shape(pNRc))
@@ -129,8 +130,6 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
 
         "VUCR" => Valid UpComing Record !
     '''
-    from .util import epoch2clock
-    #
     idxUC = -9999
     zt0   = -9999.
     nbROK = 0
@@ -215,7 +214,7 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
                * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
                * ztime   : array of dates associated with all these records [s]
     '''
-    from .util import epoch2clock
+    from .util import epoch2clock as ep2c
     #
     (idx_buoy,   ) = np.where( pBIDs0 == pBIDs0[kidx] )
     (idx_exclude,) = np.where( ptime0 < time_min )
@@ -255,7 +254,7 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
        Merge several npz files of the "considered identical" date into a single one!
         * t_ref: reference time for these files (epoch UNIX) [s]
     '''
-    from .util import epoch2clock
+    from .util import epoch2clock as ep2c
 
     nbf = len(list_npz_files)
 
@@ -267,12 +266,12 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
             vit.append(it)
             npf = len(data['vids'])
             vNbP.append(npf)
-        if iverbose>0: print('  '+cf+' => time ='+epoch2clock(it)+' | '+str(npf)+' points!')
+        if iverbose>0: print('  '+cf+' => time ='+ep2c(it)+' | '+str(npf)+' points!')
     #
     # For merged file:
     itime_mean = int( round(np.mean(vit),0) )
     nP = np.sum(vNbP)
-    if iverbose>0: print(' vNbP =', vNbP,'=>',nP,'points in total!, time =',epoch2clock(itime_mean))
+    if iverbose>0: print(' vNbP =', vNbP,'=>',nP,'points in total!, time =',ep2c(itime_mean))
 
     vtime  = np.zeros(nP)
     vx, vy = np.zeros(nP), np.zeros(nP)
@@ -318,12 +317,12 @@ def mergeNPZ( list_npz_files, t_ref, cf_out='merged_file.npz', iverbose=0 ):
 
         del vids_ref, vidx, zidx
 
-    if epoch2clock(itime_mean) != epoch2clock(t_ref):
+    if ep2c(itime_mean) != ep2c(t_ref):
         print(' WARNING: [util.mergeNPZ] => `epoch2clock(itime_mean) != epoch2clock(t_ref)` !!!')
 
     # Time to save in the new npz file:
     if iverbose>0: print('  [util.mergeNPZ] ==> saving merged files into '+cf_out+' !')
-    np.savez_compressed( cf_out, itime=itime_mean, date=epoch2clock(itime_mean), Npoints=nP, vids=vids,
+    np.savez_compressed( cf_out, itime=itime_mean, date=ep2c(itime_mean), Npoints=nP, vids=vids,
                          vtime=vtime, vx=vx, vy=vy, vlon=vlon, vlat=vlat,  )
     return 0
 
@@ -629,11 +628,11 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, pTbin_bounds,  iver
         zadiff = np.abs(ptim[jrec,:]-t_mean)
         zdtworse = np.max(zadiff)/3600.
         if iverbose>0:
-            from .util import epoch2clock
+            from .util import epoch2clock as ep2c
             print('  * [BTSC]: rec #',jrec,'of this batch:')
-            print('  * [BTSC]: mean time for this record is:',epoch2clock(t_mean))
-            print('  * [BTSC]: bounds of time bin used:',epoch2clock(pTbin_bounds[jrec,0]), epoch2clock(pTbin_bounds[jrec,1]))
-            #print('  * [BTSC]: bin used (lb,c,hb) =>',epoch2clock(pVTb[jrec,1])+' | '+epoch2clock(pVTb[jrec,0])+' | '+epoch2clock(pVTb[jrec,2]))
+            print('  * [BTSC]: mean time for this record is:',ep2c(t_mean))
+            print('  * [BTSC]: bounds of time bin used:',ep2c(pTbin_bounds[jrec,0]), ep2c(pTbin_bounds[jrec,1]))
+            #print('  * [BTSC]: bin used (lb,c,hb) =>',ep2c(pVTb[jrec,1])+' | '+ep2c(pVTb[jrec,0])+' | '+ep2c(pVTb[jrec,2]))
             print('  * [BTSC]: standard Deviation =',round(rStdDv/3600.,3),' hours!, nb of buoys ='+str(np.sum(zmsk[jrec,:])))
             print('  * [BTSC]:  ==> furthest point is '+str(round(zdtworse,2))+'h away from mean! Max dev. allowed =',round(tdev_max/3600.,2),'h')
         
@@ -648,9 +647,9 @@ def BatchTimeSanityCheck( cbtch, ptim, pmsk, pBpR, tdev_max, pTbin_bounds,  iver
         #if lOutside:
         #    print(' ERROR [BatchTimeSanityCheck]: the time position of some buoys are outside of what seems reasonable!!!')
         #    (idx_rmO,) = np.where( zoutside )
-        #    print('  * [BTSC]: =>  jrec, ptim[jrec,idx_rmO] =', jrec, np.array( [ epoch2clock(ptim[jrec,i]) for i in idx_rmO ] ) )
-        #    print('  * [BTSC]: => pVTb[0,1], pVTb[jrec,1]',epoch2clock(pVTb[0,1]), epoch2clock(pVTb[jrec,1]))
-        #    print('  * [BTSC]: =>     pVTb[jrec,2]', epoch2clock(pVTb[jrec,2]))
+        #    print('  * [BTSC]: =>  jrec, ptim[jrec,idx_rmO] =', jrec, np.array( [ ep2c(ptim[jrec,i]) for i in idx_rmO ] ) )
+        #    print('  * [BTSC]: => pVTb[0,1], pVTb[jrec,1]',ep2c(pVTb[0,1]), ep2c(pVTb[jrec,1]))
+        #    print('  * [BTSC]: =>     pVTb[jrec,2]', ep2c(pVTb[jrec,2]))
         #    exit(0)
         #    #(idx_rmO,) = np.where( zoutside )
         #    #if np.sum(zmsk[jrec:,idx_rmO])>0:

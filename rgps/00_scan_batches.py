@@ -91,7 +91,6 @@ if __name__ == '__main__':
 
     # Arrays along batches and buoys:
     # In the following, both NbtchMax & Nb are excessive upper bound values....
-    VTc_ini = np.zeros( NbtchMax     ,    dtype=int) - 999 ; # time at center of time bin that first detected this batch ;#fixme: #rm because `VjtBinN` does the job!
     VjtBinN = np.zeros( NbtchMax     ,    dtype=int) - 999 ; # index that accesses the relevant time bin for the batch
     VNB_ini = np.zeros( NbtchMax,         dtype=int) - 999 ; # n. of valid buoys at inititialization of each batch
     XIDs    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores buoys IDs in use in a given batch
@@ -147,7 +146,7 @@ if __name__ == '__main__':
 
 
             #---------------------------------------------------------------------------------------------------------------------
-            NBinStr  = 0     ; # number of buoys in the batch
+            NBinBtch  = 0     ; # number of buoys in the batch
             IDXofStr = []  ; # keeps memory of buoys that are already been included, but only at the batch level
 
             iBcnl_CR = 0  ; # counter for buoys excluded because of consecutive records...
@@ -186,7 +185,7 @@ if __name__ == '__main__':
                         if rd_ini > MinDistFromLand:
                             IDXofStr.append(idx0VUCR[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
                             #
-                            NBinStr += 1   ; # this is another valid buoy for this batch
+                            NBinBtch += 1   ; # this is another valid buoy for this batch
                             Xmsk[ibatch,jb] = 1                ; # flag for valid point
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
                             XNRc[ibatch,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
@@ -199,10 +198,9 @@ if __name__ == '__main__':
                 ### for jidx in idxOK
                 print('     => '+str(iBcnl_CR)+' buoys were canceled for not having a reasonable upcomming position in time!')
 
-                if NBinStr >= min_nb_buoys_in_batch:
-                    print('   +++ C O N F I R M E D   V A L I D   B A T C H   #'+str(ibatch)+' +++ => selected '+str(NBinStr)+' buoys!')
-                    VNB_ini[ibatch] = NBinStr
-                    VTc_ini[ibatch] = rTc
+                if NBinBtch >= min_nb_buoys_in_batch:
+                    print('   +++ C O N F I R M E D   V A L I D   B A T C H   #'+str(ibatch)+' +++ => selected '+str(NBinBtch)+' buoys!')
+                    VNB_ini[ibatch] = NBinBtch
                     VjtBinN[ibatch] = jt
                     # Only now can we register the points indices we used into `IDXtakenG`:
                     IDXtakenG.extend(IDXofStr)
@@ -235,7 +233,6 @@ if __name__ == '__main__':
 
     # Now that we know how many batches and what is the maximum possible number of buoys into a batch,
     # we can reduce the arrays:
-    ZTc_ini = np.zeros( Nbatches             , dtype=int) - 999
     ZjtBinN = np.zeros( Nbatches             , dtype=int) - 999
     ZNB_ini = np.zeros( Nbatches             , dtype=int) - 999
     ZIDs    = np.zeros((Nbatches, Nbuoys_max), dtype=int) - 999 ; # bad max size!! Stores the IDs used for a given batch...
@@ -249,7 +246,6 @@ if __name__ == '__main__':
         if len(indOK) != NvB:
             print('ERROR: len(indOK) != NvB !!!'); exit(0)
         #
-        ZTc_ini[js]     = VTc_ini[js]
         ZjtBinN[js]     = VjtBinN[js]
         ZNB_ini[js]     = VNB_ini[js]
         Zmsk[js,:NvB]   = Xmsk[js,indOK] ; # #fixme: crash in big run with message below:
@@ -257,7 +253,7 @@ if __name__ == '__main__':
         ZNRc[js,:NvB]   = XNRc[js,indOK]
         ZIX0[js,:NvB,:] = XIX0[js,indOK,:Ncsrec_max] ; #fixme okay?
 
-    del Xmsk, VTc_ini, VNB_ini, VjtBinN, XIDs, XNRc, XIX0
+    del Xmsk, VNB_ini, VjtBinN, XIDs, XNRc, XIX0
 
     # Masking arrays:
     ZIDs = np.ma.masked_where( Zmsk==0, ZIDs )
@@ -266,9 +262,9 @@ if __name__ == '__main__':
         ZIX0[:,:,jr] = np.ma.masked_where( Zmsk==0, ZIX0[:,:,jr] )
     del Zmsk
 
-    mjt.batchSummaryRGPS(ZNB_ini, ZTc_ini, ZIDs, ZNRc)
+    mjt.batchSummaryRGPS( vTbin, ZNB_ini, ZjtBinN, ZIDs, ZNRc)
 
     print('\n *** Saving info about batches into: '+cf_npz_out+'!')
-    np.savez_compressed( cf_npz_out, Nbatches=Nbatches, NB_ini=ZNB_ini, Tc_ini=ZTc_ini, jtBinN=ZjtBinN, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
+    np.savez_compressed( cf_npz_out, dt_bin_sec=dt_bin_sec, vTbin=vTbin, Nbatches=Nbatches, NB_ini=ZNB_ini, jtBinN=ZjtBinN, IDs=ZIDs, NRc=ZNRc, ZIX0=ZIX0 )
 
 

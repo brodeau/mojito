@@ -20,20 +20,11 @@ RESKM=10
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
-        NJPAR=7
+        NJPAR=5
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #FILIN="RGPS_1996-12-21_1997-02-01.nc4"
-        #
-        #DT_BINS_H=6  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=84  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=$((24*7))  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=$((24*10))  ; # width of a bin for time sampling [hours]
-        #
-        #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*10))
-        #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
-        DATE1="${YEAR}0103_00:00" ; DT_BINS_H=24 ; DATE2="${YEAR}0115" ; RESKM=10
-        #DT_BINS_H=6 ; DATE2="${YEAR}0131"
+        #DT_BINS_H=6 ;         DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
+        DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
         #
         ;;
     "mcp-oceannext-01")
