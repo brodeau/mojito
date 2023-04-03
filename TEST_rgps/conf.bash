@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#YEAR="1997"
-YEAR="2007"
+YEAR="1997"
+#YEAR="2007"
 
 MOJITO_DIR="${HOME}/DEV/mojito"
 
@@ -66,8 +66,6 @@ case ${host} in
         #DT_BINS_H=$((24*5)) ;  RESKM=320 ; # =>    points for shear !!!
         # 640km:
         #DT_BINS_H=$((24*5)) ;  RESKM=640 ; # =>    points for shear !!!
-        # 1280km:
-        #DT_BINS_H=$((24*5)) ;  RESKM=1280
         #
         ;;
     *)
