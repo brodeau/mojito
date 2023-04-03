@@ -1,7 +1,7 @@
 #!/bin/bash
 
-YEAR="1997"
-#YEAR="2007"
+#YEAR="1997"
+YEAR="2007"
 
 MOJITO_DIR="${HOME}/DEV/mojito"
 
@@ -52,7 +52,7 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         # 10km:
         #DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
-        #DT_BINS_H=$((24*5)) ;  RESKM=10
+        DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0228" ;  RESKM=10
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20 ; # => 47806  points for shear !!!
         # 40km:
@@ -67,7 +67,7 @@ case ${host} in
         # 640km:
         #DT_BINS_H=$((24*5)) ;  RESKM=640 ; # =>    points for shear !!!
         # 1280km:
-        DT_BINS_H=$((24*5)) ;  RESKM=1280
+        #DT_BINS_H=$((24*5)) ;  RESKM=1280
         #
         ;;
     *)
