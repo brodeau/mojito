@@ -49,22 +49,25 @@ case ${host} in
         #
         NJPAR=30
         #
+        DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         # 10km:
-        #DT_BINS_H=6 ; DATE2="${YEAR}0315" ; RESKM=10 ; #scale 10km
-        DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=10
+        #DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
+        #DT_BINS_H=$((24*5)) ;  RESKM=10
         # 20km:
-        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=20 ; # => 47806  points for shear !!!
+        #DT_BINS_H=6 ;  RESKM=20 ; # => 47806  points for shear !!!
         # 40km:
-        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=40 ; # =>   points for shear !!!
+        #DT_BINS_H=6 ;  RESKM=40 ; # =>   points for shear !!!
         # 80km:
-        #DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=80 ; # => 3913 points for shear !!!
+        #DT_BINS_H=$((24*3)) ;  RESKM=80 ; # => 3913 points for shear !!!
         # 160km:
-        #DT_BINS_H=$((24*3)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=160 ; # =>  329   points for shear !!!        
-        #DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=160 ; # =>  Less!!! points for shear !!!
+        #DT_BINS_H=$((24*3)) ;  RESKM=160 ; # =>  329   points for shear !!!        
+        #DT_BINS_H=$((24*5)) ;  RESKM=160 ; # =>  Less!!! points for shear !!!
         # 320km:
-        #DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=320 ; # =>    points for shear !!!
+        #DT_BINS_H=$((24*5)) ;  RESKM=320 ; # =>    points for shear !!!
         # 640km:
-        #DT_BINS_H=$((24*5)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331" ; RESKM=640 ; # =>    points for shear !!!
+        #DT_BINS_H=$((24*5)) ;  RESKM=640 ; # =>    points for shear !!!
+        # 1280km:
+        DT_BINS_H=$((24*5)) ;  RESKM=1280
         #
         ;;
     *)
