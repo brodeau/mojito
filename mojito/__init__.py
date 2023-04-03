@@ -9,5 +9,3 @@ from .ncio     import *
 from .geomesh  import *
 from .polygons import *
 from .plot     import *
-from .locate   import *
-from .tracking import *

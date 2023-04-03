@@ -122,7 +122,7 @@ def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):
 
 
 def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png',
-              ms=5, ralpha=0.5, caller='unknown', rzoom=1., title=None ):
+              ms=5, ralpha=0.5, caller='unknown', rzoom=1., title=None, title_loc=(10,10) ):
     '''
         IN:
             * pt     => the date as epoch/unix time (integer)
@@ -179,7 +179,7 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
         ax.annotate(' Nb. buoys = '+str(NbValid), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
 
     if title:
-        ax.annotate(title, xy=LocTitle, xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
+        ax.annotate(title, xy=title_loc, xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
 
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
@@ -220,7 +220,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
         cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
     return _figMap_( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms,
-                     ralpha=ralpha, caller='ShowBuoysMap', rzoom=zoom, title=title )
+                     ralpha=ralpha, caller='ShowBuoysMap', rzoom=zoom, title=title, title_loc=LocTitle )
 
 
 
@@ -272,7 +272,8 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
 
             print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)
 
-            kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms, ralpha=ralpha )
+            kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs,
+                                cfig=cfig, ms=ms, ralpha=ralpha, title_loc=LocTitle )
     #
     return kk
 
