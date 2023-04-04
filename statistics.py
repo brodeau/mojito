@@ -21,14 +21,8 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 # Conversion from s-1 to day-1:
 rconv = 24.*3600.
 
-# Range to consider:
-#min_div  = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-min_div  = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-max_div  = 1.     ; # day^-1
-#
-#min_shr = 0.0005 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-min_shr = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-max_shr = 1. ; # day^-1
+max_div = 1.5 ; # day^-1
+max_shr = 1.5 ; # day^-1
 
 # About width of bins:
 if l_cst_bins:
@@ -271,6 +265,23 @@ if __name__ == '__main__':
         jP = jPe
         kf = kf+1
 
+
+    # Adjust sampling bounds based on resolution: LOLO
+    min_div = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+    min_shr = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+    if reskm>=15.:
+        min_div = 0.001
+        min_shr = 0.001
+    if reskm>=35.:
+        min_div = 0.0005
+        min_shr = 0.0005
+    if reskm>=75.
+        min_div = 0.0001
+        min_shr = 0.0001
+    if reskm>=120.
+        min_div = 0.00001
+        min_shr = 0.00001
+    
     cxtra = ''
     if l_cst_bins:
         # For the divergence
