@@ -3,7 +3,7 @@
 . ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/tracking/si3_part_tracker.py"
+EXE="${SITRCK_DIR}/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
 echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
@@ -16,13 +16,13 @@ nbf=`echo ${list_seed_nc} | wc -w`
 
 echo " *** We have ${nbf} seeding files !"
 echo ${list_seed_nc}
+echo
 
 mkdir -p ./logs
 
 ijob=0
 
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
-
 
     DIR_FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}"
     FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod.nc4"
