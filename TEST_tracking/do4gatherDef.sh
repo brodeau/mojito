@@ -3,7 +3,7 @@
 . ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/statistics.py"
+EXE="${MOJITO_DIR}/gatherDef.py"
 
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
     echo; echo
