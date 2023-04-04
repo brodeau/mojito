@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     kBatchName = np.zeros(nbFiles, dtype='U4')
     kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
-    kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
-
+    kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file    
+    
     list_date = []
     kf = 0
     for ff in listnpz:
@@ -118,10 +118,10 @@ if __name__ == '__main__':
 
     
     # Save it for the scaling and PDFs to come ...
-    np.savez_compressed( cd_in+'/def_SHEAR'+cfroot+'.npz', name='shear', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
-                         Np=nP, shear=Zshr )
+    np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
+                         Np=nP, xshr=Zshr )
 
-    np.savez_compressed( cd_in+'/def_DIV'+cfroot+'.npz', name='divergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
-                         Np=nP, shear=Zdiv )
+    np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
+                         Np=nP, xdiv=ZDiv )

@@ -156,131 +156,85 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 
 if __name__ == '__main__':
 
-    if not len(argv) in [3,5]:
-        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
-        print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
+    #if not len(argv) in [3,5]:
+    #    print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
+    #    print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
+    #    exit(0)
+    if not len(argv) in [2]:
+        print('Usage: '+argv[0]+' <file_divergence.npz>')
         exit(0)
 
+    cf_div_in = argv[1]
+    cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
+
+    cd_in = path.dirname(cf_div_in)
     
-    lPrefix = (len(argv)==3)
-    cd_in  = argv[1]
+    with np.load(cf_div_in) as data:
+        dtbin1 = data['dtbin']
+        reskm1 = data['reskm_nmnl']
+        corig1 = str(data['origin'])        
+        cperd1 = str(data['period'])
+        nbF1 = int(data['Nbatch'])
+        ZDiv = data['xdiv']
 
-    if lPrefix:
-        cprfx = argv[2]
-        listnpz = np.sort( glob(cd_in+'/'+cprfx+'*.npz') )
-        cdtbin, creskm = '', ''
-        dtbin = 0
-    else:
-        cdtbin = argv[2]
-        creskm = argv[3]
-        cidorg = argv[4]
-        listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*'+creskm+'km.npz') )
+    with np.load(cf_shr_in) as data:
+        dtbin2 = data['dtbin']
+        reskm2 = data['reskm_nmnl']
+        corig2 = str(data['origin'])
+        cperd2 = str(data['period'])        
+        nbF2   = int(data['Nbatch'])
+        Zshr   =     data['xshr']
 
-    # Polpulating deformation files available:    
-    nbFiles = len(listnpz)
-    print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
-
-    kBatchName = np.zeros(nbFiles, dtype='U4')
-    kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
-    kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file
-
-    list_date = []
-    kf = 0
-    for ff in listnpz:
-        print('\n  # File: '+ff)
-
-        with np.load(ff) as data:
-            rdate = int( data['time'] )
-            nPnts =      data['Npoints']
-            if kf==0:
-                corigin = str(data['origin'])
-                reskm   = int(data['reskm_nmnl'])
-        fb = path.basename(ff)
-        vf = split('_',fb)
-
-
-        cdateh = split('-',vf[-2])[0]
-        list_date.append(split('h',cdateh)[0])
         
-        kBatchName[kf] = vf[-4]
-    
-        kiDate[kf] = rdate
-        kNbPoints[kf] = nPnts
-    
-        print('   * Batch: '+kBatchName[kf] )
-        print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
-        print('   * Nb. of points = ',kNbPoints[kf] )
+    # Control agreement:
+    if dtbin1!=dtbin2:
+        print('ERROR: `dtbin1!=dtbin2` !!!'); exit(0)
+    if reskm1!=reskm2:
+        print('ERROR: `reskm1!=reskm2` !!!'); exit(0)
+    if corig1!=corig2:
+        print('ERROR: `corig1!=corig2` !!!'); exit(0)
+    if cperd1!=cperd2:
+        print('ERROR: `cperd1!=cperd2` !!!'); exit(0)
+    if nbF1!=nbF2:
+        print('ERROR: `nbF1!=nbF2` !!!'); exit(0)
 
-        kf = kf+1
-    
-    print('\n')
-
-    nP = np.sum(kNbPoints)
-    print('  ==> Total number of points:', nP)
-    print('  ==> list of dates:', list_date[:])
-    
-    cdt1, cdt2 = list_date[0],list_date[-1]
-    cperiod = cdt1+'-'+cdt2
-
-    if not lPrefix:
-        dtbin=int(cdtbin)
-        if str(reskm) != creskm:
-            print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
-            exit(0)
+    dtbin  = dtbin1
+    cdtbin = str(dtbin1)
+    reskm  = reskm1
+    creskm = str(reskm1)
+    corigin = corig1
+    cperiod = cperd1
 
     # For large scales, we must increase the size of bins:
-    if   reskm >= 35. and reskm < 50.:
-        wVbin_min = 1.5*wVbin_min
+    min_div = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+    min_shr = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+    if   reskm >= 15. and reskm < 35.:
+        min_div, min_shr = 0.001, 0.001
+    elif   reskm >= 35. and reskm < 50.:
+        min_div, min_shr = 5.e-4, 5.e-4
+        wVbin_min = 1.5*wVbin_min        
         rfexp_bin = rfexp_bin*1.2
     elif reskm >= 50. and reskm < 100.:
+        min_div, min_shr = 1.e-4, 1.e-4
         wVbin_min = 2.*wVbin_min
         rfexp_bin = rfexp_bin*1.5
     elif reskm >= 100. and reskm < 200.:
+        min_div, min_shr = 1.e-5, 1.e-5
         wVbin_min = 4.*wVbin_min
         rfexp_bin = rfexp_bin*2.
     elif reskm >= 200. and reskm < 400.:
+        min_div, min_shr = 1.e-5, 1.e-5
         wVbin_min = 6.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     elif reskm >= 400. and reskm < 700.:
+        min_div, min_shr = 1.e-5, 1.e-5
         wVbin_min = 8.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     if reskm >= 35.:
         print('\n * Increased the width of bins and exp growth!!! Because large scale! wVbin_min, rfexp_bin =',wVbin_min, rfexp_bin)
-    
-    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
-    Zshr = np.zeros(nP)
-    ZDiv = np.zeros(nP)
-    
-    jP = 0 ; # Counter from 0 to nP-1
-    kf = 0 ; # Counter for files, 0 to nbFiles-1
-    for ff in listnpz:
-        jPe = jP + kNbPoints[kf]
-        with np.load(ff) as data:
-            zdiv  =      data['divergence']
-            zshr  =      data['shear']
-        #
-        ZDiv[jP:jPe] = rconv*zdiv ; # day^-1
-        Zshr[jP:jPe] = rconv*zshr ; # day^-1
-        #
-        jP = jPe
-        kf = kf+1
+            
+    print(ZDiv)
 
-
-    # Adjust sampling bounds based on resolution: LOLO
-    min_div = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-    min_shr = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-    if reskm>=15.:
-        min_div = 0.001
-        min_shr = 0.001
-    if reskm>=35.:
-        min_div = 0.0005
-        min_shr = 0.0005
-    if reskm>=75.
-        min_div = 0.0001
-        min_shr = 0.0001
-    if reskm>=120.
-        min_div = 0.00001
-        min_shr = 0.00001
     
     cxtra = ''
     if l_cst_bins:
@@ -320,12 +274,7 @@ if __name__ == '__main__':
     nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug ) # 
 
 
-
-    if lPrefix:
-        cfroot = 'PDF_'+corigin+'_'+str(reskm)+'km_'+cperiod
-    else:
-        cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
-
+    cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
     
     # Saving in `npz` files:
     np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin,
