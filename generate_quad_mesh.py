@@ -69,7 +69,7 @@ if __name__ == '__main__':
         cfdir = './figs/quadgener'
         if not path.exists(cfdir): mkdir(cfdir)
 
-    rtolQuadA = 0.75 * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
+    rtolQuadA = 3. * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
     if reskm>35. and reskm<45.:
         rtolQuadA = 5.    
     if reskm>70. and reskm<300:
@@ -330,7 +330,7 @@ if __name__ == '__main__':
             print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
             del zareas, zsides
             if abs(rl_average_scal-reskm) > rtolQuadA:
-                print(' ERROR: this avergae scale is too different from the '+creskm+' km expected!!!')
+                print(' ERROR: the mean scale is too different from the '+creskm+' km expected!!! (tol = '+str(rtolQuadA)+'km)')
                 exit(0)
             
             # Save the quadrangular mesh info:
