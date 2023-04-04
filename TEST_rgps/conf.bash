@@ -52,11 +52,11 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
+        #DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
         # 20km:
-        #DT_BINS_H=6 ;  RESKM=20 ; # => 47806  points for shear !!!
+        #DT_BINS_H=6 ;  RESKM=20
         # 40km:
-        #DT_BINS_H=6 ;  RESKM=40 ; # =>   points for shear !!!
+        DT_BINS_H=6 ;  RESKM=40
         # 80km:
         #DT_BINS_H=$((24*3)) ;  RESKM=80 ; # => 3913 points for shear !!!
         # 160km:

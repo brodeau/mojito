@@ -42,7 +42,8 @@ if __name__ == '__main__':
     if not path.exists('./nc'): mkdir('./nc')
     if iplot>0:
         cfdir = './figs/coarsify'
-        if not path.exists(cfdir): mkdir(cfdir)
+        for cdr in ['./figs',cfdir]:
+            if not path.exists(cdr): mkdir(cdr)
 
     #########################################################################################################
 

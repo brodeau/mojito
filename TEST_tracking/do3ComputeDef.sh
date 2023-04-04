@@ -9,70 +9,75 @@ EXE="${MOJITO_DIR}/deformation.py"
 mkdir -p logs
 
 
-# Populating the batches available:
-listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_*km.npz`
+for NEMO_EXP in ${LIST_NEMO_EXP}; do
+    echo; echo
 
-echo "${listQ}"
+    # Populating the batches available:
+    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_*km.npz`
 
-list_btch=""
-for ff in ${listQ}; do
-    list_btch+="`echo ${ff} | cut -d'_' -f5` "
-done
+    echo "${listQ}"
 
-
-
-
-# Removing double of occurences:
-list_btch=$(echo ${list_btch} | tr ' ' '\n' | sort -u)
-echo ${list_btch}
-nbs=`echo ${list_btch} | wc -w`
-echo " ==> ${nbs} batches!" ; echo
-
-echo; echo
-echo " *** ${RESKM} km ***"
-echo
-
-for cbtch in ${list_btch}; do
-
-    #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-    list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
-    nbf=`echo ${list} | wc -w`
-
-    echo " *** Number of files for Batch ${cbtch} = ${nbf}"
-
-    list_date_ref=""
-    for ff in ${list}; do
-        date_ref=`echo ${ff} | cut -d_ -f7`
-        list_date_ref+=" ${date_ref}"
+    list_btch=""
+    for ff in ${listQ}; do
+        list_btch+="`echo ${ff} | cut -d'_' -f5` "
     done
-    list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
 
-    echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
 
-    for dr in ${list_date_ref}; do
-        echo
-        lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${RESKM}km.npz` )
-        nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
 
-        if [ ${nf} -eq 2 ]; then
 
-            fQ1=${lst[0]}
-            fQ2=${lst[1]}
-            echo " ==> will use:"
-            echo " * ${fQ1}"
-            echo " * ${fQ2}"
+    # Removing double of occurences:
+    list_btch=$(echo ${list_btch} | tr ' ' '\n' | sort -u)
+    echo ${list_btch}
+    nbs=`echo ${list_btch} | wc -w`
+    echo " ==> ${nbs} batches!" ; echo
 
-            flog=`basename ${fQ1}`
-            flog=`echo ${flog} | sed -e s/".npz"/""/g`
+    echo; echo
+    echo " *** ${RESKM} km ***"
+    echo
 
-            CMD="${EXE} ${fQ1} ${fQ2} 0"
-            echo "  ==> ${CMD}"; echo
-            ${CMD}
-            echo; echo
+    for cbtch in ${list_btch}; do
 
-        fi
+        #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
+        list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
+        nbf=`echo ${list} | wc -w`
 
-        exit
+        echo " *** Number of files for Batch ${cbtch} = ${nbf}"
+
+        list_date_ref=""
+        for ff in ${list}; do
+            date_ref=`echo ${ff} | cut -d_ -f7`
+            list_date_ref+=" ${date_ref}"
+        done
+        list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+
+        echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
+
+        for dr in ${list_date_ref}; do
+            echo
+            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${RESKM}km.npz` )
+            nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+
+            if [ ${nf} -eq 2 ]; then
+
+                fQ1=${lst[0]}
+                fQ2=${lst[1]}
+                echo " ==> will use:"
+                echo " * ${fQ1}"
+                echo " * ${fQ2}"
+
+                flog=`basename ${fQ1}`
+                flog=`echo ${flog} | sed -e s/".npz"/""/g`
+
+                CMD="${EXE} ${fQ1} ${fQ2} 0"
+                echo "  ==> ${CMD}"; echo
+                ${CMD}
+                echo; echo
+
+            fi
+
+            exit
+        done
+
     done
 
 done
