@@ -18,11 +18,13 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 max_div = 1.5 ; # day^-1
 max_shr = 1.5 ; # day^-1
+max_tot = 1.5 ; # day^-1
 
 # About width of bins:
 if l_cst_bins:
     wbin_div = 0.001 ; # day^-1
     wbin_shr = 0.001 ; # day^-1
+    wbin_tot = 0.001 ; # day^-1
 else:
     wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
 
@@ -160,6 +162,7 @@ if __name__ == '__main__':
 
     cf_div_in = argv[1]
     cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
+    cf_tot_in = str.replace( cf_div_in, 'DIV', 'TOT' )
 
     cd_in = path.dirname(cf_div_in)
     
@@ -179,17 +182,25 @@ if __name__ == '__main__':
         nbF2   = int(data['Nbatch'])
         Zshr   =     data['xshr']
 
+    with np.load(cf_tot_in) as data:
+        dtbin3 = data['dtbin']
+        reskm3 = data['reskm_nmnl']
+        corig3 = str(data['origin'])
+        cperd3 = str(data['period'])        
+        nbF3   = int(data['Nbatch'])
+        Ztot   =     data['xtot']
+
         
     # Control agreement:
-    if dtbin1!=dtbin2:
+    if dtbin1!=dtbin2 or dtbin1!=dtbin3:
         print('ERROR: `dtbin1!=dtbin2` !!!'); exit(0)
-    if reskm1!=reskm2:
+    if reskm1!=reskm2 or reskm1!=reskm3:
         print('ERROR: `reskm1!=reskm2` !!!'); exit(0)
-    if corig1!=corig2:
+    if corig1!=corig2 or corig1!=corig3:
         print('ERROR: `corig1!=corig2` !!!'); exit(0)
-    if cperd1!=cperd2:
+    if cperd1!=cperd2 or cperd1!=cperd3:
         print('ERROR: `cperd1!=cperd2` !!!'); exit(0)
-    if nbF1!=nbF2:
+    if nbF1!=nbF2 or nbF1!=nbF3:
         print('ERROR: `nbF1!=nbF2` !!!'); exit(0)
 
     dtbin  = dtbin1
@@ -200,28 +211,27 @@ if __name__ == '__main__':
     cperiod = cperd1
 
     # For large scales, we must increase the size of bins:
-    min_div = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-    min_shr = 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+    min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     if   reskm >= 15. and reskm < 35.:
-        min_div, min_shr = 0.001, 0.001
+        min_div, min_shr, min_tot = 0.001, 0.001
     elif   reskm >= 35. and reskm < 50.:
-        min_div, min_shr = 5.e-4, 5.e-4
+        min_div, min_shr, min_tot = 5.e-4, 5.e-4, 5.e-4
         wVbin_min = 1.5*wVbin_min        
         rfexp_bin = rfexp_bin*1.2
     elif reskm >= 50. and reskm < 100.:
-        min_div, min_shr = 1.e-4, 1.e-4
+        min_div, min_shr, min_tot = 1.e-4, 1.e-4, 1.e-4
         wVbin_min = 2.*wVbin_min
         rfexp_bin = rfexp_bin*1.5
     elif reskm >= 100. and reskm < 200.:
-        min_div, min_shr = 1.e-5, 1.e-5
+        min_div, min_shr, min_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 4.*wVbin_min
         rfexp_bin = rfexp_bin*2.
     elif reskm >= 200. and reskm < 400.:
-        min_div, min_shr = 1.e-5, 1.e-5
+        min_div, min_shr, min_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 6.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     elif reskm >= 400. and reskm < 700.:
-        min_div, min_shr = 1.e-5, 1.e-5
+        min_div, min_shr, min_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 8.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     if reskm >= 35.:
@@ -234,15 +244,18 @@ if __name__ == '__main__':
     if l_cst_bins:
         # For the divergence
         nBinsD, xbin_bounds_div, xbin_center_div = constructCstBins( min_div, max_div, wbin_div, name='divergence', iverbose=idebug )
-
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( min_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( min_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )        
+        # For the total deformation:
+        nBinsS, xbin_bounds_tot, xbin_center_tot = constructCstBins( min_tot, max_tot, wbin_tot, name='shear',      iverbose=idebug )
         
     else:
         # For the divergence
         nBinsD, xbin_bounds_div, xbin_center_div = constructExpBins( rfexp_bin, min_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
         # For the shear:
         nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, min_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
+        # For the total deformation:
+        nBinsS, xbin_bounds_tot, xbin_center_tot = constructExpBins( rfexp_bin, min_tot, max_tot, wVbin_min, name='total',      iverbose=idebug )
         cxtra = '_incB'
 
 
@@ -259,21 +272,27 @@ if __name__ == '__main__':
     Zdiv[:] = ZDiv[idxP]
 
 
+    if l_add_gaussian:
+        nPs, PDF_shr, ZshrClean = computePDF( xbin_bounds_shr, xbin_center_shr, Zshr, cwhat='shear', return_cleaned=True   ,  iverbose=idebug )
+    else:
+        nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,    Zshr,  cwhat='shear',      iverbose=idebug )
 
-    #nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear'     ,  iverbose=idebug )
-    nPs, PDF_shr, ZshrClean = computePDF( xbin_bounds_shr, xbin_center_shr,        Zshr , cwhat='shear', return_cleaned=True   ,  iverbose=idebug )    
-    
+    nPs, PDF_tot = computePDF( xbin_bounds_tot, xbin_center_tot,        Ztot,  cwhat='total',       iverbose=idebug )    
     nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
     nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
-    nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug ) # 
+    nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
 
 
     cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
     
-    # Saving in `npz` files:
+    # Saving PDFs in `npz` files:
     np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
+    
+    np.savez_compressed( cd_in+'/'+cfroot+'_total.npz',      name='total',      origin=corigin,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                         Np=nPs, xbin_bounds=xbin_bounds_tot, xbin_center=xbin_center_tot, PDF=PDF_tot )
     
     np.savez_compressed( cd_in+'/'+cfroot+'_absDiv.npz', name='Divergence', origin=corigin,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
@@ -314,11 +333,14 @@ if __name__ == '__main__':
 
 
     
-    zIntShear = np.sum( PDF_shr[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )
-    print(' * Integral of PDF of shear =', round(zIntShear,2) )        
+    zIntShr = np.sum( PDF_shr[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )
+    print(' * Integral of PDF of shear =', round(zIntShr,2) )        
 
     zIntDiv = np.sum( PDF_div[:]*(xbin_bounds_div[1:]-xbin_bounds_div[:-1]) )
     print(' * Integral of PDF of divergence =', round(zIntDiv,2),'\n')        
+
+    zIntTot = np.sum( PDF_tot[:]*(xbin_bounds_tot[1:]-xbin_bounds_tot[:-1]) )
+    print(' * Integral of PDF of tot. def. =', round(zIntTot,2) )        
 
         
 
@@ -329,6 +351,9 @@ if __name__ == '__main__':
         kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
                             cfig=cdir+'/loglog'+cfroot+'_shear'+cxtra+'.png',      title=corigin, period=cperiod, origin=corigin )
             
+        kk = mjt.LogPDFdef( xbin_bounds_tot, xbin_center_tot, PDF_tot, Np=nPs, name='Total',
+                            cfig=cdir+'/loglog'+cfroot+'_total'+cxtra+'.png',      title=corigin, period=cperiod, origin=corigin )
+            
         kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='|Divergence|',
                             cfig=cdir+'/loglog'+cfroot+'_Divergence'+cxtra+'.png', title=corigin, period=cperiod, origin=corigin )
 
@@ -338,18 +363,22 @@ if __name__ == '__main__':
         kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_cnv, Np=nPc, name='Convergence',
                             cfig=cdir+'/loglog'+cfroot+'_convergence'+cxtra+'.png', title=corigin, period=cperiod, origin=corigin )
 
+
+        if idebug>0:
+            kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
+                                 cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',           title=corigin, period=cperiod )
+            
+            kk = mjt.PlotPDFdef( xbin_bounds_tot, xbin_center_tot, PDF_tot, Np=nPs, name='Total',
+                                 cfig=cdir+'/'+cfroot+'_total'+cxtra+'.png',           title=corigin, period=cperiod )
+            
+            kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='Divergence',
+                                 cfig=cdir+'/'+cfroot+'_Divergence'+cxtra+'.png',      title=corigin, period=cperiod )
         
-        kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
-                             cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',           title=corigin, period=cperiod )
+            kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPd, name='Divergence',
+                                 cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin, period=cperiod )
         
-        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='Divergence',
-                             cfig=cdir+'/'+cfroot+'_Divergence'+cxtra+'.png',      title=corigin, period=cperiod )
-    
-        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPd, name='Divergence',
-                             cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin, period=cperiod )
-    
-        kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPc, name='Convergence',
-                             cfig=cdir+'/'+cfroot+'_convergence'+cxtra+'.png',      title=corigin, period=cperiod )
+            kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPc, name='Convergence',
+                                 cfig=cdir+'/'+cfroot+'_convergence'+cxtra+'.png',      title=corigin, period=cperiod )
     
         if l_add_gaussian:
             kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_NormS, Np=nPs, name='Shear',
