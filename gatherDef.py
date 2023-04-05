@@ -95,6 +95,7 @@ if __name__ == '__main__':
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
     ZDiv = np.zeros(nP)
+    Ztot = np.zeros(nP)
     
     jP = 0 ; # Counter from 0 to nP-1
     kf = 0 ; # Counter for files, 0 to nbFiles-1
@@ -103,9 +104,11 @@ if __name__ == '__main__':
         with np.load(ff) as data:
             zdiv  =      data['divergence']
             zshr  =      data['shear']
+            ztot  =      data['total']
         #
         ZDiv[jP:jPe] = rconv*zdiv ; # day^-1
         Zshr[jP:jPe] = rconv*zshr ; # day^-1
+        Ztot[jP:jPe] = rconv*ztot ; # day^-1
         #
         jP = jPe
         kf = kf+1
@@ -125,3 +128,10 @@ if __name__ == '__main__':
     np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
                          Np=nP, xdiv=ZDiv )
+
+    np.savez_compressed( cd_in+'/def_TOT_'+cfroot+'.npz', name='shear', origin=corigin,
+                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
+                         Np=nP, xtot=Ztot )
+
+
+    
