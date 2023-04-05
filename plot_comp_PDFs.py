@@ -95,17 +95,16 @@ if __name__ == '__main__':
             print('ERROR: PDF in file 3 looks too different than in first file in terms of bin bounds?...')
             #or cperiod3!=cperiod
             exit(0)
-
-    cfname = cName
+            
     if   cname == 'Divergence':
-        cName = '|Divergence|'
+        cName = '|Divergence|'; cfname = cName
     elif cname == 'divergence':
         cName = 'Divergence'
         cfname = 'AbsDiv'
     elif cname == 'convergence':
-        cName = 'Convergence'
+        cName = 'Convergence'; cfname = cName
     elif cname == 'shear':
-        cName = 'Shear'
+        cName = 'Shear'; cfname = cName
     elif cname == 'total':
         cName = 'Total Deformation'
         cfname = 'TotDef'    
