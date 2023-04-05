@@ -23,6 +23,8 @@ do_scales = np.array([ 10, 20, 320, 640 ], dtype=int)
 
 cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
 
+vORIGS = ['RGPS','BBM','EVP']
+
 
 if __name__ == '__main__':
 
@@ -50,42 +52,49 @@ if __name__ == '__main__':
     iscl = 0
     for res in do_scales:
         print('\n *** Resolution = '+str(res)+' km:')
+
+        io = 0
+        for corig in vORIGS:
+            csdir = corig.lower()
+            
+            cc  = dir_in+'/'+csdir+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
+            lst = np.sort( glob(cc) )
+            if len(lst)!=1:
+                print('ERROR: we do not have a single file!!! =>',cc)
+            cf = lst[0]
         
-        cc  = dir_in+'/rgps/def_'+cFLD+'_RGPS_dt*_'+str(res)+'km_????????-????????.npz'
-        lst = np.sort( glob(cc) )
-        if len(lst)!=1:
-            print('ERROR: we do not have a single file!!! =>',cc)
-        cf = lst[0]
+            print(cf)
     
-        print(cf)
+            with np.load(cf) as data:
+                dtbin = data['dtbin']
+                reskm = data['reskm_nmnl']
+                corig = str(data['origin'])
+                cperd = str(data['period'])        
+                nbF   = int(data['Nbatch'])
+                Ztot   =     data['xtot']
+    
+            (Ns,) = np.shape(Ztot) ; # sample size N
+            #print('shape(Ztot) =',Ns)
+    
+            zm2   = Ztot*Ztot
+            
+            xMean[iscl,io] = np.mean(Ztot)        
+            xVarc[iscl,io] = np.mean(zm2)
+            xSkew[iscl,io] = np.mean(zm2*Ztot)
+            
+            print(' * Mean, Variance, Skewness =',xMean[iscl,io], xVarc[iscl,io], xSkew[iscl,io])
 
-        with np.load(cf) as data:
-            dtbin = data['dtbin']
-            reskm = data['reskm_nmnl']
-            corig = str(data['origin'])
-            cperd = str(data['period'])        
-            nbF   = int(data['Nbatch'])
-            Ztot   =     data['xtot']
-
-        (Ns,) = np.shape(Ztot) ; # sample size N
-        #print('shape(Ztot) =',Ns)
-
-        zm2   = Ztot*Ztot
-        
-        xMean[iscl,0] = np.mean(Ztot)        
-        xVarc[iscl,0] = np.mean(zm2)
-        xSkew[iscl,0] = np.mean(zm2*Ztot)
-        
-        print(' * Mean, Variance, Skewness =',xMean[iscl,0], xVarc[iscl,0], xSkew[iscl,0])
-
-
+            del Ztot
+            
+            io += 1
+            
         iscl += 1
 
     ### Well I guess time for plot:
 
     cfroot = 'SCALING_'+corig+'_dt'+str(dtbin)
     
-    kk = mjt.plotScalingDef( do_scales, xMean[:,0], cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, cfig=cfroot+'.png' )
 
 
 

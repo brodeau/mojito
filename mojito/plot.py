@@ -1026,7 +1026,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
 
-def plotScalingDef( pscales, pX, name='Total Deformation',  cfig='Scaling.png' ):
+def plotScalingDef( pscales, pX, pcOrig, name='Total Deformation',  cfig='Scaling.png' ):
 
     #from math import log
 
@@ -1036,14 +1036,18 @@ def plotScalingDef( pscales, pX, name='Total Deformation',  cfig='Scaling.png' )
     rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     cxlabs = np.array(rxlabs,dtype='U4')
 
-
+    (Ns,) = np.shape(pscales)
+    (No,) = np.shape(pcOrig)
+    if np.shape(pX) != (Ns,No):
+        print('ERROR [plotScalingDef]: wrong shape for `pX` !'); exit(0)
     
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
-    plt.loglog(pscales[:], pX[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label='RGPS', zorder=5)
+    for jo in range(No):
+        plt.loglog(pscales[:], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5)
     
 
     
@@ -1054,14 +1058,16 @@ def plotScalingDef( pscales, pX, name='Total Deformation',  cfig='Scaling.png' )
     ax.set_xticklabels(cxlabs)
     
     # Y-axis:
-    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='r')
+    ax.set_xticks(rxlabs)
+    ax.set_xticklabels(cxlabs)
     ax.set_ylim(ylog_min, ylog_max)
 
 
 
 
 
-
+    ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
 
