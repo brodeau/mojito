@@ -213,7 +213,7 @@ if __name__ == '__main__':
     # For large scales, we must increase the size of bins:
     min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     if   reskm >= 15. and reskm < 35.:
-        min_div, min_shr, min_tot = 0.001, 0.001
+        min_div, min_shr, min_tot = 0.001, 0.001, 0.001
     elif   reskm >= 35. and reskm < 50.:
         min_div, min_shr, min_tot = 5.e-4, 5.e-4, 5.e-4
         wVbin_min = 1.5*wVbin_min        
