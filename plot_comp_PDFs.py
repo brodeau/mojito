@@ -96,22 +96,23 @@ if __name__ == '__main__':
             #or cperiod3!=cperiod
             exit(0)
 
+    cfname = cName
     if   cname == 'Divergence':
         cName = '|Divergence|'
     elif cname == 'divergence':
         cName = 'Divergence'
+        cfname = 'AbsDiv'
     elif cname == 'convergence':
         cName = 'Convergence'
     elif cname == 'shear':
         cName = 'Shear'
-    elif cname == 'deftot':
-        cName = 'Total deformation'
+    elif cname == 'total':
+        cName = 'Total Deformation'
+        cfname = 'TotDef'    
     else:
         print(' ERROR: unknow field:',cname,'!') ; exit(0)
     
-    cfname = cName
-    if cname == 'Divergence': cfname = 'AbsDiv'    
-
+    
 
     # Simplifying name of experiments in certain cases:
     # NEMO-SI3_NANUK4 -> SI3
