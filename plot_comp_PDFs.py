@@ -97,17 +97,15 @@ if __name__ == '__main__':
             exit(0)
             
     if   cname == 'Divergence':
-        cName = '|Divergence|'; cfname = cName
+        cName = '|Divergence|';      cfname = 'AbsDiv'
     elif cname == 'divergence':
-        cName = 'Divergence'
-        cfname = 'AbsDiv'
+        cName = 'Divergence'  ;      cfname = cName
     elif cname == 'convergence':
-        cName = 'Convergence'; cfname = cName
+        cName = 'Convergence' ;      cfname = cName
     elif cname == 'shear':
-        cName = 'Shear'; cfname = cName
+        cName = 'Shear';             cfname = cName
     elif cname == 'total':
-        cName = 'Total Deformation'
-        cfname = 'TotDef'    
+        cName = 'Total Deformation'; cfname = 'TotDef'    
     else:
         print(' ERROR: unknow field:',cname,'!') ; exit(0)
     

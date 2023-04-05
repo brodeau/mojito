@@ -18,8 +18,8 @@ l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
-#do_scales = [ 10, 20, 40, 320, 640 ]
-do_scales = [ 320, 640 ]
+#do_scales = np.array([ 10, 20, 40, 320, 640 ], dtype=int)
+do_scales = np.array([ 10, 320, 640 ], dtype=int)
 
 cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
 
@@ -80,8 +80,17 @@ if __name__ == '__main__':
 
 
         iscl += 1
+
+    ### Well I guess time for plot:
+
+    cfroot = 'SCALING_'+corig+'_dt'+str(dtbin)
+    
+    kk = mjt.plotScalingDef( xMean[:,0], cfig=cfroot+'.png' )
+
+
+
     exit(0)
 
 
-    #cfroot = 'SCALING_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
+    #
     
