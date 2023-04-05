@@ -104,11 +104,15 @@ if __name__ == '__main__':
 
     ### Well I guess time for plot:
 
+
+    if not path.exists('./figs'):
+        mkdir('./figs')
+    
     cfroot = './figs/SCALING_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, what='Mean', cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, what='Mean', cfig=cfroot+'.svg' )
 
     cfroot = './figs/SCALING_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( do_scales, xVarc, vORIGS, what='Variance', cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( do_scales, xVarc, vORIGS, what='Variance', cfig=cfroot+'.svg' )
 
     cfroot = './figs/SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( do_scales, xSkew, vORIGS, what='Skewness', cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( do_scales, xSkew, vORIGS, what='Skewness', cfig=cfroot+'.svg' )
