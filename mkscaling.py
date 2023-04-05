@@ -3,7 +3,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path, mkdir
+from os import path, mkdir, environ
 #from glob import glob
 import numpy as np
 #from re import split
@@ -12,24 +12,48 @@ import mojito   as mjt
 idebug=1
 iplot=1
 
+dir_in = '<HOME>/Nextcloud/data/mojitoNEW'
+
 l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
+do_scales = [ 10, 20, 40, 320, 640 ]
+
+
 
 if __name__ == '__main__':
 
-    #if not len(argv) in [3,5]:
-    #    print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
-    #    print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
+    #if not len(argv) in [2]:
+    #    print('Usage: '+argv[0]+' <file_divergence.npz>')
     #    exit(0)
-    if not len(argv) in [2]:
-        print('Usage: '+argv[0]+' <file_divergence.npz>')
-        exit(0)
+    #cf_div_in = argv[1]
+    #cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
 
-    cf_div_in = argv[1]
-    cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
 
+    dir_in = str.replace( dir_in, '<HOME>', environ.get('HOME') )
+
+    print('\n *** Will find deformation files into: '+dir_in)
+
+
+    Nscl = len(do_scales)
+
+
+    xMean = np.zeros((Nscl,3))
+
+
+
+
+
+
+
+
+
+
+    
+    exit(0)
+
+    
     cd_in = path.dirname(cf_div_in)
     
     with np.load(cf_div_in) as data:
