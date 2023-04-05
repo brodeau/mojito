@@ -1063,7 +1063,7 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', 
     ax.set_xticklabels(cxlabs)
     
     # Y-axis:
-    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='r')
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
     ax.set_xticks(rxlabs)
     ax.set_xticklabels(cxlabs)
     ax.set_ylim(ylog_min, ylog_max)

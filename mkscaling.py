@@ -18,8 +18,7 @@ l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
-#do_scales = np.array([ 10, 20, 40, 320, 640 ], dtype=int)
-do_scales = np.array([ 10, 20, 40, 320, 640 ], dtype=int)
+do_scales = np.array([ 10, 20, 40, 80, 160, 320, 640 ], dtype=int)
 
 cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
 #cfield = 'shear'; cfld = 'shr'; cFLD = 'SHR'
@@ -48,7 +47,7 @@ if __name__ == '__main__':
     xMean = np.zeros((Nscl,3))
     xVarc = np.zeros((Nscl,3))
     xSkew = np.zeros((Nscl,3))
-
+    
 
     # Populating files:
     iscl = 0
