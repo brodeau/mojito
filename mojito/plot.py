@@ -1026,13 +1026,15 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
 
-def plotScalingDef( pX, name='Total Deformation',  cfig='Scaling.png' ):
+def plotScalingDef( pscales, pX, name='Total Deformation',  cfig='Scaling.png' ):
 
     #from math import log
 
-    xlog_min, xlog_max = 1. , 1000.
-    ylog_min,ylog_max =  1., 1000.
+    xlog_min, xlog_max = 7.5 , 800.
+    ylog_min,ylog_max =  1.e-3, 1.e-1
 
+    rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
+    cxlabs = np.array(rxlabs,dtype='U4')
 
 
     
@@ -1041,12 +1043,18 @@ def plotScalingDef( pX, name='Total Deformation',  cfig='Scaling.png' ):
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
+    plt.loglog(pscales[:], pX[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label='RGPS', zorder=5)
+    
+
+    
     #X-axis:                                                                                                                                                                        
-    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+    plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
+    ax.set_xticks(rxlabs)
+    ax.set_xticklabels(cxlabs)
     
     # Y-axis:
-    plt.ylabel('???', color='k')
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
     ax.set_ylim(ylog_min, ylog_max)
 
 
