@@ -1026,12 +1026,17 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
 
-def plotScalingDef( pscales, pX, pcOrig, name='Total Deformation',  cfig='Scaling.png' ):
+def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', cfig='Scaling.png' ):
 
     #from math import log
 
     xlog_min, xlog_max = 7.5 , 800.
-    ylog_min,ylog_max =  1.e-3, 1.e-1
+    if   what=='Mean':
+        ylog_min,ylog_max =  1.e-3, 1.e-1
+    elif what=='Variance':
+        ylog_min,ylog_max =  5.e-5, 5.e-3
+    elif what=='Skewness':
+        ylog_min,ylog_max =  5.e-7, 1.e-3
 
     rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     cxlabs = np.array(rxlabs,dtype='U4')
@@ -1072,6 +1077,7 @@ def plotScalingDef( pscales, pX, pcOrig, name='Total Deformation',  cfig='Scalin
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
+    ax.annotate(what, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
 
 
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)

@@ -108,9 +108,14 @@ if __name__ == '__main__':
 
     ### Well I guess time for plot:
 
-    cfroot = 'SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
-    
-    kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, cfig=cfroot+'.png' )
+    cfroot = 'SCALING_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)    
+    kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, what='Mean', cfig=cfroot+'.png' )
+
+    cfroot = 'SCALING_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)    
+    kk = mjt.plotScalingDef( do_scales, xVarc, vORIGS, what='Variance', cfig=cfroot+'.png' )
+
+    cfroot = 'SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)    
+    kk = mjt.plotScalingDef( do_scales, xSkew, vORIGS, what='Skewness', cfig=cfroot+'.png' )
 
 
 
