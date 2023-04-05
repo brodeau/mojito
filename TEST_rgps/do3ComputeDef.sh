@@ -10,7 +10,7 @@ mkdir -p logs
 
 
 # Populating the batches available:
-listQ=`\ls npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_*km.npz`
+listQ=`\ls npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
 
 echo "${listQ}"
 
@@ -35,7 +35,7 @@ echo
 for cbtch in ${list_btch}; do
 
     #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-    list=`\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_*km.npz`
+    list=`\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
     nbf=`echo ${list} | wc -w`
 
     echo " *** Number of files for Batch ${cbtch} = ${nbf}"

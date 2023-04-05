@@ -13,7 +13,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     echo; echo
 
     # Populating the batches available:
-    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_*km.npz`
+    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
 
     echo "${listQ}"
 

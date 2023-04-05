@@ -43,7 +43,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
         ijob=$((ijob+1))
 
-        sleep 1
+        #sleep 1
 
         if [ $((ijob%NJPAR)) -eq 0 ]; then
             echo "Waiting! (ijob = ${ijob})...."
