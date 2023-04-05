@@ -1064,6 +1064,8 @@ def plotScalingDef( pscales, pX, pcOrig, name='Total Deformation',  cfig='Scalin
     ax.set_ylim(ylog_min, ylog_max)
 
 
+    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
 
 
 

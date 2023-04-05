@@ -22,6 +22,8 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 do_scales = np.array([ 10, 20, 40, 320, 640 ], dtype=int)
 
 cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
+#cfield = 'shear'; cfld = 'shr'; cFLD = 'SHR'
+#cfield = 'divergence'; cfld = 'div'; cFLD = 'DIV'
 
 vORIGS = ['RGPS','BBM','EVP']
 
@@ -71,11 +73,14 @@ if __name__ == '__main__':
                 corig = str(data['origin'])
                 cperd = str(data['period'])        
                 nbF   = int(data['Nbatch'])
-                Ztot   =     data['xtot']
+                Ztot   =     data['x'+cfld]
     
             (Ns,) = np.shape(Ztot) ; # sample size N
             #print('shape(Ztot) =',Ns)
-    
+
+            if cfield=='divergence':
+                Ztot = np.abs(Ztot)
+            
             zm2   = Ztot*Ztot
             
             xMean[iscl,io] = np.mean(Ztot)        
@@ -84,7 +89,18 @@ if __name__ == '__main__':
             
             print(' * Mean, Variance, Skewness =',xMean[iscl,io], xVarc[iscl,io], xSkew[iscl,io])
 
+            
+            #if res==320 and io==0:
+            #    for rr in Ztot:
+            #        print(rr)
+            #    print('')
+            #    exit(0)
+
+            
             del Ztot
+
+            
+
             
             io += 1
             
@@ -92,7 +108,7 @@ if __name__ == '__main__':
 
     ### Well I guess time for plot:
 
-    cfroot = 'SCALING_'+corig+'_dt'+str(dtbin)
+    cfroot = 'SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
     
     kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, cfig=cfroot+'.png' )
 
