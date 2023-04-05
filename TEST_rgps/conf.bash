@@ -58,13 +58,13 @@ case ${host} in
         # 40km:
         #DT_BINS_H=6 ;  RESKM=40
         # 80km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=80 ; # => 3913 points for shear !!!
+        #DT_BINS_H=$((24*3)) ;  RESKM=80
         # 160km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=160 ; # =>  329   points for shear !!!        
+        #DT_BINS_H=$((24*3)) ;  RESKM=160
         # 320km:
         #DT_BINS_H=$((24*5)) ;  RESKM=320
         # 640km:
-        DT_BINS_H=$((24*5)) ;  RESKM=640 ; # =>    points for shear !!!
+        DT_BINS_H=$((24*5)) ;  RESKM=640
         #
         ;;
     *)
@@ -73,4 +73,3 @@ case ${host} in
 esac
 
 export RGPS_DIR="${DATA_DIR}/data/RGPS_Kwok_98"
-

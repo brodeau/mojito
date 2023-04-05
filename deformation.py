@@ -30,7 +30,7 @@ div_max = 0.1
 shr_max = 0.1
 tot_max = 0.1
 
-t_dev_cancel = 60. ; # a quadrangle can involve points that are too distant from one another in terms of time
+t_dev_cancel = 60 ; # a quadrangle can involve points that are too distant from one another in terms of time
 #                      # => we disregard any quadrangles which standard deviation of the time of the 4 positions
 #                      #    excess `t_dev_cancel` seconds !
 
@@ -126,9 +126,11 @@ if __name__ == '__main__':
 
 
     # When not at the nominal scale, we can adapt `t_dev_cancel` to the scale we are dealing with:
-    if reskm>15:
-        t_dev_cancel = dtbin
-        print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
+    if reskm>=75.:
+        t_dev_cancel = 6*3600
+    if reskm>=600.:
+        t_dev_cancel = dtbin; #6*3600
+    print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
 
     if rStD1>10. and rStD2>10.:
         # => 10 s means 0.s !!!
