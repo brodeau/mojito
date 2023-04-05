@@ -4,22 +4,17 @@
 
 from sys import argv, exit
 from os import path, mkdir
-from glob import glob
+#from glob import glob
 import numpy as np
-from re import split
-#
+#from re import split
 import mojito   as mjt
 
 idebug=1
 iplot=1
 
-#l_cst_bins = True
 l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
-
-# Conversion from s-1 to day-1:
-rconv = 24.*3600.
 
 max_div = 1.5 ; # day^-1
 max_shr = 1.5 ; # day^-1
@@ -30,7 +25,6 @@ if l_cst_bins:
     wbin_shr = 0.001 ; # day^-1
 else:
     wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
-
 
 l_add_gaussian = False
     
