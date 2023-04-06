@@ -140,9 +140,11 @@ if __name__ == '__main__':
     if dtbin>6*3600:
         # `t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
         if reskm>=35.:
-            t_dev_cancel = 3*3600
+            t_dev_cancel =  3600
+        if reskm>=150.:
+            t_dev_cancel = 1.5*3600
         if reskm>=300.:
-            t_dev_cancel = 600            
+            t_dev_cancel = 3*3600
         if reskm>=600.:
             t_dev_cancel = 6*3600
         print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')

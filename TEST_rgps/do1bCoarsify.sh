@@ -7,6 +7,8 @@ EXE="${MOJITO_DIR}/coarsify_point_cloud.py"
 ijob=0
 mkdir -p logs
 
+echo "LOLO: DT_BINS_H = ${DT_BINS_H}"
+
 # Populating nc files we can use:
 list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
