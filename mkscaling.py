@@ -43,7 +43,7 @@ if __name__ == '__main__':
     Nscl = len(do_scales)
 
 
-    xMQ = np.zeros((Nscl,3,3)) ; # [scale,origin,order]
+    xMQ = np.zeros((Nscl,3,3)) -9999. ; # [scale,origin,order]
 
 
     # Populating files:
@@ -60,7 +60,7 @@ if __name__ == '__main__':
             cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
             lst = np.sort( glob(cc) )
             if len(lst)!=1:
-                print('ERROR: we do not have a single file!!! =>',cc)
+                print('ERROR: we do not have a single file!!! =>',cc); exit(0)
             cf = lst[0]
 
             print(cf)
