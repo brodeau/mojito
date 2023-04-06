@@ -139,9 +139,9 @@ if __name__ == '__main__':
     # When not at the nominal scale, we can adapt `t_dev_cancel` to the scale we are dealing with:
     if dtbin>6*3600:
         if reskm>=35.:
-            t_dev_cancel = 6*3600
+            t_dev_cancel = 3*3600
         if reskm>=600.:
-            t_dev_cancel = dtbin
+            t_dev_cancel = dtbin/2
         print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
 
     if rStD1>10. and rStD2>10.:
