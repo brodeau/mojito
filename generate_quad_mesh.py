@@ -21,7 +21,7 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 
 idebug = 0
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
 
@@ -38,7 +38,7 @@ rdRatio_max = 0.8 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 b
 rdev_scale = 0.25 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
 #                   # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
 
-rzoom_fig = 4
+rzoom_fig = 1
 
 
 if __name__ == '__main__':
@@ -48,8 +48,10 @@ if __name__ == '__main__':
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
     fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
-    if len(argv) != 4:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km>')
+    crd_ss = None
+    
+    if not len(argv) in [4,5]:
+        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km> (<rd_ss_km>)')
         exit(0)
 
     cf_nc_in = argv[1]
@@ -57,6 +59,10 @@ if __name__ == '__main__':
     creskm = argv[3]
     reskm = float(creskm)
 
+    if len(argv)==5:
+        crd_ss = argv[4]
+
+    
     vcrec = split(',',lstrec)
     Nrec  = len(vcrec)
     vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
@@ -75,9 +81,9 @@ if __name__ == '__main__':
     if reskm>70. and reskm<300:
         rtolQuadA = 0.75 * (reskm/20.)**1.25
     if reskm>=300.:
-        rtolQuadA = 32.
+        rtolQuadA = 50.
     if reskm>=600.:
-        rtolQuadA = 64.
+        rtolQuadA = 100.
         
     print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
     
@@ -219,6 +225,9 @@ if __name__ == '__main__':
         cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='D'), '-', '')
 
         cfbase = cfstr+'_'+cdate0+'t0_'+cdate+'_'+creskm+'km'
+        if crd_ss:
+            cfbase = cfstr+'_'+cdate0+'t0_'+cdate+'_'+crd_ss+'-'+creskm+'km'
+        
         print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase)
 
         cf_npzQ = './npz/Q-mesh_'+cfbase+'.npz'

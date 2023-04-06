@@ -14,6 +14,7 @@ FILIN="RGPS_${YEAR}.nc4"
 
 NJPAR=4 ; # number of jobs we can launch in //
 
+LIST_RD_SS=""
 
 RESKM=10
 
@@ -52,7 +53,7 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
+        #DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20
         # 40km:
@@ -64,7 +65,7 @@ case ${host} in
         # 320km:
         #DT_BINS_H=$((24*5)) ;  RESKM=320
         # 640km:
-        #DT_BINS_H=$((24*5)) ;  RESKM=640
+        DT_BINS_H=$((24*5)) ;  RESKM=640; LIST_RD_SS="620 640 660"
         #
         ;;
     *)

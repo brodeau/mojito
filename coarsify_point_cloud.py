@@ -27,14 +27,18 @@ if __name__ == '__main__':
 
     #cdata_dir = environ.get('DATA_DIR')
 
-    if len(argv) != 3:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km>')
+    rd_ss = None
+    
+    if not len(argv) in [3,4]:
+        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>)')
         exit(0)
 
     cf_nc_in = argv[1]
     creskm = argv[2]
     reskm = float(creskm)
 
+    if len(argv)==4:
+        rd_ss = float(argv[3])
     #lNeed4SubSamp = ( reskm > 12. )
     
     mjt.chck4f(cf_nc_in)
@@ -51,7 +55,7 @@ if __name__ == '__main__':
     print(' *** Will coarsify for a spatial scale of '+creskm+' km')
 
     cfbn = str.replace( path.basename(cf_nc_in), '.nc', '')
-    cf_nc_out = './nc/'+cfbn+'_'+creskm+'km.nc'
+    cf_nc_out = './nc/'+cfbn+'_'+str(int(rd_ss))+'-'+creskm+'km.nc'
     cfbase = str.replace( cfbn, 'SELECTION_', '')
     print('     => will generate: '+cf_nc_out,'\n')
 
@@ -162,29 +166,26 @@ if __name__ == '__main__':
     #  From experience we have to pick a scale significantly smaller that that of the desired
     #  quadrangles in order to obtain quadrangle of the correct size!
 
-    if reskm==20.:
-        rd_ss = 15.1
-    elif reskm==40.:
-        rd_ss = 35.
-    elif reskm==80.:
-        rd_ss = 73.
-    elif reskm==160.:
-        rd_ss = 145.
-    elif reskm==320.:
-        rd_ss = 295.
-    elif reskm==640.:
-        rd_ss = 620.
-    else:
-        print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
-        exit(0)
+    if not rd_ss:
+        if reskm==20.:
+            rd_ss = 15.1
+        elif reskm==40.:
+            rd_ss = 35.
+        elif reskm==80.:
+            rd_ss = 73.
+        elif reskm==160.:
+            rd_ss = 145.
+        elif reskm==320.:
+            rd_ss = 295.
+        elif reskm==640.:
+            rd_ss = 620.
+        else:
+            print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
+            exit(0)
         
 
     print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
-    #print('LOLO: shape(zXY) =',np.shape(zXY))
     NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[jr,:,:] )
-
-    # vIDs[idxKeep], ztim[idxKeep,jr], zPnm[idxKeep]
-
 
     zYkm = np.zeros( (Nrec,NbPss) )
     zXkm = np.zeros( (Nrec,NbPss) )
@@ -212,7 +213,7 @@ if __name__ == '__main__':
         
         for jr in range(Nrec):
         
-            cfb = cfbase+'_rec%3.3i'%(jr)
+            cfb = cfbase+'_rec%3.3i'%(jr)+'_rdss'+str(int(rd_ss))
             cfc = '_SS'+creskm+'km'
 
             # A: on cartesian grid
@@ -225,8 +226,9 @@ if __name__ == '__main__':
                 
             # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
             # Before subsampling
-            kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
-                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
+            if idebug>0:
+                kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
+                                     lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
             
             # After subsampling
             kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
@@ -235,9 +237,9 @@ if __name__ == '__main__':
             
             # B: same, but on projection with geographic coordinates
             ########################################################
-            
-            kk = mjt.ShowBuoysMap( vdate[jr], zGC[jr,:,0], zGC[jr,:,1], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+'_Original.png',
-                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
+            if idebug>0:
+                kk = mjt.ShowBuoysMap( vdate[jr], zGC[jr,:,0], zGC[jr,:,1], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+'_Original.png',
+                                       cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
             kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+cfc+'.png',
                                    cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
