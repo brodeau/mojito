@@ -20,30 +20,37 @@ rconv = 24.*3600.
 
 
 if __name__ == '__main__':
-
-    if not len(argv) in [3,5]:
-        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
-        print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
-        exit(0)
     
-    lPrefix = (len(argv)==3)
+    if not len(argv) in [5]:
+        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
+        exit(0)    
+
     cd_in  = argv[1]
+    cdtbin = argv[2]
+    creskm = argv[3]
+    cidorg = argv[4]
 
-    if lPrefix:
-        cprfx = argv[2]
-        listnpz = np.sort( glob(cd_in+'/'+cprfx+'*.npz') )
-        cdtbin, creskm = '', ''
-        dtbin = 0
+    
+    listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_'+creskm+'km.npz') )
+    listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_*-'+creskm+'km.npz') )
+
+    if len(listnpz1)>0 and len(listnpz2)>0:
+        print('ERROR: we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!'); exit(0)
+    if len(listnpz2)>0:
+        lrlstKM = True
+        listnpz = listnpz2
     else:
-        cdtbin = argv[2]
-        creskm = argv[3]
-        cidorg = argv[4]
-        listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*'+creskm+'km.npz') )
-
+        lrlstKM = False
+        listnpz = listnpz1
+        
+    
+    #exit(0)
+    
     # Polpulating deformation files available:    
     nbFiles = len(listnpz)
     print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
-
+    print('      => files to gather into a single one:',listnpz,'\n')
+    
     kBatchName = np.zeros(nbFiles, dtype='U4')
     kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
     kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file    
@@ -86,11 +93,10 @@ if __name__ == '__main__':
     cdt1, cdt2 = list_date[0],list_date[-1]
     cperiod = cdt1+'-'+cdt2
 
-    if not lPrefix:
-        dtbin=int(cdtbin)
-        if str(reskm) != creskm:
-            print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
-            exit(0)
+    dtbin=int(cdtbin)
+    if str(reskm) != creskm:
+        print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
+        exit(0)
     
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)
@@ -114,21 +120,21 @@ if __name__ == '__main__':
         kf = kf+1
     
 
-    if lPrefix:
-        cfroot = corigin+'_'+str(reskm)+'km_'+cperiod
-    else:
-        cfroot = corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
+    cfroot = corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
 
     
     # Save it for the scaling and PDFs to come ...
+    print(' *** Saving: '+cd_in+'/def_SHR_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
                          Np=nP, xshr=Zshr )
 
+    print(' *** Saving: '+cd_in+'/def_DIV_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
                          Np=nP, xdiv=ZDiv )
 
+    print(' *** Saving: '+cd_in+'/def_TOT_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_TOT_'+cfroot+'.npz', name='shear', origin=corigin,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
                          Np=nP, xtot=Ztot )
