@@ -1071,12 +1071,17 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', 
     return 0
 
 
+
+
+
+
+
 def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scaling.png' ):
     '''
         According to Fiffure's taste...
     '''
     xlog_min, xlog_max = 7.5 , 1.e3
-    ylog_min,ylog_max  =  5.e-7, 5.e-2
+    ylog_min,ylog_max  =  5.e-7, 1.e-1
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
@@ -1088,8 +1093,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
 
     ki = _initStyle_()
 
-    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
-    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
+    fig = plt.figure( num = 1, figsize=(10,14), dpi=None )
+    ax = plt.axes([0.11, 0.06, 0.85, 0.9])
 
     for jo in range(No):
                 
@@ -1113,7 +1118,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #ax.annotate(what, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
-    ax.annotate('q=1', xy=(0.94, 0.84), xycoords='axes fraction', ha='left', **cfont_axis)
+    ax.annotate('q=1', xy=(0.94, 0.81), xycoords='axes fraction', ha='left', **cfont_axis)
     ax.annotate('q=2', xy=(0.94, 0.45), xycoords='axes fraction', ha='left', **cfont_axis)
     ax.annotate('q=3', xy=(0.94, 0.11), xycoords='axes fraction', ha='left', **cfont_axis)
     #
