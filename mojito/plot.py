@@ -1098,11 +1098,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
 
     for jo in range(No):
                 
-        plt.loglog( pscales[:], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
+        plt.loglog( pscales[:], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
                     color=str(float(jo)/2.5), label=None, zorder=5 )
         plt.loglog( pscales[:], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=4.5, fillstyle='none',
                     color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
-        plt.loglog( pscales[:], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
+        plt.loglog( pscales[:], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
                     color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
     plt.xlabel('Spatial scale [km]')
