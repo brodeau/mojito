@@ -64,7 +64,7 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     #
     cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(16.*fntzoom_inv), 'color':color_top }
-    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
+    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
@@ -491,7 +491,7 @@ def Plot1Mesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], pcoor_
     pcoor_extra: just an extra point to show on the figure....
     '''
     (yT,xT)                             = pcoor_trg
-    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]    
+    [ [j1,i1],[j2,i2],[j3,i3],[j4,i4] ] = isrc_msh[:,:]
     #
     fig = plt.figure(num = 1, figsize=[14,10], facecolor='w', edgecolor='k')
     ax = plt.axes([0.09, 0.07, 0.6, 0.9])
@@ -505,11 +505,11 @@ def Plot1Mesh( pcoor_trg, Ys, Xs, isrc_msh, vnames=['P1','P2','P3','P4'], pcoor_
         plt.plot( [ Xs[ja,ia],Xs[jb,ib] ], [ Ys[ja,ia],Ys[jb,ib] ], linestyle='-', color='k', marker=None, ms=10, label=None)
         # The point:
         plt.plot( [ Xs[ja,ia] ], [ Ys[ja,ia] ], marker='o', ms=10, label=vnames[i] )
-        
+
     if len(pcoor_cntr)==2:
         (yC,xC) = pcoor_cntr
         plt.plot( [     xC    ], [     yC    ], marker='o', ms=10, color='k', label='center' ) ; # target point !
-        
+
     if pcoor_extra!=(-999.,-999.):
         (yE,xE) = pcoor_extra
         plt.plot( [     xE    ], [     yE    ], marker='+', ms=20, color='0.5', label=label_extra ) ; # target point !
@@ -704,7 +704,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     # Need lat,lon from pX4, pY4 !
     #crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     #crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
-    
+
     zlat, zlon = ConvertCartesianNPSkm2Geo( pY4, pX4 )
 
     # Colormap:
@@ -720,7 +720,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
 
 
-    LocTitle, NP = _SelectArcticProjExtent_( nmproj )    
+    LocTitle, NP = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
@@ -743,7 +743,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
 
 
-            
+
     if title:
         ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     #if unit:
@@ -782,22 +782,22 @@ def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
 
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
-    
+
     # For figure axes:
     xlog_min, xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-3, 3.5e2
     rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
     cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
     lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
-    
+
     if reskm:
-        if reskm>30 and reskm<70:         
+        if reskm>30 and reskm<70:
             ylog_min = 3.e-2
             xlog_max = 0.2
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
             rycut_tiny =3.e-2
-        if reskm>=70 and reskm<120:         
+        if reskm>=70 and reskm<120:
             ylog_min = 5.e-2
             xlog_max = 0.15
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
@@ -824,7 +824,7 @@ def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
 
         if reskm>30:
             lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-    
+
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
@@ -917,22 +917,22 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
-    
+
     # For figure axes:
     xlog_min, xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-3, 3.5e2
     rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
     cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
     lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
-    
+
     if reskm:
-        if reskm>30 and reskm<70:         
+        if reskm>30 and reskm<70:
             ylog_min = 3.e-2
             xlog_max = 0.2
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
             cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
             rycut_tiny =3.e-2
-        if reskm>=70 and reskm<120:         
+        if reskm>=70 and reskm<120:
             ylog_min = 5.e-2
             xlog_max = 0.15
             rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
@@ -959,7 +959,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
         if reskm>30:
             lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-    
+
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
@@ -1024,12 +1024,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
 
-
-
 def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', cfig='Scaling.png' ):
-
-    #from math import log
-
+    '''
+    '''
     xlog_min, xlog_max = 7.5 , 800.
     if   what=='Mean':
         ylog_min,ylog_max =  1.e-3, 1.e-1
@@ -1045,44 +1042,84 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', 
     (No,) = np.shape(pcOrig)
     if np.shape(pX) != (Ns,No):
         print('ERROR [plotScalingDef]: wrong shape for `pX` !'); exit(0)
-    
+
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     for jo in range(No):
-        plt.loglog(pscales[:], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5)
-    
-
-    
-    #X-axis:                                                                                                                                                                        
+        plt.loglog( pscales[:], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
+                    color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
+    #X-axis:
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
     ax.set_xticks(rxlabs)
     ax.set_xticklabels(cxlabs)
-    
     # Y-axis:
     plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
-    ax.set_xticks(rxlabs)
-    ax.set_xticklabels(cxlabs)
     ax.set_ylim(ylog_min, ylog_max)
-
-
-    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
-    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
-
-
-
+    #
+    #ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-
-
     ax.annotate(what, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
-
-
+    #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plotScalingDef()]: created figure '+cfig)
+    return 0
+
+
+def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scaling.png' ):
+    '''
+        According to Fiffure's taste...
+    '''
+    xlog_min, xlog_max = 7.5 , 1.e3
+    ylog_min,ylog_max  =  5.e-7, 5.e-2
+    #
+    #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
+    #cxlabs = np.array(rxlabs,dtype='U4')
+
+    (Ns,) = np.shape(pscales)
+    (No,) = np.shape(pcOrig)
+    if np.shape(pMQ) != (Ns,No,3):
+        print('ERROR [plot3ScalingDef]: wrong shape for `pMQ` !',np.shape(pMQ)); exit(0)
+
+    ki = _initStyle_()
+
+    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
+    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
+
+    for jo in range(No):
+                
+        plt.loglog( pscales[:], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
+                    color=str(float(jo)/2.5), label=None, zorder=5 )
+        plt.loglog( pscales[:], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=4.5, fillstyle='none',
+                    color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
+        plt.loglog( pscales[:], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
+                    color=str(float(jo)/2.5), label=None, zorder=5 )
+    #X-axis:
+    plt.xlabel('Spatial scale [km]')
+    ax.set_xlim(xlog_min, xlog_max)
+    #ax.set_xticks(rxlabs)
+    #ax.set_xticklabels(cxlabs)
+    # Y-axis:
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
+    ax.set_ylim(ylog_min, ylog_max)
+    #
+    #ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+    #
+    ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+    #ax.annotate(what, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
+    ax.annotate('q=1', xy=(0.94, 0.84), xycoords='axes fraction', ha='left', **cfont_axis)
+    ax.annotate('q=2', xy=(0.94, 0.45), xycoords='axes fraction', ha='left', **cfont_axis)
+    ax.annotate('q=3', xy=(0.94, 0.11), xycoords='axes fraction', ha='left', **cfont_axis)
+    #
+    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+    plt.close(1)
+    print(' * [plot3ScalingDef()]: created figure '+cfig)
     return 0
 
 
