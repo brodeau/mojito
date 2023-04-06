@@ -82,10 +82,8 @@ if __name__ == '__main__':
     corigin = QUA1.origin    
     cfnm    = corigin
 
-    # Some info from npz file name:
+    # Some info from npz file name: #fixme: too much dependency on file name...
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
-
-
     if corigin == 'RGPS':
         cbatch =  split('_',cf1)[2]
         cdtbin =  '_'+split('_',cf1)[3]
@@ -95,10 +93,22 @@ if __name__ == '__main__':
     else:
         print('FIXME: unknow origin: ',corigin); exit(0)
     if cdtbin[1:3]!='dt':
-        print('ERROR: we could not figure out `cdtbin`!'); exit        
+        print('ERROR: we could not figure out `cdtbin`!'); exit
+
+    # Test for coarsening realisations:
+    cr1, cr2 = '', ''
+    cc1, cc2 = split('-',split('_',cf1)[-1]), split('-',split('_',cf2)[-1])
+    if len(cc1)==2: cr1 = cc1[0]+'-'
+    if len(cc2)==2: cr2 = cc2[0]+'-'
+    if cr1!='' and cr1!=cr2:
+        print('ERROR: with the realisation coarsening res:',cr1,cr2); exit(0)
+    else:
+        print('     => realisation with `rd_ss` =',cc1[0],'km !!!')
+
     cfnm += '_'+cbatch+cdtbin
     cfnm += '_'+cclck        
-    cfnm += '_'+str(reskm)+'km'
+    cfnm += '_'+cr1+str(reskm)+'km'
+    #print('LOLO: cfnm =',cfnm); exit(0)
     
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
@@ -110,6 +120,7 @@ if __name__ == '__main__':
         figSfx='_tbuoy.png'
     else:
         figSfx='_tglob.png'
+
     
     # The Quads we retain, i.e. those who exist in both snapshots:
     vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
