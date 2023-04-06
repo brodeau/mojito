@@ -79,7 +79,7 @@ if __name__ == '__main__':
     if reskm>35. and reskm<45.:
         rtolQuadA = 5.    
     if reskm>70. and reskm<300:
-        rtolQuadA = 0.75 * (reskm/20.)**1.25
+        rtolQuadA = 15.
     if reskm>=300.:
         rtolQuadA = 50.
     if reskm>=600.:
@@ -338,8 +338,10 @@ if __name__ == '__main__':
             print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
             print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
             del zareas, zsides
-            if abs(rl_average_scal-reskm) > rtolQuadA:
-                print(' ERROR: the mean scale is too different from the '+creskm+' km expected!!! (tol = '+str(rtolQuadA)+'km)')
+            zdev = abs(rl_average_scal-reskm)
+            if zdev > rtolQuadA:
+                print(' ERROR: the mean scale is too different from the '+creskm
+                      +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(rtolQuadA)+'km)')
                 exit(0)
             
             # Save the quadrangular mesh info:

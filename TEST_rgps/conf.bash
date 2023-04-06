@@ -61,11 +61,11 @@ case ${host} in
         # 80km:
         #DT_BINS_H=$((24*3)) ;  RESKM=80
         # 160km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=160
+        DT_BINS_H=$((24*3)) ;  RESKM=160; LIST_RD_SS="140 145 150 155 160 165"
         # 320km:
-        DT_BINS_H=$((24*5)) ;  RESKM=320; LIST_RD_SS="295 300 305 310 315 320 325 330"
+        #DT_BINS_H=$((24*5)) ;  RESKM=320; LIST_RD_SS="295 300 305 310 315 320 325 330"
         # 640km:
-        #DT_BINS_H=$((24*5)) ;  RESKM=640; LIST_RD_SS="595 610 625 640 650 660"
+        #DT_BINS_H=$((24*5)) ;  RESKM=640; LIST_RD_SS="565 580 595 610 625 640 655"
         #
         ;;
     *)
