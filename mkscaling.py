@@ -12,7 +12,7 @@ import mojito   as mjt
 idebug=1
 iplot=1
 
-dir_in = '<HOME>/Nextcloud/data/mojitoNEW'
+#dir_in = '<HOME>/Nextcloud/data/mojitoNEW'
 
 l_cst_bins = False ; rfexp_bin = 0.2
 
@@ -29,24 +29,21 @@ vORIGS = ['RGPS','BBM','EVP']
 
 if __name__ == '__main__':
 
-    #if not len(argv) in [2]:
-    #    print('Usage: '+argv[0]+' <file_divergence.npz>')
-    #    exit(0)
-    #cf_div_in = argv[1]
-    #cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
+    if not len(argv)==2:
+        print('Usage: '+argv[0]+' <dir_npz_in>')
+        exit(0)
+    dir_npz_in = argv[1]
 
 
-    dir_in = str.replace( dir_in, '<HOME>', environ.get('HOME') )
+    #dir_npz_in = str.replace( dir_npz_in, '<HOME>', environ.get('HOME') )
 
-    print('\n *** Will find deformation files into: '+dir_in)
+    print('\n *** Will find deformation files into: '+dir_npz_in)
 
 
     Nscl = len(do_scales)
 
 
-    xMean = np.zeros((Nscl,3))
-    xVarc = np.zeros((Nscl,3))
-    xSkew = np.zeros((Nscl,3))
+    xMQ = np.zeros((Nscl,3,3)) ; # [scale,origin,order]
 
 
     # Populating files:
@@ -57,8 +54,10 @@ if __name__ == '__main__':
         io = 0
         for corig in vORIGS:
             csdir = corig.lower()
-
-            cc  = dir_in+'/'+csdir+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
+            dirin = dir_npz_in+'/'+csdir
+            if not path.exists(dirin):
+                print('ERROR: directory "'+dirin+'" does not exist!'); exit(0)            
+            cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
             lst = np.sort( glob(cc) )
             if len(lst)!=1:
                 print('ERROR: we do not have a single file!!! =>',cc)
@@ -82,11 +81,9 @@ if __name__ == '__main__':
 
             zm2   = Ztot*Ztot
 
-            xMean[iscl,io] = np.mean(Ztot)
-            xVarc[iscl,io] = np.mean(zm2)
-            xSkew[iscl,io] = np.mean(zm2*Ztot)
+            xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2] = np.mean(Ztot), np.mean(zm2), np.mean(zm2*Ztot)
 
-            print(' * Mean, Variance, Skewness =',xMean[iscl,io], xVarc[iscl,io], xSkew[iscl,io])
+            print(' * Mean, Variance, Skewness =',xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2])
 
 
             #if res==320 and io==0:
@@ -107,12 +104,14 @@ if __name__ == '__main__':
 
     if not path.exists('./figs'):
         mkdir('./figs')
-    
-    cfroot = './figs/SCALING_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( do_scales, xMean, vORIGS, what='Mean', cfig=cfroot+'.svg' )
 
-    cfroot = './figs/SCALING_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( do_scales, xVarc, vORIGS, what='Variance', cfig=cfroot+'.svg' )
+    # Separate: 
+    #cfroot = './figs/SCALING_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
+    #kk = mjt.plotScalingDef( do_scales, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.svg' )
+    #cfroot = './figs/SCALING_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
+    #kk = mjt.plotScalingDef( do_scales, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.svg' )
+    #cfroot = './figs/SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
+    #kk = mjt.plotScalingDef( do_scales, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.svg' )
 
-    cfroot = './figs/SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( do_scales, xSkew, vORIGS, what='Skewness', cfig=cfroot+'.svg' )
+    cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
+    kk = mjt.plot3ScalingDef( do_scales, xMQ, vORIGS, cfig=cfroot+'.svg' )
