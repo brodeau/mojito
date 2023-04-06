@@ -35,8 +35,8 @@ rQang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
 rQang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 #
-rdev_scale = 0.15 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
-#                   # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
+rdev_scale = 0.1 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
+#                  # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
 
 rzoom_fig = 1
 
@@ -88,9 +88,14 @@ if __name__ == '__main__':
     print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
     
     #########################################################################################################
-    
-    rQarea_min, rQarea_max = (reskm*(1.-rdev_scale))**2, (reskm*(1.+rdev_scale))**2
-    print('\n *** Will retain quadrangles with an area comprised between '+str(round(rQarea_min,1))+' km^2 and '+str(round(rQarea_max,1))+' km^2\n')
+
+    zA  = reskm**2
+    dR2 = abs( zA - (reskm*(1+rdev_scale))**2 )
+    #print('LOLO: dR2 =',dR2,'km^2')
+    #rQarea_min, rQarea_max = (reskm*(1.-rdev_scale))**2, (reskm*(1.+rdev_scale))**2
+    rQarea_min, rQarea_max = zA-dR2, zA+dR2
+    #print('zA =',zA)
+    print('\n *** Will only retain quadrangles with an area comprised between '+str(round(rQarea_min,1))+' km^2 and '+str(round(rQarea_max,1))+' km^2\n')
 
     # Loading the data for the 2 selected records:
     Nt, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
