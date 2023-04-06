@@ -138,10 +138,13 @@ if __name__ == '__main__':
 
     # When not at the nominal scale, we can adapt `t_dev_cancel` to the scale we are dealing with:
     if dtbin>6*3600:
+        # `t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
         if reskm>=35.:
             t_dev_cancel = 3*3600
+        if reskm>=300.:
+            t_dev_cancel = 600            
         if reskm>=600.:
-            t_dev_cancel = dtbin/2
+            t_dev_cancel = 6*3600
         print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
 
     if rStD1>10. and rStD2>10.:

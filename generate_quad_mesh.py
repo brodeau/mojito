@@ -36,7 +36,7 @@ rQang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
 rdRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 #
 rdev_scale = 0.15 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
-#                  # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
+#                   # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
 
 rzoom_fig = 1
 
