@@ -43,8 +43,8 @@ if __name__ == '__main__':
     Nscl = len(do_scales)
 
 
-    xMQ = np.zeros((Nscl,3,3)) -9999. ; # [scale,origin,order]
-
+    xMQ = np.zeros((Nscl,3,3)) -9999. ; # Moments: [scale,origin,order]
+    xAq = np.zeros((Nscl,3)  ) -9999. ; # Mean quad area: [scale,origin]
 
     # Populating files:
     iscl = 0
@@ -71,7 +71,8 @@ if __name__ == '__main__':
                 corig = str(data['origin'])
                 cperd = str(data['period'])
                 nbF   = int(data['Nbatch'])
-                Ztot   =     data['x'+cfld]
+                Ztot  =     data['x'+cfld]
+                ZA    =     data['quadArea']
 
             (Ns,) = np.shape(Ztot) ; # sample size N
             #print('shape(Ztot) =',Ns)
@@ -83,8 +84,9 @@ if __name__ == '__main__':
 
             xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2] = np.mean(Ztot), np.mean(zm2), np.mean(zm2*Ztot)
 
-            print(' * Mean, Variance, Skewness =',xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2])
-
+            xAq[iscl,io] = np.mean(ZA)
+            
+            print(' * Mean, Variance, Skewness, mean quad area =',xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2], xAq[iscl,io],'km^2')
 
             #if res==320 and io==0:
             #    for rr in Ztot:
@@ -93,7 +95,7 @@ if __name__ == '__main__':
             #    exit(0)
 
 
-            del Ztot
+            del Ztot, ZA
 
             io += 1
 
