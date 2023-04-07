@@ -8,7 +8,12 @@ EXE="python3 -u ${MOJITO_DIR}/generate_quad_mesh.py"
 NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 
 cxtraRES=""
-if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+if [ "${LIST_RD_SS}" = "" ]; then
+    if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+else
+    cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
+    cxtraRES="_${cr1}-${RESKM}km"
+fi
 
 mkdir -p ./logs
 
@@ -24,35 +29,51 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
     for ff in ${list_nc}; do
 
-        fb=`basename ${ff}`
-        echo
-        echo " *** Doing file ${fb}"
 
-        # Number of records inside netCDF file:
-        Nr=`ncdump -h ${ff} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
-        echo "   => it has ${Nr} time records"
-        if [ ${Nr} -le 65 ] || [ $((Nr/NSS)) -gt 1 ]; then
-            echo "  ==> bad! Presently we expect ABOUT $((NSS+1)) records!"
-            exit
+        if [ "${LIST_RD_SS}" = "" ]; then
+            fb=`basename ${ff}`; echo; echo " *** Doing file ${fb}"
+            # Number of records inside netCDF file:
+            Nr=`ncdump -h ${ff} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
+            echo "   => it has ${Nr} time records"
+            if [ ${Nr} -le 65 ] || [ $((Nr/NSS)) -gt 1 ]; then
+                echo "  ==> bad! Presently we expect ABOUT $((NSS+1)) records!"; exit
+            fi
+            lstrec="0,$((Nr-1))"
+            flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
+            ijob=$((ijob+1))
+            CMD="${EXE} ${ff} ${lstrec} ${RESKM}"
+            echo "    ==> will launch:"; echo "     ${CMD}"; echo
+            ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+            echo
+            if [ $((ijob%NJPAR)) -eq 0 ]; then
+                echo "Waiting! (ijob = ${ijob})...."
+                wait; echo; echo
+            fi
+        else
+            for rdss in ${LIST_RD_SS}; do
+                fn=`echo ${ff} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
+                fb=`basename ${fn}`; echo; echo " *** Doing file ${fb}"
+                # Number of records inside netCDF file:
+                Nr=`ncdump -h ${fn} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
+                echo "   => it has ${Nr} time records"
+                if [ ${Nr} -le 65 ] || [ $((Nr/NSS)) -gt 1 ]; then
+                    echo "  ==> bad! Presently we expect ABOUT $((NSS+1)) records!"; exit
+                fi
+                lstrec="0,$((Nr-1))"
+                flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
+                ijob=$((ijob+1))
+                CMD="${EXE} ${fn} ${lstrec} ${RESKM}"
+                echo "    ==> will launch:"; echo "     ${CMD}"; echo
+                ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+                echo
+                if [ $((ijob%NJPAR)) -eq 0 ]; then
+                    echo "Waiting! (ijob = ${ijob})...."
+                    wait; echo; echo
+                fi
+            done
         fi
 
-        lstrec="0,$((Nr-1))"
 
-        flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
-
-        ijob=$((ijob+1))
-
-        CMD="${EXE} ${ff} ${lstrec} ${RESKM}"
-        echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
-        #sleep 1
-        echo
-
-        if [ $((ijob%NJPAR)) -eq 0 ]; then
-            echo "Waiting! (ijob = ${ijob})...."
-            wait
-            echo; echo
-        fi
 
     done
 

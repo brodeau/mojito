@@ -3,12 +3,11 @@
 . ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
-EXE="${SITRCK_DIR}/si3_part_tracker.py"
+EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
 echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
 cxtraRES=""
-
 if [ "${LIST_RD_SS}" = "" ]; then
     if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
 else
