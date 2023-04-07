@@ -213,17 +213,18 @@ if __name__ == '__main__':
         zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
         zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
         #
-        zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2], 
-                                                         xtime1=zTime1, xtime2=zTime2, iverbose=idebug )
+        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2], 
+                                                              xtime1=zTime1, xtime2=zTime2, iverbose=idebug )
         # => having rdt=1 will yield fuck-up fields if used, and must not be used!
         
     else:
 
-        zX, zY, zU, zV, zdUdxy, zdVdxy = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
-                                                         iverbose=idebug )
+        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
+                                                              iverbose=idebug )
 
     # zX, zY => positions  of the 4 vertices at center of time interval!
     # zU, zV => velocities of the 4 vertices at center of time interval!
+    #   zAq  => Quad area used in the estimation of `zdUdxy, zdVdxy` !
 
     zrx = [ np.min(zX)-25. , np.max(zX)+25. ]
     zry = [ np.min(zY)-25. , np.max(zY)+25. ]
@@ -276,7 +277,7 @@ if __name__ == '__main__':
 
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nQ,
-                         Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, origin=corigin, reskm_nmnl=reskm )
+                         Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
 
     # Some plots:

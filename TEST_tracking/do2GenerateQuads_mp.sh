@@ -62,7 +62,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 lstrec="0,$((Nr-1))"
                 flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                 ijob=$((ijob+1))
-                CMD="${EXE} ${fn} ${lstrec} ${RESKM}"
+                CMD="${EXE} ${fn} ${lstrec} ${RESKM} ${rdss}"
                 echo "    ==> will launch:"; echo "     ${CMD}"; echo
                 ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
                 echo
