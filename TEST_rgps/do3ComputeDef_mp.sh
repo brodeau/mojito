@@ -6,7 +6,7 @@
 
 EXE="${MOJITO_DIR}/deformation.py"
 
-mkdir -p logs
+mkdir -p ./logs
 
 ijob=0
 

@@ -53,9 +53,9 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
+        #DT_BINS_H=6 ;  RESKM=10 ; #scale 10km
         # 20km:
-        #DT_BINS_H=6 ;  RESKM=20 ; LIST_RD_SS="15 17 19"
+        DT_BINS_H=6 ;  RESKM=20 ; LIST_RD_SS="15 17 19"
         # 40km:
         #DT_BINS_H=6 ;  RESKM=40 ; LIST_RD_SS="30 35 40"
         # 80km:

@@ -12,9 +12,15 @@ ijob=0
 
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
     echo; echo
-    
+
+    csf="_${RESKM}km"
+    if [ "${LIST_RD_SS}" != "" ]; then
+        cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
+        csf="_${cr1}-${RESKM}km"
+    fi
+
     # Populating the batches available:
-    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
+    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
 
     echo "${listQ}"
 
@@ -36,7 +42,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     for cbtch in ${list_btch}; do
 
         #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-        list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${RESKM}km.npz`
+        list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
         nbf=`echo ${list} | wc -w`
 
         echo " *** Number of files for Batch ${cbtch} = ${nbf}"
@@ -52,32 +58,51 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
         for dr in ${list_date_ref}; do
             echo
-            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${RESKM}km.npz` )
-            nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
 
-            if [ ${nf} -eq 2 ]; then
-
-                fQ1=${lst[0]}
-                fQ2=${lst[1]}
-                echo " ==> will use:"
-                echo " * ${fQ1}"
-                echo " * ${fQ2}"
-
-                flog=`basename ${fQ1}`
-                flog=`echo ${flog} | sed -e s/".npz"/""/g`
-
-                ijob=$((ijob+1))
-
-                CMD="${EXE} ${fQ1} ${fQ2} 0"
-                echo "  ==> ${CMD}"; echo
-                ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
-                echo; echo
-
-                if [ $((ijob%NJPAR)) -eq 0 ]; then
-                    echo "Waiting! (ijob = ${ijob})...."
-                    wait
+            if [ "${LIST_RD_SS}" == "" ]; then
+                lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz` )
+                nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+                #
+                if [ ${nf} -eq 2 ]; then
+                    fQ1=${lst[0]}
+                    fQ2=${lst[1]}
+                    echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                    flog=`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                    ijob=$((ijob+1))
+                    CMD="${EXE} ${fQ1} ${fQ2} 0"
+                    echo "  ==> ${CMD}"; echo
+                    ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
                     echo; echo
+                    if [ $((ijob%NJPAR)) -eq 0 ]; then
+                        echo "Waiting! (ijob = ${ijob})...."
+                        wait; echo; echo
+                    fi
                 fi
+
+            else
+
+                for rdss in ${LIST_RD_SS}; do
+                    #
+                    lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${rdss}-${RESKM}km.npz` )
+                    nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+                    #
+                    if [ ${nf} -eq 2 ]; then
+                        fQ1=${lst[0]}
+                        fQ2=${lst[1]}
+                        echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                        flog=`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                        ijob=$((ijob+1))
+                        CMD="${EXE} ${fQ1} ${fQ2} 0"
+                        echo "  ==> ${CMD}"; echo
+                        ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                        echo; echo
+                        if [ $((ijob%NJPAR)) -eq 0 ]; then
+                            echo "Waiting! (ijob = ${ijob})...."
+                            wait; echo; echo
+                        fi
+                    fi
+
+                done
 
             fi
 
