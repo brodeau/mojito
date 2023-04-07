@@ -37,9 +37,9 @@ if __name__ == '__main__':
     creskm = argv[2]
     reskm = float(creskm)
 
-    if len(argv)==4:
+    ldss = len(argv)==4
+    if ldss:        
         rd_ss = float(argv[3])
-    #lNeed4SubSamp = ( reskm > 12. )
     
     mjt.chck4f(cf_nc_in)
 
@@ -53,11 +53,6 @@ if __name__ == '__main__':
 
 
     print(' *** Will coarsify for a spatial scale of '+creskm+' km')
-
-    cfbn = str.replace( path.basename(cf_nc_in), '.nc', '')
-    cf_nc_out = './nc/'+cfbn+'_'+str(int(rd_ss))+'-'+creskm+'km.nc'
-    cfbase = str.replace( cfbn, 'SELECTION_', '')
-    print('     => will generate: '+cf_nc_out,'\n')
 
     
     # Getting dimensions and some info:
@@ -183,7 +178,6 @@ if __name__ == '__main__':
             print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
             exit(0)
         
-
     print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
     NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[jr,:,:] )
 
@@ -197,7 +191,17 @@ if __name__ == '__main__':
     zXkm[:,:] = zXY[:,idxKeep,0]
     zlon[:,:] = zGC[:,idxKeep,0]
 
-       
+
+
+    cfbn = str.replace( path.basename(cf_nc_in), '.nc', '')
+    if ldss:
+        cf_nc_out = './nc/'+cfbn+'_'+str(int(rd_ss))+'-'+creskm+'km.nc'
+    else:
+        cf_nc_out = './nc/'+cfbn+'_'+creskm+'km.nc'
+    cfbase = str.replace( cfbn, 'SELECTION_', '')
+    print('     => will generate: '+cf_nc_out,'\n')
+
+    
     print('   * saving '+cf_nc_out)
 
     kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, vIDs[idxKeep], zYkm, zXkm, zlat, zlon, mask=pmsk[:,idxKeep],
