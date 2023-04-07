@@ -8,7 +8,13 @@ EXE="${SITRCK_DIR}/si3_part_tracker.py"
 # 1/ populate the proper NC files to seed from:
 echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
 cxtraRES=""
-if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+
+if [ "${LIST_RD_SS}" = "" ]; then
+    if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+else
+    cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
+    cxtraRES="_${cr1}-${RESKM}km"
+fi
 
 list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
 
@@ -28,31 +34,34 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod.nc4"
 
     for fnc in ${list_seed_nc}; do
-
-        fb=`basename ${fnc}`
-        echo "   * File: ${fb} :"
-
-        # Actually that the ice tracker that should look inside the nc file to get date 1 and 2:
-        CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
-        echo
-        echo " *** About to launch:"; echo "     ${CMD}"; echo
-
-        clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
-
-        ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
-
-        ijob=$((ijob+1))
-
-        #sleep 1
-
-        if [ $((ijob%NJPAR)) -eq 0 ]; then
-            echo "Waiting! (ijob = ${ijob})...."
-            wait
-            echo; echo
+        
+        if [ "${LIST_RD_SS}" = "" ]; then
+            CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
+            echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
+            clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
+            ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
+            ijob=$((ijob+1))
+            if [ $((ijob%NJPAR)) -eq 0 ]; then
+                echo "Waiting! (ijob = ${ijob})...."
+                wait; echo; echo
+            fi
+        else            
+            for rdss in ${LIST_RD_SS}; do
+                fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
+                CMD="${EXE} ${FSI3IN} ${FNMM} ${fnd}" ; # with nc file for init seed...
+                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
+                clog=`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
+                ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
+                ijob=$((ijob+1))
+                if [ $((ijob%NJPAR)) -eq 0 ]; then
+                    echo "Waiting! (ijob = ${ijob})...."
+                    wait; echo; echo
+                fi
+            done
         fi
 
     done
-
+    
 done
 
 wait
