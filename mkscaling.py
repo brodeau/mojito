@@ -39,10 +39,8 @@ if __name__ == '__main__':
     print('\n *** Will find deformation files into: '+dir_npz_in)
 
     print('\n *** Scales to work with:', do_scales)
-    exit(0)
 
     Nscl = len(do_scales)
-
 
     xMQ = np.zeros((Nscl,3,3)) -9999. ; # Moments: [scale,origin,order]
     xAq = np.zeros((Nscl,3)  ) -9999. ; # Mean quad area: [scale,origin]
