@@ -30,7 +30,7 @@ if __name__ == '__main__':
     creskm = argv[3]
     cidorg = argv[4]
 
-    
+    #print('listing: '+cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_'+creskm+'km.npz')
     listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_'+creskm+'km.npz') )
     listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_*-'+creskm+'km.npz') )
 

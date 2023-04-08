@@ -48,8 +48,9 @@ if __name__ == '__main__':
 
     if iplot>0:
         cdir = './figs/deformation'
-        if not path.exists(cdir): mkdir(cdir)
-
+        for cc in ['./figs',cdir]:
+            if not path.exists(cc): mkdir(cc)
+        
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
         
     # Reading the quad meshes in both npz files:
