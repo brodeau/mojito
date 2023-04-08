@@ -33,10 +33,11 @@ case ${host} in
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20 ; LIST_RD_SS="15 17"
         # 40km:
-        DT_BINS_H=6 ;  RESKM=40 ; LIST_RD_SS="32 35 38"
+        #DT_BINS_H=6 ;  RESKM=40 ; LIST_RD_SS="32 35 38"
         # 80km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=80 ; LIST_RD_SS="65 70 75 80 85"
+        #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="66 70 74 78"
         # 160km:
+        DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="134 140 146 152 158"
         #DT_BINS_H=$((24*3)) ;  RESKM=160; LIST_RD_SS="120 130 140 150 160 170 180"
         # 320km:
         #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="230 240 260 270 280 285 290 295 300 305 310 315 320 325 330 335 340 350"
