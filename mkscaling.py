@@ -44,7 +44,8 @@ if __name__ == '__main__':
 
     xMQ = np.zeros((Nscl,3,3)) -9999. ; # Moments: [scale,origin,order]
     xAq = np.zeros((Nscl,3)  ) -9999. ; # Mean quad area: [scale,origin]
-
+    reskm_actual = np.zeros((Nscl,3)  ) -9999. ; # actual resolution we're dealing with
+    
     # Populating files:
     iscl = 0
     for res in do_scales:
@@ -86,7 +87,8 @@ if __name__ == '__main__':
             xAq[iscl,io] = np.mean(ZA)
             
             print(' * Mean, Variance, Skewness, mean quad area =',xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2], xAq[iscl,io],'km^2')
-
+            
+            
             #if res==320 and io==0:
             #    for rr in Ztot:
             #        print(rr)
@@ -100,19 +102,25 @@ if __name__ == '__main__':
 
         iscl += 1
 
+
+
+    reskm_actual[:,:] = np.sqrt(xAq[:,:])
+    
     ### Well I guess time for plot:
 
+
+    
 
     if not path.exists('./figs'):
         mkdir('./figs')
 
     # Separate: 
     #cfroot = './figs/SCALING_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
-    #kk = mjt.plotScalingDef( do_scales, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.svg' )
+    #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.svg' )
     #cfroot = './figs/SCALING_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
-    #kk = mjt.plotScalingDef( do_scales, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.svg' )
+    #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.svg' )
     #cfroot = './figs/SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
-    #kk = mjt.plotScalingDef( do_scales, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.svg' )
+    #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.svg' )
 
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plot3ScalingDef( do_scales, xMQ, vORIGS, cfig=cfroot+'.svg' )
+    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, cfig=cfroot+'.svg' )

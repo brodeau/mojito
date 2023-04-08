@@ -1086,8 +1086,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
 
-    (Ns,) = np.shape(pscales)
-    (No,) = np.shape(pcOrig)
+    (Ns,No) = np.shape(pscales)
+    if np.shape(pcOrig) != (No,):
+        print('ERROR [plot3ScalingDef]: wrong shape for `pcOrig` or `pscales` !',np.shape(pcOrig),np.shape(pscales)); exit(0)
     if np.shape(pMQ) != (Ns,No,3):
         print('ERROR [plot3ScalingDef]: wrong shape for `pMQ` !',np.shape(pMQ)); exit(0)
 
@@ -1098,11 +1099,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
 
     for jo in range(No):
                 
-        plt.loglog( pscales[:], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
                     color=str(float(jo)/2.5), label=None, zorder=5 )
-        plt.loglog( pscales[:], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=4.5, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=4.5, fillstyle='none',
                     color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
-        plt.loglog( pscales[:], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
                     color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
     plt.xlabel('Spatial scale [km]')
