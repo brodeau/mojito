@@ -6,7 +6,7 @@ from sys import argv, exit
 from os import path, mkdir, environ
 from glob import glob
 import numpy as np
-#from re import split
+from re import split
 import mojito   as mjt
 
 idebug=1
@@ -18,8 +18,6 @@ l_cst_bins = False ; rfexp_bin = 0.2
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
-do_scales = np.array([ 10, 20, 40, 80, 160, 320, 640 ], dtype=int)
-
 cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
 #cfield = 'shear'; cfld = 'shr'; cFLD = 'SHR'
 #cfield = 'divergence'; cfld = 'div'; cFLD = 'DIV'
@@ -29,16 +27,19 @@ vORIGS = ['RGPS','BBM','EVP']
 
 if __name__ == '__main__':
 
-    if not len(argv)==2:
-        print('Usage: '+argv[0]+' <dir_npz_in>')
+    if not len(argv)==3:
+        print('Usage: '+argv[0]+' <dir_npz_in> <list_scales>')
         exit(0)
     dir_npz_in = argv[1]
-
-
+    lst_scales = argv[2]
+    do_scales = np.array( split(',',lst_scales), dtype=int )
+    
     #dir_npz_in = str.replace( dir_npz_in, '<HOME>', environ.get('HOME') )
 
     print('\n *** Will find deformation files into: '+dir_npz_in)
 
+    print('\n *** Scales to work with:', do_scales)
+    exit(0)
 
     Nscl = len(do_scales)
 
