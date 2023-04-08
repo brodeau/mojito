@@ -1126,6 +1126,49 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
+
+
+
+
+
+    cfig = str.replace(cfig,'total','mean')
+    ylog_min, ylog_max = 5.e-3,2.e-2
+    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
+    ax = plt.axes([0.11, 0.06, 0.85, 0.9])
+
+    for jo in range(No):
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
+                    color=str(float(jo)/2.5), label=None, zorder=5 )
+    #X-axis:
+    plt.xlabel('Spatial scale [km]')
+    ax.set_xlim(xlog_min, xlog_max)
+    # Y-axis:
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
+    ax.set_ylim(ylog_min, ylog_max)
+    #
+    ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+    #
+    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+    plt.close(1)
+    print(' * [plot3ScalingDef()]: created figure '+cfig)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     return 0
 
 
