@@ -3,8 +3,14 @@
 
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
-def initialize():
 
+global rc_day2sec
+
+def initialize():
+    '''
+    '''
+    from os import environ
+    #
     global rc_day2sec, nc_min_buoys_in_batch
     global rc_Tang_min, rc_Tang_max, rc_Qang_min, rc_Qang_max, rc_dRatio_max
     global lc_accurate_time, rc_div_max, rc_shr_max, rc_tot_max
@@ -34,9 +40,9 @@ def initialize():
     rc_tot_max = 0.1        
 
     data_dir = environ.get('DATA_DIR')
-    if cdata_dir==None:
+    if data_dir==None:
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-        fdist2coast_nc = cdata_dir+'/data/'+fn_file_dist2coast
+        fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
 
     return 0
 
@@ -84,8 +90,6 @@ def updateConfig4Scale( res_km, binDt ):
     rc_Qarea_min, rc_Qarea_max = vLb[js]*vLb[js], vUb[js]*vUb[js]    
     print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', vLb[js],vUb[js])
     print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
-        
-
 
     #############################
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
@@ -112,8 +116,6 @@ def updateConfig4Scale( res_km, binDt ):
             rc_t_dev_cancel = 1.5*3600
         if res_km>=300.:
             rc_t_dev_cancel = 3*3600
-        if res_km>=600.:
-            rc_t_dev_cancel = 6*3600
             print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
     exit(0)
