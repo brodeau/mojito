@@ -23,8 +23,6 @@ idebug = 0
 
 cdt_pattern = 'YYYY-MM-DD_hh:mm:00' ; # pattern for dates
 
-fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
-
 #Nforced_stream_length = None ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
 Nforced_stream_length = 2 ; # enforce the length of a stream (each stream will have a maximum of `Nforced_stream_length` records)
 Nb_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
@@ -209,10 +207,10 @@ if __name__ == '__main__':
                         if nbRecOK >= Nb_min_cnsctv:
                             if Nforced_stream_length:
                                 nbRecOK = Nforced_stream_length
-                            # We want the buoy to be located at least `MinDistFromLand` km off the coast
+                            # We want the buoy to be located at least `nc_MinDistFromLand` km off the coast
                             it1 = idx0_id[0]    ; # initial position for the buoy
                             rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                            if rd_ini > MinDistFromLand:
+                            if rd_ini > nc_MinDistFromLand:
                                 IDXofStr.extend(idx0_id[:nbRecOK-1]) ; # store point not to be used again. -1 because the last record can be re-used!
                                 #
                                 NBinStr += 1   ; # this is another valid buoy for this stream
@@ -220,7 +218,7 @@ if __name__ == '__main__':
                                 XIDs[istream,jb] = jID              ; # keeps memory of select buoy
                                 XNRc[istream,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
                                 XIX0[istream,jb,:nbRecOK] = idx0_id[:nbRecOK] ; # indices for these valid records of this buoy
-                            ### if rd_ini > MinDistFromLand
+                            ### if rd_ini > nc_MinDistFromLand
                         else:
                             iBcnl_CR += 1
                         #

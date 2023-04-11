@@ -61,8 +61,6 @@ if __name__ == '__main__':
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
 
 
-
-    #
     vdate = np.zeros( Nrec,  dtype=int )
     vIDs  = np.zeros( nBmax, dtype=int )
     xPosG = np.zeros( (Nrec,nBmax,2) )
@@ -95,7 +93,7 @@ if __name__ == '__main__':
 
     
     # Need some calendar info:
-    NbDays = int( (vdate[1] - vdate[0]) / (3600.*24.) )
+    NbDays = int( (vdate[1] - vdate[0]) / rc_day2sec
     cdt1 = mjt.epoch2clock(vdate[0] )
     cdt2 = mjt.epoch2clock(vdate[-1])
 
@@ -158,9 +156,8 @@ if __name__ == '__main__':
 
 
     # SUB-SAMPLING
-    #  From experience we have to pick a scale significantly smaller that that of the desired
-    #  quadrangles in order to obtain quadrangle of the correct size!
-
+    #  From experience we have to pick a scale significantly smaller than that of the desired
+    #  quadrangles in order to obtain quadrangle of the correct size:
     if not rd_ss:
         if reskm==20.:
             rd_ss = 15.1

@@ -563,10 +563,10 @@ def rJIrJJtoCoord( pJJs, pJIs, pIDs, plon_t, plon_u, plat_t, plat_v ):
 
 
 
-def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4deg_North.nc', convArray='F' ):
+def MaskCoastal( pGC, mask=[], rMinDistLand=100, fNCdist2coast='dist2coast_4deg_North.nc', convArray='F' ):
     '''
         * pGC: shape(n,2) => coordinates in the form [ lon, lat ] if convArray='F' or [ lat, lon ] if convArray='C' !
-        * rMinDistFromLand: minimum distance to coast allowed [km]
+        * rMinDistLand: minimum distance to coast allowed [km]
         * fNCdist2coast   : netCDF file containing "distance to coast" info
     
         RETURNS: mask==0 for buoys that must be deleted....
@@ -576,8 +576,8 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
     #
     if (not path.exists(fNCdist2coast)):
         print('ERROR [MaskCoastal()]: provide '+fNCdist2coast+' does not exist!!!'); exit(0)        
-    if rMinDistFromLand<=0:
-        print('ERROR [MaskCoastal()]: rMinDistFromLand<=0 !!!'); exit(0)
+    if rMinDistLand<=0:
+        print('ERROR [MaskCoastal()]: rMinDistLand<=0 !!!'); exit(0)
 
     (nB,_) = np.shape(pGC)
     zcoor = np.zeros(np.shape(pGC))    
@@ -595,7 +595,7 @@ def MaskCoastal( pGC, mask=[], rMinDistFromLand=100, fNCdist2coast='dist2coast_4
     for jb in range(nB):
         if mask1d[jb]==1:
             rD = Dist2Coast( zcoor[jb,0], zcoor[jb,1], vlon_dist, vlat_dist, xdist )
-            if rD < rMinDistFromLand:
+            if rD < rMinDistLand:
                 mask1d[jb] = 0
     
     nBn = np.sum(mask1d)

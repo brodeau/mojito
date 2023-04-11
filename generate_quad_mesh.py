@@ -21,33 +21,16 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 
 idebug = 0
+
 iplot  = 0 ; # Create figures to see what we are doing...
-
-fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
-
-MinDistFromLand  = 100 ; # how far from the nearest coast should our buoys be? [km]
-
-# Selection of appropriate quadrangles:
-rTang_min =   5. ; # minimum angle tolerable in a triangle [degree]
-rTang_max = 160. ; # maximum angle tolerable in a triangle [degree]
-#
-rQang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-#
-rdev_scale = 0.1 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
-#                  # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
 
 rzoom_fig = 1
 
 
 if __name__ == '__main__':
 
-    cdata_dir = environ.get('DATA_DIR')
-    if cdata_dir==None:
-        print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-    fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
-
+    kk = mjt.initialize()
+    
     crd_ss = None
     
     if not len(argv) in [4,5]:
@@ -75,27 +58,11 @@ if __name__ == '__main__':
         cfdir = './figs/quadgener'
         if not path.exists(cfdir): mkdir(cfdir)
 
-    rtolQuadA = 3. * reskm/20. ; # +- tolerance in [km] to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
-    if reskm>35. and reskm<45.:
-        rtolQuadA = 5.    
-    if reskm>70. and reskm<300:
-        rtolQuadA = 15.
-    if reskm>=300.:
-        rtolQuadA = 50.
-    if reskm>=600.:
-        rtolQuadA = 100.
-        
-    print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rtolQuadA,'km')
+    print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rc_tolQuadA,'km')
     
     #########################################################################################################
 
-    zA  = reskm**2
-    dR2 = abs( zA - (reskm*(1+rdev_scale))**2 )
-    #print('LOLO: dR2 =',dR2,'km^2')
-    #rQarea_min, rQarea_max = (reskm*(1.-rdev_scale))**2, (reskm*(1.+rdev_scale))**2
-    rQarea_min, rQarea_max = zA-dR2, zA+dR2
-    #print('zA =',zA)
-    print('\n *** Will only retain quadrangles with an area comprised between '+str(round(rQarea_min,1))+' km^2 and '+str(round(rQarea_max,1))+' km^2\n')
+    print('\n *** Will only retain quadrangles with an area comprised between '+str(round(rc_Qarea_min,1))+' km^2 and '+str(round(rc_Qarea_max,1))+' km^2\n')
 
     # Loading the data for the 2 selected records:
     Nt, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
@@ -145,9 +112,9 @@ if __name__ == '__main__':
                 print('ERROR: ID fuck up in input file!') ; exit(0)
         jr=jr+1
 
-            
+    
     # Need some calendar info:
-    NbDays = int( (vdate[1] - vdate[0]) / (3600.*24.) )
+    NbDays = int( (vdate[1] - vdate[0]) / rc_day2sec )
     cdt1 = mjt.epoch2clock(vdate[0] )
     cdt2 = mjt.epoch2clock(vdate[-1])
 
@@ -197,7 +164,7 @@ if __name__ == '__main__':
         #zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
 
         # Get rid of points to close to land (shrinks arrays!):
-        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=nc_MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
     # How many points left after elimination of buoys that get too close to land (at any record):
     NbP  = np.sum(mask)
@@ -293,9 +260,9 @@ if __name__ == '__main__':
                 del zlngth, zml
             
             # Merge triangles into quadrangles:
-            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
-                                                                ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                                areaR=(rQarea_min,rQarea_max), idbglev=idebug )
+            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rc_Tang_min,rc_Tang_max),
+                                                                ratioD=rc_dRatio_max, anglR=(rc_Qang_min,rc_Qang_max),
+                                                                areaR=(rc_Qarea_min,rc_Qarea_max), idbglev=idebug )
             if len(xQpnts)<=0: exit(0)
 
             (NbQ,_) = np.shape(xQpnts)
@@ -344,9 +311,9 @@ if __name__ == '__main__':
             print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
             del zareas, zsides
             zdev = abs(rl_average_scal-reskm)
-            if zdev > rtolQuadA:
+            if zdev > rc_tolQuadA:
                 print(' ERROR: the mean scale is too different from the '+creskm
-                      +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(rtolQuadA)+'km)')
+                      +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(rc_tolQuadA)+'km)')
                 exit(0)
             
             # Save the quadrangular mesh info:

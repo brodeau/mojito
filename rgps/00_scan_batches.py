@@ -21,22 +21,11 @@ import mojito as mjt
 
 idebug = 0
 
-fdist2coast_nc = 'dist2coast/dist2coast_4deg_North.nc'
-
 NbtchMax  =  200 ; # Max number of Batches, guess!, just for dimensionning array before knowing!!!
-
-min_nb_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
-
-MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
 
 #================================================================================================
 
 if __name__ == '__main__':
-
-    cdata_dir = environ.get('DATA_DIR')
-    if cdata_dir==None:
-        print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-    fdist2coast_nc = cdata_dir+'/data/dist2coast/dist2coast_4deg_North.nc'
 
     for cd in ['npz','figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
@@ -151,7 +140,7 @@ if __name__ == '__main__':
 
             iBcnl_CR = 0  ; # counter for buoys excluded because of consecutive records...
 
-            if Nok >= min_nb_buoys_in_batch:
+            if Nok >= nc_min_buoys_in_batch:
 
                 ibatch += 1 ; # that's a new batch
                 if idebug>0: print('    => this date range is potentially the first of batch #'+str(ibatch)+', with '+str(Nok)+' buoys!')
@@ -179,10 +168,10 @@ if __name__ == '__main__':
                     #              `jidx` index at first position !
 
                     if nbRecOK == 2:
-                        # We want the buoy to be located at least `MinDistFromLand` km off the coast
+                        # We want the buoy to be located at least `nc_MinDistFromLand` km off the coast
                         it1 = idx0VUCR[0]    ; # initial position for the buoy
                         rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                        if rd_ini > MinDistFromLand:
+                        if rd_ini > nc_MinDistFromLand:
                             IDXofStr.append(idx0VUCR[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
                             #
                             NBinBtch += 1   ; # this is another valid buoy for this batch
@@ -190,7 +179,7 @@ if __name__ == '__main__':
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
                             XNRc[ibatch,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
                             XIX0[ibatch,jb,:nbRecOK] = idx0VUCR[:nbRecOK] ; # indices for these valid records of this buoy
-                        ### if rd_ini > MinDistFromLand
+                        ### if rd_ini > nc_MinDistFromLand
                     else:
                         iBcnl_CR += 1
                     #
@@ -198,7 +187,7 @@ if __name__ == '__main__':
                 ### for jidx in idxOK
                 print('     => '+str(iBcnl_CR)+' buoys were canceled for not having a reasonable upcomming position in time!')
 
-                if NBinBtch >= min_nb_buoys_in_batch:
+                if NBinBtch >= nc_min_buoys_in_batch:
                     print('   +++ C O N F I R M E D   V A L I D   B A T C H   #'+str(ibatch)+' +++ => selected '+str(NBinBtch)+' buoys!')
                     VNB_ini[ibatch] = NBinBtch
                     VjtBinN[ibatch] = jt
@@ -214,7 +203,7 @@ if __name__ == '__main__':
                     ibatch = ibatch - 1 ; # REWIND!
                     if idebug>0: print('    => this was not a batch! So back to batch #'+str(ibatch)+' !!!')
 
-            ### if Nok > min_nb_buoys_in_batch
+            ### if Nok > nc_min_buoys_in_batch
 
         else:
             print(' ==> no points to be found inside this period !!!')

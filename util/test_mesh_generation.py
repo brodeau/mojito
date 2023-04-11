@@ -19,16 +19,6 @@ l_cartopy = False
 
 #y_gre, x_gre = 45.184369, 5.734251
 
-# Selection of appropriate quadrangles:
-rTang_min =  10. ; # minimum angle tolerable in a triangle [degree]  # #fixme: should be linked to rdRatio_max somehow???
-rTang_max = 120. ; # maximum angle tolerable in a triangle [degree]
-#
-rQang_min =  65.  ; # minimum angle tolerable in a quadrangle [degree]
-rQang_max = 115.  ; # maximum angle tolerable in a quadrangle [degree]
-rdRatio_max = 0.5 ; # value that `1 - abs(L/H)` should not overshoot!
-rQarea_min = 0.   ; # min area allowed for Quadrangle [km^2]
-rQarea_max = 8.e5 ; # max area allowed for Quadrangle [km^2]
-
 
 xcities = [] ; ip = 0
 #
@@ -137,9 +127,9 @@ if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
 
     # Merge triangles into quadrangles:
-    xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rTang_min,rTang_max),
-                                                 ratioD=rdRatio_max, anglR=(rQang_min,rQang_max),
-                                                 areaR=(rQarea_min,rQarea_max),  idbglev=idebug )
+    xQcoor, vPids, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rc_Tang_min,rc_Tang_max),
+                                                 ratioD=rc_dRatio_max, anglR=(rc_Qang_min,rc_Qang_max),
+                                                 areaR=(rc_Qarea_min,rc_Qarea_max),  idbglev=idebug )
     if len(xQpnts)<=0: exit(0)
 
     (NbQ,_) = np.shape(xQpnts)

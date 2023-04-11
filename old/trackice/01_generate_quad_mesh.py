@@ -220,7 +220,7 @@ if __name__ == '__main__':
         zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
 
         # Get rid of points to close to land (shrinks arrays!):
-        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistFromLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=MinDistFromLand, fNCdist2coast=fdist2coast_nc )
 
     # How many points left after elimination of buoys that get too close to land (at any record):
     NbP1 = np.sum(mask)

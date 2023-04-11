@@ -2,10 +2,6 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
-#TODO:
-#     * figure out what the acceptable "time_dev_from_mean_allowed" and if some points go beyond it, just remove them from the data!
-
-
 from sys import argv, exit
 from os import path, mkdir
 import numpy as np
@@ -16,23 +12,8 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 
 idebug=0
+
 iplot=1 ; NameArcticProj='SmallArctic'
-
-
-#l_accurate_time=False
-l_accurate_time=True
-
-# Conversion from s-1 to day-1:
-rconv = 24.*3600.
-
-# For figures, in days^-1:
-div_max = 0.1
-shr_max = 0.1
-tot_max = 0.1
-
-t_dev_cancel = 60 ; # a quadrangle can involve points that are too distant from one another in terms of time
-#                      # => we disregard any quadrangles which standard deviation of the time of the 4 positions
-#                      #    excess `t_dev_cancel` seconds !
 
 zoom=1
 
@@ -66,8 +47,8 @@ if __name__ == '__main__':
     ctimeC = mjt.epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
     rdt = rTm2 - rTm1
-    if not l_accurate_time:
-        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/(3600*24),2))+' days')
+    if not lc_accurate_time:
+        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/rc_day2sec,2))+' days')
 
     vclck = split('_',ctimeC)
     chh = split(':',vclck[1])[0]
@@ -117,7 +98,7 @@ if __name__ == '__main__':
     dtbin = int(cdtbin[3:])*3600
     print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
     
-    if l_accurate_time:
+    if lc_accurate_time:
         figSfx='_tbuoy.png'
     else:
         figSfx='_tglob.png'
@@ -136,20 +117,6 @@ if __name__ == '__main__':
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 
-
-    # When not at the nominal scale, we can adapt `t_dev_cancel` to the scale we are dealing with:
-    if dtbin>6*3600:
-        # `t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
-        if reskm>=100.:
-            t_dev_cancel =  3600
-        if reskm>=150.:
-            t_dev_cancel = 1.5*3600
-        if reskm>=300.:
-            t_dev_cancel = 3*3600
-        if reskm>=600.:
-            t_dev_cancel = 6*3600
-        print('\n *** `t_dev_cancel` updated to ',t_dev_cancel/3600,'hours!')
-
     if rStD1>10. and rStD2>10.:
         # => 10 s means 0.s !!!
         # Now when the selection was too wide in termes of time some quadrangles can involve points that are too
@@ -162,7 +129,7 @@ if __name__ == '__main__':
             z4t1, z4t2 = zTime1[jQ,:], zTime2[jQ,:]
             #c4t = [ mjt.epoch2clock(z4t[i]) for i in range(4) ]
             zstd1, zstd2 = mjt.StdDev( np.mean(z4t1), z4t1 ), mjt.StdDev( np.mean(z4t2), z4t2 )
-            if zstd1 < t_dev_cancel and zstd2 < t_dev_cancel: idxKeep.append(jQ)
+            if zstd1 < rc_t_dev_cancel and zstd2 < rc_t_dev_cancel: idxKeep.append(jQ)
             #print(' jQ, 4 times, StdDev (h): ', jQ, c4t, zstd/3600. )
             if zstd1>std_max: std_max=zstd1
             if zstd2>std_max: std_max=zstd2
@@ -173,7 +140,7 @@ if __name__ == '__main__':
     
         nQn = len(idxKeep)
         print(' *** '+str(nQ-nQn)+' quads /'+str(nQ)+
-              ' disregarded because points have too much of a difference in time position (>'+str(int(t_dev_cancel/60.))+'min)')
+              ' disregarded because points have too much of a difference in time position (>'+str(int(rc_t_dev_cancel/60.))+'min)')
     
         
         vidx1 = vidx1[idxKeep]
@@ -209,7 +176,7 @@ if __name__ == '__main__':
     zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !
 
     # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
-    if l_accurate_time:
+    if lc_accurate_time:
         # Time of poins of the 4 points of quadrangles for the 2 consecutive records:
         zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
         zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
@@ -248,8 +215,8 @@ if __name__ == '__main__':
         mjt.ShowDefQuad( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
                              pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
 
-        #mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-        #                 pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        #mjt.ShowDefQuad( zX, zY, rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        #                 pFmin=-rc_div_max, pFmax=rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
         #                 title=corigin+': divergence' )
 
 
@@ -292,30 +259,30 @@ if __name__ == '__main__':
 
         nmproj=NameArcticProj
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rc_day2sec*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
+                                  pFmin=-rc_div_max, pFmax=rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rc_day2sec*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
+                                  pFmin=0.,      pFmax=rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rconv*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, rc_day2sec*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
+                                  pFmin=0.,      pFmax=rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
-        mjt.ShowDefQuad( zX, zY, rconv*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-                                  pFmin=-div_max, pFmax=div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuad( zX, zY, rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+                                  pFmin=-rc_div_max, pFmax=rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
-                                  pFmin=0.,      pFmax=shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuad( zX, zY, rc_day2sec*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
+                                  pFmin=0.,      pFmax=rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuad( zX, zY, rconv*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
-                                  pFmin=0.,      pFmax=tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuad( zX, zY, rc_day2sec*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
+                                  pFmin=0.,      pFmax=rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
 

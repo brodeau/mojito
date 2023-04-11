@@ -15,10 +15,6 @@ iplot=1
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
-# Conversion from s-1 to day-1:
-rconv = 24.*3600.
-
-
 if __name__ == '__main__':
     
     if not len(argv) in [5]:
@@ -114,9 +110,9 @@ if __name__ == '__main__':
             ztot  =      data['total']
             za    =      data['quadArea']
         #
-        ZDiv[jP:jPe] = rconv*zdiv ; # day^-1
-        Zshr[jP:jPe] = rconv*zshr ; # day^-1
-        Ztot[jP:jPe] = rconv*ztot ; # day^-1
+        ZDiv[jP:jPe] = rc_day2sec*zdiv ; # day^-1
+        Zshr[jP:jPe] = rc_day2sec*zshr ; # day^-1
+        Ztot[jP:jPe] = rc_day2sec*ztot ; # day^-1
         ZAqd[jP:jPe] =     za     ; # km^2
         #
         jP = jPe
