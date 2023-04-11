@@ -19,17 +19,18 @@ from re import split
 from scipy.spatial import Delaunay
 
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 1
 
 
 if __name__ == '__main__':
 
-    kk = mjt.initialize()
+    kk = cfg.initialize()
     
     crd_ss = None
     
@@ -58,12 +59,15 @@ if __name__ == '__main__':
         cfdir = './figs/quadgener'
         if not path.exists(cfdir): mkdir(cfdir)
 
-    print('\n *** Allowed deviation from '+creskm+' km for the mean scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',rc_tolQuadA,'km')
+    kk = cfg.updateConfig4Scale( reskm )
+    print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')        
     
     #########################################################################################################
 
-    print('\n *** Will only retain quadrangles with an area comprised between '+str(round(rc_Qarea_min,1))+' km^2 and '+str(round(rc_Qarea_max,1))+' km^2\n')
+    print('\n *** Will only retain quadrangles with an area comprised between '
+          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(reskm**2)+'km^2 \n')
 
+    
     # Loading the data for the 2 selected records:
     Nt, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
 
@@ -112,9 +116,9 @@ if __name__ == '__main__':
                 print('ERROR: ID fuck up in input file!') ; exit(0)
         jr=jr+1
 
-    
+        
     # Need some calendar info:
-    NbDays = int( (vdate[1] - vdate[0]) / rc_day2sec )
+    NbDays = int( (vdate[1] - vdate[0]) / cfg.rc_day2sec )
     cdt1 = mjt.epoch2clock(vdate[0] )
     cdt2 = mjt.epoch2clock(vdate[-1])
 
@@ -164,7 +168,7 @@ if __name__ == '__main__':
         #zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
 
         # Get rid of points to close to land (shrinks arrays!):
-        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=nc_MinDistFromLand, fNCdist2coast=fdist2coast_nc )
+        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=cfg.nc_MinDistFromLand, fNCdist2coast=cfg.fdist2coast_nc )
 
     # How many points left after elimination of buoys that get too close to land (at any record):
     NbP  = np.sum(mask)
@@ -260,9 +264,9 @@ if __name__ == '__main__':
                 del zlngth, zml
             
             # Merge triangles into quadrangles:
-            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(rc_Tang_min,rc_Tang_max),
-                                                                ratioD=rc_dRatio_max, anglR=(rc_Qang_min,rc_Qang_max),
-                                                                areaR=(rc_Qarea_min,rc_Qarea_max), idbglev=idebug )
+            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
+                                                                ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
+                                                                areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), idbglev=idebug )
             if len(xQpnts)<=0: exit(0)
 
             (NbQ,_) = np.shape(xQpnts)
@@ -311,9 +315,9 @@ if __name__ == '__main__':
             print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
             del zareas, zsides
             zdev = abs(rl_average_scal-reskm)
-            if zdev > rc_tolQuadA:
+            if zdev > cfg.rc_tolQuadA:
                 print(' ERROR: the mean scale is too different from the '+creskm
-                      +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(rc_tolQuadA)+'km)')
+                      +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(cfg.rc_tolQuadA)+'km)')
                 exit(0)
             
             # Save the quadrangular mesh info:

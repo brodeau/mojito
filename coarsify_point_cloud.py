@@ -17,6 +17,7 @@ from re import split
 from scipy.spatial import Delaunay
 
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug = 0
 iplot  = 2 ; # Create figures to see what we are doing...
@@ -27,7 +28,7 @@ if __name__ == '__main__':
 
     #cdata_dir = environ.get('DATA_DIR')
 
-    kk = mjt.initialize()
+    kk = cfg.initialize()
     
     rd_ss = None
     
@@ -95,7 +96,7 @@ if __name__ == '__main__':
 
     
     # Need some calendar info:
-    NbDays = int( (vdate[1] - vdate[0]) )/ rc_day2sec
+    NbDays = int( (vdate[1] - vdate[0]) )/ cfg.rc_day2sec
     cdt1 = mjt.epoch2clock(vdate[0] )
     cdt2 = mjt.epoch2clock(vdate[-1])
 

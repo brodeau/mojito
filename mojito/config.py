@@ -39,14 +39,14 @@ def initialize():
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
-        fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
+    fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
 
     return 0
 
 
 
 
-def updateConfig4Scale( res_km, binDt ):
+def updateConfig4Scale( res_km, binDt=None ):
     '''
         * res_km: nominal scale for quadrangles we are dealing with [km]
         * binDt : width of time bins we have used for selection period (6h, 1 day, 3 days?) [s]
@@ -100,21 +100,24 @@ def updateConfig4Scale( res_km, binDt ):
     if res_km>=600.:
         rc_tolQuadA = 100.
 
+
+    
     # When not at the nominal scale, we can adapt `rc_t_dev_cancel` to the scale we are dealing with:
     #    a quadrangle can involve points that are too distant from one another in terms of time
     #    => we disregard any quadrangles which standard deviation of the time of the 4 positions
     #       excess `t_dev_cancel` seconds !
     rc_t_dev_cancel = 60
-    if binDt>6*3600:
-        # `rc_t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
-        if res_km>=100.:
-            rc_t_dev_cancel =  3600
-        if res_km>=150.:
-            rc_t_dev_cancel = 1.5*3600
-        if res_km>=300.:
-            rc_t_dev_cancel = 3*3600
-            print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
+    if binDt:
+        if binDt>6*3600:
+            # `rc_t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
+            if res_km>=100.:
+                rc_t_dev_cancel =  3600
+            if res_km>=150.:
+                rc_t_dev_cancel = 1.5*3600
+            if res_km>=300.:
+                rc_t_dev_cancel = 3*3600
+                print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
-    exit(0)
+    return 0
 
             
