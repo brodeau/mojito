@@ -7,11 +7,16 @@ from sys import argv, exit
 #from os import path, mkdir
 import numpy as np
 
-from mojito import updateConfig4Scale
+#from mojito import initialize, updateConfig4Scale
+#import mojito as cfg
+#import config as cfg
+from mojito import config as cfg
 
+kk = cfg.initialize()
 
+print(' rc_day2sec =', cfg.rc_day2sec)
 
 
 for ks in [ 10, 20, 40, 80, 160, 320, 640 ]:
 
-    kk = updateConfig4Scale( ks, 6 )
+    kk = cfg.updateConfig4Scale( ks, 6 )

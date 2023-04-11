@@ -3,7 +3,7 @@
 #
 ############################################################################
 
-from .config   import *
+#from .config   import *
 from .util     import *
 from .rgps     import *
 from .ncio     import *
