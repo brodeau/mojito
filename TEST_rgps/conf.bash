@@ -37,12 +37,11 @@ case ${host} in
         # 80km:
         #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="66 70 74 78"
         # 160km:
-        #DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="134 140 146 152 158"
-        #DT_BINS_H=$((24*3)) ;  RESKM=160; LIST_RD_SS="134 140 146 152 158"
+        DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="134 140 146 152 158"
         # 320km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="240 260 270 280 285 290 295 300 305 310 315 320 330"
+        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 290 300 305 310 315 320 325"
         # 640km:
-        DT_BINS_H=$((24*5)) ; RESKM=640; LIST_RD_SS="590 600 610 620 630 640 650 660"
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="590 595 600 605 610 615 620 630 640 650 660"
         #
         #
         ;;        

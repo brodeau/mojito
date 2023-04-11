@@ -9,6 +9,7 @@ import numpy as np
 from re import split
 #
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug=1
 iplot=1
@@ -16,6 +17,8 @@ iplot=1
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 if __name__ == '__main__':
+
+    kk = cfg.initialize()
     
     if not len(argv) in [5]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
@@ -110,9 +113,9 @@ if __name__ == '__main__':
             ztot  =      data['total']
             za    =      data['quadArea']
         #
-        ZDiv[jP:jPe] = rc_day2sec*zdiv ; # day^-1
-        Zshr[jP:jPe] = rc_day2sec*zshr ; # day^-1
-        Ztot[jP:jPe] = rc_day2sec*ztot ; # day^-1
+        ZDiv[jP:jPe] = cfg.rc_day2sec*zdiv ; # day^-1
+        Zshr[jP:jPe] = cfg.rc_day2sec*zshr ; # day^-1
+        Ztot[jP:jPe] = cfg.rc_day2sec*ztot ; # day^-1
         ZAqd[jP:jPe] =     za     ; # km^2
         #
         jP = jPe

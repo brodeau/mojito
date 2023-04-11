@@ -18,24 +18,10 @@ import numpy as np
 from re import split
 
 import mojito as mjt
+from mojito import config as cfg
 
 idebug = 0
 iplot  = 1
-
-#Nforced_batch_length = None ; # enforce the length of a batch (each batch will have a maximum of `Nforced_batch_length` records)
-Nforced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `Nforced_batch_length` records)
-Nb_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)
-
-min_nb_buoys_in_batch = 200 ; # minimum number of buoys for considering a batch a batch!
-
-Nb_min_buoys = min_nb_buoys_in_batch ; # minimum number of buoys necessary to keep a given record of a given batch, when saving files and figures
-
-#l_drop_tooclose = False ; # PR: keep the one with the longest record...
-#NbPass = 2  # number of passes...
-#
-l_drop_overlap = True
-#
-rd_tol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `l_drop_overlap`
 
 #================================================================================================
 
@@ -61,6 +47,8 @@ def __summary__( pNBini, pTcini, pIDs, pNRc ):
 #================================================================================================
 
 if __name__ == '__main__':
+
+    kk = cfg.initialize()
 
     for cd in ['npz','nc','figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
@@ -94,8 +82,8 @@ if __name__ == '__main__':
     cf_npz_in = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'.npz'
     mjt.chck4f(cf_npz_in)
 
-    #if l_drop_overlap and l_drop_tooclose:
-    #    print(' ERROR: you cannot use `l_drop_overlap` and `l_drop_tooclose`! Choose one of the two!!!')
+    #if cfg.lc_drop_overlap and l_drop_tooclose:
+    #    print(' ERROR: you cannot use `cfg.lc_drop_overlap` and `l_drop_tooclose`! Choose one of the two!!!')
     #    exit(0)
 
     print('\n *** Date range to restrain data to:')
@@ -105,9 +93,9 @@ if __name__ == '__main__':
     print( '   ===> in epoch time: ', idt1, 'to', idt2 )
     print( '       ====> double check: ', mjt.epoch2clock(idt1), 'to',  mjt.epoch2clock(idt2))
 
-    if Nforced_batch_length:
-        if Nb_min_cnsctv > Nforced_batch_length:
-            print('ERROR: `Nb_min_cnsctv` cannot be > `Nforced_batch_length` !'); exit(0)
+    if cfg.nc_forced_batch_length:
+        if cfg.nc_min_cnsctv > cfg.nc_forced_batch_length:
+            print('ERROR: `cfg.nc_min_cnsctv` cannot be > `cfg.nc_forced_batch_length` !'); exit(0)
 
     # Load data prepared for the time-range of interest (arrays are masked outside, except vtime0!)
     Np, Nb, vIDsU0, vtime0, vIDs0, vlat0, vlon0, vykm0, vxkm0 = mjt.LoadData4TimeRange( idt1, idt2, cf_in, l_doYX=True )
@@ -159,8 +147,8 @@ if __name__ == '__main__':
         if NvB != len(vIDs): print('ERROR Z1!'); exit(0)
         print('\n *** Having a look at batch #'+cs+' initiated for time bin centered around '+mjt.epoch2clock(rTc)+' !')
 
-        if Nforced_batch_length:
-            NCRmax = Nforced_batch_length
+        if cfg.nc_forced_batch_length:
+            NCRmax = cfg.nc_forced_batch_length
         else:
             NCRmax = np.max(ZNRc[jS,:]) ; # Max number of record from the buoy that has the most
             print('     ===> has '+str(NvB)+' valid buoys at start!')
@@ -186,10 +174,10 @@ if __name__ == '__main__':
 
         for jb in range(NvB):
             #
-            nvr = ZNRc[jS,jb] ; # how many successive valid records for this buoy (at least `Nb_min_cnsctv`)
-            if Nforced_batch_length:
-                nvr = min( nvr, Nforced_batch_length )
-            if nvr<Nb_min_cnsctv: print('ERROR Z2!'); exit(0)
+            nvr = ZNRc[jS,jb] ; # how many successive valid records for this buoy (at least `cfg.nc_min_cnsctv`)
+            if cfg.nc_forced_batch_length:
+                nvr = min( nvr, cfg.nc_forced_batch_length )
+            if nvr<cfg.nc_min_cnsctv: print('ERROR Z2!'); exit(0)
             #
             xix0[0:nvr,jb] = ZIX0[jS,jb,0:nvr] ; # all consecutive point position (indices as in `*0` arrays) for thi buoy
             #
@@ -280,7 +268,7 @@ if __name__ == '__main__':
             #if l_drop_tooclose:
             #    jr = 0 ; # we work with first record !!!
             #    #
-            #    NvB, idxK = mjt.CancelTooClose( jr, rd_tol_km, xlat, xlon, xmsk, NbPass=2 )
+            #    NvB, idxK = mjt.CancelTooClose( jr, cfg.rc_Dtol_km, xlat, xlon, xmsk, NbPass=2 )
             #    #
             #    xmsk = xmsk[jr:,idxK]
             #    xlat = xlat[jr:,idxK]
@@ -290,15 +278,15 @@ if __name__ == '__main__':
             #    xtim = xtim[jr:,idxK]
             #    vIDs =     vIDs[idxK]
             #    del idxK
-            #    print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow!')
+            #    print('\n *** UPDATE: based on "almost-overlap" cleaning at scale of '+str(cfg.rc_Dtol_km)+' km => '+str(NvB)+' buoys left to follow!')
 
 
             # The one to keep!!!
-            if l_drop_overlap:
+            if cfg.lc_drop_overlap:
                 jr = 0 ; # we work with first record !!!
                 (idxn,) = np.where( xmsk[jr,:]==1 )
                 zcoor = np.array([ xXkm[jr,:], xYkm[jr,:] ]).T ; # for `gudhi` coord = [X,Y] !
-                _, _, idx_keep = mjt.SubSampCloud( rd_tol_km, zcoor )
+                _, _, idx_keep = mjt.SubSampCloud( cfg.rc_Dtol_km, zcoor )
                 idx_rm = np.setdiff1d( idxn, idx_keep ) ; # keep values of `idxn` that are not in `idx_keep`
                 xmsk[jr:,idx_rm] = 0 ; # supressing at this time records and all those following!!!
                 Nrm = len(idx_rm)
@@ -314,7 +302,7 @@ if __name__ == '__main__':
                 vIDs =     vIDs[idxK]
                 del zcoor, idxn, idx_keep, idx_rm, idxK
                 #
-                print('\n *** UPDATE: "sub-sampling" cleaning at scale of '+str(rd_tol_km)+' km => '+str(NvB)+' buoys left to follow! ('+str(Nrm)+' removed)')
+                print('\n *** UPDATE: "sub-sampling" cleaning at scale of '+str(cfg.rc_Dtol_km)+' km => '+str(NvB)+' buoys left to follow! ('+str(Nrm)+' removed)')
 
 
 
@@ -336,7 +324,7 @@ if __name__ == '__main__':
             if iplot>0:
                 # Batch time evolution on Arctic map:
                 kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=vIDs, cnmfig='SELECTION/'+cout_root,
-                                            clock_res='d', NminPnts=Nb_min_buoys )
+                                            clock_res='d', NminPnts=cfg.nc_min_buoys_in_batch )
 
             # GENERATION OF COMPREHENSIVE NETCDF FILE:
             #  * 1 file per batch

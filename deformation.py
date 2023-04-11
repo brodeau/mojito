@@ -10,6 +10,7 @@ from re import split
 from scipy.spatial import Delaunay
 
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug=0
 
@@ -20,6 +21,8 @@ zoom=1
 
 if __name__ == '__main__':
 
+    kk = cfg.initialize()
+    
     if not len(argv) in [4]:
         print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)>')
         exit(0)
@@ -47,8 +50,8 @@ if __name__ == '__main__':
     ctimeC = mjt.epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
     rdt = rTm2 - rTm1
-    if not lc_accurate_time:
-        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/rc_day2sec,2))+' days')
+    if not cfg.lc_accurate_time:
+        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
     vclck = split('_',ctimeC)
     chh = split(':',vclck[1])[0]
@@ -59,7 +62,7 @@ if __name__ == '__main__':
         print('ERROR: quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
         exit(0)
     print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
-        
+    
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin    
     cfnm    = corigin
@@ -97,12 +100,15 @@ if __name__ == '__main__':
 
     dtbin = int(cdtbin[3:])*3600
     print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
+
+
+    kk = cfg.updateConfig4Scale( reskm, binDt=dtbin )
+
     
-    if lc_accurate_time:
+    if cfg.lc_accurate_time:
         figSfx='_tbuoy.png'
     else:
         figSfx='_tglob.png'
-
     
     # The Quads we retain, i.e. those who exist in both snapshots:
     vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
@@ -129,19 +135,23 @@ if __name__ == '__main__':
             z4t1, z4t2 = zTime1[jQ,:], zTime2[jQ,:]
             #c4t = [ mjt.epoch2clock(z4t[i]) for i in range(4) ]
             zstd1, zstd2 = mjt.StdDev( np.mean(z4t1), z4t1 ), mjt.StdDev( np.mean(z4t2), z4t2 )
-            if zstd1 < rc_t_dev_cancel and zstd2 < rc_t_dev_cancel: idxKeep.append(jQ)
+            if zstd1 < cfg.rc_t_dev_cancel and zstd2 < cfg.rc_t_dev_cancel: idxKeep.append(jQ)
             #print(' jQ, 4 times, StdDev (h): ', jQ, c4t, zstd/3600. )
             if zstd1>std_max: std_max=zstd1
             if zstd2>std_max: std_max=zstd2
             
-        print('Max point-time-position StDev found within a Quadrangles is =',std_max/3600.,'h')
+        print('Max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
     
         idxKeep = np.array( idxKeep , dtype=int )
     
         nQn = len(idxKeep)
         print(' *** '+str(nQ-nQn)+' quads /'+str(nQ)+
-              ' disregarded because points have too much of a difference in time position (>'+str(int(rc_t_dev_cancel/60.))+'min)')
-    
+              ' disregarded because points have too much of a difference in time position (>'+str(int(cfg.rc_t_dev_cancel/60.))+' min)')
+
+        #lAbort = (nQn<1)
+        if nQn<1:
+            print(' ==> exiting!\n')
+            exit(0)
         
         vidx1 = vidx1[idxKeep]
         vidx2 = vidx2[idxKeep]
@@ -176,7 +186,7 @@ if __name__ == '__main__':
     zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !
 
     # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
-    if lc_accurate_time:
+    if cfg.lc_accurate_time:
         # Time of poins of the 4 points of quadrangles for the 2 consecutive records:
         zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
         zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
@@ -215,8 +225,8 @@ if __name__ == '__main__':
         mjt.ShowDefQuad( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
                              pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
 
-        #mjt.ShowDefQuad( zX, zY, rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-        #                 pFmin=-rc_div_max, pFmax=rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        #mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        #                 pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
         #                 title=corigin+': divergence' )
 
 
@@ -259,30 +269,30 @@ if __name__ == '__main__':
 
         nmproj=NameArcticProj
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX, zY, rc_day2sec*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-rc_div_max, pFmax=rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
+                                  pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rc_day2sec*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, rc_day2sec*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
-        mjt.ShowDefQuad( zX, zY, rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-                                  pFmin=-rc_div_max, pFmax=rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+                                  pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuad( zX, zY, rc_day2sec*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
-                                  pFmin=0.,      pFmax=rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuad( zX, zY, rc_day2sec*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
-                                  pFmin=0.,      pFmax=rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
 
