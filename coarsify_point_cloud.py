@@ -20,7 +20,7 @@ import mojito   as mjt
 from mojito import config as cfg
 
 idebug = 0
-iplot  = 2 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 2
 
@@ -220,23 +220,21 @@ if __name__ == '__main__':
             cfb = cfbase+'_rec%3.3i'%(jr)+'_rdss'+str(int(rd_ss))
             cfc = '_SS'+creskm+'km'
 
-            # A: on cartesian grid
-            #######################
-            
-            if jr==0:
-                # We need to find a descent X and Y range for the figures:
-                vrngX = mjt.roundAxisRange( zXY[0,:,0], rndKM=50. )
-                vrngY = mjt.roundAxisRange( zXY[0,:,1], rndKM=50. )
+            if iplot>1:
+                # A: on cartesian grid
+                #######################      
+                if jr==0:
+                    # We need to find a descent X and Y range for the figures:
+                    vrngX = mjt.roundAxisRange( zXY[0,:,0], rndKM=50. )
+                    vrngY = mjt.roundAxisRange( zXY[0,:,1], rndKM=50. )
                 
-            # Shows the cloud of buoys (with buoys' IDs) on the Cartesian plane (km)
-            # Before subsampling
-            if idebug>0:
-                kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
-                                     lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
-            
-            # After subsampling
-            kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
-                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[idxKeep], 
+                if idebug>0:
+                    kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
+                                         lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
+                
+                # After subsampling
+                kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
+                                     lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[idxKeep], 
 
             
             # B: same, but on projection with geographic coordinates
@@ -249,10 +247,4 @@ if __name__ == '__main__':
                                    cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
 
-
-
-
-    
-    #exit(0)
-                
     
