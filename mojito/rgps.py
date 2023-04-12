@@ -4,16 +4,16 @@ dt0_RGPS = 3*24*3600 ; # the expected nominal time step of the input data, ~ 3 d
 
 from .ncio import FillValue
 
-def AllowedDevFromDT0( pbin_dt ):
-    '''
-       * pbin_dt: time width of the chosen time bins [s]
-    '''
-    if pbin_dt < dt0_RGPS:
-        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
-    else:
-        zmax_dev_dt0 = dt0_RGPS/3 ; # => ~ 24 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
-    #
-    return int(zmax_dev_dt0)
+#def AllowedDevFromDT0( pbin_dt ):
+#    '''
+#       * pbin_dt: time width of the chosen time bins [s]
+#    '''
+#    if pbin_dt < dt0_RGPS:
+#        zmax_dev_dt0 = 6*3600     ; # => 6 hours! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
+#    else:
+#        zmax_dev_dt0 = dt0_RGPS/3 ; # => ~ 24 hours ! maximum allowed deviation from the `dt0_RGPS` between 2 consecutive records of buoy [s]
+#    #
+#    return int(zmax_dev_dt0)
 
 
 
@@ -192,7 +192,7 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom ):
 
 
 
-def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expected, max_dev_from_dt_expected ):
+def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expected, devdtNom ):
     '''
     LOLO: add test to see if time vector we return is increasing!!! and nothing stupid / boundaries!!!
 
@@ -208,7 +208,7 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
                 * ptime0 : time array as in raw data
                 * pBIDs0 : IDs array as in raw data
                 * dt_expected: expected time gap between 2 consecutive records of a buoy [s]
-                * max_dev_from_dt_expected: overshoot tolerance for `dt_expected` [s]
+                * devdtNom: overshoot tolerance for `dt_expected` [s]
        Returns:
                * nbROK   : number of valid consecutive records for this buoy
                * idx0_id : array of location indices (in the raw data arrays) for these valid records of this buoy
@@ -230,12 +230,12 @@ def ValidCnsctvRecordsBuoy( time_min, kidx, ptime0, pBIDs0, pidx_ignore, dt_expe
     #
     nbROK = nbR1b
     #
-    # We cut the series at the first occurence of a dt (time between 2 consec. pos.) > `max_dev_from_dt_expected`
+    # We cut the series at the first occurence of a dt (time between 2 consec. pos.) > `devdtNom`
     ztime_ideal = np.array( [ ztime[0]+float(i)*float(dt_expected) for i in range(nbR1b) ], dtype=float )
     vtdev = np.abs(ztime - ztime_ideal)
-    if np.any(vtdev > max_dev_from_dt_expected):
+    if np.any(vtdev > devdtNom):
         #print('LOLO: vtdev[:]/3600. = ',vtdev[:]/3600.)
-        (indFU,) = np.where(vtdev > max_dev_from_dt_expected)
+        (indFU,) = np.where(vtdev > devdtNom)
         nbROK = np.min(indFU) ; # yes! no -1 !!!
         #print('LOLO => nbROK =',nbROK)
     #
