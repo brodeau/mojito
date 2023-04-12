@@ -69,7 +69,7 @@ for cbtch in ${list_btch}; do
                 echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
                 cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
 
-                flog="S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
+                flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
                 ijob=$((ijob+1))
                 #
                 if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
@@ -78,7 +78,7 @@ for cbtch in ${list_btch}; do
                     CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
                 fi
                 echo "  ==> ${CMD}"; echo
-                ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                 echo; echo
                 if [ $((ijob%NJPAR)) -eq 0 ]; then
                     echo "Waiting! (ijob = ${ijob})...."
@@ -97,7 +97,7 @@ for cbtch in ${list_btch}; do
                     echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
                     cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
                     
-                    flog="S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${rdss}-${RESKM}km"
+                    flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${rdss}-${RESKM}km"
                     ijob=$((ijob+1))
                     #
                     if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
@@ -106,7 +106,7 @@ for cbtch in ${list_btch}; do
                         CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
                     fi
                     echo "  ==> ${CMD}"; echo
-                    ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                    ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                     echo; echo
                     if [ $((ijob%NJPAR)) -eq 0 ]; then
                         echo "Waiting! (ijob = ${ijob})...."

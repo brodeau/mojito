@@ -12,10 +12,10 @@ elif [ "$1" = "c" ]; then
     rm -f figs/coarsify/* nc/SELECTION_*${YEAR}*km.nc
 
 elif [ "$1" = "2" ]; then
-    rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/*_SELECTION_RGPS_S*.err
+    rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/genquads_*
 
 elif [ "$1" = "3" ]; then
-    rm -f figs/deformation/* npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
+    rm -f figs/deformation/* npz/DEFORMATIONS_* logs/def_*
     
 elif [ "$1" = "4" ]; then
     rm -f npz/def_*

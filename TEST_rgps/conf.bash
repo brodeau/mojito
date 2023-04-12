@@ -1,21 +1,14 @@
 #!/bin/bash
 
 YEAR="1997"
-#YEAR="2007"
 
 MOJITO_DIR="${HOME}/DEV/mojito"
-
 DT_BINS_H=12  ; # width of a bin for time sampling [hours] 
-
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0430"
-
 FILIN="RGPS_${YEAR}.nc4"
-
 NJPAR=4 ; # number of jobs we can launch in //
-
 LIST_RD_SS=""
-
 RESKM=10
 
 host=`hostname | cut -d '.' -f2`
@@ -29,19 +22,22 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
+        DT_BINS_H=6 ;  RESKM=10
         # 20km:
-        #DT_BINS_H=6 ;  RESKM=20 ; LIST_RD_SS="15 17"
+        #DT_BINS_H=6 ;  RESKM=20 ; # defaut:15
         # 40km:
-        #DT_BINS_H=6 ;  RESKM=40 ; LIST_RD_SS="32 35 38"
+        #DT_BINS_H=6 ; RESKM=40 ;
+        #DT_BINS_H=6 ;  RESKM=40 ; ##LIST_RD_SS="32 35 38"   ; # defaut:35
         # 80km:
-        #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="66 70 74 78"
+        #DT_BINS_H=$((24*3)) ;  RESKM=80 ; ###LIST_RD_SS="70 75" ; # defaut:73
+        #DT_BINS_H=6 ;  RESKM=80 ; ###LIST_RD_SS="68 73 78" ; # defaut:73
         # 160km:
-        DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="134 140 146 152 158"
+        #DT_BINS_H=$((24*3)) ;  RESKM=160; LIST_RD_SS="130 145 160"  ; # defaut:145  ; # Ok for at least RGPS!
+        #DT_BINS_H=6 ;  RESKM=160;  # defaut:145
         # 320km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 290 300 305 310 315 320 325"
+        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="270 280 295 310 320" ; # defaut:295
         # 640km:
-        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="590 595 600 605 610 615 620 630 640 650 660"
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="590 590 600 610 620 630 640 650" ; # default:620
         #
         #
         ;;        

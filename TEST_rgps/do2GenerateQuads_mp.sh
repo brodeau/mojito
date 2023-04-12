@@ -44,25 +44,25 @@ for ff in ${list_nc}; do
 
 
     if [ "${LIST_RD_SS}" = "" ]; then
-        flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
+        flog="genquads_`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
         ijob=$((ijob+1))
         CMD="${EXE} ${ff} 0,1 ${RESKM}"
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+        ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
         if [ $((ijob%NJPAR)) -eq 0 ]; then
             echo "Waiting! (ijob = ${ijob})...."
             wait; echo; echo
         fi
     else
         for rdss in ${LIST_RD_SS}; do
-            flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${rdss}-${RESKM}km"
+            flog="genquads_`echo ${fb} | sed -e s/'.nc'/''/g`_${rdss}-${RESKM}km"
             ijob=$((ijob+1))
             #
             fn=`echo ${ff} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`            
             #
             CMD="${EXE} ${fn} 0,1 ${RESKM} ${rdss}"
             echo "    ==> will launch:"; echo "     ${CMD}"; echo
-            ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+            ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             if [ $((ijob%NJPAR)) -eq 0 ]; then
                 echo "Waiting! (ijob = ${ijob})...."
                 wait; echo; echo

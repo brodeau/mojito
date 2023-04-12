@@ -163,7 +163,7 @@ if __name__ == '__main__':
     #  quadrangles in order to obtain quadrangle of the correct size:
     if not rd_ss:
         if reskm==20.:
-            rd_ss = 15.1
+            rd_ss = 15.
         elif reskm==40.:
             rd_ss = 35.
         elif reskm==80.:

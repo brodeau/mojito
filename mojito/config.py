@@ -9,7 +9,8 @@ def initialize():
     '''
     from os import environ
     #
-    global rc_day2sec, nc_min_buoys_in_batch, nc_forced_batch_length, nc_min_cnsctv, nc_min_buoys_in_batch,lc_drop_overlap,rc_Dtol_km
+    global rc_day2sec, nc_min_buoys_in_batch, nc_forced_batch_length, nc_min_cnsctv, rc_dev_dt_Nmnl, nc_min_buoys_in_batch
+    global lc_drop_overlap, rc_Dtol_km
     global rc_Tang_min, rc_Tang_max, rc_Qang_min, rc_Qang_max, rc_dRatio_max
     global lc_accurate_time, rc_div_max, rc_shr_max, rc_tot_max
     global data_dir, fdist2coast_nc, nc_MinDistFromLand
@@ -19,10 +20,12 @@ def initialize():
     nc_min_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
 
     nc_MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
-
+    
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
     nc_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
 
+    rc_dev_dt_Nmnl = 6*3600  ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
+    
     lc_drop_overlap = True
     rc_Dtol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
 
@@ -37,7 +40,7 @@ def initialize():
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    # For figures, in days^-1:
+    # For figures, in days^-1: (depends on the smallest scales)
     rc_div_max = 0.1
     rc_shr_max = 0.1
     rc_tot_max = 0.1
@@ -62,14 +65,12 @@ def updateConfig4Scale( res_km, binDt=None ):
     #
     global ivc_KnownScales
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
-
-
-    rdev_scale = 0.1 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
+    #rdev_scale = 0.1 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
     #                  # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
-
     #zA  = res_km**2
     #dR2 = abs( zA - (res_km*(1+rdev_scale))**2 )
     #rc_Qarea_min, rc_Qarea_max = zA-dR2, zA+dR2
+    
     # Scales to retain Quads:
     vscales = np.array( [ 5*2**i  for i in range(10) ], dtype=int )
     vUb = (vscales[0:-1]+vscales[1:])/2.
@@ -102,7 +103,7 @@ def updateConfig4Scale( res_km, binDt=None ):
     if res_km>70. and res_km<150:
         rc_tolQuadA = 15.
     if res_km>=150.:
-        rc_tolQuadA = 35.
+        rc_tolQuadA = 50.
     if res_km>=300.:
         rc_tolQuadA = 75.
     if res_km>=600.:
@@ -119,9 +120,9 @@ def updateConfig4Scale( res_km, binDt=None ):
         if binDt>6*3600:
             # `rc_t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
             if res_km>=100.:
-                rc_t_dev_cancel =  3600
+                rc_t_dev_cancel =  600
             if res_km>=150.:
-                rc_t_dev_cancel =  3600
+                rc_t_dev_cancel =  1200
             if res_km>=300.:
                 rc_t_dev_cancel = 12*3600
             if res_km>=600.:
