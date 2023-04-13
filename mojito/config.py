@@ -12,7 +12,8 @@ def initialize():
     global rc_day2sec, nc_min_buoys_in_batch, nc_forced_batch_length, nc_min_cnsctv, rc_dev_dt_Nmnl, nc_min_buoys_in_batch
     global lc_drop_overlap, rc_Dtol_km
     global rc_Tang_min, rc_Tang_max, rc_Qang_min, rc_Qang_max, rc_dRatio_max
-    global lc_accurate_time, rc_div_max, rc_shr_max, rc_tot_max
+    global lc_accurate_time
+    global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     global data_dir, fdist2coast_nc, nc_MinDistFromLand
 
     rc_day2sec = 24*3600
@@ -40,10 +41,8 @@ def initialize():
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    # For figures, in days^-1: (depends on the smallest scales)
-    rc_div_max = 0.1
-    rc_shr_max = 0.1
-    rc_tot_max = 0.1
+    rc_div_min, rc_shr_min, rc_tot_min = 1.5e-4, 1.5e-4, 1.5e-4   ; # for scaling (not PDFs)
+    rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
 
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
@@ -80,11 +79,15 @@ def updateConfig4Scale( res_km, binDt=None ):
 
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
+
+    
+    min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     
     if   irk==10:
         rc_Qarea_min, rc_Qarea_max = 9*9, 11*11    
     elif irk==20:
         rc_Qarea_min, rc_Qarea_max = 18*18, 22*22
+        min_div, min_shr, min_tot = 0.001, 0.001, 0.001
     elif irk==40:
         rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         rc_tolQuadA = 5

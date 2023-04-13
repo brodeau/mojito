@@ -8,6 +8,7 @@ from glob import glob
 import numpy as np
 from re import split
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug=1
 iplot=1
@@ -27,6 +28,8 @@ vORIGS = ['RGPS','BBM','EVP']
 
 if __name__ == '__main__':
 
+    kk = cfg.initialize()
+    
     if not len(argv)==3:
         print('Usage: '+argv[0]+' <dir_npz_in> <list_scales>')
         exit(0)
@@ -74,10 +77,12 @@ if __name__ == '__main__':
             with np.load(cfi) as data:
                 Ztot  =     data['x'+cfld]
 
-            (Nl,) = np.shape(Ztot)
+                
+            (idxOK,) = np.where( np.abs(Ztot)>cfg.rc_tot_min )
+            Nl = len(idxOK)
             Nbp[iscl,io] = Nl
 
-            del Ztot
+            del Ztot, idxOK
 
             io += 1
 
@@ -114,12 +119,16 @@ if __name__ == '__main__':
                 Ztot  =     data['x'+cfld]
                 ZA    =     data['quadArea']
 
-            (Ns,) = np.shape(Ztot) ; # sample size N
-            #print('shape(Ztot) =',Ns)
 
             if cfield=='divergence':
                 Ztot = np.abs(Ztot)
 
+            # Removing bad tiny values:
+            (idxOK,) = np.where( Ztot>cfg.rc_tot_min )
+            Nl = len(idxOK) ; # sample size N
+            Ztot = Ztot[idxOK]
+            ZA   =   ZA[idxOK]
+            
             zm2   = Ztot*Ztot
             zm3   = zm2*Ztot
 
@@ -127,9 +136,9 @@ if __name__ == '__main__':
 
             xAq[iscl,io] = np.mean(ZA)
 
-            xXQ[:Ns,iscl,io,0], xXQ[:Ns,iscl,io,1], xXQ[:Ns,iscl,io,2] = Ztot[:], zm2[:], zm3[:]
+            xXQ[:Nl,iscl,io,0], xXQ[:Nl,iscl,io,1], xXQ[:Nl,iscl,io,2] = Ztot[:], zm2[:], zm3[:]
 
-            xXS[:Ns,iscl,io] = np.sqrt( ZA[:] )
+            xXS[:Nl,iscl,io] = np.sqrt( ZA[:] )
             
             
             print(' * Mean, Variance, Skewness, mean quad area =',xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2], xAq[iscl,io],'km^2')
