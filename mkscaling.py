@@ -42,11 +42,16 @@ if __name__ == '__main__':
 
     Nscl = len(do_scales)
 
+    cf  = np.zeros((Nscl,3), dtype='U256' )
+    Nbp = np.zeros((Nscl,3), dtype=int    )
     xMQ = np.zeros((Nscl,3,3)) -9999. ; # Moments: [scale,origin,order]
     xAq = np.zeros((Nscl,3)  ) -9999. ; # Mean quad area: [scale,origin]
     reskm_actual = np.zeros((Nscl,3)  ) -9999. ; # actual resolution we're dealing with
-    
-    # Populating files:
+
+
+
+    ### Save the name of files to read
+    ### and get the number of points...
     iscl = 0
     for res in do_scales:
         print('\n *** Resolution = '+str(res)+' km:')
@@ -61,11 +66,41 @@ if __name__ == '__main__':
             lst = np.sort( glob(cc) )
             if len(lst)!=1:
                 print('ERROR: we do not have a single file!!! =>',cc); exit(0)
-            cf = lst[0]
+            cf[iscl,io] = lst[0]
+            cfi = cf[iscl,io]
+            print(cfi)
 
-            print(cf)
+            with np.load(cfi) as data:
+                Ztot  =     data['x'+cfld]
 
-            with np.load(cf) as data:
+            (Nl,) = np.shape(Ztot)
+            Nbp[iscl,io]
+    ###
+
+    print(' ***  cf =',cf)
+    print(' *** Nbp =', Nbp)
+    exit(0)
+
+    
+    iscl = 0
+    for res in do_scales:
+        print('\n *** Resolution = '+str(res)+' km:')
+
+        io = 0
+        for corig in vORIGS:
+            csdir = corig.lower()
+            dirin = dir_npz_in+'/'+csdir
+            if not path.exists(dirin):
+                print('ERROR: directory "'+dirin+'" does not exist!'); exit(0)            
+            cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
+            lst = np.sort( glob(cc) )
+            if len(lst)!=1:
+                print('ERROR: we do not have a single file!!! =>',cc); exit(0)
+            cf[iscl,io] = lst[0]
+            cfi = cf[iscl,io]
+            print(cfi)
+
+            with np.load(cfi) as data:
                 dtbin = data['dtbin']
                 reskm = data['reskm_nmnl']
                 corig = str(data['origin'])
