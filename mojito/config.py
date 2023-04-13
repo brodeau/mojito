@@ -72,6 +72,10 @@ def updateConfig4Scale( res_km, binDt=None ):
     #rc_Qarea_min, rc_Qarea_max = zA-dR2, zA+dR2
     
     # Scales to retain Quads:
+    # 10km: 9-12
+    # 20km: 18-24
+    # 40km: 36-48
+    
     vscales = np.array( [ 5*2**i  for i in range(10) ], dtype=int )
     vUb = (vscales[0:-1]+vscales[1:])/2.
     vLb = np.zeros(len(vUb))

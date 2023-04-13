@@ -1076,7 +1076,7 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', 
 
 
 
-def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scaling.png' ):
+def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', cfig='Scaling.png' ):
     '''
         According to Fiffure's taste...
     '''
@@ -1086,17 +1086,42 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
 
+    
     (Ns,No) = np.shape(pscales)
     if np.shape(pcOrig) != (No,):
         print('ERROR [plot3ScalingDef]: wrong shape for `pcOrig` or `pscales` !',np.shape(pcOrig),np.shape(pscales)); exit(0)
     if np.shape(pMQ) != (Ns,No,3):
         print('ERROR [plot3ScalingDef]: wrong shape for `pMQ` !',np.shape(pMQ)); exit(0)
 
+    lAddCloud = ( len(np.shape(pXQ))==4 and len(np.shape(pXS))==3 )
+
+    if lAddCloud:
+        (Nm,n1,n2,n3) = np.shape(pXQ)
+        if (n1,n2,n3) != (Ns,No,3):
+            print('ERROR [plot3ScalingDef]: wrong shape for `pXQ` !',np.shape(pXQ)); exit(0)
+        (Nm,n1,n2) = np.shape(pXS)
+        if (n1,n2,n3) != (Ns,No,3):
+            print('ERROR [plot3ScalingDef]: wrong shape for `pXS` !',np.shape(pXS)); exit(0)
+
+
+    
+        
     ki = _initStyle_()
 
     fig = plt.figure( num = 1, figsize=(10,14), dpi=None )
     ax = plt.axes([0.11, 0.06, 0.85, 0.9])
 
+
+
+    if lAddCloud:
+        #for jo in range(No):
+        jo=0
+        #print( np.shape(pXS[:,:,jo]) , np.shape(pXQ[:,:,jo,0]) )
+        #exit(0)
+        plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+                    color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
+        
+    
     for jo in range(No):
                 
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
@@ -1151,23 +1176,6 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, name='Total Deformation', cfig='Scali
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     return 0
 

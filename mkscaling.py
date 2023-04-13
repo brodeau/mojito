@@ -70,17 +70,31 @@ if __name__ == '__main__':
             cfi = cf[iscl,io]
             print(cfi)
 
+            print('  => opening: '+cfi)
             with np.load(cfi) as data:
                 Ztot  =     data['x'+cfld]
 
             (Nl,) = np.shape(Ztot)
-            Nbp[iscl,io]
+            Nbp[iscl,io] = Nl
+
+            del Ztot
+
+            io += 1
+
+        iscl += 1
+
     ###
 
-    print(' ***  cf =',cf)
+    #print(' ***  cf =',cf)
     print(' *** Nbp =', Nbp)
-    exit(0)
 
+    Nl_max = np.max(Nbp)
+    print(' *** Biggest sample: ',str(Nl_max),'points!')
+
+    xXQ = np.zeros((Nl_max,Nscl,3,3)) -9999. ; # Moments: [points,scale,origin,order]
+    xXS = np.zeros((Nl_max,Nscl,3)) -9999. ; # Moments: [points,scale,origin]
+
+    
     
     iscl = 0
     for res in do_scales:
@@ -88,18 +102,9 @@ if __name__ == '__main__':
 
         io = 0
         for corig in vORIGS:
-            csdir = corig.lower()
-            dirin = dir_npz_in+'/'+csdir
-            if not path.exists(dirin):
-                print('ERROR: directory "'+dirin+'" does not exist!'); exit(0)            
-            cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
-            lst = np.sort( glob(cc) )
-            if len(lst)!=1:
-                print('ERROR: we do not have a single file!!! =>',cc); exit(0)
-            cf[iscl,io] = lst[0]
             cfi = cf[iscl,io]
-            print(cfi)
-
+            
+            print('  => opening: '+cfi)
             with np.load(cfi) as data:
                 dtbin = data['dtbin']
                 reskm = data['reskm_nmnl']
@@ -116,10 +121,16 @@ if __name__ == '__main__':
                 Ztot = np.abs(Ztot)
 
             zm2   = Ztot*Ztot
+            zm3   = zm2*Ztot
 
-            xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2] = np.mean(Ztot), np.mean(zm2), np.mean(zm2*Ztot)
+            xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2] = np.mean(Ztot), np.mean(zm2), np.mean(zm3)
 
             xAq[iscl,io] = np.mean(ZA)
+
+            xXQ[:Ns,iscl,io,0], xXQ[:Ns,iscl,io,1], xXQ[:Ns,iscl,io,2] = Ztot[:], zm2[:], zm3[:]
+
+            xXS[:Ns,iscl,io] = np.sqrt( ZA[:] )
+            
             
             print(' * Mean, Variance, Skewness, mean quad area =',xMQ[iscl,io,0], xMQ[iscl,io,1], xMQ[iscl,io,2], xAq[iscl,io],'km^2')
             
@@ -157,5 +168,8 @@ if __name__ == '__main__':
     #cfroot = './figs/SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
     #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.svg' )
 
+
+    xXQ = np.ma.masked_where(xXQ<-9000., xXQ)
+    
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, cfig=cfroot+'.svg' )
+    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png' )
