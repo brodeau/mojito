@@ -75,45 +75,58 @@ def updateConfig4Scale( res_km, binDt=None ):
     # 10km: 9-12
     # 20km: 18-24
     # 40km: 36-48
+
+    irk = int(res_km)
+
+    rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
+    #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
     
-    vscales = np.array( [ 5*2**i  for i in range(10) ], dtype=int )
-    vUb = (vscales[0:-1]+vscales[1:])/2.
-    vLb = np.zeros(len(vUb))
-    vLb[1:] = vUb[0:-1]
-    #
-    ivc_KnownScales = vscales[1:-1]
-    del vscales
-    vLb = vLb[1:]
-    vUb = vUb[1:]
-    Ns = len(ivc_KnownScales)
-    if len(vLb)!=Ns or len(vUb)!=Ns:
-        print('ERROR [updateConfig4Scale]: `len(vLb)!=Ns or len(vUb)!=Ns`')
-    vtolerc = np.array( [ 0.1*2**i  for i in range(Ns) ] ) ; #print('LOLO: toler. =', vtolerc)
-    vLb, vUb = vLb + vtolerc , vUb - vtolerc
-    #for ks in range(Ns-1):
-    #    print('* Scale =',ivc_KnownScales[ks],'  => lower and upper bounds =', vLb[ks], vUb[ks])
-    if not int(res_km) in ivc_KnownScales:
-        print('ERROR [updateConfig4Scale]: scale "'+str(res_km)+' km" is unknown!'); sys.exit(0)
-    ([js],) = np.where(ivc_KnownScales==int(res_km))
-    rc_Qarea_min, rc_Qarea_max = vLb[js]*vLb[js], vUb[js]*vUb[js]
-    print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', vLb[js],vUb[js])
+    if   irk==10:
+        rc_Qarea_min, rc_Qarea_max = 9*9, 11*11    
+    elif irk==20:
+        rc_Qarea_min, rc_Qarea_max = 18*18, 22*22
+    elif irk==40:
+        rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
+        rc_tolQuadA = 5
+    elif irk==80:
+        rc_Qarea_min, rc_Qarea_max = 65*65, 95*95
+        rc_tolQuadA = 15
+    elif irk==160:
+        rc_Qarea_min, rc_Qarea_max = 110*110, 210*210
+        rc_tolQuadA = 50
+    elif irk==320:
+        rc_Qarea_min, rc_Qarea_max =  220*220, 420*420
+        rc_tolQuadA = 75
+    elif irk==640:
+        rc_Qarea_min, rc_Qarea_max =  440*440, 840*840
+        rc_tolQuadA = 150
+    else:
+        print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
+    
+    #vscales = np.array( [ 5*2**i  for i in range(10) ], dtype=int )
+    #vUb = (vscales[0:-1]+vscales[1:])/2.
+    #vLb = np.zeros(len(vUb))
+    #vLb[1:] = vUb[0:-1]
+    #ivc_KnownScales = vscales[1:-1]
+    #del vscales
+    #vLb = vLb[1:]
+    #vUb = vUb[1:]
+    #Ns = len(ivc_KnownScales)
+    #if len(vLb)!=Ns or len(vUb)!=Ns:
+    #    print('ERROR [updateConfig4Scale]: `len(vLb)!=Ns or len(vUb)!=Ns`')
+    #vtolerc = np.array( [ 0.1*2**i  for i in range(Ns) ] ) ; #print('LOLO: toler. =', vtolerc)
+    #vLb, vUb = vLb + vtolerc , vUb - vtolerc
+    ##for ks in range(Ns-1):
+    ##    print('* Scale =',ivc_KnownScales[ks],'  => lower and upper bounds =', vLb[ks], vUb[ks])
+    #if not int(res_km) in ivc_KnownScales:
+    #    print('ERROR [updateConfig4Scale]: scale "'+str(res_km)+' km" is unknown!'); sys.exit(0)
+    #([js],) = np.where(ivc_KnownScales==int(res_km))
+    #rc_Qarea_min, rc_Qarea_max = vLb[js]*vLb[js], vUb[js]*vUb[js]
+
+    print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', np.sqrt([rc_Qarea_min, rc_Qarea_max]))
     print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
 
     #############################
-    rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
-    #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
-    if res_km>35. and res_km<45.:
-        rc_tolQuadA = 5.
-    if res_km>70. and res_km<150:
-        rc_tolQuadA = 15.
-    if res_km>=150.:
-        rc_tolQuadA = 50.
-    if res_km>=300.:
-        rc_tolQuadA = 75.
-    if res_km>=600.:
-        rc_tolQuadA = 150.
-
-
 
     # When not at the nominal scale, we can adapt `rc_t_dev_cancel` to the scale we are dealing with:
     #    a quadrangle can involve points that are too distant from one another in terms of time
