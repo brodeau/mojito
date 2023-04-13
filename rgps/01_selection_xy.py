@@ -323,8 +323,8 @@ if __name__ == '__main__':
 
             if iplot>0:
                 # Batch time evolution on Arctic map:
-                kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, pvIDs=vIDs, cnmfig='SELECTION/'+cout_root,
-                                            clock_res='d', NminPnts=cfg.nc_min_buoys_in_batch )
+                kf = mjt.ShowBuoysMap_Trec( vtim, xlon, xlat, cnmfig='SELECTION/'+cout_root,
+                                            clock_res='d', NminPnts=cfg.nc_min_buoys_in_batch ) ; #, pvIDs=vIDs
 
             # GENERATION OF COMPREHENSIVE NETCDF FILE:
             #  * 1 file per batch

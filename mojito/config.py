@@ -118,15 +118,8 @@ def updateConfig4Scale( res_km, binDt=None ):
     rc_t_dev_cancel = 60
     if binDt:
         if binDt>6*3600:
-            # `rc_t_dev_cancel` remains at 60s when the selection bin with is 6 hours or below
-            if res_km>=100.:
-                rc_t_dev_cancel =  600
-            if res_km>=150.:
-                rc_t_dev_cancel =  1200
-            if res_km>=300.:
-                rc_t_dev_cancel = 12*3600
             if res_km>=600.:
-                rc_t_dev_cancel = 24*3600
+                rc_t_dev_cancel = 3600
                 print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
     return 0

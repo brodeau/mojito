@@ -22,20 +22,23 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        DT_BINS_H=6 ;  RESKM=10
+        #DT_BINS_H=6 ;  RESKM=10
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20 ; # defaut:15
         # 40km:
-        #DT_BINS_H=6 ; RESKM=40 ;
-        #DT_BINS_H=6 ;  RESKM=40 ; ##LIST_RD_SS="32 35 38"   ; # defaut:35
+        #DT_BINS_H=6 ; RESKM=40 ; # defaut:35
         # 80km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=80 ; ###LIST_RD_SS="70 75" ; # defaut:73
-        #DT_BINS_H=6 ;  RESKM=80 ; ###LIST_RD_SS="68 73 78" ; # defaut:73
+        #DT_BINS_H=6 ;  RESKM=80 ;  # defaut:73
+        #
         # 160km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=160; LIST_RD_SS="130 145 160"  ; # defaut:145  ; # Ok for at least RGPS!
-        #DT_BINS_H=6 ;  RESKM=160;  # defaut:145
+        #DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="140 150 160" # defaut:145
+        ##DT_BINS_H=6 ;  RESKM=160;  # defaut:145
+        ##DT_BINS_H=$((24*3)) ;  RESKM=160;  # defaut:145  ; # Ok for at least RGPS!
+        ##DT_BINS_H=$((24*3)) ;  RESKM=160; LIST_RD_SS="130 145 160"  ; # defaut:145  ; # Ok for at least RGPS!
+        #
         # 320km:
-        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="270 280 295 310 320" ; # defaut:295
+        DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 295 310 325" ; # defaut:295
+        #
         # 640km:
         #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="590 590 600 610 620 630 640 650" ; # default:620
         #

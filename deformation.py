@@ -103,7 +103,8 @@ if __name__ == '__main__':
 
 
     kk = cfg.updateConfig4Scale( reskm, binDt=dtbin )
-
+    print('\n *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
+    
     
     if cfg.lc_accurate_time:
         figSfx='_tbuoy.png'
