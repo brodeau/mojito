@@ -163,9 +163,11 @@ if __name__ == '__main__':
         ### Too close to land for a given scale???
         if ldss:
             rDmin = rd_ss
-            if reskm>400:
-                rDmin = min(300,rd_ss)
-            # 
+            if reskm>350:
+                rDmin = max( 110. ,  100. - 2*(rd_ss-reskm) ) ; # so it still varies...
+            #
+            print('LOLO: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification `rDmin` =',rDmin)
+            
             for jr in range(Nrec):
                 print('    * Record #'+str(jr)+':')
                 mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )

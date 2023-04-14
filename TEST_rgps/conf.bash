@@ -35,18 +35,16 @@ case ${host} in
         #DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="145" ;  # defaut:145
         #
         # 320km:
-        DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 280 310"  # => 158p (240, 400) Good!
+        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 280 310"  # => 158p (240, 400) Good!
         #
-        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="310"  # defaut:295 => 47p
-        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="280 295 310 320 330"  # defaut:295
-        ##DT_BINS_H=$((24*3)) ;  RESKM=320;  # defaut:295
-        ##DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 295 310 325" ; # defaut:295
+        ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="310"  # defaut:295 => 47p
+        ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="280 295 310 320 330"  # defaut:295
         #
         # 500km:
         #DT_BINS_H=$((24*3)); RESKM=500; LIST_RD_SS="450 470 490"
         #
         # 640km:
-        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 540 560 580 590 600 610 620 630 640" ; # default:620
+        DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="480 520 560 580 590 600 605 610 615 620" ; # default:620
         #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="580 590 595 600 605 610 615 620 625 630 635 640 650" ; # default:620 => 27 points! ok...
         ##DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="580 590 600 610 620 630 640 650 660" ; # default:620 => 25 points! ok...
         ##DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="580 590 600 605 610 615 620 625 630 640 650" ; # default:620 => 27 points! ok...
