@@ -29,22 +29,11 @@ for ff in ${list_nc}; do
 
 
     if [ "${LIST_RD_SS}" = "" ]; then
-        flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
-        CMD="${EXE} ${ff} ${RESKM}"
-        ijob=$((ijob+1))        
-        echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
-        #
-        if [ $((ijob%NJPAR)) -eq 0 ]; then
-            echo "Waiting! (ijob = ${ijob})...."
-            wait
-            echo; echo
-        fi        
-    else
-        for rdss in ${LIST_RD_SS}; do
-            flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${rdss}-${RESKM}km"
-            CMD="${EXE} ${ff} ${RESKM} ${rdss} "
-            ijob=$((ijob+1))        
+        fout=`echo ${ff} | sed -e "s|.nc|_${RESKM}km.nc|g"`
+        if [ ! -f ${fout} ]; then
+            flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
+            CMD="${EXE} ${ff} ${RESKM}"
+            ijob=$((ijob+1))
             echo "    ==> will launch:"; echo "     ${CMD}"; echo
             ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             #
@@ -52,10 +41,27 @@ for ff in ${list_nc}; do
                 echo "Waiting! (ijob = ${ijob})...."
                 wait
                 echo; echo
-            fi            
+            fi
+        fi
+    else
+        for rdss in ${LIST_RD_SS}; do
+            fout=`echo ${ff} | sed -e "s|.nc|_${rdss}-${RESKM}km.nc|g"`
+            if [ ! -f ${fout} ]; then
+                flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${rdss}-${RESKM}km"
+                CMD="${EXE} ${ff} ${RESKM} ${rdss} "
+                ijob=$((ijob+1))
+                echo "    ==> will launch:"; echo "     ${CMD}"; echo
+                ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
+                #
+                if [ $((ijob%NJPAR)) -eq 0 ]; then
+                    echo "Waiting! (ijob = ${ijob})...."
+                    wait
+                    echo; echo
+                fi
+            fi
         done
     fi
-    
+
 
 done
 

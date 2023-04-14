@@ -62,139 +62,6 @@ if __name__ == '__main__':
     #########################################################################################################
 
 
-    print(' *** Will coarsify for a spatial scale of '+creskm+' km')
-
-    
-    # Getting dimensions and some info:
-    Nrec, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
-
-    if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
-
-
-    vdate = np.zeros( Nrec,  dtype=int )
-    vIDs  = np.zeros( nBmax, dtype=int )
-    xPosG = np.zeros( (Nrec,nBmax,2) )
-    xPosC = np.zeros( (Nrec,nBmax,2) )
-    pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
-    if lTimePos:
-        timePos = np.zeros( (Nrec,nBmax), dtype=int )        
-    #
-    #for jr in range(Nrec):
-    if lTimePos:        
-        vdate[:], vIDs[:], xPosG[:,:,:], xPosC[:,:,:], pmsk[:,:], timePos[:,:] = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=True  )
-        #jr = 1
-        #vdate[jr], vIDs[:], xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:], timePos[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jr, lmask=True, lGetTimePos=True  )
-    else:
-        vdate[:], vIDs[:], xPosG[:,:,:], xPosC[:,:,:], pmsk[:,:]                = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=False )
-    #
-    #print('LOLO: shape of vdate:', np.shape(vdate))
-    #print('LOLO: shape of vIDs:', np.shape(vIDs))
-    #print('LOLO: shape of xPosG:', np.shape(xPosG))
-    #print('LOLO: shape of xPosC:', np.shape(xPosC))
-    #print('LOLO: shape of pmsk:', np.shape(pmsk))
-    #print('LOLO: shape of timePos:', np.shape(timePos))
-    
-    #print( ' * jr = ',jr, ', mean date =',mjt.epoch2clock(vdate[jr]))    
-    #if jr==0:
-    #    vIDs[:] = zIDs[:]
-    #else:
-    #    if np.sum(zIDs[:]-vIDs[:])!=0:
-    #    print('ERROR: ID fuck up in input file!') ; exit(0)
-
-    
-    # Need some calendar info:
-    NbDays = int( (vdate[1] - vdate[0]) )/ cfg.rc_day2sec
-    cdt1 = mjt.epoch2clock(vdate[0] )
-    cdt2 = mjt.epoch2clock(vdate[-1])
-
-    print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
-    print('        ==> nb of days =', NbDays)
-
-    
-    # STUPID: #fixme
-    zXY   = np.zeros( (Nrec,nBmax,2) )
-    zXY[:,:,0] = xPosC[:,:,1]
-    zXY[:,:,1] = xPosC[:,:,0]
-    zGC   = np.zeros( (Nrec,nBmax,2) )
-    zGC[:,:,0] = xPosG[:,:,1]
-    zGC[:,:,1] = xPosG[:,:,0]
-
-    mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
-    ztim = np.zeros((Nrec,nBmax), dtype=int )
-    zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
-
-    if lTimePos:
-        ztim[:,:] = timePos[:,:]
-    else:
-        for jp in range(nBmax): ztim[jp,:] = vdate[:]
-
-
-        
-    NbP = nBmax
-
-
-
-    if idebug>0:
-        for jr in range(Nrec):
-            print('\n  DEBUG *** Record jr='+str(jr)+':')
-            for jc in range(NbP):
-                print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',vIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
-                       ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',mjt.epoch2clock(ztim[jc,jr]) )
-                if str(vIDs[jc])!=zPnm[jc]:
-                    print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
-        print('')
-
-
-    cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
-
-
-    ### Too close to land for a given scale???
-    if ldss:
-        rDmin = rd_ss
-        if reskm>400:
-            rDmin = min(300,rd_ss)
-        # 
-        for jr in range(Nrec):
-            print('    * Record #'+str(jr)+':')
-            mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
-        # How many points left after elimination of buoys that get too close to land (at any record):
-        NbP  = np.sum(mask)
-        NbRM = nBmax-NbP
-        print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
-        if NbRM>0:
-            zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=0 )
-        if NbP<4:
-            print('\n *** Exiting because no enough points alive left!')
-            exit(0)
-        
-    
-    # We must call the coarsening function only for first record !
-    # => following records are just the same coarsened buoys...
-    
-
-    jr = 0
-
-    print('\n\n *** COARSIFICATION => record jr='+str(jr))
-
-    cdats  = mjt.epoch2clock(vdate[jr])
-    cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='D'), '-', '')
-
-    print('    * which is original record '+str(jr)+' => date =',cdats)
-
-    print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
-    NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[jr,:,:] )
-
-    zYkm = np.zeros( (Nrec,NbPss) )
-    zXkm = np.zeros( (Nrec,NbPss) )
-    zlat = np.zeros( (Nrec,NbPss) )
-    zlon = np.zeros( (Nrec,NbPss) )
-
-    zYkm[:,:] = zXY[:,idxKeep,1]
-    zlat[:,:] = zGC[:,idxKeep,1]    
-    zXkm[:,:] = zXY[:,idxKeep,0]
-    zlon[:,:] = zGC[:,idxKeep,0]
-
-
 
     cfbn = str.replace( path.basename(cf_nc_in), '.nc', '')
     if ldss:
@@ -204,50 +71,190 @@ if __name__ == '__main__':
     cfbase = str.replace( cfbn, 'SELECTION_', '')
     print('     => will generate: '+cf_nc_out,'\n')
 
-    
-    print('   * saving '+cf_nc_out)
 
-    kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, vIDs[idxKeep], zYkm, zXkm, zlat, zlon, mask=pmsk[:,idxKeep],
-                               xtime=ztim[:,idxKeep], fillVal=mjt.FillValue, corigin=corigin )
-
-    print()
-
-
-    # Some debug plots to see the job done:
-
-    if iplot>0:
-        print('\n *** Some plots...')
-        
-        for jr in range(Nrec):
-        
-            cfb = cfbase+'_rec%3.3i'%(jr)+'_rdss'+str(int(rd_ss))
-            cfc = '_SS'+creskm+'km'
-
-            if iplot>1:
-                # A: on cartesian grid
-                #######################      
-                if jr==0:
-                    # We need to find a descent X and Y range for the figures:
-                    vrngX = mjt.roundAxisRange( zXY[0,:,0], rndKM=50. )
-                    vrngY = mjt.roundAxisRange( zXY[0,:,1], rndKM=50. )
-                
-                if idebug>0:
-                    kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
-                                         lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
-                
-                # After subsampling
-                kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
-                                     lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[idxKeep], 
-
+    if not path.exists(cf_nc_out):
             
-            # B: same, but on projection with geographic coordinates
-            ########################################################
-            if idebug>0:
-                kk = mjt.ShowBuoysMap( vdate[jr], zGC[jr,:,0], zGC[jr,:,1], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+'_Original.png',
+        print(' *** Will coarsify for a spatial scale of '+creskm+' km')
+    
+        
+        # Getting dimensions and some info:
+        Nrec, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
+    
+        if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
+    
+    
+        vdate = np.zeros( Nrec,  dtype=int )
+        vIDs  = np.zeros( nBmax, dtype=int )
+        xPosG = np.zeros( (Nrec,nBmax,2) )
+        xPosC = np.zeros( (Nrec,nBmax,2) )
+        pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
+        if lTimePos:
+            timePos = np.zeros( (Nrec,nBmax), dtype=int )        
+        #
+        #for jr in range(Nrec):
+        if lTimePos:        
+            vdate[:], vIDs[:], xPosG[:,:,:], xPosC[:,:,:], pmsk[:,:], timePos[:,:] = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=True  )
+            #jr = 1
+            #vdate[jr], vIDs[:], xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:], timePos[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jr, lmask=True, lGetTimePos=True  )
+        else:
+            vdate[:], vIDs[:], xPosG[:,:,:], xPosC[:,:,:], pmsk[:,:]                = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=False )
+        #
+        #print('LOLO: shape of vdate:', np.shape(vdate))
+        #print('LOLO: shape of vIDs:', np.shape(vIDs))
+        #print('LOLO: shape of xPosG:', np.shape(xPosG))
+        #print('LOLO: shape of xPosC:', np.shape(xPosC))
+        #print('LOLO: shape of pmsk:', np.shape(pmsk))
+        #print('LOLO: shape of timePos:', np.shape(timePos))
+        
+        #print( ' * jr = ',jr, ', mean date =',mjt.epoch2clock(vdate[jr]))    
+        #if jr==0:
+        #    vIDs[:] = zIDs[:]
+        #else:
+        #    if np.sum(zIDs[:]-vIDs[:])!=0:
+        #    print('ERROR: ID fuck up in input file!') ; exit(0)
+    
+        
+        # Need some calendar info:
+        NbDays = int( (vdate[1] - vdate[0]) )/ cfg.rc_day2sec
+        cdt1 = mjt.epoch2clock(vdate[0] )
+        cdt2 = mjt.epoch2clock(vdate[-1])
+    
+        print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
+        print('        ==> nb of days =', NbDays)
+    
+        
+        # STUPID: #fixme
+        zXY   = np.zeros( (Nrec,nBmax,2) )
+        zXY[:,:,0] = xPosC[:,:,1]
+        zXY[:,:,1] = xPosC[:,:,0]
+        zGC   = np.zeros( (Nrec,nBmax,2) )
+        zGC[:,:,0] = xPosG[:,:,1]
+        zGC[:,:,1] = xPosG[:,:,0]
+    
+        mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
+        ztim = np.zeros((Nrec,nBmax), dtype=int )
+        zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
+    
+        if lTimePos:
+            ztim[:,:] = timePos[:,:]
+        else:
+            for jp in range(nBmax): ztim[jp,:] = vdate[:]
+    
+    
+            
+        NbP = nBmax
+    
+    
+    
+        if idebug>0:
+            for jr in range(Nrec):
+                print('\n  DEBUG *** Record jr='+str(jr)+':')
+                for jc in range(NbP):
+                    print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',vIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
+                           ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',mjt.epoch2clock(ztim[jc,jr]) )
+                    if str(vIDs[jc])!=zPnm[jc]:
+                        print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
+            print('')
+    
+    
+        cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
+    
+    
+        ### Too close to land for a given scale???
+        if ldss:
+            rDmin = rd_ss
+            if reskm>400:
+                rDmin = min(300,rd_ss)
+            # 
+            for jr in range(Nrec):
+                print('    * Record #'+str(jr)+':')
+                mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
+            # How many points left after elimination of buoys that get too close to land (at any record):
+            NbP  = np.sum(mask)
+            NbRM = nBmax-NbP
+            print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
+            if NbRM>0:
+                zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=0 )
+            if NbP<4:
+                print('\n *** Exiting because no enough points alive left!')
+                exit(0)
+            
+        
+        # We must call the coarsening function only for first record !
+        # => following records are just the same coarsened buoys...
+        
+    
+        jr = 0
+    
+        print('\n\n *** COARSIFICATION => record jr='+str(jr))
+    
+        cdats  = mjt.epoch2clock(vdate[jr])
+        cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='D'), '-', '')
+    
+        print('    * which is original record '+str(jr)+' => date =',cdats)
+    
+        print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
+        NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[jr,:,:] )
+    
+        zYkm = np.zeros( (Nrec,NbPss) )
+        zXkm = np.zeros( (Nrec,NbPss) )
+        zlat = np.zeros( (Nrec,NbPss) )
+        zlon = np.zeros( (Nrec,NbPss) )
+    
+        zYkm[:,:] = zXY[:,idxKeep,1]
+        zlat[:,:] = zGC[:,idxKeep,1]    
+        zXkm[:,:] = zXY[:,idxKeep,0]
+        zlon[:,:] = zGC[:,idxKeep,0]
+    
+    
+    
+        
+        print('   * saving '+cf_nc_out)
+    
+        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, vIDs[idxKeep], zYkm, zXkm, zlat, zlon, mask=pmsk[:,idxKeep],
+                                   xtime=ztim[:,idxKeep], fillVal=mjt.FillValue, corigin=corigin )
+    
+        print()
+    
+    
+        # Some debug plots to see the job done:
+    
+        if iplot>0:
+            print('\n *** Some plots...')
+            
+            for jr in range(Nrec):
+            
+                cfb = cfbase+'_rec%3.3i'%(jr)+'_rdss'+str(int(rd_ss))
+                cfc = '_SS'+creskm+'km'
+    
+                if iplot>1:
+                    # A: on cartesian grid
+                    #######################      
+                    if jr==0:
+                        # We need to find a descent X and Y range for the figures:
+                        vrngX = mjt.roundAxisRange( zXY[0,:,0], rndKM=50. )
+                        vrngY = mjt.roundAxisRange( zXY[0,:,1], rndKM=50. )
+                    
+                    if idebug>0:
+                        kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
+                                             lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
+                    
+                    # After subsampling
+                    kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
+                                         lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[idxKeep], 
+    
+                
+                # B: same, but on projection with geographic coordinates
+                ########################################################
+                if idebug>0:
+                    kk = mjt.ShowBuoysMap( vdate[jr], zGC[jr,:,0], zGC[jr,:,1], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+'_Original.png',
+                                           cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
+    
+                kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+cfc+'.png',
                                        cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
-            kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+cfc+'.png',
-                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
-
 
     
+    else:
+        print('\n *** File "'+cf_nc_out+'" already exists!!!\n')
+        
