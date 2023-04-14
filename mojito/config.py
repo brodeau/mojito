@@ -62,50 +62,55 @@ def updateConfig4Scale( res_km, binDt=None ):
     '''
     import numpy as np
     #
-    global ivc_KnownScales
+    global ivc_KnownScales, rc_d_ss
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
-    #rdev_scale = 0.1 ; # how much can we deviate from the specified scale to accept or reject a quadrangle
-    #                  # =>  (reskm*(1-rdev_scale))**2  <  Quadrangles_area < (reskm*(1+rdev_scale))**2
-    #zA  = res_km**2
-    #dR2 = abs( zA - (res_km*(1+rdev_scale))**2 )
-    #rc_Qarea_min, rc_Qarea_max = zA-dR2, zA+dR2
-    
-    # Scales to retain Quads:
-    # 10km: 9-12
-    # 20km: 18-24
-    # 40km: 36-48
 
     irk = int(res_km)
 
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
+    rc_d_ss = 8 ; # radius for subsampling the cloud of points [km]
+    
     
     min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     
     if   irk==10:
+        rc_tolQuadA = 1
         rc_Qarea_min, rc_Qarea_max = 9*9, 11*11    
     elif irk==20:
+        rc_d_ss = 15
+        rc_tolQuadA = 3
         rc_Qarea_min, rc_Qarea_max = 18*18, 22*22
         min_div, min_shr, min_tot = 0.001, 0.001, 0.001
     elif irk==40:
-        rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
-        rc_tolQuadA = 5
+        rc_d_ss = 35
+        rc_tolQuadA = 7
+        rc_Qarea_min, rc_Qarea_max = 35*35, 45*45        
     elif irk==80:
-        rc_Qarea_min, rc_Qarea_max = 65*65, 95*95
+        rc_d_ss = 73
         rc_tolQuadA = 15
+        rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
     elif irk==160:
-        rc_Qarea_min, rc_Qarea_max = 110*110, 210*210
-        rc_tolQuadA = 50
+        rc_d_ss = 145
+        rc_tolQuadA = 30
+        rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
     elif irk==320:
-        rc_Qarea_min, rc_Qarea_max =  220*220, 420*420
-        rc_tolQuadA = 75
+        rc_d_ss = 295
+        rc_tolQuadA = 100
+        rc_Qarea_min, rc_Qarea_max =  240*240, 400*400
+        #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
     elif irk==640:
-        rc_Qarea_min, rc_Qarea_max =  440*440, 840*840
-        rc_tolQuadA = 150
+        rc_d_ss = 620
+        rc_tolQuadA = 200
+        rc_Qarea_min, rc_Qarea_max =  540*540, 740*740
     else:
         print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
-    
+
+        
+  
+
+        
     #vscales = np.array( [ 5*2**i  for i in range(10) ], dtype=int )
     #vUb = (vscales[0:-1]+vscales[1:])/2.
     #vLb = np.zeros(len(vUb))

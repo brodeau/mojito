@@ -7,8 +7,6 @@ EXE="${MOJITO_DIR}/coarsify_point_cloud.py"
 ijob=0
 mkdir -p logs
 
-echo "LOLO: DT_BINS_H = ${DT_BINS_H}"
-
 # Populating nc files we can use:
 list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
@@ -31,11 +29,11 @@ for ff in ${list_nc}; do
 
 
     if [ "${LIST_RD_SS}" = "" ]; then
-        flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
+        flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
         CMD="${EXE} ${ff} ${RESKM}"
         ijob=$((ijob+1))        
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
-        ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+        ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
         #
         if [ $((ijob%NJPAR)) -eq 0 ]; then
             echo "Waiting! (ijob = ${ijob})...."
@@ -44,11 +42,11 @@ for ff in ${list_nc}; do
         fi        
     else
         for rdss in ${LIST_RD_SS}; do
-            flog="`echo ${fb} | sed -e s/'.nc'/''/g`_${rdss}-${RESKM}km"
+            flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${rdss}-${RESKM}km"
             CMD="${EXE} ${ff} ${RESKM} ${rdss} "
             ijob=$((ijob+1))        
             echo "    ==> will launch:"; echo "     ${CMD}"; echo
-            ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+            ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             #
             if [ $((ijob%NJPAR)) -eq 0 ]; then
                 echo "Waiting! (ijob = ${ijob})...."

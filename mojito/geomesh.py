@@ -607,7 +607,7 @@ def MaskCoastal( pGC, mask=[], rMinDistLand=100, fNCdist2coast='dist2coast_4deg_
 
 
 
-def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime ):
+def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime, recAxis=2 ):
     '''
         RETURNS: shrinked version of input arrays
                  => all elements corresponding to points where
@@ -621,21 +621,31 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime ):
     nBi = len(pmask) ; # number of initial points
     
     if len(pIDs)!=nBi or len(pNam)!=nBi:
-        print(cEM+' shape problem => `len(pIDs)!=nBi or len(pNam)!=nBi` !!!'); exit(0)
-    (nP,nd,nrec) = np.shape(pXY)
+        print(cEM+' shape problem => `len(pIDs)!=nBi or len(pNam)!=nBi` !!!,',nBi, len(pIDs),len(pNam)); exit(0)
+    if recAxis==2:
+        (nP,nd,nrec) = np.shape(pXY)
+        (nt1,ntr)    = np.shape(ptime)
+    elif recAxis==0:
+        (nrec,nP,nd) = np.shape(pXY)
+        (ntr,nt1)    = np.shape(ptime)
     if nP!=nBi or nd!=2: 
-        print(cEM+' shape problem => `nP!=nBi or nd!=2` !!!'); exit(0)
+        print(cEM+' shape problem => `nP!=nBi or nd!=2` !!!, ',nBi,nP,nd); exit(0)
     if np.shape(pXY)!=np.shape(pGC):
-        print(cEM+' shape problem => `shape(pXY)!=shape(pGC)` !!!'); exit(0)
-    if np.shape(ptime)!=(nP,nrec):
+        print(cEM+' shape problem => `shape(pXY)!=shape(pGC)` !!!'); exit(0)                        
+    if (nt1,ntr)!=(nP,nrec):
         print(cEM+' shape problem => `shape(ptime)!=(nP,nrec)` !!!'); exit(0)
-
+        
     nBo  = np.sum(pmask) ; # number of points to keep
     zIDs = np.zeros( nBo, dtype=int  )
     zNam = np.zeros( nBo, dtype='U32')
-    zGC  = np.zeros((nBo,2,nrec))
-    zXY  = np.zeros((nBo,2,nrec))
-    ztim = np.zeros((nBo,nrec))
+    if recAxis==2:
+        zGC = np.zeros((nBo,2,nrec))
+        zXY = np.zeros((nBo,2,nrec))
+        ztm = np.zeros((nBo,nrec))
+    elif recAxis==0:
+        zGC = np.zeros((nrec,nBo,2))
+        zXY = np.zeros((nrec,nBo,2))
+        ztm = np.zeros((nrec,nBo  ))
 
     jBo = -1
     for jB in range(nBi):
@@ -644,11 +654,16 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime ):
             zNam[jBo] = pNam[jB]            
             zIDs[jBo] = pIDs[jB]
             for jr in range(nrec):
-                zGC[jBo,:,jr] = pGC[jB,:,jr]
-                zXY[jBo,:,jr] = pXY[jB,:,jr]
-                ztim[jBo,jr]  = ptime[jB,jr]
-    
-    return zNam, zIDs, zGC, zXY, ztim
+                if recAxis==2:
+                    zGC[jBo,:,jr] =   pGC[jB,:,jr]
+                    zXY[jBo,:,jr] =   pXY[jB,:,jr]
+                    ztm[jBo,  jr] = ptime[jB  ,jr]
+                elif recAxis==0:
+                    zGC[jr,jBo,:] =   pGC[jr,jB,:]
+                    zXY[jr,jBo,:] =   pXY[jr,jB,:]
+                    ztm[jr,jBo  ] = ptime[jr,jB  ]
+                    
+    return zNam, zIDs, zGC, zXY, ztm
 
 
 

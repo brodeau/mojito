@@ -36,6 +36,10 @@ if __name__ == '__main__':
         print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>)')
         exit(0)
 
+    # Idea remove all the buoys closer to land than `rd_ss_km` km !!!
+    # => this way avoids big quadrangles attached to coastal regions
+    # => better for randomizing...    
+        
     cf_nc_in = argv[1]
     creskm = argv[2]
     reskm = float(creskm)
@@ -43,6 +47,9 @@ if __name__ == '__main__':
     ldss = len(argv)==4
     if ldss:        
         rd_ss = float(argv[3])
+    else:
+        kl = cfg.updateConfig4Scale( reskm ) ; #
+        rd_ss = cfg.rc_d_ss
     
     mjt.chck4f(cf_nc_in)
 
@@ -141,9 +148,22 @@ if __name__ == '__main__':
     cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
 
 
-
-
-
+    ### Too close to land for a given scale???
+    if ldss:
+        for jr in range(Nrec):
+            print('    * Record #'+str(jr)+':')
+            mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rd_ss, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
+        # How many points left after elimination of buoys that get too close to land (at any record):
+        NbP  = np.sum(mask)
+        NbRM = nBmax-NbP
+        print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
+        if NbRM>0:
+            zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=0 )
+        if NbP<4:
+            print('\n *** Exiting because no enough points alive left!')
+            exit(0)
+        
+    
     # We must call the coarsening function only for first record !
     # => following records are just the same coarsened buoys...
     
@@ -157,27 +177,6 @@ if __name__ == '__main__':
 
     print('    * which is original record '+str(jr)+' => date =',cdats)
 
-
-    # SUB-SAMPLING
-    #  From experience we have to pick a scale significantly smaller than that of the desired
-    #  quadrangles in order to obtain quadrangle of the correct size:
-    if not rd_ss:
-        if reskm==20.:
-            rd_ss = 15.
-        elif reskm==40.:
-            rd_ss = 35.
-        elif reskm==80.:
-            rd_ss = 73.
-        elif reskm==160.:
-            rd_ss = 145.
-        elif reskm==320.:
-            rd_ss = 295.
-        elif reskm==640.:
-            rd_ss = 620.
-        else:
-            print('ERROR: dont know what `rd_ss` to use for resolution ='+creskm+'km')
-            exit(0)
-        
     print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
     NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[jr,:,:] )
 
