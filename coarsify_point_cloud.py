@@ -150,9 +150,13 @@ if __name__ == '__main__':
 
     ### Too close to land for a given scale???
     if ldss:
+        rDmin = rd_ss
+        if reskm>400:
+            rDmin = min(300,rd_ss)
+        # 
         for jr in range(Nrec):
             print('    * Record #'+str(jr)+':')
-            mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rd_ss, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
+            mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
         # How many points left after elimination of buoys that get too close to land (at any record):
         NbP  = np.sum(mask)
         NbRM = nBmax-NbP
