@@ -1104,7 +1104,13 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             print('ERROR [plot3ScalingDef]: wrong shape for `pXS` !',np.shape(pXS)); exit(0)
 
 
-    
+    print('LOLO: shape of pXQ =',np.shape(pXQ))
+
+    vNbPoints = np.zeros(Ns, dtype=int)
+    for js in range(Ns):
+        (idxOk,) = np.where(pXQ[:,js,0,0].data>0)
+        vNbPoints[js] = len(idxOk)
+
         
     ki = _initStyle_()
 
@@ -1148,6 +1154,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax.annotate('q=2', xy=(0.94, 0.45), xycoords='axes fraction', ha='left', **cfont_axis)
     ax.annotate('q=3', xy=(0.94, 0.11), xycoords='axes fraction', ha='left', **cfont_axis)
     #
+    for js in range(Ns):
+        ax.annotate( str(vNbPoints[js]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
+    
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
@@ -1173,6 +1182,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
+
+    
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
