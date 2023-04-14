@@ -44,12 +44,11 @@ case ${host} in
         #DT_BINS_H=$((24*3)); RESKM=500; LIST_RD_SS="450 470 490"
         #
         # 640km:
-        DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="480 520 560 580 590 600 605 610 615 620" ; # default:620
-        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="580 590 595 600 605 610 615 620 625 630 635 640 650" ; # default:620 => 27 points! ok...
-        ##DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="580 590 600 610 620 630 640 650 660" ; # default:620 => 25 points! ok...
-        ##DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="580 590 600 605 610 615 620 625 630 640 650" ; # default:620 => 27 points! ok...
-        
-
+        DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 540 560 570 580 590 600 610 620 630" ; # default:620 ; 100 points! 
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 560 570 580 590 600 610 620 630" ; # default:620 ; # The best so far !!!
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 560 580 590 600 610 620 630" ; # default:620 ; # even better :D
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="520 560 580 590 600 610 620 630" ; # default:620 ; # Better :)
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="520 560 580 590 600 610 620" ; # default:620 ; # Not bad!       
         #
         #
         ;;        
