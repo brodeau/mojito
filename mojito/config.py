@@ -41,7 +41,7 @@ def initialize():
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    rc_div_min, rc_shr_min, rc_tot_min = 1.e-4, 1.e-4, 1.e-4   ; # for scaling (not PDFs)
+    rc_div_min, rc_shr_min, rc_tot_min = 0.8e-4, 0.8e-4, 0.8e-4   ; # for scaling (not PDFs)
     rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
 
     data_dir = environ.get('DATA_DIR')
