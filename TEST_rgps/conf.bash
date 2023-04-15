@@ -9,6 +9,7 @@ DATE2="${YEAR}0430"
 FILIN="RGPS_${YEAR}.nc4"
 NJPAR=4 ; # number of jobs we can launch in //
 LIST_RD_SS=""
+LIST_MINDC=""
 RESKM=10
 
 host=`hostname | cut -d '.' -f2`
@@ -44,7 +45,11 @@ case ${host} in
         #DT_BINS_H=$((24*3)); RESKM=500; LIST_RD_SS="450 470 490"
         #
         # 640km:
-        DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 540 560 570 580 590 600 610 620 630" ; # default:620 ; 100 points! 
+        DT_BINS_H=$((24*3)) ; RESKM=640
+        LIST_RD_SS="500 520 540 560 570 580 590 600 610 620 630"
+        LIST_MINDC="250 150 350 250 150 300 200 350 150 300 200"
+        #
+        #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 540 560 570 580 590 600 610 620 630" ; # default:620 ; 100 points! 
         #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 560 570 580 590 600 610 620 630" ; # default:620 ; # The best so far !!!
         #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="500 520 560 580 590 600 610 620 630" ; # default:620 ; # even better :D
         #DT_BINS_H=$((24*3)) ; RESKM=640; LIST_RD_SS="520 560 580 590 600 610 620 630" ; # default:620 ; # Better :)

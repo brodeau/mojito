@@ -31,9 +31,10 @@ if __name__ == '__main__':
     kk = cfg.initialize()
     
     rd_ss = None
+    rd_tc = None
     
-    if not len(argv) in [3,4]:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>)')
+    if not len(argv) in [3,4,5]:
+        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>) (<rd_ss_km>)')
         exit(0)
 
     # Idea remove all the buoys closer to land than `rd_ss_km` km !!!
@@ -44,13 +45,20 @@ if __name__ == '__main__':
     creskm = argv[2]
     reskm = float(creskm)
 
-    ldss = len(argv)==4
+    ldss = len(argv)==4 ; # a `rd_ss` is provided!
+    ldtc = len(argv)==5 ; # a minimum distance to coast is provided
+
     if ldss:        
         rd_ss = float(argv[3])
     else:
         kl = cfg.updateConfig4Scale( reskm ) ; #
         rd_ss = cfg.rc_d_ss
-    
+
+    if ldtc:        
+        rd_tc = float(argv[4])
+
+
+        
     mjt.chck4f(cf_nc_in)
 
     if not path.exists('./nc'): mkdir('./nc')
@@ -162,11 +170,15 @@ if __name__ == '__main__':
     
         ### Too close to land for a given scale???
         if ldss:
-            rDmin = rd_ss
-            if reskm>350:
-                rDmin = max( 110. ,  100. - 2*(rd_ss-reskm) ) ; # so it still varies...
+
+            if ldtc:
+                rDmin = rd_tc
+            else:
+                rDmin = rd_ss
+                if reskm>350:
+                    rDmin = max( 110. ,  100. - 2*(rd_ss-reskm) ) ; # so it still varies...
             #
-            print('LOLO: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification `rDmin` =',rDmin)
+            print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
             
             for jr in range(Nrec):
                 print('    * Record #'+str(jr)+':')
