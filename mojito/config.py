@@ -41,7 +41,7 @@ def initialize():
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    rc_div_min, rc_shr_min, rc_tot_min = 1.5e-4, 1.5e-4, 1.5e-4   ; # for scaling (not PDFs)
+    rc_div_min, rc_shr_min, rc_tot_min = 1.e-4, 1.e-4, 1.e-4   ; # for scaling (not PDFs)
     rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
 
     data_dir = environ.get('DATA_DIR')
@@ -98,7 +98,9 @@ def updateConfig4Scale( res_km, binDt=None ):
     elif irk==320:
         rc_d_ss = 295
         rc_tolQuadA = 100
-        rc_Qarea_min, rc_Qarea_max =  240*240, 400*400
+        rc_Qarea_min, rc_Qarea_max =  255*255, 385*385
+        #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
+        #rc_Qarea_min, rc_Qarea_max =  240*240, 400*400
         #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
     elif irk==500:
         rc_d_ss = 480
@@ -107,7 +109,9 @@ def updateConfig4Scale( res_km, binDt=None ):
     elif irk==640:
         rc_d_ss = 620
         rc_tolQuadA = 200
-        rc_Qarea_min, rc_Qarea_max =  520*520, 760*760
+        #rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
+        #rc_Qarea_min, rc_Qarea_max =  510*510, 770*770
+        rc_Qarea_min, rc_Qarea_max =  520*520, 760*760; #ok!
     else:
         print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
