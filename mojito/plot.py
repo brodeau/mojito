@@ -1024,7 +1024,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
 
-def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', cfig='Scaling.png' ):
+def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
+                    cfig='Scaling.png' ):
     '''
     '''
     xlog_min, xlog_max = 7.5 , 800.
@@ -1076,7 +1077,8 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation', 
 
 
 
-def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', cfig='Scaling.png' ):
+def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation',
+                     cfig='Scaling.png', lOnlyObs=False ):
     '''
         According to Fiffure's taste...
     '''
@@ -1126,8 +1128,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         #exit(0)
         plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
                     color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
+
+    if lOnlyObs: No=1
         
-    
     for jo in range(No):
                 
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',

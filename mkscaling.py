@@ -181,4 +181,4 @@ if __name__ == '__main__':
     xXQ = np.ma.masked_where(xXQ<-9000., xXQ)
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png' )
+    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png', lOnlyObs=True )
