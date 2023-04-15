@@ -34,9 +34,9 @@ def initialize():
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
-    rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
-    rc_dRatio_max = 0.6 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+    rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
+    rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
@@ -98,10 +98,7 @@ def updateConfig4Scale( res_km, binDt=None ):
     elif irk==320:
         rc_d_ss = 295
         rc_tolQuadA = 100
-        rc_Qarea_min, rc_Qarea_max =  255*255, 385*385
-        #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
-        #rc_Qarea_min, rc_Qarea_max =  240*240, 400*400
-        #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
+        rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
     elif irk==500:
         rc_d_ss = 480
         rc_tolQuadA = 150
@@ -109,9 +106,7 @@ def updateConfig4Scale( res_km, binDt=None ):
     elif irk==640:
         rc_d_ss = 620
         rc_tolQuadA = 200
-        #rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
-        #rc_Qarea_min, rc_Qarea_max =  510*510, 770*770
-        rc_Qarea_min, rc_Qarea_max =  520*520, 760*760; #ok!
+        rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
     else:
         print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
