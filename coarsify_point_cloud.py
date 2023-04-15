@@ -45,8 +45,8 @@ if __name__ == '__main__':
     creskm = argv[2]
     reskm = float(creskm)
 
-    ldss = len(argv)==4 ; # a `rd_ss` is provided!
-    ldtc = len(argv)==5 ; # a minimum distance to coast is provided
+    ldss = ( len(argv)==4 or len(argv)==5 ); # a `rd_ss` is provided!
+    ldtc =   len(argv)==5 ; # a minimum distance to coast is provided
 
     if ldss:        
         rd_ss = float(argv[3])
@@ -175,8 +175,10 @@ if __name__ == '__main__':
                 rDmin = rd_tc
             else:
                 rDmin = rd_ss
+                if reskm>300:
+                    rDmin = 1.25*( max( 110. ,  100. - 2*(rd_ss-reskm) ) ); # so it still varies...                
                 if reskm>350:
-                    rDmin = max( 110. ,  100. - 2*(rd_ss-reskm) ) ; # so it still varies...
+                    rDmin = 1.25*max( 110. ,  110. - 2*(rd_ss-reskm) ) ; # so it still varies...
             #
             print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
             
@@ -240,6 +242,8 @@ if __name__ == '__main__':
             
                 cfb = cfbase+'_rec%3.3i'%(jr)+'_rdss'+str(int(rd_ss))
                 cfc = '_SS'+creskm+'km'
+                if ldtc:
+                    cfc += '_DCmin'+str(int(rd_tc))
     
                 if iplot>1:
                     # A: on cartesian grid

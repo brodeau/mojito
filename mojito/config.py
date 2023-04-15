@@ -34,9 +34,9 @@ def initialize():
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-    rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
-    rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
+    rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
+    rc_dRatio_max = 0.6 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
