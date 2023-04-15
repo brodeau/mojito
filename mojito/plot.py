@@ -1122,10 +1122,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
     if lAddCloud:
-        #for jo in range(No):
         jo=0
-        #print( np.shape(pXS[:,:,jo]) , np.shape(pXQ[:,:,jo,0]) )
-        #exit(0)
         plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
                     color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
 
@@ -1169,13 +1166,15 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
     cfig = str.replace(cfig,'total','mean')
-    ylog_min, ylog_max = 5.e-3,2.e-2
-    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
+    #ylog_min, ylog_max = 5.e-3,2.e-2
+    ylog_min, ylog_max = 5.e-5,1.
+    fig = plt.figure( num = 1, figsize=(10,17), dpi=None )
     ax = plt.axes([0.11, 0.06, 0.85, 0.9])
 
     for jo in range(No):
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
-                    color=str(float(jo)/2.5), label=None, zorder=5 )
+                    color='g', label=None, zorder=50 )
+                    #color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
@@ -1185,6 +1184,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
+    if lAddCloud:
+        jo=0
+        plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+                    color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
+
     for js in range(Ns):
         ax.annotate( str(vNbPoints[js]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
     #

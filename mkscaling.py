@@ -13,6 +13,8 @@ from mojito import config as cfg
 idebug=1
 iplot=1
 
+lAdaptMinDef = False
+
 #dir_in = '<HOME>/Nextcloud/data/mojitoNEW'
 
 l_cst_bins = False ; rfexp_bin = 0.2
@@ -53,6 +55,30 @@ if __name__ == '__main__':
 
 
 
+    zmin_tot_def = np.zeros(Nscl) ; # minimum deformation allowed for a givn scale
+    
+    zmin_tot_def[:] = cfg.rc_tot_min
+
+    if lAdaptMinDef:
+        iscl=0
+        for res in do_scales:
+            if res==20:
+                zmin_tot_def[iscl] = 0.8e-4        
+            if res==40:
+                zmin_tot_def[iscl] = 1.5e-4        
+            if res==80:
+                zmin_tot_def[iscl] = 2.e-4        
+            if res==160:
+                zmin_tot_def[iscl] = 3.e-4        
+            if res==320:
+                zmin_tot_def[iscl] = 3.5e-4        
+            if res==640:
+                zmin_tot_def[iscl] = 1.5e-3
+            iscl+=1
+
+    print(zmin_tot_def[:])
+    #exit(0)
+        
     ### Save the name of files to read
     ### and get the number of points...
     iscl = 0
@@ -78,7 +104,7 @@ if __name__ == '__main__':
                 Ztot  =     data['x'+cfld]
 
                 
-            (idxOK,) = np.where( np.abs(Ztot)>cfg.rc_tot_min )
+            (idxOK,) = np.where( np.abs(Ztot)>zmin_tot_def[iscl] )
             Nl = len(idxOK)
             Nbp[iscl,io] = Nl
 
@@ -124,7 +150,7 @@ if __name__ == '__main__':
                 Ztot = np.abs(Ztot)
 
             # Removing bad tiny values:
-            (idxOK,) = np.where( Ztot>cfg.rc_tot_min )
+            (idxOK,) = np.where( Ztot>zmin_tot_def[iscl] )
             Nl = len(idxOK) ; # sample size N
             Ztot = Ztot[idxOK]
             ZA   =   ZA[idxOK]
@@ -179,6 +205,9 @@ if __name__ == '__main__':
 
 
     xXQ = np.ma.masked_where(xXQ<-9000., xXQ)
+
+
+
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png', lOnlyObs=True )
