@@ -55,10 +55,9 @@ def initialize():
 
 
 
-def updateConfig4Scale( res_km, binDt=None ):
+def updateConfig4Scale( res_km ):
     '''
         * res_km: nominal scale for quadrangles we are dealing with [km]
-        * binDt : width of time bins we have used for selection period (6h, 1 day, 3 days?) [s]
     '''
     import numpy as np
     #

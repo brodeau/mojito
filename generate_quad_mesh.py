@@ -23,7 +23,7 @@ from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 1
 
@@ -57,10 +57,14 @@ if __name__ == '__main__':
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
         cfdir = './figs/quadgener'
+        if not path.exists('./figs'): mkdir('./figs')
         if not path.exists(cfdir): mkdir(cfdir)
 
     kk = cfg.updateConfig4Scale( reskm )
-    print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')        
+    print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
+    print(' *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
+
+
     
     #########################################################################################################
 
@@ -264,13 +268,68 @@ if __name__ == '__main__':
                 del zlngth, zml
             
             # Merge triangles into quadrangles:
-            xQcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
+            xPcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
                                                                 ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
                                                                 areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), idbglev=idebug )
-            if len(xQpnts)<=0: exit(0)
 
-            (NbQ,_) = np.shape(xQpnts)
-            print('\n *** We have '+str(NbQ)+' quadrangles!')
+            (nbP,_) = np.shape(xPcoor)
+            (nbQ,_) = np.shape(xQpnts)
+            if nbQ<=0:
+                print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
+
+            print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!')
+
+            
+            # Get rid of quadrangles that have excessively asynchronous vertices:
+            #####################################################################
+            zQVtime = np.array([ vTime[i] for i in xQpnts ]) ; # => same shape as `xQpnts` !
+            idxKeep = []
+            std_max = 0.
+            for jQ in range(nbQ):
+                z4t = zQVtime[jQ,:]
+                zstd = mjt.StdDev( np.mean(z4t), z4t )
+                if zstd < cfg.rc_t_dev_cancel:
+                    idxKeep.append(jQ)
+                if zstd>std_max: std_max=zstd
+            print('Max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
+            idxKeep = np.array( idxKeep , dtype=int )
+            nbQn = len(idxKeep)
+            nbRM = nbQ-nbQn
+            print(' *** '+str(nbRM)+' quads /'+str(nbQ)+
+                  ' disregarded because points have too much of a difference in time position (>'+str(int(cfg.rc_t_dev_cancel/60.))+' min)')
+            if nbQn<=0:
+                print('  \n *** 0 quads left!!! => exiting!!!'); exit(0)
+
+            if nbQn<nbQ:
+                # Some Quads must be cancelled!!!!
+                nbQ = nbQn
+                zQpnts = np.zeros((nbQ,4),dtype=int)
+                zQnam  = np.zeros( nbQ,   dtype='U32')
+                zQpnts[:,:] = xQpnts[idxKeep,:] ; # => not enough be cause that's indices in the current number of points => must be corrected later!
+                zQnam[:]    = vQnam[idxKeep]
+                #
+                # Now arrays with `nbP` as a dimension:
+                zPidx = np.unique( zQpnts ); # =>indices !!!
+                zPids = vPids[zPidx]
+                (nbP,) = np.shape(zPids)
+                zTime  = np.zeros( nbP   , dtype=int)
+                zPcoor = np.zeros((nbP,2))
+                jP = 0
+                for jid in zPids:
+                    zQpnts[np.where(zQpnts==zPidx[jP])] = jP
+                    ([idx],) = np.where(vPids==jid)
+                    zTime[jP]    =  vTime[idx]
+                    zPcoor[jP,:] = xPcoor[idx,:]
+                    jP+=1
+
+                # Swap:
+                del xPcoor, vPids, vTime, xQpnts, vQnam
+                xPcoor, vPids, vTime, xQpnts, vQnam = zPcoor.copy(), zPids.copy(), zTime.copy(), zQpnts.copy(), zQnam.copy()
+                del zQVtime, zPcoor, zPids, zTime, zQpnts, zQnam
+                    
+
+
+            print('\n *** After vertices time check: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points ('+str(nbRM)+' quads removed!)')
 
             # Save the triangular mesh info:
             mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', origin=corigin )
@@ -300,9 +359,9 @@ if __name__ == '__main__':
                                          rangeX=vrngX, rangeY=vrngY )
                     
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS0 = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin, reskm_nmnl=reskm )
+            QUADS0 = mjt.Quadrangle( xPcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin, reskm_nmnl=reskm )
 
-
+            #exit(0); #lili
             # Some info about the spatial scales of quadrangles:
             print('\n *** About our quadrangles:')
             zsides = QUADS0.lengths()
@@ -332,10 +391,10 @@ if __name__ == '__main__':
             print('\n *** Quad recycling for jr=',jr)
 
             # Recycling Quads found at 1st record (QUADS0): lilo
-            xQcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
+            xPcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS = mjt.Quadrangle( xQcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin, reskm_nmnl=reskm )
+            QUADS = mjt.Quadrangle( xPcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin, reskm_nmnl=reskm )
 
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', origin=corigin, reskm_nmnl=reskm )

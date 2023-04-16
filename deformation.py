@@ -44,7 +44,6 @@ if __name__ == '__main__':
     # Debug have a look at the times of all points and get the actual mean time for each file:
     rTm1, rStD1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
     rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
-    #print('LOLO STOP [deformation.py] after `CheckTimeConsistencyQuads()`!'); exit(0)
     
     rtimeC = 0.5*(rTm1+rTm2)
     ctimeC = mjt.epoch2clock(rtimeC)
@@ -102,9 +101,8 @@ if __name__ == '__main__':
     print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
 
 
-    kk = cfg.updateConfig4Scale( reskm, binDt=dtbin )
-    print('\n *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
-    
+    #kk = cfg.updateConfig4Scale( reskm )
+    #print('\n *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')    
     
     if cfg.lc_accurate_time:
         figSfx='_tbuoy.png'
@@ -124,44 +122,43 @@ if __name__ == '__main__':
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 
-    if rStD1>10. and rStD2>10.:
-        # => 10 s means 0.s !!!
-        # Now when the selection was too wide in termes of time some quadrangles can involve points that are too
-        # distant from one another in terms of time, should disregard these quadrangles!
-        zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
-        zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
-        idxKeep = []
-        std_max = 0.
-        for jQ in range(nQ):
-            z4t1, z4t2 = zTime1[jQ,:], zTime2[jQ,:]
-            #c4t = [ mjt.epoch2clock(z4t[i]) for i in range(4) ]
-            zstd1, zstd2 = mjt.StdDev( np.mean(z4t1), z4t1 ), mjt.StdDev( np.mean(z4t2), z4t2 )
-            if zstd1 < cfg.rc_t_dev_cancel and zstd2 < cfg.rc_t_dev_cancel: idxKeep.append(jQ)
-            #print(' jQ, 4 times, StdDev (h): ', jQ, c4t, zstd/3600. )
-            if zstd1>std_max: std_max=zstd1
-            if zstd2>std_max: std_max=zstd2
-            
-        print('Max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
-    
-        idxKeep = np.array( idxKeep , dtype=int )
-    
-        nQn = len(idxKeep)
-        print(' *** '+str(nQ-nQn)+' quads /'+str(nQ)+
-              ' disregarded because points have too much of a difference in time position (>'+str(int(cfg.rc_t_dev_cancel/60.))+' min)')
-
-        #lAbort = (nQn<1)
-        if nQn<1:
-            print(' ==> exiting!\n')
-            exit(0)
-        
-        vidx1 = vidx1[idxKeep]
-        vidx2 = vidx2[idxKeep]
-        nQ = nQn
-        del zTime1, zTime2
-
-    else:
-        print(' *** There is no deviation in time in the 2-dimensional time array :)')
-
+    #if rStD1>10. and rStD2>10.:
+    #    # => 10 s means 0.s !!!
+    #    # Now when the selection was too wide in termes of time some quadrangles can involve points that are too
+    #    # distant from one another in terms of time, should disregard these quadrangles!
+    #    zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
+    #    zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
+    #    idxKeep = []
+    #    std_max = 0.
+    #    for jQ in range(nQ):
+    #        z4t1, z4t2 = zTime1[jQ,:], zTime2[jQ,:]
+    #        #c4t = [ mjt.epoch2clock(z4t[i]) for i in range(4) ]
+    #        zstd1, zstd2 = mjt.StdDev( np.mean(z4t1), z4t1 ), mjt.StdDev( np.mean(z4t2), z4t2 )
+    #        if zstd1 < cfg.rc_t_dev_cancel and zstd2 < cfg.rc_t_dev_cancel: idxKeep.append(jQ)
+    #        #print(' jQ, 4 times, StdDev (h): ', jQ, c4t, zstd/3600. )
+    #        if zstd1>std_max: std_max=zstd1
+    #        if zstd2>std_max: std_max=zstd2
+    #        
+    #    print('Max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
+    # 
+    #    idxKeep = np.array( idxKeep , dtype=int )
+    # 
+    #    nQn = len(idxKeep)
+    #    print(' *** '+str(nQ-nQn)+' quads /'+str(nQ)+
+    #          ' disregarded because points have too much of a difference in time position (>'+str(int(cfg.rc_t_dev_cancel/60.))+' min)')
+    #
+    #    #lAbort = (nQn<1)
+    #    if nQn<1:
+    #        print(' ==> exiting!\n')
+    #        exit(0)
+    #    
+    #    vidx1 = vidx1[idxKeep]
+    #    vidx2 = vidx2[idxKeep]
+    #    nQ = nQn
+    #    del zTime1, zTime2
+    #
+    #else:
+    #    print(' *** There is no deviation in time in the 2-dimensional time array :)')
 
 
     # Now for some weird reasons time of a given buoy can be the same in the 2 quads:

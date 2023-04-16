@@ -226,7 +226,7 @@ def TriPntIDs2QuaPntIDs( xPntID ):
         idx = np.where(xPntID==ii)
         zPntID[idx] = jP
 
-    return zPntID
+    return np.array( zPntID, dtype=int )
 
 
 
@@ -353,7 +353,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
     zPCoor  = [] ; 
     zPIDs   = [] ; # 
     zPtime  = [] ; # 
-    zPindQ    = [] ; # the 4 point indices composing the quad, counter-clockwize 
+    zPindQ  = [] ; # the 4 point indices composing the quad, counter-clockwize 
     zQnames = [] ; # 
 
     if NbQ>0:
@@ -361,7 +361,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
         zvPntIdx = np.unique( zQPT.flatten() ) ; # isolates the point IDs that are in use by the identified+valid Quads...
         zPCoor = np.array([ zCoor[i,:] for i in zvPntIdx ])
         zPIDs  = np.array([  zIDs[i]   for i in zvPntIdx ], dtype=int )
-        zPtime = np.array([ ztime[i]   for i in zvPntIdx ])
+        zPtime = np.array([ ztime[i]   for i in zvPntIdx ], dtype=int )
         del zvPntIdx
 
 

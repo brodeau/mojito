@@ -70,7 +70,7 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
         #DT_BINS_H=6 ;         DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
-        DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
+        DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0131"; RESKM=160
         #
         ;;
     "mcp-oceannext-01")
