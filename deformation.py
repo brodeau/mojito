@@ -15,9 +15,7 @@ from mojito import config as cfg
 idebug=0
 
 iplot=1 ; NameArcticProj='SmallArctic'
-
-zoom=1
-
+zoom=2
 
 if __name__ == '__main__':
 

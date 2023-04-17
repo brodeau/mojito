@@ -25,12 +25,15 @@ idebug = 0
 
 iplot  = 0 ; # Create figures to see what we are doing...
 
-rzoom_fig = 1
+rzoom_fig = 5
+
+quality_mode = 'thorough'
+#quality_mode = 'xlose' ; # extra lose => good to make maps of deformations, bad for scaling!!!
 
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize()
+    kk = cfg.initialize( mode=quality_mode )
     
     crd_ss = None
     
@@ -60,7 +63,7 @@ if __name__ == '__main__':
         if not path.exists('./figs'): mkdir('./figs')
         if not path.exists(cfdir): mkdir(cfdir)
 
-    kk = cfg.updateConfig4Scale( reskm )
+    kk = cfg.updateConfig4Scale( reskm, mode=quality_mode )
     print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
     print(' *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
 
@@ -298,12 +301,6 @@ if __name__ == '__main__':
                 vrngX = mjt.roundAxisRange( TRIAS.PointXY[:,0], rndKM=50. )
                 vrngY = mjt.roundAxisRange( TRIAS.PointXY[:,1], rndKM=50. )
                 #
-                if iplot>3:
-                    # Show all initial points (out of TrackIce):
-                    print('\n *** Launching initial cloud point plot!')
-                    kk = mjt.ShowTQMesh( zXY_dbg[:,0], zXY_dbg[:,1], cfig=cfdir+'/fig01a_cloud_points_'+cfbase+'.png',
-                                         ppntIDs=vPids_dbg, lGeoCoor=False, zoom=rzoom_fig,
-                                         rangeX=vrngX, rangeY=vrngY )
                 if iplot>2:
                     # Show triangles on a map:
                     print('\n *** Launching Triangle plot!')

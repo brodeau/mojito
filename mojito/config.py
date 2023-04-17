@@ -4,7 +4,7 @@
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
 
-def initialize():
+def initialize( mode='thorough' ):
     '''
     '''
     from os import environ
@@ -34,9 +34,16 @@ def initialize():
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-    rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
-    rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    if mode=='thorough':
+        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
+        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    elif mode=='xlose':
+        rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
+        rc_dRatio_max = 3. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    else:
+        print('ERROR [initialize()]: unknow mode: '+mode+'!'); exit(0)
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
@@ -55,7 +62,7 @@ def initialize():
 
 
 
-def updateConfig4Scale( res_km ):
+def updateConfig4Scale( res_km,  mode='thorough' ):
     '''
         * res_km: nominal scale for quadrangles we are dealing with [km]
     '''
@@ -75,8 +82,15 @@ def updateConfig4Scale( res_km ):
     min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     
     if   irk==10:
-        rc_tolQuadA = 1
-        rc_Qarea_min, rc_Qarea_max = 9*9, 11*11    
+        if mode=='thorough':
+            rc_tolQuadA = 1
+            rc_Qarea_min, rc_Qarea_max = 9*9, 11*11
+        elif mode=='xlose':
+            rc_tolQuadA = 5
+            rc_Qarea_min, rc_Qarea_max = 2*2, 20*20
+        else:
+            print('ERROR [updateConfig4Scale()]: unknow mode: '+mode+'!'); exit(0)
+
     elif irk==20:
         rc_d_ss = 15
         rc_tolQuadA = 3

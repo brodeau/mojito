@@ -8,6 +8,24 @@ from os import path
 import numpy as np
 
 
+def _ccw_( pcA, pcB, pcC ):
+    '''
+        * pcA: coordinates of point A => [y_A,x_A]
+        * etc...
+    '''
+    return (pcC[0]-pcA[0])*(pcB[1]-pcA[1]) > (pcB[0]-pcA[0])*(pcC[1]-pcA[1])
+
+def intersect2Seg( pcA, pcB, pcC, pcD ):
+    '''
+     Return true if line segments AB and CD intersect
+
+        * pcA: coordinates of point A => [y_A,x_A]
+        * etc...
+    '''
+    return ( _ccw_(pcA,pcC,pcD) != _ccw_(pcB,pcC,pcD) ) and ( _ccw_(pcA,pcB,pcC) != _ccw_(pcA,pcB,pcD) )
+
+
+
 def __distAB2__(pC1, pC2):
     ''' Square of the distance between 2 points based on their [x,y] coordinates '''
     xDiff = pC1[0] - pC2[0]
@@ -240,7 +258,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
     ## zPIDs : [nP] vector of int] IDs of the points of zPCoor (IDs left from the original cloud of points on which triangles are build)
     ## zPtime : [nP] vector of floats] the time of the points of zPCoor
     ## zQPQ   : [nQ,4] array of int] the 4 point indices composing the quad, in counter-clockwize
-    ## zQnames: [nQ]   vector of strings]  a string to identify each quadrangle
+    ## zQname: [nQ]   vector of strings]  a string to identify each quadrangle
     '''
     NbT = pTRIAs.nT
     ivb = idbglev
@@ -351,8 +369,8 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
     zPCoor  = [] ; 
     zPIDs   = [] ; # 
     zPtime  = [] ; # 
-    zPindQ  = [] ; # the 4 point indices composing the quad, counter-clockwize 
-    zQnames = [] ; # 
+    zQpind  = [] ; # the 4 point indices composing the quad, counter-clockwize 
+    zQname = [] ; # 
 
     if NbQ>0:
         # Coordinates of the points in use by Quads!
@@ -363,11 +381,11 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
         del zvPntIdx
 
 
-        zQnames = np.array( [ zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]+'-'+zcN[zQPT[jQ,3]] for jQ in range(NbQ) ],
+        zQname = np.array( [ zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]+'-'+zcN[zQPT[jQ,3]] for jQ in range(NbQ) ],
                             dtype='U32' )
 
         # Point IDs (from original triangle cloud) are now translated to the points that remains for Quads:
-        zPindQ = TriPntIDs2QuaPntIDs(zQPT)
+        zQpind = TriPntIDs2QuaPntIDs(zQPT)
 
         # Some sanity checks:
         if len(idxTused)/2 != NbQ or len(idxTused)%2 !=0:
@@ -381,33 +399,45 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
         if ivb>1:
             print('       => Summary about the '+str(NbQ)+' Quads generated:')
             for jQ in range(NbQ):
-                print('        * Quad #'+str(jQ)+' => ', zQPT[jQ,:], '('+zQnames[jQ]+')')
+                print('        * Quad #'+str(jQ)+' => ', zQPT[jQ,:], '('+zQname[jQ]+')')
                 if ivb>2:
-                    vx = np.array([ zPCoor[i,0] for i in zPindQ[jQ,:] ])
-                    vy = np.array([ zPCoor[i,1] for i in zPindQ[jQ,:] ])
+                    vx = np.array([ zPCoor[i,0] for i in zQpind[jQ,:] ])
+                    vy = np.array([ zPCoor[i,1] for i in zQpind[jQ,:] ])
                     print('     X-coor:', vx[:])
                     print('     Y-coor:', vy[:])
-
-        del zQPT
 
     else:
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
+    # Check if some "crossed" quads:
+    zQcoor = np.array( [ zPCoor[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad! shape:(nQ,4,2) !
+    for jQ in range(NbQ):
+        if intersect2Seg( zQcoor[jQ,0,:], zQcoor[jQ,1,:], zQcoor[jQ,2,:], zQcoor[jQ,3,:] ):
+            print('WARNING [Tri2Quad()]: we have crossed fucked-up quadrangle!!! => name =',zQname[jQ])
+            # Correction: p3 moved to pos#1 (apparently no other bad combinations arise...):
+            zQcoor[jQ,1:,:] = [ zQcoor[jQ,3,:], zQcoor[jQ,1,:], zQcoor[jQ,2,:] ]
+            zQpind[jQ,1:]   = [ zQpind[jQ,3],   zQpind[jQ,1],   zQpind[jQ,2]   ]
+            zQname[jQ]      = zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,3]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]
+            if intersect2Seg( zQcoor[jQ,0,:], zQcoor[jQ,1,:], zQcoor[jQ,2,:], zQcoor[jQ,3,:] ):
+                print('ERROR [Tri2Quad()]: fucked-up Quad! Do not know how to fix!'); exit(0)
+            print('WARNING [Tri2Quad()]: fixed! => new name is: ',zQname[jQ])
+
+    
     if ivb>0:
         # DEBUG: identify negative areas??? How did they pass through `lQisOK`? #fixme
-        zQcoor = np.array( [ zPCoor[zPindQ[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad!
+        zQcoor = np.array( [ zPCoor[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad!
         zareas = QuadsAreas( zQcoor )
         if np.any(zareas<0.):
             print('ERROR [Tri2Quad]: at least a quad with negative area!')
             (idxFU,) = np.where(zareas<0.)
             print('   for Quads with following indices:',idxFU)
             print(' Area(s) => ', zareas[idxFU])
-            print(' Name(s) => ', zQnames[idxFU])
+            print(' Name(s) => ', zQname[idxFU])
             print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
             exit(0)
         
-    return zPCoor, zPIDs, zPtime, zPindQ, zQnames
+    return zPCoor, zPIDs, zPtime, zQpind, zQname
 
 
 
