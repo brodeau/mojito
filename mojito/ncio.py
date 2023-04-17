@@ -438,7 +438,8 @@ def LoadNCdataMJT( cfile, krec=-1, lmask=False, lGetTimePos=False, convention='C
                 
     if convention=='F':
         zmsk = zmsk.T
-        ztpos = ztpos.T
+        if lGetTimePos:
+            ztpos = ztpos.T
                 
     if lmask:
         if lGetTimePos:

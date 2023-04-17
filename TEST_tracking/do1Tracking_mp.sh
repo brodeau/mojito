@@ -15,7 +15,7 @@ else
     cxtraRES="_${cr1}-${RESKM}km"
 fi
 
-list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
+list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}_postQG.nc`
 
 nbf=`echo ${list_seed_nc} | wc -w`
 
@@ -30,7 +30,7 @@ ijob=0
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
     DIR_FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}"
-    FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod.nc4"
+    FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod${XTRA_SFX_SI3}.nc4"
 
     for fnc in ${list_seed_nc}; do
         

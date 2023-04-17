@@ -13,6 +13,7 @@ elif [ "$1" = "c" ]; then
 
 elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/genquads_*
+    rm -f ./nc/*_postQG.nc
 
 elif [ "$1" = "3" ]; then
     rm -f figs/deformation/* npz/DEFORMATIONS_* logs/def_*
