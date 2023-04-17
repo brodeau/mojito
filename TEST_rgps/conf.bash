@@ -23,22 +23,24 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
+        DT_BINS_H=6 ;  RESKM=10
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20 ; # defaut:15
+        #
         # 40km:
         #DT_BINS_H=6 ; RESKM=40 ; # defaut:35
+        #
         # 80km:
-        ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="73 83" # defaut:73
         #DT_BINS_H=6 ;  RESKM=80 ;  # defaut:73
+        ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="73 83" # defaut:73
         #
         # 160km:
         #DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="145" ;  # defaut:145
         #
-        # 320km:
-        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 305 310 320 330"  # =>  298p (260, 380) moins bien!
+        # 320km:        
         #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 310 320"  # =>  259p (260, 380) pas mal!!!
-        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 310"  # =>  240p (260, 380) ok!
+        ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 305 310 320 330"  # =>  298p (260, 380) moins bien!
+        ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 310"  # =>  240p (260, 380) ok!
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 310"  # =>  280p (255, 385) ok!
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 310"  # => 236p (260, 380) bof
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 295 310"  # => 167p (260, 380) bof
@@ -52,8 +54,8 @@ case ${host} in
         #DT_BINS_H=$((24*3)); RESKM=500; LIST_RD_SS="450 470 490"
         #
         # 640km:
-        DT_BINS_H=$((24*3)) ; RESKM=640
-        LIST_RD_SS="500 520 530 540 550 560 570 580 590 600 610 620 630 640 650" ; # 172p (500, 780) | Ok!!!!
+        #DT_BINS_H=$((24*3)) ; RESKM=640
+        #LIST_RD_SS="500 520 530 540 550 560 570 580 590 600 610 620 630 640 650" ; # 172p (500, 780) | Ok!!!!
         ##LIST_RD_SS="500 520 530 540 550 560 570 580 590 600 610 620 630 640 650" ; # 134p (520, 760) |
         ##LIST_RD_SS="500 520 540 560 570 575 580 585 590 595 600 605 610 615 620 630" ; # 151p (510, 770) | pas mal
         ##LIST_RD_SS="500 520 540 560 570 580 590 600 610 620 630" ; # Good! 105p (510, 770)

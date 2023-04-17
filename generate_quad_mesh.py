@@ -105,8 +105,8 @@ if __name__ == '__main__':
     #
     vdate = np.zeros( Nrec,  dtype=int )
     vIDs  = np.zeros( nBmax, dtype=int )
-    zGC = np.zeros( (nBmax,2,Nrec) )
-    zXY = np.zeros( (nBmax,2,Nrec) )
+    zGC   = np.zeros( (nBmax,2,Nrec) )
+    zXY   = np.zeros( (nBmax,2,Nrec) )
     zmsk  = np.zeros( (nBmax,Nrec), dtype='i1' )
     ztim  = np.zeros( (nBmax,Nrec), dtype=int )
 
@@ -195,6 +195,10 @@ if __name__ == '__main__':
     cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
 
 
+    (nP,_,_) = np.shape(zXY)
+
+    if nP<4:
+        print('  \n *** Only '+str(nP)+' points in the cloud! => exiting!!!');  exit(0)    
 
     
     for jr in range(Nrec):
@@ -273,9 +277,13 @@ if __name__ == '__main__':
                                                                 ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
                                                                 areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), idbglev=idebug )
 
-            (nbP,_), (nbQ,_) = np.shape(xPxy), np.shape(xQpnts)
-            if nbQ<=0:
+            lquit = ( np.shape(xPxy)==(0,) or np.shape(xQpnts)==(0,) )
+            if not lquit:
+                (nbP,_), (nbQ,_) = np.shape(xPxy), np.shape(xQpnts)                
+                lquit = (nbQ<=0)
+            if lquit:
                 print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
+                
             print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!')
 
 
@@ -380,7 +388,6 @@ if __name__ == '__main__':
 
             
             if lExportCloudPoints:
-                print('LOLO: jr=',jr)
                 # To be save in a NC file:
                 zPxy[:,:,jr] = xPxy[:,:]
                 for jb in range(nbP):
