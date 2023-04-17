@@ -90,36 +90,24 @@ if __name__ == '__main__':
     
         if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
     
-    
         vdate = np.zeros( Nrec,  dtype=int )
         vIDs  = np.zeros( nBmax, dtype=int )
-        xPosG = np.zeros( (Nrec,nBmax,2) )
-        xPosC = np.zeros( (Nrec,nBmax,2) )
-        pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
-        if lTimePos:
-            timePos = np.zeros( (Nrec,nBmax), dtype=int )        
-        #
-        #for jr in range(Nrec):
+        zGC   = np.zeros( (nBmax,2,Nrec) )
+        zXY   = np.zeros( (nBmax,2,Nrec) )
+        zmsk  = np.zeros( (nBmax,Nrec), dtype='i1' )
+        ztim  = np.zeros( (nBmax,Nrec), dtype=int )        
+        #vdate = np.zeros( Nrec,  dtype=int )
+        #vIDs  = np.zeros( nBmax, dtype=int )
+        #xPosG = np.zeros( (Nrec,nBmax,2) )
+        #xPosC = np.zeros( (Nrec,nBmax,2) )
+        #pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
+        #ztim  = np.zeros((Nrec,nBmax), dtype=int )
+
+
         if lTimePos:        
-            vdate[:], vIDs[:], xPosG[:,:,:], xPosC[:,:,:], pmsk[:,:], timePos[:,:] = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=True  )
-            #jr = 1
-            #vdate[jr], vIDs[:], xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:], timePos[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jr, lmask=True, lGetTimePos=True  )
+            vdate[:], vIDs[:], zGC[:,:,:], zXY[:,:,:], zmsk[:,:], ztim[:,:] = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=True,   convention='F' )
         else:
-            vdate[:], vIDs[:], xPosG[:,:,:], xPosC[:,:,:], pmsk[:,:]                = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=False )
-        #
-        #print('LOLO: shape of vdate:', np.shape(vdate))
-        #print('LOLO: shape of vIDs:', np.shape(vIDs))
-        #print('LOLO: shape of xPosG:', np.shape(xPosG))
-        #print('LOLO: shape of xPosC:', np.shape(xPosC))
-        #print('LOLO: shape of pmsk:', np.shape(pmsk))
-        #print('LOLO: shape of timePos:', np.shape(timePos))
-        
-        #print( ' * jr = ',jr, ', mean date =',mjt.epoch2clock(vdate[jr]))    
-        #if jr==0:
-        #    vIDs[:] = zIDs[:]
-        #else:
-        #    if np.sum(zIDs[:]-vIDs[:])!=0:
-        #    print('ERROR: ID fuck up in input file!') ; exit(0)
+            vdate[:], vIDs[:], zGC[:,:,:], zXY[:,:,:], zmsk[:,:]            = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=False, convention='F' )
     
         
         # Need some calendar info:
@@ -127,25 +115,23 @@ if __name__ == '__main__':
         cdt1 = mjt.epoch2clock(vdate[0] )
         cdt2 = mjt.epoch2clock(vdate[-1])
     
-        print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
+        print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(zmsk[:,0]), np.sum(zmsk[:,1]))
         print('        ==> nb of days =', NbDays)
     
         
         # STUPID: #fixme
-        zXY   = np.zeros( (Nrec,nBmax,2) )
-        zXY[:,:,0] = xPosC[:,:,1]
-        zXY[:,:,1] = xPosC[:,:,0]
-        zGC   = np.zeros( (Nrec,nBmax,2) )
-        zGC[:,:,0] = xPosG[:,:,1]
-        zGC[:,:,1] = xPosG[:,:,0]
+        #zXY   = np.zeros( (Nrec,nBmax,2) )
+        #zXY[:,:,0] = xPosC[:,:,1]
+        #zXY[:,:,1] = xPosC[:,:,0]
+        #zGC   = np.zeros( (Nrec,nBmax,2) )
+        #zGC[:,:,0] = xPosG[:,:,1]
+        #zGC[:,:,1] = xPosG[:,:,0]
     
         mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
-        ztim = np.zeros((Nrec,nBmax), dtype=int )
+        #
         zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
     
-        if lTimePos:
-            ztim[:,:] = timePos[:,:]
-        else:
+        if not lTimePos:
             for jp in range(nBmax): ztim[jp,:] = vdate[:]
     
     
@@ -184,13 +170,13 @@ if __name__ == '__main__':
             
             for jr in range(Nrec):
                 print('    * Record #'+str(jr)+':')
-                mask[:] = mjt.MaskCoastal( zGC[jr,:,:], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
+                mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
             # How many points left after elimination of buoys that get too close to land (at any record):
             NbP  = np.sum(mask)
             NbRM = nBmax-NbP
             print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
             if NbRM>0:
-                zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=0 )
+                zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=2 )
             if NbP<4:
                 print('\n *** Exiting because no enough points alive left!')
                 exit(0)
@@ -210,25 +196,22 @@ if __name__ == '__main__':
         print('    * which is original record '+str(jr)+' => date =',cdats)
     
         print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
-        NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[jr,:,:] )
+        NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[:,:,jr] )
     
         zYkm = np.zeros( (Nrec,NbPss) )
         zXkm = np.zeros( (Nrec,NbPss) )
         zlat = np.zeros( (Nrec,NbPss) )
         zlon = np.zeros( (Nrec,NbPss) )
     
-        zYkm[:,:] = zXY[:,idxKeep,1]
-        zlat[:,:] = zGC[:,idxKeep,1]    
-        zXkm[:,:] = zXY[:,idxKeep,0]
-        zlon[:,:] = zGC[:,idxKeep,0]
-    
-    
-    
+        zYkm[:,:] = zXY[idxKeep,1,:].T
+        zlat[:,:] = zGC[idxKeep,1,:].T    
+        zXkm[:,:] = zXY[idxKeep,0,:].T
+        zlon[:,:] = zGC[idxKeep,0,:].T
         
         print('   * saving '+cf_nc_out)
     
-        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, vIDs[idxKeep], zYkm, zXkm, zlat, zlon, mask=pmsk[:,idxKeep],
-                                   xtime=ztim[:,idxKeep], fillVal=mjt.FillValue, corigin=corigin )
+        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, vIDs[idxKeep], zYkm, zXkm, zlat, zlon, mask=zmsk[idxKeep,:].T,
+                                   xtime=ztim[idxKeep,:].T, fillVal=mjt.FillValue, corigin=corigin )
     
         print()
     
@@ -250,11 +233,11 @@ if __name__ == '__main__':
                     #######################      
                     if jr==0:
                         # We need to find a descent X and Y range for the figures:
-                        vrngX = mjt.roundAxisRange( zXY[0,:,0], rndKM=50. )
-                        vrngY = mjt.roundAxisRange( zXY[0,:,1], rndKM=50. )
+                        vrngX = mjt.roundAxisRange( zXY[:,0,0], rndKM=50. )
+                        vrngY = mjt.roundAxisRange( zXY[:,1,0], rndKM=50. )
                     
                     if idebug>0:
-                        kk = mjt.ShowTQMesh( zXY[jr,:,0], zXY[jr,:,1], cfig=cfdir+'/00_'+cfb+'_Original.png',
+                        kk = mjt.ShowTQMesh( zXY[:,0,jr], zXY[:,1,jr], cfig=cfdir+'/00_'+cfb+'_Original.png',
                                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
                     
                     # After subsampling

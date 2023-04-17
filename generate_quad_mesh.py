@@ -31,6 +31,9 @@ quality_mode = 'thorough'
 #quality_mode = 'xlose' ; # extra lose => good to make maps of deformations, bad for scaling!!!
 
 
+lExportCloudPoints = True ; # in case we want to save the location of valid/selected quads in a netCDF file with `ncSaveCloudBuoys`
+#                           # => in order to seed from it!
+
 if __name__ == '__main__':
 
     kk = cfg.initialize( mode=quality_mode )
@@ -102,19 +105,21 @@ if __name__ == '__main__':
     #
     vdate = np.zeros( Nrec,  dtype=int )
     vIDs  = np.zeros( nBmax, dtype=int )
-    xPosG = np.zeros( (Nrec,nBmax,2) )
-    xPosC = np.zeros( (Nrec,nBmax,2) )
-    pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
-    if lTimePos:
-        timePos = np.zeros( (Nrec,nBmax), dtype=int )        
-    #
+    zGC = np.zeros( (nBmax,2,Nrec) )
+    zXY = np.zeros( (nBmax,2,Nrec) )
+    zmsk  = np.zeros( (nBmax,Nrec), dtype='i1' )
+    ztim  = np.zeros( (nBmax,Nrec), dtype=int )
+
     jr = 0
     for jrec in vRec[:]:
         if lTimePos:
-            vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:], timePos[jr,:] = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True, lGetTimePos=True  )
+            vdate[jr], zIDs, zGC[:,:,jr], zXY[:,:,jr], zmsk[:,jr], ztim[:,jr] = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True,
+                                                                                                          lGetTimePos=True, convention='F' )
         else:
-            vdate[jr], zIDs, xPosG[jr,:,:], xPosC[jr,:,:], pmsk[jr,:]                = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True, lGetTimePos=False )
+            vdate[jr], zIDs, zGC[:,:,jr], zXY[:,:,jr], zmsk[:,jr]             = mjt.LoadNCdataMJT( cf_nc_in, krec=jrec, lmask=True,
+                                                                                                          lGetTimePos=False, convention='F' )
         #
+        
         print( ' * jrec = ',jrec, ', mean date =',mjt.epoch2clock(vdate[jr]))    
         if jr==0:
             vIDs[:] = zIDs[:]
@@ -129,9 +134,9 @@ if __name__ == '__main__':
     cdt1 = mjt.epoch2clock(vdate[0] )
     cdt2 = mjt.epoch2clock(vdate[-1])
 
-    print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(pmsk[0,:]), np.sum(pmsk[1,:]))
+    print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(zmsk[:,0]), np.sum(zmsk[:,1]))
     print('        ==> nb of days =', NbDays)
-
+    del zmsk
 
     # Some sanity controls on time
     if Nt==2:
@@ -142,7 +147,7 @@ if __name__ == '__main__':
     
     if lTimePos and Nt==2:
         # Time control:
-        zzt = timePos[1,:] - timePos[0,:]
+        zzt = ztim[:,1] - ztim[:,0]
         if np.any( zzt == 0. ):
             print('ERROR: some identical times in the 1st and 2nd records!!!')
             (idxFU,) = np.where( zzt == 0. )
@@ -150,22 +155,13 @@ if __name__ == '__main__':
             exit(0)
         del zzt
     
-
-    # STUPID: #fixme
-    zXY   = np.zeros( (nBmax,2,Nrec) )
-    zXY[:,0,:] = xPosC[:,:,1].T
-    zXY[:,1,:] = xPosC[:,:,0].T
-    zGC   = np.zeros( (nBmax,2,Nrec) )
-    zGC[:,0,:] = xPosG[:,:,1].T
-    zGC[:,1,:] = xPosG[:,:,0].T
-
     mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
-    ztim = np.zeros((nBmax,Nrec), dtype=int )
     zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
 
-    if lTimePos:
-        ztim[:,:] = timePos[:,:].T
-    else:
+    #if lTimePos:
+    #    ztim[:,:] = timePos[:,:].T
+    #else:
+    if not lTimePos:
         for jp in range(nBmax): ztim[jp,:] = vdate[:]
 
     for jr in range(Nrec):
@@ -271,11 +267,11 @@ if __name__ == '__main__':
                 del zlngth, zml
             
             # Merge triangles into quadrangles:
-            xPcoor, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
+            xPxy, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
                                                                 ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
                                                                 areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), idbglev=idebug )
 
-            (nbP,_), (nbQ,_) = np.shape(xPcoor), np.shape(xQpnts)
+            (nbP,_), (nbQ,_) = np.shape(xPxy), np.shape(xQpnts)
             if nbQ<=0:
                 print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
             print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!')
@@ -283,8 +279,8 @@ if __name__ == '__main__':
 
             if corigin == 'RGPS':
                 # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
-                xPcoor, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPcoor, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel )
-                (nbP,_), (nbQ,_) = np.shape(xPcoor), np.shape(xQpnts)
+                xPxy, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPxy, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel )
+                (nbP,_), (nbQ,_) = np.shape(xPxy), np.shape(xQpnts)
                 print('\n *** After vertices time check: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points')
 
                 
@@ -310,7 +306,7 @@ if __name__ == '__main__':
                                          rangeX=vrngX, rangeY=vrngY )
                     
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS0 = mjt.Quadrangle( xPcoor, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin, reskm_nmnl=reskm )
+            QUADS0 = mjt.Quadrangle( xPxy, xQpnts, vPids, vTime, vQnam, date=cdats, origin=corigin, reskm_nmnl=reskm )
 
             #exit(0); #lili
             # Some info about the spatial scales of quadrangles:
@@ -334,6 +330,13 @@ if __name__ == '__main__':
             mjt.SaveClassPolygon( cf_npzQ, QUADS0, ctype='Q', origin=corigin, reskm_nmnl=reskm )
 
 
+            #
+            if lExportCloudPoints:
+                # First, we want the lon,lat version of `xPxy`:
+                zPgc = np.zeros(np.shape(xPxy))
+                
+            
+            
             #######################################################################################################
         else:
             
@@ -342,10 +345,10 @@ if __name__ == '__main__':
             print('\n *** Quad recycling for jr=',jr)
 
             # Recycling Quads found at 1st record (QUADS0): lilo
-            xPcoor, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
+            xPxy, vTime, xQpnts, vPids, vQnam, vQIDs  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS0,  iverbose=idebug )
             
             # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-            QUADS = mjt.Quadrangle( xPcoor, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin, reskm_nmnl=reskm )
+            QUADS = mjt.Quadrangle( xPxy, xQpnts, vPids, vTime, vQnam, vQIDs=vQIDs, date=cdats, origin=corigin, reskm_nmnl=reskm )
 
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', origin=corigin, reskm_nmnl=reskm )

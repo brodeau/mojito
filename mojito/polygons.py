@@ -138,7 +138,7 @@ class Quadrangle:
         if len(zvPntIdx) != nP:
             print(cEM+' problem with the number of points at play deduced from `xQPntIdx`: ',len(zvPntIdx),nP); exit(0)
 
-        zTcoor = np.array([ [ pXYkm[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
+        zQxy = np.array([ [ pXYkm[i,:] for i in xQPntIdx[jQ,:] ] for jQ in range(nQ) ]) ; # for each Quadrangle the 4 coordinates of 4 points [nQ,4,2]
 
         l_force_Q_IDs = (len(vQIDs) == nQ)
 
@@ -158,12 +158,12 @@ class Quadrangle:
         else:
             self.QuadIDs       = np.array([i for i in range(nQ)], dtype=int); # IDs of the quadrangles => shape = (nQ)
         self.MeshVrtcPntIdx = np.array(xQPntIdx, dtype=int)   ; # 4 point indices composing the quadrangles (indices in the frame of "only Quadrangles")
-        self.MeshPointXY  = np.array(zTcoor)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
+        self.MeshPointXY  = np.array(zQxy)              ; # Coordinates of the 4 points composing the quadrangle => shape = (nQ,4,2)
         self.QuadNames   = np.array( vQnames, dtype='U32' ) ; # point names => shape = (nP)
         self.origin      = origin
         self.reskm_nmnl = reskm_nmnl
         #
-        del zvPntIdx, zTcoor
+        del zvPntIdx, zQxy
 
 
     def lengths( self ):
