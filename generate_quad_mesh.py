@@ -454,7 +454,16 @@ if __name__ == '__main__':
         kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, zpid, zYkm, zXkm, zlat, zlon, mask=zmask.T,
                                    xtime=ztime.T, fillVal=mjt.FillValue, corigin=corigin )
 
+        if iplot>0:
+            # Ploting what we saved in NC file:
+            for jr in range(Nrec):
+                cfig = str.replace( cf_nc_out, '.nc', '_postQG'+'_rec%3.3i'%(jr)+'.png' )
+                cfig = str.replace( cfig , './nc', cfdir )
+                kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfig,
+                                       cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
+
+        
     
     print('\n --- Over!\n')
 
