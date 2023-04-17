@@ -118,28 +118,16 @@ if __name__ == '__main__':
         print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(zmsk[:,0]), np.sum(zmsk[:,1]))
         print('        ==> nb of days =', NbDays)
     
-        
-        # STUPID: #fixme
-        #zXY   = np.zeros( (Nrec,nBmax,2) )
-        #zXY[:,:,0] = xPosC[:,:,1]
-        #zXY[:,:,1] = xPosC[:,:,0]
-        #zGC   = np.zeros( (Nrec,nBmax,2) )
-        #zGC[:,:,0] = xPosG[:,:,1]
-        #zGC[:,:,1] = xPosG[:,:,0]
-    
         mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
-        #
+
         zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
     
         if not lTimePos:
             for jp in range(nBmax): ztim[jp,:] = vdate[:]
     
-    
-            
         NbP = nBmax
     
-    
-    
+
         if idebug>0:
             for jr in range(Nrec):
                 print('\n  DEBUG *** Record jr='+str(jr)+':')
