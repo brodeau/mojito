@@ -196,14 +196,6 @@ if __name__ == '__main__':
     if not path.exists('./figs'):
         mkdir('./figs')
 
-    # Separate: 
-    #cfroot = './figs/SCALING_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
-    #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.svg' )
-    #cfroot = './figs/SCALING_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
-    #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.svg' )
-    #cfroot = './figs/SCALING_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
-    #kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.svg' )
-
 
     xXQ = np.ma.masked_where(xXQ<-9000., xXQ)
 
@@ -212,3 +204,14 @@ if __name__ == '__main__':
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png', lOnlyObs=lOnlyRGPS )
+
+
+
+    # Separate: 
+    cfroot = './figs/0scaling_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.png' )
+    cfroot = './figs/0scaling_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.png' )
+    cfroot = './figs/0scaling_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.png' )
+    
