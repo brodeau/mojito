@@ -23,7 +23,7 @@ from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 1 ; # Create figures to see what we are doing...
+iplot  = 0 ; # Create figures to see what we are doing...
 
 rzoom_fig = 1
 
@@ -272,65 +272,19 @@ if __name__ == '__main__':
                                                                 ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
                                                                 areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), idbglev=idebug )
 
-            (nbP,_) = np.shape(xPcoor)
-            (nbQ,_) = np.shape(xQpnts)
+            (nbP,_), (nbQ,_) = np.shape(xPcoor), np.shape(xQpnts)
             if nbQ<=0:
                 print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
-
             print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!')
 
-            
-            # Get rid of quadrangles that have excessively asynchronous vertices:
-            #####################################################################
-            zQVtime = np.array([ vTime[i] for i in xQpnts ]) ; # => same shape as `xQpnts` !
-            idxKeep = []
-            std_max = 0.
-            for jQ in range(nbQ):
-                z4t = zQVtime[jQ,:]
-                zstd = mjt.StdDev( np.mean(z4t), z4t )
-                if zstd < cfg.rc_t_dev_cancel:
-                    idxKeep.append(jQ)
-                if zstd>std_max: std_max=zstd
-            print('Max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
-            idxKeep = np.array( idxKeep , dtype=int )
-            nbQn = len(idxKeep)
-            nbRM = nbQ-nbQn
-            print(' *** '+str(nbRM)+' quads /'+str(nbQ)+
-                  ' disregarded because points have too much of a difference in time position (>'+str(int(cfg.rc_t_dev_cancel/60.))+' min)')
-            if nbQn<=0:
-                print('  \n *** 0 quads left!!! => exiting!!!'); exit(0)
 
-            if nbQn<nbQ:
-                # Some Quads must be cancelled!!!!
-                nbQ = nbQn
-                zQpnts = np.zeros((nbQ,4),dtype=int)
-                zQnam  = np.zeros( nbQ,   dtype='U32')
-                zQpnts[:,:] = xQpnts[idxKeep,:] ; # => not enough be cause that's indices in the current number of points => must be corrected later!
-                zQnam[:]    = vQnam[idxKeep]
-                #
-                # Now arrays with `nbP` as a dimension:
-                zPidx = np.unique( zQpnts ); # =>indices !!!
-                zPids = vPids[zPidx]
-                (nbP,) = np.shape(zPids)
-                zTime  = np.zeros( nbP   , dtype=int)
-                zPcoor = np.zeros((nbP,2))
-                jP = 0
-                for jid in zPids:
-                    zQpnts[np.where(zQpnts==zPidx[jP])] = jP
-                    ([idx],) = np.where(vPids==jid)
-                    zTime[jP]    =  vTime[idx]
-                    zPcoor[jP,:] = xPcoor[idx,:]
-                    jP+=1
+            if corigin == 'RGPS':
+                # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
+                xPcoor, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPcoor, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel )
+                (nbP,_), (nbQ,_) = np.shape(xPcoor), np.shape(xQpnts)
+                print('\n *** After vertices time check: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points')
 
-                # Swap:
-                del xPcoor, vPids, vTime, xQpnts, vQnam
-                xPcoor, vPids, vTime, xQpnts, vQnam = zPcoor.copy(), zPids.copy(), zTime.copy(), zQpnts.copy(), zQnam.copy()
-                del zQVtime, zPcoor, zPids, zTime, zQpnts, zQnam
-                    
-
-
-            print('\n *** After vertices time check: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points ('+str(nbRM)+' quads removed!)')
-
+                
             # Save the triangular mesh info:
             mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', origin=corigin )
 

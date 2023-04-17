@@ -229,8 +229,6 @@ def TriPntIDs2QuaPntIDs( xPntID ):
     return np.array( zPntID, dtype=int )
 
 
-
-
 def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e5), idbglev=0 ):
     '''
     ### Attempt to merge triangles into quadrangles:
@@ -410,6 +408,61 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
             exit(0)
         
     return zPCoor, zPIDs, zPtime, zPindQ, zQnames
+
+
+
+
+
+def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel ):
+    '''
+    #
+    # Get rid of quadrangles that have excessively asynchronous vertices:
+    #  * t_dev_cancel: maximum time deviation allowed accros the 4 vertices of a quadrangle [s]
+    #
+    '''
+    from .util import StdDev
+    (nQ,_) = np.shape(pQpnts)
+    zQVtime = np.array([ pTime[i] for i in pQpnts ]) ; # => same shape as `pQpnts` !
+    idxKeep = []
+    std_max = 0.
+    for jQ in range(nQ):
+        z4t = zQVtime[jQ,:]
+        zstd = StdDev( np.mean(z4t), z4t )
+        if zstd < t_dev_cancel:
+            idxKeep.append(jQ)
+        if zstd>std_max: std_max=zstd
+    print(' * [QuadVrtcTDev()]: max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
+    idxKeep = np.array( idxKeep , dtype=int )
+    nQn = len(idxKeep)
+    if nQn<=0:
+        print(' * [QuadVrtcTDev()]: 0 quads left!!! => exiting!!!'); exit(0)
+    if nQn<nQ:
+        # Some Quads must be cancelled!!!!
+        print(' * [QuadVrtcTDev()]: we shall disregard '+str(nQ-nQn)+' quads /'+str(nQ)+
+              ' because excessive time dev. accros the 4 vertices (>'+str(int(t_dev_cancel/60.))+' min)')
+        nQ = nQn
+        zQpnts = np.zeros((nQ,4),dtype=int)
+        zQnam  = np.zeros( nQ,   dtype='U32')
+        zQpnts[:,:] = pQpnts[idxKeep,:] ; #=> not enough because it's indices in the current n. of points => must be corrected later!
+        zQnam[:]    = pQnam[idxKeep]
+        # Now arrays with `nP` as a dimension:
+        zPidx = np.unique( zQpnts ); # =>indices !!!
+        zPids = pPids[zPidx]
+        (nP,) = np.shape(zPids)
+        zTime  = np.zeros( nP   , dtype=int)
+        zPcoor = np.zeros((nP,2))
+        jP = 0
+        for jid in zPids:
+            zQpnts[np.where(zQpnts==zPidx[jP])] = jP
+            ([idx],)     = np.where(pPids==jid)
+            zTime[jP]    =  pTime[idx]
+            zPcoor[jP,:] = pPcoor[idx,:]
+            jP+=1
+        return zPcoor, zPids, zTime, zQpnts, zQnam
+    else:        
+        return pPcoor, pPids, pTime, pQpnts, pQnam ; # Nothing canceled!
+
+
 
 
 def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
@@ -664,7 +717,6 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime, recAxis=2 ):
                     ztm[jr,jBo  ] = ptime[jr,jB  ]
                     
     return zNam, zIDs, zGC, zXY, ztm
-
 
 
 
