@@ -136,7 +136,6 @@ if __name__ == '__main__':
 
     print('    *  start and End dates => '+cdt1+' -- '+cdt2,' | number of buoys =>',np.sum(zmsk[:,0]), np.sum(zmsk[:,1]))
     print('        ==> nb of days =', NbDays)
-    del zmsk
 
     # Some sanity controls on time
     if Nt==2:
@@ -195,6 +194,9 @@ if __name__ == '__main__':
     
     cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
 
+
+
+    
     for jr in range(Nrec):
         jrec = vRec[jr]
 
@@ -331,9 +333,30 @@ if __name__ == '__main__':
 
 
             #
-            if lExportCloudPoints:
-                # First, we want the lon,lat version of `xPxy`:
-                zPgc = np.zeros(np.shape(xPxy))
+            if lExportCloudPoints:  
+                # To be save in a NC file:
+                zpid  = np.zeros(nbP, dtype=int)
+                zPxy  = np.zeros((nbP,2,Nrec))
+                zPgc  = np.zeros((nbP,2,Nrec))
+                zmask = np.zeros((nbP,Nrec))
+                ztime = np.zeros((nbP,Nrec))
+                zPxy[:,:,jr] = xPxy[:,:]
+                for jb in range(nbP):
+                    [zx,zy] = xPxy[jb,:]
+                    #print(' zx,zy =',zx,zy)
+                    (idx,) = np.where( (np.round(zXY[:,0,jr],6) == round(zx,6)) & (np.round(zXY[:,1,jr],6) == round(zy,6)) )
+                    #print('idx =',idx)
+                    if len(idx)!=1:
+                        print('ERROR: `len(idx)!=1` !'); exit(0)
+                    zPgc[jb,:,jr] =  zGC[idx[0],:,jr]
+                    zpid[jb]      = vIDs[idx[0]]
+                    zmask[jb,jr] = zmsk[idx[0],jr]
+                    ztime[jb,jr] =  ztim[idx[0],jr]
+                    #print('zXY[idx,:,jr], xPxy[jb,:]',zXY[idx,:,jr], xPxy[jb,:])
+                    
+            #exit(0)
+                    
+
                 
             
             
@@ -352,12 +375,37 @@ if __name__ == '__main__':
 
             # Save the quadrangular mesh info:
             mjt.SaveClassPolygon( cf_npzQ, QUADS, ctype='Q', origin=corigin, reskm_nmnl=reskm )
-
+            
             del QUADS
 
+            
+            if lExportCloudPoints:
+                print('LOLO: jr=',jr)
+                # To be save in a NC file:
+                zPxy[:,:,jr] = xPxy[:,:]
+                for jb in range(nbP):
+                    [zx,zy] = xPxy[jb,:]
+                    (idx,) = np.where( (np.round(zXY[:,0,jr],6) == round(zx,6)) & (np.round(zXY[:,1,jr],6) == round(zy,6)) )
+                    if len(idx)!=1:
+                        print('ERROR: `len(idx)!=1` !'); exit(0)
+                    zPgc[jb,:,jr] =  zGC[idx[0],:,jr]
+                    zpid[jb]      = vIDs[idx[0]]
+                    zmask[jb,jr]  = zmsk[idx[0],jr]
+                    ztime[jb,jr]  =  ztim[idx[0],jr]
+
+
+
+
+
+            
         ### if jr == 0
 
 
+
+        
+
+
+        
         if iplot>0:
 
             TRI = mjt.LoadClassPolygon( cf_npzT, ctype='T' )
@@ -383,5 +431,34 @@ if __name__ == '__main__':
                                  lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
     ### for jr in range(Nrec):
+
+
+
+
+
+    if lExportCloudPoints:
+        cf_nc_out = str.replace( cf_nc_in, '.nc', '_postQG.nc' )
+
+        zYkm = np.zeros( (Nrec,nbP) )
+        zXkm = np.zeros( (Nrec,nbP) )
+        zlat = np.zeros( (Nrec,nbP) )
+        zlon = np.zeros( (Nrec,nbP) )
+
+        zYkm[:,:] = zPxy[:,1,:].T
+        zXkm[:,:] = zPxy[:,0,:].T
+        zlat[:,:] = zPgc[:,1,:].T
+        zlon[:,:] = zPgc[:,0,:].T
+
+        print('   * saving '+cf_nc_out)
+        
+        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, zpid, zYkm, zXkm, zlat, zlon, mask=zmask.T,
+                                   xtime=ztime.T, fillVal=mjt.FillValue, corigin=corigin )
+
+
+    
     print('\n --- Over!\n')
 
+
+
+
+    
