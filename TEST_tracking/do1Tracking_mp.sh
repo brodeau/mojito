@@ -3,6 +3,11 @@
 . ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
+
+XTRASFX=""
+#XTRASFX="_postQG"
+
+
 EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
@@ -15,7 +20,7 @@ else
     cxtraRES="_${cr1}-${RESKM}km"
 fi
 
-list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}_postQG.nc`
+list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
 
 nbf=`echo ${list_seed_nc} | wc -w`
 

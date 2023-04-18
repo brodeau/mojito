@@ -118,8 +118,9 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_Qarea_min, rc_Qarea_max =  450*450, 550*550
     elif irk==640:
         rc_d_ss = 620
-        rc_tolQuadA = 200
-        rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
+        rc_tolQuadA = 300
+        #rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
+        rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
     else:
         print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
@@ -160,7 +161,7 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
     if res_km>=400.:
         rc_t_dev_cancel = 3*3600
         if res_km>=600.:
-            rc_t_dev_cancel = 3*3600
+            rc_t_dev_cancel = 24*3600
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
     return 0

@@ -143,16 +143,24 @@ if __name__ == '__main__':
     
     
         ### Too close to land for a given scale???
-        if ldss:
+        if ldss or (reskm>300):
 
-            if ldtc:
-                rDmin = rd_tc
+            if ldss:
+                if   ldtc:
+                    rDmin = rd_tc
+                elif corigin=='RGPS':
+                    rDmin = rd_ss
+                    if reskm>300:
+                        rDmin = 1.25*( max( 110. ,  100. - 2*(rd_ss-reskm) ) ); # so it still varies...                
+                    if reskm>350:
+                        rDmin = max( 110. ,  100. - 1.*(rd_ss-reskm) ) ; # so it still varies...                        
             else:
-                rDmin = rd_ss
-                if reskm>300:
-                    rDmin = 1.25*( max( 110. ,  100. - 2*(rd_ss-reskm) ) ); # so it still varies...                
-                if reskm>350:
-                    rDmin = max( 110. ,  100. - 2*(rd_ss-reskm) ) ; # so it still varies...
+                if  reskm==320:
+                    rDmin = 200
+                elif reskm==640:
+                    rDmin = 300
+                else:
+                    rDmin = 200
             #
             print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
             

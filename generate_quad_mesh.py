@@ -23,15 +23,16 @@ from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
 quality_mode = 'thorough'
 #quality_mode = 'xlose' ; # extra lose => good to make maps of deformations, bad for scaling!!!
 
+lapplyDistCoast = False
 
-lExportCloudPoints = True ; # in case we want to save the location of valid/selected quads in a netCDF file with `ncSaveCloudBuoys`
+lExportCloudPoints = False ; # in case we want to save the location of valid/selected quads in a netCDF file with `ncSaveCloudBuoys`
 #                           # => in order to seed from it!
 
 if __name__ == '__main__':
@@ -79,7 +80,7 @@ if __name__ == '__main__':
 
     
     # Loading the data for the 2 selected records:
-    Nt, nBmax, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
+    Nt, NbP, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
 
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
     
@@ -104,11 +105,11 @@ if __name__ == '__main__':
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
     #
     vdate = np.zeros( Nrec,  dtype=int )
-    vIDs  = np.zeros( nBmax, dtype=int )
-    zGC   = np.zeros( (nBmax,2,Nrec) )
-    zXY   = np.zeros( (nBmax,2,Nrec) )
-    zmsk  = np.zeros( (nBmax,Nrec), dtype='i1' )
-    ztim  = np.zeros( (nBmax,Nrec), dtype=int )
+    vIDs  = np.zeros( NbP, dtype=int )
+    zGC   = np.zeros( (NbP,2,Nrec) )
+    zXY   = np.zeros( (NbP,2,Nrec) )
+    zmsk  = np.zeros( (NbP,Nrec), dtype='i1' )
+    ztim  = np.zeros( (NbP,Nrec), dtype=int )
 
     jr = 0
     for jrec in vRec[:]:
@@ -154,31 +155,30 @@ if __name__ == '__main__':
             exit(0)
         del zzt
     
-    mask = np.zeros( nBmax      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
+    mask = np.zeros( NbP      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
     zPnm = np.array( [ str(i) for i in vIDs ], dtype='U32' ) ; # Name for each point, based on 1st record...
 
-    #if lTimePos:
-    #    ztim[:,:] = timePos[:,:].T
-    #else:
     if not lTimePos:
-        for jp in range(nBmax): ztim[jp,:] = vdate[:]
+        for jp in range(NbP): ztim[jp,:] = vdate[:]
 
-    for jr in range(Nrec):
-        print('\n   * Record #'+str(vRec[jr])+':')
-
-        # Translate rji,rjj from TracIce to lon,lat and x,y:
-        #zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
-
-        # Get rid of points to close to land (shrinks arrays!):
-        mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=cfg.nc_MinDistFromLand, fNCdist2coast=cfg.fdist2coast_nc )
-
-    # How many points left after elimination of buoys that get too close to land (at any record):
-    NbP  = np.sum(mask)
-    NbRM = nBmax-NbP
-    print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
-
-    if NbRM>0:
-        zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
+    if lapplyDistCoast:
+        for jr in range(Nrec):
+            print('\n   * Record #'+str(vRec[jr])+':')
+    
+            # Translate rji,rjj from TracIce to lon,lat and x,y:
+            #zGC[:,:,jr], zXY[:,:,jr] = mjt.rJIrJJtoCoord( xJJs[:,jr], xJIs[:,jr], xIDs[:,jr], xlon_t, xlon_u, xlat_t, xlat_v )
+    
+            # Get rid of points to close to land (shrinks arrays!):
+            mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=cfg.nc_MinDistFromLand, fNCdist2coast=cfg.fdist2coast_nc )
+    
+        # How many points left after elimination of buoys that get too close to land (at any record):
+        NbPn = np.sum(mask)
+        NbRM = NbP-NbPn
+        print('\n *** '+str(NbPn)+' / '+str(NbP)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
+    
+        if NbRM>0:
+            zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
+            NbP = NbPn
 
         
     if idebug>0:
@@ -195,10 +195,10 @@ if __name__ == '__main__':
     cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
 
 
-    (nP,_,_) = np.shape(zXY)
 
-    if nP<4:
-        print('  \n *** Only '+str(nP)+' points in the cloud! => exiting!!!');  exit(0)    
+
+    if NbP<4:
+        print('  \n *** Only '+str(NbP)+' points in the cloud! => exiting!!!');  exit(0)    
 
     
     for jr in range(Nrec):

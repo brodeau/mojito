@@ -43,82 +43,90 @@ echo
 for cbtch in ${list_btch}; do
 
     #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-    list=`\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
-    nbf=`echo ${list} | wc -w`
+    list=`\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz 2>/dev/null`
+    if [ "${list}" != "" ]; then
 
-    echo " *** Number of files for Batch ${cbtch} = ${nbf}"
+        nbf=`echo ${list} | wc -w`
 
-    list_date_ref=""
-    for ff in ${list}; do
-        date_ref=`echo ${ff} | cut -d_ -f5`
-        list_date_ref+=" ${date_ref}"
-    done
-    list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+        echo " *** Number of files for Batch ${cbtch} = ${nbf}"
 
-    echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
+        list_date_ref=""
+        for ff in ${list}; do
+            date_ref=`echo ${ff} | cut -d_ -f5`
+            list_date_ref+=" ${date_ref}"
+        done
+        list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
 
-    for dr in ${list_date_ref}; do
-        echo
+        echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
 
-        if [ "${LIST_RD_SS}" = "" ]; then
-            lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz` )
-            nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
-            #
-            if [ ${nf} -eq 2 ]; then
-                fQ1=${lst[0]}; fQ2=${lst[1]}
-                echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
+        for dr in ${list_date_ref}; do
+            echo
 
-                flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
-                ijob=$((ijob+1))
-                #
-                if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                    CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
-                else
-                    CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
-                fi
-                echo "  ==> ${CMD}"; echo
-                ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
-                echo; echo
-                if [ $((ijob%NJPAR)) -eq 0 ]; then
-                    echo "Waiting! (ijob = ${ijob})...."
-                    wait; echo; echo
-                fi
-            fi ; # if [ ${nf} -eq 2 ]
-            #
-        else
-            #
-            for rdss in ${LIST_RD_SS}; do
-                lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${rdss}-${RESKM}km.npz` )
-                nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
-                #
-                if [ ${nf} -eq 2 ]; then
-                    fQ1=${lst[0]}; fQ2=${lst[1]}
-                    echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                    cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
-                    
-                    flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${rdss}-${RESKM}km"
-                    ijob=$((ijob+1))
+            if [ "${LIST_RD_SS}" = "" ]; then
+                lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
+                if [ "${list}" != "" ]; then
+                    nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                     #
-                    if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                        CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
-                    else
-                        CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
-                    fi
-                    echo "  ==> ${CMD}"; echo
-                    ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
-                    echo; echo
-                    if [ $((ijob%NJPAR)) -eq 0 ]; then
-                        echo "Waiting! (ijob = ${ijob})...."
-                        wait; echo; echo
-                    fi
-                fi ; # if [ ${nf} -eq 2 ]
-                #
-            done
-            #
-        fi # if [ "${LIST_RD_SS}" = "" ]
+                    if [ ${nf} -eq 2 ]; then
+                        fQ1=${lst[0]}; fQ2=${lst[1]}
+                        echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                        cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
 
-    done
+                        flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
+                        ijob=$((ijob+1))
+                        #
+                        if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
+                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
+                        else
+                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
+                        fi
+                        echo "  ==> ${CMD}"; echo
+                        ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
+                        echo; echo
+                        if [ $((ijob%NJPAR)) -eq 0 ]; then
+                            echo "Waiting! (ijob = ${ijob})...."
+                            wait; echo; echo
+                        fi
+                    fi ; # if [ ${nf} -eq 2 ]
+                fi
+                #
+            else
+                #
+                for rdss in ${LIST_RD_SS}; do
+                    lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null` )
+                    if [ "${list}" != "" ]; then
+                        nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+                        #
+                        if [ ${nf} -eq 2 ]; then
+                            fQ1=${lst[0]}; fQ2=${lst[1]}
+                            echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                            cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
+
+                            flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${rdss}-${RESKM}km"
+                            ijob=$((ijob+1))
+                            #
+                            if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
+                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
+                            else
+                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
+                            fi
+                            echo "  ==> ${CMD}"; echo
+                            ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
+                            echo; echo
+                            if [ $((ijob%NJPAR)) -eq 0 ]; then
+                                echo "Waiting! (ijob = ${ijob})...."
+                                wait; echo; echo
+                            fi
+                        fi ; # if [ ${nf} -eq 2 ]
+                    fi
+                    #
+                done
+                #
+            fi # if [ "${LIST_RD_SS}" = "" ]
+
+        done
+
+    fi
 
 done
 
