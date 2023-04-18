@@ -1079,12 +1079,12 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
 
 
 def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation',
-                     cfig='Scaling.png', lOnlyObs=False ):
+                     cfig='Scaling.png', lOnlyObs=False, lShowScat=True ):
     '''
         According to Fiffure's taste...
     '''
     xlog_min, xlog_max = 7.5 , 1.e3
-    ylog_min,ylog_max  =  5.e-7, 1.e-1
+    ylog_min,ylog_max  =  0.8e-6, 0.2e-1
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
@@ -1096,7 +1096,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     if np.shape(pMQ) != (Ns,No,3):
         print('ERROR [plot3ScalingDef]: wrong shape for `pMQ` !',np.shape(pMQ)); exit(0)
 
-    lAddCloud = ( len(np.shape(pXQ))==4 and len(np.shape(pXS))==3 )
+    lAddCloud = ( lShowScat and len(np.shape(pXQ))==4 and len(np.shape(pXS))==3 )
 
     if lAddCloud:
         (Nm,n1,n2,n3) = np.shape(pXQ)
@@ -1106,9 +1106,6 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if (n1,n2,n3) != (Ns,No,3):
             print('ERROR [plot3ScalingDef]: wrong shape for `pXS` !',np.shape(pXS)); exit(0)
 
-
-    print('LOLO: shape of pXQ =',np.shape(pXQ))
-
     vNbPoints = np.zeros(Ns, dtype=int)
     for js in range(Ns):
         (idxOk,) = np.where(pXQ[:,js,0,0].data>0)
@@ -1117,15 +1114,13 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         
     ki = _initStyle_()
 
-    fig = plt.figure( num = 1, figsize=(10,14), dpi=None )
-    ax = plt.axes([0.11, 0.06, 0.85, 0.9])
+    fig = plt.figure( num = 1, figsize=(8,14), dpi=None )
+    ax = plt.axes([0.13, 0.06, 0.83, 0.9])
 
-
-
-    if lAddCloud:
-        jo=0
-        plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
-                    color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
+    #if lAddCloud:
+    #    jo=0
+    #    plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+    #                color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
 
     if lOnlyObs: No=1
         
@@ -1150,10 +1145,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-    #ax.annotate(what, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
-    ax.annotate('q=1', xy=(0.94, 0.81), xycoords='axes fraction', ha='left', **cfont_axis)
-    ax.annotate('q=2', xy=(0.94, 0.45), xycoords='axes fraction', ha='left', **cfont_axis)
-    ax.annotate('q=3', xy=(0.94, 0.11), xycoords='axes fraction', ha='left', **cfont_axis)
+    ax.annotate('q=1', xy=(740, 0.85e-2), xycoords='data', ha='left', **cfont_axis)
+    ax.annotate('q=2', xy=(740, 1.5e-4), xycoords='data', ha='left', **cfont_axis)
+    ax.annotate('q=3', xy=(740, 2.e-6),  xycoords='data', ha='left', **cfont_axis)
     #
     for js in range(Ns):
         ax.annotate( str(vNbPoints[js]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
