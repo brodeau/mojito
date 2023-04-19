@@ -208,10 +208,10 @@ if __name__ == '__main__':
 
 
     # Separate: 
-    cfroot = './figs/0scaling_'+cfield+'_mean_'+corig+'_dt'+str(dtbin)
+    cfroot = './figs/0scaling_'+cfield+'_q1_mean_'+corig+'_dt'+str(dtbin)
     kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.png' )
-    cfroot = './figs/0scaling_'+cfield+'_variance_'+corig+'_dt'+str(dtbin)
+    cfroot = './figs/0scaling_'+cfield+'_q2_variance_'+corig+'_dt'+str(dtbin)
     kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.png' )
-    cfroot = './figs/0scaling_'+cfield+'_skewness_'+corig+'_dt'+str(dtbin)
+    cfroot = './figs/0scaling_'+cfield+'_q3_skewness_'+corig+'_dt'+str(dtbin)
     kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.png' )
     
