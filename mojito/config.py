@@ -119,6 +119,8 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
     elif irk==640:
         rc_d_ss = 620
         rc_tolQuadA = 300
+        #rc_Qarea_min, rc_Qarea_max =  600*600, 680*680
+        #rc_Qarea_min, rc_Qarea_max =  520*520, 760*760
         #rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
         rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
     else:
@@ -162,6 +164,7 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_t_dev_cancel = 3*3600
         if res_km>=600.:
             rc_t_dev_cancel = 24*3600
+            #rc_t_dev_cancel = 18*3600
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
     return 0

@@ -55,8 +55,36 @@ case ${host} in
         #DT_BINS_H=$((24*3)); RESKM=500; LIST_RD_SS="450 470 490"
         #
         # 640km:
-        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="520 540 560 570 580 590 600 610 620 630 640 660 680 700" ; # p (500, 780) |
-        DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (480, 800)
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 1270 points GOOD!!!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="540 550 560 570 580 590 600 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 962 points The Best so far *_*
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="570 580 590 600 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 714 p / slight improvement
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="590 600 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 549 p / slight improvement
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="580 600 620 640 660" ; # (480, 800)/Tdev=24h =>  352 p / DA BEST!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="590 620 650" ; # (480, 800)/Tdev=24h =>  211 p / bit less good
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="600 620 640" ; # (480, 800)/Tdev=24h =>  209 p / DA BEST! (mainly due to improvement q1!)
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="610 630 650" ; # (480, 800)/Tdev=24h =>  192p / Au dessus c l'soleil!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="620 640 660" ; # (480, 800)/Tdev=24h =>   194p / moins bon pur q1 surtout
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 630 645" ; # (480, 800)/Tdev=24h =>  205p / bcp moins bien
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="630" ; # (480, 800)/Tdev=24h => pas bon
+        DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="620 640" ; # (480, 800)/Tdev=24h => 
+        #
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (500, 780)/Tdev=24h =>  1156 points GOOD! (better q1,less for q3)
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (520, 760)/Tdev=24h =>  979 points GOOD! (better q1,less for q3)
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="500 540 560 580 600 620 640 660 700" ; # (520, 760)/Tdev=24h =>  571 points good! (better for q2,q3,less q1)
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="500 540 560 580 600 620 640 660 700" ; # (500, 780)/Tdev=24h =>   623 points good!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="510 540 560 580 600 620 640 660 690 720" ; # (520, 760)/Tdev=24h => 598 points GOOD!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="520 540 560 580 600 620 640 660 680 700 720 740" ; # (520, 760)/Tdev=24h => 685 points less GOOD!
+        #
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="540 560 580 600 610 620 630 640 660 680 700 720 740" ; # (520, 760)/Tdev=24h =>  723 points more GOOD!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="540 560 580 600 610 620 630 640 660 680 700 720 740" ; # (600, 680)/Tdev=24h =>  346 points trop remonte!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="540 560 580 600 610 620 630 640 660 680 700 720 740" ; # (500, 780)/Tdev=24h =>  769 points slightly betta!
+
+        
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="500 540 560 580 600 620 640 660 700" ; # (500, 780)/Tdev=18h =>   bad
+        #
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (500, 780)/Tdev=12h => 254 points bad!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (480, 800)/Tdev=12h => 296 points bad!
+        #
         ##LIST_RD_SS="500 520 530 540 550 560 570 580 590 600 610 620 630 640 650" ; # 134p (520, 760) |
         ##LIST_RD_SS="500 520 540 560 570 575 580 585 590 595 600 605 610 615 620 630" ; # 151p (510, 770) | pas mal
         ##LIST_RD_SS="500 520 540 560 570 580 590 600 610 620 630" ; # Good! 105p (510, 770)
