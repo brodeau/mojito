@@ -38,6 +38,16 @@ case ${host} in
         #DT_BINS_H=6 ;  RESKM=160; LIST_RD_SS="145" ;  # defaut:145
         #
         # 320km:
+        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="300" ; #(260, 380) / 128 pt / Pas mal!
+        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="295" ; #(260, 380) /  146 pt / Pas mal+!
+        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="285 295 305" ; #(260, 380) /  444 pt / Pas mal++! ZOLEIL *_*
+        DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="285 295 305" ; #(280, 360) / ZOLEIL++  8==D 
+        #
+        #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="290" ; #(260, 380) / 144 pt / drop!!!
+        #
+        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="300" ; #(260, 380) / 124 pt similar
+        #
+        #
         #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 300 310 320 335 350"  # =>  266p (260, 380) Good!!!
         #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 310 320"  # =>  259p (260, 380) pas mal!!!
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="250 265 280 290 295 300 305 310 320 330"  # =>  298p (260, 380) moins bien!
@@ -51,10 +61,11 @@ case ${host} in
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="310"  # defaut:295 => 47p
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="280 295 310 320 330"  # defaut:295
         #
-        # 500km:
-        #DT_BINS_H=$((24*3)); RESKM=500; LIST_RD_SS="450 470 490"
-        #
         # 640km:
+        #***********************
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="610 630 650" ; # (480, 800)/Tdev=24h =>  192p / Au dessus c l'soleil! FOLEIL
+        #***********************
+        #
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 1270 points GOOD!!!
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="540 550 560 570 580 590 600 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 962 points The Best so far *_*
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="570 580 590 600 610 620 630 640 650 660" ; # (480, 800)/Tdev=24h => 714 p / slight improvement
@@ -62,11 +73,14 @@ case ${host} in
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="580 600 620 640 660" ; # (480, 800)/Tdev=24h =>  352 p / DA BEST!
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="590 620 650" ; # (480, 800)/Tdev=24h =>  211 p / bit less good
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="600 620 640" ; # (480, 800)/Tdev=24h =>  209 p / DA BEST! (mainly due to improvement q1!)
-        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="610 630 650" ; # (480, 800)/Tdev=24h =>  192p / Au dessus c l'soleil!
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="610 630 650" ; # (480, 800)/Tdev=24h =>  192p / Au dessus c l'soleil! FOLEIL
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="610 630 650" ; # (520, 760)/Tdev=24h =>   BIN 177p / bit less good
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 635 655" ; # (480, 800)/Tdev=24h =>   201p / Au dessus c l'soleil!v3
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="600 620 640" ; # (480, 800)/Tdev=24h =>  209p / Au dessus c l'soleil!v2
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="620 640 660" ; # (480, 800)/Tdev=24h =>   194p / moins bon pur q1 surtout
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 630 645" ; # (480, 800)/Tdev=24h =>  205p / bcp moins bien
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="630" ; # (480, 800)/Tdev=24h => pas bon
-        DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="620 640" ; # (480, 800)/Tdev=24h => 
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="620 640" ; # (480, 800)/Tdev=24h => 
         #
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (500, 780)/Tdev=24h =>  1156 points GOOD! (better q1,less for q3)
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="470 500 540 550 560 570 580 590 595 600 605 610 620 630 640 650 660" ; # (520, 760)/Tdev=24h =>  979 points GOOD! (better q1,less for q3)

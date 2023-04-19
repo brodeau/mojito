@@ -111,11 +111,8 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
     elif irk==320:
         rc_d_ss = 295
         rc_tolQuadA = 100
-        rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
-    elif irk==500:
-        rc_d_ss = 480
-        rc_tolQuadA = 150
-        rc_Qarea_min, rc_Qarea_max =  450*450, 550*550
+        #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
+        rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
     elif irk==640:
         rc_d_ss = 620
         rc_tolQuadA = 300
@@ -160,8 +157,8 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
     #    => we disregard any quadrangles which standard deviation of the time of the 4 positions
     #       excess `t_dev_cancel` seconds !
     rc_t_dev_cancel = 60
-    if res_km>=400.:
-        rc_t_dev_cancel = 3*3600
+    if res_km>=300.:
+        rc_t_dev_cancel = 12*3600
         if res_km>=600.:
             rc_t_dev_cancel = 24*3600
             #rc_t_dev_cancel = 18*3600

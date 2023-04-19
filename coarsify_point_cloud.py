@@ -143,39 +143,40 @@ if __name__ == '__main__':
     
     
         ### Too close to land for a given scale???
-        if ldss or (reskm>300):
-
+        rDmin = 100.
+        if ldss or (reskm>600):            
             if ldss:
                 if   ldtc:
                     rDmin = rd_tc
-                elif corigin=='RGPS':
+                elif corigin=='RGPS' and reskm>600:
                     rDmin = rd_ss
-                    if reskm>300:
-                        rDmin = 1.25*( max( 110. ,  100. - 2*(rd_ss-reskm) ) ); # so it still varies...                
+                    #if reskm>300:
+                    #    rDmin = 1.25*( max( 110. ,  100. - 2*(rd_ss-reskm) ) ); # so it still varies...                
                     if reskm>350:
                         rDmin = max( 110. ,  100. - 1.*(rd_ss-reskm) ) ; # so it still varies...                        
             else:
-                if  reskm==320:
-                    rDmin = 200
-                elif reskm==640:
+                #if  reskm==320:
+                #    rDmin = 200
+                if reskm==640:
                     rDmin = 300
-                else:
-                    rDmin = 200
+                #else:
+                #    rDmin = 200
             #
-            print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
-            
-            for jr in range(Nrec):
-                print('    * Record #'+str(jr)+':')
-                mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
-            # How many points left after elimination of buoys that get too close to land (at any record):
-            NbP  = np.sum(mask)
-            NbRM = nBmax-NbP
-            print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
-            if NbRM>0:
-                zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=2 )
-            if NbP<4:
-                print('\n *** Exiting because no enough points alive left!')
-                exit(0)
+            if rDmin>105:
+                print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
+                
+                for jr in range(Nrec):
+                    print('    * Record #'+str(jr)+':')
+                    mask[:] = mjt.MaskCoastal( zGC[:,:,jr], mask=mask[:], rMinDistLand=rDmin, fNCdist2coast=cfg.fdist2coast_nc, convArray='F' )
+                # How many points left after elimination of buoys that get too close to land (at any record):
+                NbP  = np.sum(mask)
+                NbRM = nBmax-NbP
+                print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
+                if NbRM>0:
+                    zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=2 )
+                if NbP<4:
+                    print('\n *** Exiting because no enough points alive left!')
+                    exit(0)
             
         
         # We must call the coarsening function only for first record !
