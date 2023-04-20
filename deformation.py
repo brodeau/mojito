@@ -74,9 +74,11 @@ if __name__ == '__main__':
         cdtbin = '_'+split('_',cf1)[-4]        
     else:
         print('FIXME: unknow origin: ',corigin); exit(0)
-    if cdtbin[1:3]!='dt':
+    if not cdtbin[1:3] in ['dt','id']:
         print('ERROR: we could not figure out `cdtbin`!'); exit
 
+    #print('LOLO: cdtbin[1:3] =',cdtbin[1:3]);exit(0)
+        
     # Test for coarsening realisations:
     cr1, cr2 = '', ''
     cc1, cc2 = split('-',split('_',cf1)[-1]), split('-',split('_',cf2)[-1])
@@ -95,8 +97,11 @@ if __name__ == '__main__':
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
 
-    dtbin = int(cdtbin[3:])*3600
-    print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
+    if  cdtbin[3:]=='lSeed':
+        dtbin = 0
+    else:
+        dtbin = int(cdtbin[3:])*3600
+        print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
 
 
     #kk = cfg.updateConfig4Scale( reskm )

@@ -44,7 +44,7 @@ for RESKM in ${LCOARSEN}; do
                 ijob=$((ijob+1))
                 CMD="${EXE} ${ff} ${lstrec} ${RESKM}"
                 echo "    ==> will launch:"; echo "     ${CMD}"; echo
-                exit
+
                 ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
                 echo
                 if [ $((ijob%NJPAR)) -eq 0 ]; then

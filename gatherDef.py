@@ -29,9 +29,9 @@ if __name__ == '__main__':
     creskm = argv[3]
     cidorg = argv[4]
 
-    #print('listing: '+cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_'+creskm+'km.npz')
-    listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_'+creskm+'km.npz') )
-    listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_*-'+creskm+'km.npz') )
+    #print('listing: '+cd_in+'/'+cprefixIn+'*'+cidorg+'*+cdtbin+'*_'+creskm+'km.npz')
+    listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_'+creskm+'km.npz') )
+    listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_*-'+creskm+'km.npz') )
 
     if len(listnpz1)>0 and len(listnpz2)>0:
         print('ERROR: we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!'); exit(0)
@@ -92,7 +92,12 @@ if __name__ == '__main__':
     cdt1, cdt2 = list_date[0],list_date[-1]
     cperiod = cdt1+'-'+cdt2
 
-    dtbin=int(cdtbin)
+    dtbin=0
+    cinfobin = ''
+    if cdtbin!='nemoTsi3_idlSeed':
+        dtbin=int(cdtbin)
+        cinfobin = '_dt'+cdtbin
+        
     if str(reskm) != creskm:
         print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
         exit(0)
@@ -124,7 +129,7 @@ if __name__ == '__main__':
     del zdiv, zshr, ztot, za
 
     
-    cfroot = corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
+    cfroot = corigin+cinfobin+'_'+str(reskm)+'km_'+cperiod   
 
     
     # Save it for the scaling and PDFs to come ...
