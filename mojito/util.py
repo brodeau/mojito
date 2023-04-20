@@ -342,9 +342,9 @@ def GetRidOfXYClones( pXY, rmask_val=-999. ):
 
 
 
-def SubSampCloud( rd_km, pCoor ):
+def SubSampCloud( rd_km, pCoor,  convArray='F' ):
     '''
-       * pCoor: [X,Y] !!!
+       * pCoor: [X,Y] if convArray='F' or [Y,X] if convArray='C' !!!
     '''
     from gudhi import subsampling as sbspl
     #
@@ -357,28 +357,30 @@ def SubSampCloud( rd_km, pCoor ):
     if (n2 != 2 ):
         print(cerr+'second dimmension of `pCoor` must be 2 !')
         exit(0)
-    
-    zCoor = np.array( sbspl.sparsify_point_set( pCoor, min_squared_dist=rd_km*rd_km ) )
+
+
+    if   convArray=='F':
+        zXY = pCoor.copy()
+    elif convArray=='C':
+        zXY = np.array( [ pCoor[:,1], pCoor[:,0] ] ).T
+    else:
+        print(cerr+'`convArray` can only be "F" or "C"!'); exit(0)
+        
+    zCoor = np.array( sbspl.sparsify_point_set( zXY, min_squared_dist=rd_km*rd_km ) )
     (Nb,_) = np.shape(zCoor)
 
     # Retrieve corresponding indices for selected points:
     idxleft = np.zeros(Nb, dtype=int)
     for i in range(Nb):
-        (idx,_) = np.where( pCoor[:,:]==zCoor[i,:] )
+        (idx,_) = np.where( zXY[:,:]==zCoor[i,:] )
         idxleft[i] = idx[0]
-
+    del zXY
+        
+    if convArray=='C':
+        # Need to put it back in correct indexing:
+        zCoor = np.array( [ zCoor[:,1], zCoor[:,0] ] ).T
+        
     return Nb, zCoor, idxleft
-    #if l_do_cgeo:
-    #    zgeo = np.array( [ pLonLat[ileft,0], pLonLat[ileft,1] ] ).T
-    #    if l_do_name:
-    #        return Nb, zCoor, pIDs[ileft], ptime[ileft], zgeo, pNames[ileft]
-    #    else:
-    #        return Nb, zCoor, pIDs[ileft], ptime[ileft], zgeo
-    #else:
-    #    if l_do_name:
-    #        return Nb, zCoor, pIDs[ileft], ptime[ileft], pNames[ileft]
-    #    else:
-    #        return Nb, zCoor, pIDs[ileft], ptime[ileft]
 
 
 

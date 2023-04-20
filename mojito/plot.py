@@ -17,7 +17,8 @@ import matplotlib.colors as colors
 from mpl_toolkits.basemap import Basemap
 #from mpl_toolkits.basemap import shiftgrid
 
-import climporn as cp
+from .util import epoch2clock
+
 
 #idebug = 0
 
@@ -31,7 +32,7 @@ clr_yellow = '#ffed00'
 fig_type='png'
 rDPI = 150
 rzoom = 1.
-vfig_size = [ 7.54*rzoom, 7.2*rzoom ]
+vfig_size = [ 7.54, 7.2 ]
 vsporg = [0., 0., 1., 1.]
 col_bg = '#041a4d'
 
@@ -48,7 +49,7 @@ clPNames = 'w' ; # color for city/point annotations
 
 def _initStyle_( fntzoom=1., color_top='k' ):
     #
-    global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mail
+    global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail
     #
     fntzoom_inv = 1.*fntzoom**0.5
     #
@@ -63,12 +64,16 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     mpl.rcParams.update(params)
     #
     cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
-    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(16.*fntzoom_inv), 'color':color_top }
+    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(13.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(18.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(16.*fntzoom), 'color':color_top }
+    cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
     return 0
+
+
+
 
 def _SelectArcticProjExtent_( nameProj ):
     #
@@ -144,6 +149,8 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
         NbValid = 0
         #NbValid = ( (pvlon>=-180.) and (pvlon<=360.)(pvlat>=-90.) and (pvlat<=-90.) ).sum()
     #
+    vfig_size = [ 7.54*rzoom, 7.2*rzoom ]
+    
     fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor=col_bg)
 
@@ -159,9 +166,9 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
         for ii in range(Nb):
             x0,y0 = BMProj(pvlon[ii],pvlat[ii])
             if lstr:
-                ax.annotate(    pvIDs[ii] , xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
+                ax.annotate(    pvIDs[ii] , xy=(x0,y0), xycoords='data', **cfont_mrkr)
             else:
-                ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cp.fig_style.cfont_mrkr)
+                ax.annotate(str(pvIDs[ii]), xy=(x0,y0), xycoords='data', **cfont_mrkr)
 
 
 
@@ -173,13 +180,13 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     BMProj.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
 
     if cdate != '':
-        ax.annotate('Date: '+cdate, xy=(0.6, 0.925), xycoords='figure fraction', **cp.fig_style.cfont_clck)
+        ax.annotate('Date: '+cdate, xy=(0.6, 0.925), xycoords='figure fraction', **cfont_clock)
 
     if NbValid:
-        ax.annotate(' Nb. buoys = '+str(NbValid), xy=(0.02, 0.8), xycoords='figure fraction', **cp.fig_style.cfont_clck)
+        ax.annotate(' Nb. buoys = '+str(NbValid), xy=(0.02, 0.8), xycoords='figure fraction', **cfont_clock)
 
     if title:
-        ax.annotate(title, xy=title_loc, xycoords='figure fraction', ha='center', **cp.fig_style.cfont_ttl)
+        ax.annotate(title, xy=title_loc, xycoords='figure fraction', ha='center', **cfont_ttl)
 
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig, dpi=rDPI, orientation='portrait', transparent=False)
@@ -203,7 +210,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
 
     if not path.exists('./figs'): mkdir('./figs')
 
-    cp.fig_style( zoom, clr_top=color_top )
+    ki = _initStyle_( fntzoom=zoom , color_top='w' )
 
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
@@ -211,7 +218,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
 
     if lShowDate:
-        ct = cp.epoch2clock(pt)
+        ct = epoch2clock(pt)
     else:
         ct = ''
 
@@ -243,7 +250,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
 
     if not path.exists('./figs'): mkdir('./figs')
 
-    cp.fig_style( rzoom, clr_top=color_top )
+    ki = _initStyle_()
 
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
@@ -262,7 +269,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
 
         if nPtsAlive >= NminPnts:
 
-            ct = cp.epoch2clock(pvt[jt])
+            ct = epoch2clock(pvt[jt])
 
             cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
