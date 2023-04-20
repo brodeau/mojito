@@ -63,9 +63,9 @@ for RESKM in ${LCOARSEN}; do
 
                 echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
 
-                clog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
+                flog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
 
-                ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
+                ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
                 ijob=$((ijob+1))
                 if [ $((ijob%NJPAR)) -eq 0 ]; then
                     echo "Waiting! (ijob = ${ijob})...."
