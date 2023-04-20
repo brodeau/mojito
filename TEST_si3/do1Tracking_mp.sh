@@ -14,11 +14,13 @@ EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 mkdir -p ./logs
 
 ijob=0
-
-
+    
 
 for RESKM in ${LCOARSEN}; do
 
+    echo; echo; echo ; echo " *** COARSENING: ${RESKM}km !!!"; echo
+
+    
     # 1/ populate the proper NC files to seed from:
     echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
     cxtraRES="_${RESKM}km"
@@ -61,7 +63,7 @@ for RESKM in ${LCOARSEN}; do
 
                 echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
 
-                clog='track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}'
+                clog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
 
                 ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
                 ijob=$((ijob+1))

@@ -11,6 +11,8 @@ LIST_NEMO_EXP="BBM00 EVP00"
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0331"
 
+export LCOARSEN="640"
+
 export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
 
@@ -39,6 +41,7 @@ case ${host} in
         export DATA_DIR="/data"
         #
         NJPAR=30
+        export LCOARSEN="20 40 80 160 320 640"
         #
         ;;
     *)

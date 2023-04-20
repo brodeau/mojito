@@ -23,7 +23,7 @@ from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 1 ; # Create figures to see what we are doing...
+iplot  = 0 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
