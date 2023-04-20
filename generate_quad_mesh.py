@@ -23,7 +23,7 @@ from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
@@ -97,7 +97,8 @@ if __name__ == '__main__':
         cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
     else:
         print('FIXME for corigin = '+corigin+' !!!'); exit(0)
-    if cdtbin[1:3]!='dt':
+    if not cdtbin[1:3] in ['dt','id']:
+        # "id" for `_idlSeed`
         print('ERROR: we could not figure out `cdtbin`!'); exit(0)
     cfstr += cdtbin
 

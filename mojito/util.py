@@ -33,10 +33,21 @@ def epoch2clock( it, precision='s' ):
         exit(0)
     return str(ct)
 
-def clock2epoch( cdate ):
+
+def clock2epoch( cdate, precision='s', cfrmt='advanced' ):
     from datetime import datetime as dt
     from datetime import timezone
-    it = dt.strptime(cdate, "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
+    #
+    if precision=='D':
+        cdate = cdate+'_00:00:00'
+    #
+    if   cfrmt=='advanced':
+        it = dt.strptime(cdate, "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
+    elif cfrmt=='basic':
+        it = dt.strptime(cdate, "%Y%m%d_%H:%M:%S").replace(tzinfo=timezone.utc)
+    else:
+        print('ERROR [clock2epoch()]: format "'+cfrmt+'" is unknown!'); exit(0)
+        
     return int(it.timestamp())
 
         
