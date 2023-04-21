@@ -35,9 +35,7 @@ lapplyDistCoast = False
 lExportCloudPoints = False ; # in case we want to save the location of valid/selected quads in a netCDF file with `ncSaveCloudBuoys`
 #                           # => in order to seed from it!
 
-if __name__ == '__main__':
-
-    kk = cfg.initialize( mode=quality_mode )
+if __name__ == '__main__':    
     
     crd_ss = None
     
@@ -67,22 +65,31 @@ if __name__ == '__main__':
         if not path.exists('./figs'): mkdir('./figs')
         if not path.exists(cfdir): mkdir(cfdir)
 
-    kk = cfg.updateConfig4Scale( reskm, mode=quality_mode )
-    print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
-    print(' *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
-
-
-    
-    #########################################################################################################
-
-    print('\n *** Will only retain quadrangles with an area comprised between '
-          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(reskm**2)+'km^2 \n')
-
     
     # Loading the data for the 2 selected records:
     Nt, NbP, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
 
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
+
+    #print('LOLO: corigin=',corigin)
+    if split('_',corigin)[0] == 'NEMO-SI3':        
+        quality_mode = 'model'
+        print('LOLO: switching to `quality_mode` =', quality_mode)
+
+    kl = cfg.initialize( mode=quality_mode )
+    kk = cfg.updateConfig4Scale( reskm, mode=quality_mode )
+    
+    print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
+    print(' *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
+
+    print('\n *** Will only retain quadrangles with an area comprised between '
+          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(reskm**2)+'km^2 \n')
+
+
+
+
+
+
     
     # We need a string to name the output files:
     kdt = -4

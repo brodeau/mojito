@@ -34,7 +34,7 @@ def initialize( mode='thorough' ):
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    if mode=='thorough':
+    if mode in ['thorough','model']:
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
@@ -82,7 +82,7 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
     min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     
     if   irk==10:
-        if mode=='thorough':
+        if mode in ['thorough','model']:
             rc_tolQuadA = 1
             rc_Qarea_min, rc_Qarea_max = 9*9, 11*11
         elif mode=='xlose':
@@ -92,34 +92,56 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
             print('ERROR [updateConfig4Scale()]: unknow mode: '+mode+'!'); exit(0)
 
     elif irk==20:
-        rc_d_ss = 15
+        rc_d_ss = 14.6
         rc_tolQuadA = 3
         rc_Qarea_min, rc_Qarea_max = 18*18, 22*22
         min_div, min_shr, min_tot = 0.001, 0.001, 0.001
+        #
     elif irk==40:
-        rc_d_ss = 35
+        rc_d_ss = 34.5
         rc_tolQuadA = 7
-        rc_Qarea_min, rc_Qarea_max = 35*35, 45*45        
+        if mode=='model':
+            rc_Qarea_min, rc_Qarea_max = 38*38, 42*42
+        else:
+            rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
+        #
     elif irk==80:
-        rc_d_ss = 73
+        rc_d_ss = 74.75
         rc_tolQuadA = 15
-        rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
+        if mode=='model':
+            rc_Qarea_min, rc_Qarea_max = 78*78, 82*82
+        else:
+            rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
+        #
     elif irk==160:
-        rc_d_ss = 145
+        rc_d_ss = 156.
         rc_tolQuadA = 30
-        rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
+        if mode=='model':        
+            rc_Qarea_min, rc_Qarea_max = 155*155, 165*165
+        else:
+            rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
+        #
     elif irk==320:
-        rc_d_ss = 295
+        rc_d_ss = 315.6
         rc_tolQuadA = 100
-        #rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
-        rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
+        if mode=='model':
+            rc_Qarea_min, rc_Qarea_max =  315*315, 325*325
+        else:
+            ##rc_Qarea_min, rc_Qarea_max =  260*260, 380*380
+            rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
+            #rc_Qarea_min, rc_Qarea_max =  310*310, 330*330
+        #
     elif irk==640:
-        rc_d_ss = 620
+        rc_d_ss = 636.
         rc_tolQuadA = 300
-        #rc_Qarea_min, rc_Qarea_max =  600*600, 680*680
-        #rc_Qarea_min, rc_Qarea_max =  520*520, 760*760
-        #rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
-        rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
+        if mode=='model':
+            rc_Qarea_min, rc_Qarea_max =  635*635, 645*645
+        else:
+            ##rc_Qarea_min, rc_Qarea_max =  600*600, 680*680
+            ##rc_Qarea_min, rc_Qarea_max =  520*520, 760*760
+            ##rc_Qarea_min, rc_Qarea_max =  500*500, 780*780
+            rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
+        #
     else:
         print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
