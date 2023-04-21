@@ -10,7 +10,7 @@ for RESKM in ${LCOARSEN}; do
     for NEMO_EXP in ${LIST_NEMO_EXP}; do
         echo; echo
 
-        CMD="${EXE} ./npz nemoTsi3_idlSeed ${RESKM} NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}"
+        CMD="${EXE} ./npz nemoTsi3_NoBin ${RESKM} NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}"
 
         echo
         echo " *** About to launch:"; echo "     ${CMD}"; echo

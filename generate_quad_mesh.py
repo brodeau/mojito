@@ -97,9 +97,13 @@ if __name__ == '__main__':
         cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
     else:
         print('FIXME for corigin = '+corigin+' !!!'); exit(0)
-    if not cdtbin[1:3] in ['dt','id']:
+    #if not cdtbin[1:3] in ['dt','id']:
+    if not cdtbin[1:3] in ['dt']:
         # "id" for `_idlSeed`
-        print('ERROR: we could not figure out `cdtbin`!'); exit(0)
+        #print('ERROR: we could not figure out `cdtbin`!'); exit(0)
+        print('WARNING: we could not figure out `cdtbin`!')
+        cdtbin = '_NoBin'
+    #
     cfstr += cdtbin
 
     if np.any(vRec>=Nt):

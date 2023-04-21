@@ -45,7 +45,7 @@ for RESKM in ${LCOARSEN}; do
                 CMD="${EXE} ${ff} ${lstrec} ${RESKM}"
                 echo "    ==> will launch:"; echo "     ${CMD}"; echo
 
-                ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+                ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
                 echo
                 if [ $((ijob%NJPAR)) -eq 0 ]; then
                     echo "Waiting! (ijob = ${ijob})...."

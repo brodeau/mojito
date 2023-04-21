@@ -74,7 +74,7 @@ if __name__ == '__main__':
         cdtbin = '_'+split('_',cf1)[-4]        
     else:
         print('FIXME: unknow origin: ',corigin); exit(0)
-    if not cdtbin[1:3] in ['dt','id']:
+    if not cdtbin[1:3] in ['dt','No']:
         print('ERROR: we could not figure out `cdtbin`!'); exit
 
     #print('LOLO: cdtbin[1:3] =',cdtbin[1:3]);exit(0)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
 
-    if  cdtbin[3:]=='lSeed':
+    if  cdtbin=='_NoBin':
         dtbin = 0
     else:
         dtbin = int(cdtbin[3:])*3600

@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     dtbin=0
     cinfobin = ''
-    if cdtbin!='nemoTsi3_idlSeed':
+    if cdtbin!='nemoTsi3_NoBin':
         dtbin=int(cdtbin)
         cinfobin = '_dt'+cdtbin
         
