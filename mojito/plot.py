@@ -1060,6 +1060,17 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
     for jo in range(No):
         plt.loglog( pscales[:,jo], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
                     color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
+
+
+    jo = 0
+    zvx = np.array( [ 2.**k for k in range(3,11) ] )
+    zexp = -0.14
+    zA = pX[0,jo]/(pscales[0,jo]**zexp)
+    plt.loglog( zvx, zA*zvx**zexp, 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
+                    color='r', label=pcOrig[jo], zorder=5 )
+
+        
+        
     #X-axis:
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
