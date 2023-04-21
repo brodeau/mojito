@@ -92,10 +92,10 @@ if __name__ == '__main__':
             dirin = dir_npz_in+'/'+csdir
             if not path.exists(dirin):
                 print('ERROR: directory "'+dirin+'" does not exist!'); exit(0)            
-            cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_dt*_'+str(res)+'km_????????-????????.npz'
+            cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_'+str(res)+'km_????????-????????.npz'
             lst = np.sort( glob(cc) )
-            if len(lst)!=1:
-                print('ERROR: we do not have a single file!!! =>',cc); exit(0)
+            if len(lst)>1: print('ERROR: we have more than 1 file!!! =>',cc); exit(0)
+            if len(lst)<1: print('ERROR: we do not have any file!!! =>',cc); exit(0)
             cf[iscl,io] = lst[0]
             cfi = cf[iscl,io]
             print(cfi)
