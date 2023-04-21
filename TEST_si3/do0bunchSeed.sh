@@ -57,7 +57,7 @@ for date in ${LIST_DATES}; do
             echo
             echo " *** About to launch:"; echo "     ${CMD}"; echo
             ijob=$((ijob+1))
-            ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
+            ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             echo
             if [ $((ijob%NJPAR)) -eq 0 ]; then
                 echo "Waiting! (ijob = ${ijob})...."
