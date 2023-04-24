@@ -43,7 +43,7 @@ case ${host} in
         NJPAR=30
         #export LCOARSEN="20 40 80 160 320 640"
         #export LCOARSEN="40 80 160 320 640"
-        export LCOARSEN="10"
+        export LCOARSEN="40"
         #
         ;;
     *)

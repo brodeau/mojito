@@ -76,12 +76,13 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
-    rc_d_ss = 8 ; # radius for subsampling the cloud of points [km]
+    rc_d_ss = 10 ; # default radius for subsampling the cloud of points [km]
     
     
     min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     
     if   irk==10:
+        rc_d_ss = 7.
         if mode in ['thorough','model']:
             rc_tolQuadA = 1
             rc_Qarea_min, rc_Qarea_max = 9*9, 11*11
