@@ -36,12 +36,12 @@ for RESKM in ${LCOARSEN}; do
     list_date_seed=""
     for ff in ${list_seed_nc}; do
         fb=`basename ${ff}`
-        ca=`echo ${fb} | cut -d '.' -f1 | cut -d '_' -f4`
+        ca=`echo ${fb} | cut -d '.' -f1 | cut -d '_' -f4-5`
         echo " $fb => $ca"
         list_date_seed+="${ca} "
     done
 
-    echo "List of dates: ${list_date_seed}"
+    echo "List of seeding dates: ${list_date_seed}"
 
     list_date_seed=( ${list_date_seed} )
 
@@ -55,13 +55,22 @@ for RESKM in ${LCOARSEN}; do
 
             if [ ${ii} -lt ${nbf} ]; then
 
-                DATE_STOP=${list_date_seed[$((ii+1))]}
+                # Find stop date (3 days later!):
+                cy=`echo ${cdate} | cut -c 1-4`
+                cm=`echo ${cdate} | cut -c 5-6`
+                cd=`echo ${cdate} | cut -c 7-8`
+                ch=`echo ${cdate} | cut -c 10-11`
+                cdtl="'${cy}-${cm}-${cd}_${ch}:00:00'" ; #echo ${cdtl}                
+                DATE_STOP=`python3 -c "from mojito import epoch2clock,clock2epoch; rt= clock2epoch(${cdtl}); print(epoch2clock(rt+3*3600*24))"`
+                echo " *** DATE_STOP = ${DATE_STOP}"
+                
+                exit
 
                 FSEED="./nc/sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}.nc"
 
                 CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP}"
 
-                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
+                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo ; exit
 
                 flog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
 
