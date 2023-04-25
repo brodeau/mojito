@@ -54,23 +54,15 @@ for RESKM in ${LCOARSEN}; do
         for cdate in ${list_date_seed[*]}; do
 
             if [ ${ii} -lt ${nbf} ]; then
-
-                # Find stop date (3 days later!):
-                cy=`echo ${cdate} | cut -c 1-4`
-                cm=`echo ${cdate} | cut -c 5-6`
-                cd=`echo ${cdate} | cut -c 7-8`
-                ch=`echo ${cdate} | cut -c 10-11`
-                cdtl="'${cy}-${cm}-${cd}_${ch}:00:00'" ; #echo ${cdtl}                
-                DATE_STOP=`python3 -c "from mojito import epoch2clock,clock2epoch; rt= clock2epoch(${cdtl}); print(epoch2clock(rt+3*3600*24))"`
+                # Date 3 days later:
+                DATE_STOP=`python3 -c "from mojito import epoch2clock,clock2epoch; rt= clock2epoch('${cdate}',precision='h',cfrmt='basic'); print(epoch2clock(rt+3*3600*24))"`
                 echo " *** DATE_STOP = ${DATE_STOP}"
-                
-                exit
 
                 FSEED="./nc/sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}.nc"
 
                 CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP}"
 
-                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo ; exit
+                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
 
                 flog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
 
