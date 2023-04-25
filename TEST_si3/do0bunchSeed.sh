@@ -6,25 +6,16 @@ EXE="${SITRCK_DIR}/tools/generate_idealized_seeding.py"
 
 EXE2="${SITRCK_DIR}/tools/listofdates.py"
 
-
-#echo ${EXE2} ${DATE1} ${DATE2}
-#exit
-
-LIST_DATES=`${EXE2} ${DATE1} ${DATE2} 3`
+LIST_DATES=`${EXE2} ${DATE1} ${DATE2} ${DT_INC_DAYS}`
 
 echo
 echo "LIST_DATES = ${LIST_DATES}"
 echo
 
-
 NEMO_EXP=`echo ${LIST_NEMO_EXP} | cut -d' ' -f1`
-
 
 DIR_FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}"
 FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod${XTRA_SFX_SI3}.nc4"
-
-
-
 
 mkdir -p ./logs
 
@@ -36,14 +27,20 @@ for date in ${LIST_DATES}; do
     YYYY=`echo ${date} | cut -c1-4`
     MM=`echo ${date} | cut -c5-6`
     DD=`echo ${date} | cut -c7-8`
-    export NDATE0="${YYYY}-${MM}-${DD}"
-    export LDATE0="${NDATE0}_00:00:00"
+    hh=`echo ${date} | cut -c10-11`
 
 
-    echo $NDATE0
-    echo
+    #echo " DD = ${DD} / hh = ${hh}"; exit
+    
+    export NDATE0="${YYYY}-${MM}-${DD}_${hh}"
+    export LDATE0="${NDATE0}:00:00"
 
+
+    echo; echo ; echo ; echo " #### DATE: $NDATE0 ####"; echo
+    
     for RESKM in ${LCOARSEN}; do
+
+        echo; echo; echo " *** RESKM = ${RESKM} ***"        
 
         str="${NDATE0}_${RESKM}km"
 
