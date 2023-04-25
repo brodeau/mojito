@@ -4,7 +4,7 @@
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
 
-def initialize( mode='thorough' ):
+def initialize( mode='model' ):
     '''
     '''
     from os import environ
@@ -66,7 +66,7 @@ def initialize( mode='thorough' ):
 
 
 
-def updateConfig4Scale( res_km,  mode='thorough' ):
+def updateConfig4Scale( res_km,  mode='model' ):
     '''
         * res_km: nominal scale for quadrangles we are dealing with [km]
     '''
@@ -106,8 +106,8 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_d_ss = 34.5
         rc_tolQuadA = 7
         if mode=='model':
-            #rc_Qarea_min, rc_Qarea_max = 38*38, 42*42
-            rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
+            rc_Qarea_min, rc_Qarea_max = 38*38, 42*42
+            #rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         #
@@ -116,6 +116,7 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_tolQuadA = 15
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 78*78, 82*82
+            #rc_Qarea_min, rc_Qarea_max = 75*75, 85*85
         else:
             rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
         #
@@ -123,7 +124,8 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_d_ss = 156.
         rc_tolQuadA = 30
         if mode=='model':        
-            rc_Qarea_min, rc_Qarea_max = 155*155, 165*165
+            #rc_Qarea_min, rc_Qarea_max = 155*155, 165*165
+            rc_Qarea_min, rc_Qarea_max = 150*150, 170*170
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #

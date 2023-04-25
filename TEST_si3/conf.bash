@@ -43,7 +43,11 @@ case ${host} in
         NJPAR=30
         #export LCOARSEN="20 40 80 160 320 640"
         #export LCOARSEN="40 80 160 320 640"
-        export LCOARSEN="320"; export DT_INC_DAYS="1." ; # mv back to 1.
+        export LCOARSEN="20"; export DT_INC_DAYS="3."
+        #export LCOARSEN="40"; export DT_INC_DAYS="3."
+        #export LCOARSEN="80"; export DT_INC_DAYS="3."
+        #export LCOARSEN="160"; export DT_INC_DAYS="1."
+        #export LCOARSEN="320"; export DT_INC_DAYS="1." ; # mv back to 1.
         #export LCOARSEN="640"; export DT_INC_DAYS="0.5"
         LIST_NEMO_EXP="BBM00"
         #LIST_NEMO_EXP="EVP00"

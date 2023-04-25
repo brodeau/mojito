@@ -27,7 +27,7 @@ iplot  = 0 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
-quality_mode = 'thorough'
+quality_mode = 'model'
 #quality_mode = 'xlose' ; # extra lose => good to make maps of deformations, bad for scaling!!!
 
 lapplyDistCoast = False
