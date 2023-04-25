@@ -1176,11 +1176,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 
-
-
+    # With cloud of point:
+    
     cfig = str.replace(cfig,'total','mean')
     #ylog_min, ylog_max = 5.e-3,2.e-2
-    ylog_min, ylog_max = 5.e-4,1.e-1
+    ylog_min, ylog_max = 1.e-6,1.
     fig = plt.figure( num = 1, figsize=(10,17), dpi=None )
     ax = plt.axes([0.11, 0.06, 0.85, 0.9])
 
@@ -1198,7 +1198,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
     if lAddCloud:
-        jo=0
+        jo=Naxis
         plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
                     color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
 

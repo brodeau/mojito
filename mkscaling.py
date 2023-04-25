@@ -31,7 +31,7 @@ lOnlyRGPS = False
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize()
+    kk = cfg.initialize( mode='model' )
     
     if not len(argv)==3:
         print('Usage: '+argv[0]+' <dir_npz_in> <list_scales>')
