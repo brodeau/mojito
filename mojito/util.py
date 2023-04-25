@@ -40,6 +40,10 @@ def clock2epoch( cdate, precision='s', cfrmt='advanced' ):
     #
     if precision=='D':
         cdate = cdate+'_00:00:00'
+    elif precision=='h':
+        cdate = cdate+':00:00'
+    elif precision=='m':
+        cdate = cdate+':00'
     #
     if   cfrmt=='advanced':
         it = dt.strptime(cdate, "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
