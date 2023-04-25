@@ -1097,7 +1097,7 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
 
 
 def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation',
-                     cfig='Scaling.png', lOnlyObs=False, lShowScat=True ):
+                     cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=0 ):
     '''
         According to Fiffure's taste...
     '''
@@ -1126,7 +1126,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
     vNbPoints = np.zeros(Ns, dtype=int)
     for js in range(Ns):
-        (idxOk,) = np.where(pXQ[:,js,0,0].data>0)
+        (idxOk,) = np.where(pXQ[:,js,Naxis,0].data>0)
         vNbPoints[js] = len(idxOk)
 
         

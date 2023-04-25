@@ -203,7 +203,8 @@ if __name__ == '__main__':
 
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png', lOnlyObs=lOnlyRGPS, lShowScat=True )
+    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png',
+                              lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=1 )
 
 
 
