@@ -22,25 +22,28 @@ for RESKM in ${LCOARSEN}; do
         echo; echo
 
         # Populating the batches available:
-        listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${YEAR}????t0_${YEAR}????${csf}.npz`
+        listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${YEAR}????-??h??t0_${YEAR}????-??h??${csf}.npz`
         #          npz/Q-mesh_NEMO-SI3_NANUK4_BBM00_nemoTsi3_NoBin_19970101t0_19970101_640km.npz
         echo "${listQ}"
 
+        
         list_date_ref=""
         for ff in ${listQ}; do
             date_ref=`echo ${ff} | cut -d_ -f7`
+            #echo "LOLO: date_ref = ${date_ref} !"
             list_date_ref+=" ${date_ref}"
         done
-        list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+        #list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+        list_date_ref=$(echo "${list_date_ref}" | tr ' ' '\n' ) ; # unique only!
 
         echo; echo " *** List of reference dates:"; echo "${list_date_ref}"; echo
 
-
+        
         for dr in ${list_date_ref}; do
 
             echo
 
-            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
+            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${dr}_${YEAR}????-??h??${csf}.npz 2>/dev/null` )
             if [ "${lst}" != "" ]; then
                 nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                 #
