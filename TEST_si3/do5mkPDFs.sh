@@ -5,8 +5,8 @@
 
 EXE="${MOJITO_DIR}/mkpdfs.py"
 
-#DIR_NPZ="./npz"
-DIR_NPZ="./BAK_DEF"
+DIR_NPZ="./npz"
+#DIR_NPZ="./BAK_DEF"
 
 for RESKM in ${LCOARSEN}; do
 

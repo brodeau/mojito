@@ -137,7 +137,8 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_d_ss = 636.
         rc_tolQuadA = 300
         if mode=='model':
-            rc_Qarea_min, rc_Qarea_max =  635*635, 645*645
+            #rc_Qarea_min, rc_Qarea_max =  635*635, 645*645
+            rc_Qarea_min, rc_Qarea_max =  630*630, 650*650
         else:
             ##rc_Qarea_min, rc_Qarea_max =  600*600, 680*680
             ##rc_Qarea_min, rc_Qarea_max =  520*520, 760*760
