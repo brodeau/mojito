@@ -48,8 +48,12 @@ def initialize( mode='thorough' ):
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
     #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    rc_div_min, rc_shr_min, rc_tot_min = 0.8e-4, 0.8e-4, 0.8e-4   ; # for scaling (not PDFs)
-    rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
+    if mode == 'model':
+        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)
+        rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
+    else:
+        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-4, 0.8e-4, 0.8e-4   ; # for scaling (not PDFs)
+        rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
 
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
@@ -127,7 +131,9 @@ def updateConfig4Scale( res_km,  mode='thorough' ):
         rc_d_ss = 315.6
         rc_tolQuadA = 100
         if mode=='model':
-            rc_Qarea_min, rc_Qarea_max =  315*315, 325*325
+            #rc_Qarea_min, rc_Qarea_max =  315*315, 325*325
+            rc_Qarea_min, rc_Qarea_max =  300*300, 340*340
+            #rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
         #
