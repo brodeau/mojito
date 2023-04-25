@@ -204,9 +204,9 @@ if __name__ == '__main__':
         print('')
 
     
-    cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
-
-
+    cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='m'), '-', '')
+    cdate0   = str.replace( cdate0, '_', '-')
+    cdate0   = str.replace( cdate0, ':', 'h')
 
 
     if NbP<4:
@@ -219,7 +219,9 @@ if __name__ == '__main__':
         print('\n\n *** QUAD-MESH GENERATION => record #'+str(jrec)+': record = '+str(jr))
 
         cdats  = mjt.epoch2clock(vdate[jr])
-        cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='D'), '-', '')
+        cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='m'), '-', '')
+        cdate   = str.replace( cdate, '_', '-')
+        cdate   = str.replace( cdate, ':', 'h')
 
         cfbase = cfstr+'_'+cdate0+'t0_'+cdate+'_'+creskm+'km'
         if crd_ss:
@@ -229,6 +231,7 @@ if __name__ == '__main__':
 
         cf_npzQ = './npz/Q-mesh_'+cfbase+'.npz'
 
+        
         if jr == 0:
 
             print('\n *** Delaunay triangulation for 1st record!')
