@@ -93,7 +93,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_d_ss = 7.
         if mode in ['thorough','model']:
             rc_tolQuadA = 1
-            rc_Qarea_min, rc_Qarea_max = 9*9, 11*11
+            rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
         elif mode=='xlose':
             rc_tolQuadA = 5
             rc_Qarea_min, rc_Qarea_max = 2*2, 20*20
@@ -103,14 +103,14 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==20:
         rc_d_ss = 14.6
         rc_tolQuadA = 3
-        rc_Qarea_min, rc_Qarea_max = 18*18, 22*22
+        rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
         min_div, min_shr, min_tot = 0.001, 0.001, 0.001
         #
     elif irk==40:
         rc_d_ss = 34.5
         rc_tolQuadA = 7
         if mode=='model':
-            rc_Qarea_min, rc_Qarea_max = 38*38, 42*42
+            rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
             #rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
@@ -119,7 +119,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_d_ss = 74.75
         rc_tolQuadA = 15
         if mode=='model':
-            rc_Qarea_min, rc_Qarea_max = 78*78, 82*82
+            rc_Qarea_min, rc_Qarea_max = 79*79, 81*81
             #rc_Qarea_min, rc_Qarea_max = 75*75, 85*85
         else:
             rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
