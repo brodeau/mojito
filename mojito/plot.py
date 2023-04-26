@@ -1102,7 +1102,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         According to Fiffure's taste...
     '''
     xlog_min, xlog_max = 7.5 , 1.e3
-    ylog_min,ylog_max  =  0.8e-6, 0.2e-1
+    ylog_min,ylog_max  =  0.5e-6, 0.2e-1
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
