@@ -48,12 +48,12 @@ case ${host} in
         #export LCOARSEN="40"; export DT_INC_DAYS="3."
         #export LCOARSEN="80"; export DT_INC_DAYS="3."
         #
-        export LCOARSEN="160"; export DT_INC_DAYS="3." ; # ok!
+        #export LCOARSEN="160"; export DT_INC_DAYS="3." ; # ok!
         #
-        export LCOARSEN="320"; export DT_INC_DAYS="1."
+        export LCOARSEN="320"; export DT_INC_DAYS="3."
         #export LCOARSEN="320"; export DT_INC_DAYS="3." ; # mv back to 1.
         #
-        export LCOARSEN="640"; export DT_INC_DAYS="1."
+        #export LCOARSEN="640"; export DT_INC_DAYS="1."
         #
         LIST_NEMO_EXP="BBM00"
         #LIST_NEMO_EXP="EVP00"
