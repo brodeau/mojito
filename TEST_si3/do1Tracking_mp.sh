@@ -14,13 +14,13 @@ EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 mkdir -p ./logs
 
 ijob=0
-    
+
 
 for RESKM in ${LCOARSEN}; do
 
     echo; echo; echo ; echo " *** COARSENING: ${RESKM}km !!!"; echo
 
-    
+
     # 1/ populate the proper NC files to seed from:
     echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
     cxtraRES="_${RESKM}km"
@@ -57,27 +57,38 @@ for RESKM in ${LCOARSEN}; do
                 # Date 3 days later:
                 DATE_STOP=`python3 -c "from mojito import epoch2clock,clock2epoch; rt= clock2epoch('${cdate}',precision='h',cfrmt='basic'); print(epoch2clock(rt+3*3600*24))"`
                 echo " *** DATE_STOP = ${DATE_STOP}"
+                #
+                sdate0=`echo ${cdate} | sed -e s/'_'/'h'/g`
+                sdate_stop=`echo ${DATE_STOP} | sed -e s/':00:00'/''/g`
+                sdate_stop=`echo ${sdate_stop} | sed -e s/'-'/''/g | sed -e s/'_'/'h'/g`
+                fout="./nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_nemoTsi3_idlSeed_${sdate0}_${sdate_stop}_${RESKM}km.nc"
 
-                FSEED="./nc/sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}.nc"
+                if [ ! -f ${fout} ]; then
 
-                CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP}"
+                    FSEED="./nc/sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}.nc"
 
-                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
+                    CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP}"
 
-                flog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
+                    echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
 
-                ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
-                ijob=$((ijob+1))
-                if [ $((ijob%NJPAR)) -eq 0 ]; then
-                    echo "Waiting! (ijob = ${ijob})...."
-                    wait; echo; echo
+                    flog="track_${cdate}-${DATE_STOP}_${NEMO_EXP}_${RESKM}"
+
+                    ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
+                    ijob=$((ijob+1))
+                    if [ $((ijob%NJPAR)) -eq 0 ]; then
+                        echo "Waiting! (ijob = ${ijob})...."
+                        wait; echo; echo
+                    fi
+
+                else
+                    echo " File ${fout} is already there! Nothing to do!"
                 fi
-
+                echo
             fi
 
             ii=$((ii+1))
         done
-
+        
     done
 
 done

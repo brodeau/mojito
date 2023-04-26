@@ -59,7 +59,7 @@ case ${host} in
         #
         #export LCOARSEN="640"; export DT_INC_DAYS="1."
         #
-        LIST_NEMO_EXP="BBM00"
+        #LIST_NEMO_EXP="BBM00"
         #LIST_NEMO_EXP="EVP00"
         #
         ;;
