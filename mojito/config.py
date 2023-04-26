@@ -34,9 +34,13 @@ def initialize( mode='model' ):
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    if mode in ['thorough','model']:
+    if mode in ['thorough','model']:        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
+        #LOLO!
+        #rc_Qang_min =  50.  ; # minimum angle tolerable in a quadrangle [degree]
+        #rc_Qang_max = 130.  ; # maximum angle tolerable in a quadrangle [degree]
+        #LOLO.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='xlose':
         rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
@@ -122,10 +126,12 @@ def updateConfig4Scale( res_km,  mode='model' ):
         #
     elif irk==160:
         rc_d_ss = 156.
-        rc_tolQuadA = 30
-        if mode=='model':        
-            #rc_Qarea_min, rc_Qarea_max = 155*155, 165*165
-            rc_Qarea_min, rc_Qarea_max = 150*150, 170*170
+        rc_tolQuadA = 20
+        if mode=='model':
+            rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
+            #rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
+            #rc_Qarea_min, rc_Qarea_max = 150*150, 170*170
+            #rc_Qarea_min, rc_Qarea_max = 110*110, 210*210
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #
@@ -133,8 +139,9 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_d_ss = 315.6
         rc_tolQuadA = 100
         if mode=='model':
-            #rc_Qarea_min, rc_Qarea_max =  315*315, 325*325
-            rc_Qarea_min, rc_Qarea_max =  300*300, 340*340
+            #rc_Qarea_min, rc_Qarea_max =  318*318, 322*322
+            rc_Qarea_min, rc_Qarea_max =  315*315, 325*325
+            #rc_Qarea_min, rc_Qarea_max =  300*300, 340*340
             #rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
