@@ -53,7 +53,8 @@ case ${host} in
         export LCOARSEN="320"; export DT_INC_DAYS="1."
         #export LCOARSEN="320"; export DT_INC_DAYS="3." ; # mv back to 1.
         #
-        #export LCOARSEN="640"; export DT_INC_DAYS="0.5"
+        export LCOARSEN="640"; export DT_INC_DAYS="1."
+        #
         LIST_NEMO_EXP="BBM00"
         #LIST_NEMO_EXP="EVP00"
         #
