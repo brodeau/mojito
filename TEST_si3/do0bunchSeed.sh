@@ -46,7 +46,8 @@ for date in ${LIST_DATES}; do
 
         flog="seeding_${str}"
 
-        fout="./nc/sitrack_seeding_nemoTsi3_${NDATE0}_${RESKM}km.nc"
+        sdate0=`echo ${NDATE0} | sed -e s/'-'/''/g`
+        fout="./nc/sitrack_seeding_nemoTsi3_${sdate0}_${RESKM}km.nc"
 
         if [ ! -f ${fout} ]; then
 
@@ -61,6 +62,8 @@ for date in ${LIST_DATES}; do
                 wait; echo; echo
             fi
 
+        else
+            echo " File ${fout} is already there! Nothing to do!"            
         fi
     done
 done
