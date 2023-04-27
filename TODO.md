@@ -1,3 +1,9 @@
+* review the use of `areaR` in `lTisOK()` !
+
+* review the `rscore` in `lQisOK()`
+
+
+
 
 * add the reading and use (inside `01_selection_xy.py`) of the new array `jtBinN` saved in 1st npz file by `00_scan_batches.py`
 

@@ -116,13 +116,15 @@ def QuadsAreas( pQVcoor ):
 
 
 
-def lTisOK( pAngles, pArea=None, anglR=(15.,115.) ):
+def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e5) ):
     '''
     ###  => returns Boolean: True if the triangle has a "decent" shape!
     ###
     ###  * pAngles: the 3 angles of the triangle in degrees
     '''
     lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) ) )
+    if lOK and pArea:
+        lOK = ( (pArea>areaR[0]) and (pArea<=areaR[1]) )
     return lOK
 
 
@@ -287,7 +289,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
             print(' *** Focus on triangle #'+str(jT)+' =>',[ zcN[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri)):
+        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/2.5,areaR[1]/1.5)):
             if ivb>1: print('       => disregarding this triangle!!! (because of extreme angles)')
             idxTdead.append(jT) ; # Cancel this triangle
 
