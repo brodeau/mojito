@@ -166,6 +166,7 @@ if __name__ == '__main__':
     # zU, zV => velocities of the 4 vertices at center of time interval!
     #   zAq  => Quad area used in the estimation of `zdUdxy, zdVdxy` !
 
+    # For plots:
     zrx = [ np.min(zX)-25. , np.max(zX)+25. ]
     zry = [ np.min(zY)-25. , np.max(zY)+25. ]
 
@@ -204,12 +205,21 @@ if __name__ == '__main__':
 
     del zdUdxy, zdVdxy
 
+    (nD,) = np.shape(zdiv)    
+    if  np.shape(zshr2) != (nD,):
+        print('ERROR: `np.shape(zdiv) != np.shape(zshr2)` !!!'); exit(0)
+        
     # Maximum Shear Strain Rate aka SigmaII:
-    zshr = np.zeros(np.shape(zshr2))
+    zshr = np.zeros(nD)
     zshr = np.sqrt(zshr2)
-
+    
+    #print('LOLO: zdiv[:] ('+str(len(zdiv))+')=',zdiv)
+    #print('LOLO: zshr[:] ('+str(len(zshr))+')=',zshr)
+    #exit(0)
+    
+    
     # Total deformation rate:
-    ztot = np.zeros(np.shape(zdiv))
+    ztot = np.zeros(nD)
     ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
 
     del zshr2

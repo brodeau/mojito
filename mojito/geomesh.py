@@ -116,7 +116,7 @@ def QuadsAreas( pQVcoor ):
 
 
 
-def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e5) ):
+def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e20) ):
     '''
     ###  => returns Boolean: True if the triangle has a "decent" shape!
     ###
@@ -128,7 +128,7 @@ def lTisOK( pAngles, pArea=None, anglR=(15.,115.), areaR=(0.,5.e5) ):
     return lOK
 
 
-def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e20) ):
+def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e20), areaIdeal=None ):
     '''
     ###     Tells if a quadrangle should be accepted or rejected (outrageously unrectangular shape)
     ###       + gives a score [0-1] (for now based on
@@ -140,12 +140,23 @@ def lQisOK( pAngles, ratio, pArea=None, ratioD=0.5, anglR=(65.,120.), areaR=(0.,
     ###                  =>  >= 1 !!! (a square would give 1)
     ###
     '''
+    #print('LOLO [lQisOK]: A, A_min, A_max, A_ideal =',int(pArea), int(areaR[0]), int(areaR[1]), int(areaIdeal), end=' ')
     rscore = -1.
-    lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or ratio-1.>ratioD ) )
+    lOK = ( pArea>0. )
+    if lOK:
+        lOK = ( not( np.any(pAngles>anglR[1]) or np.any(pAngles<anglR[0]) or ratio-1.>ratioD ) )
     if lOK and pArea:
         lOK = ( pArea>areaR[0] and pArea<areaR[1] )
     if lOK:
-        rscore = 1. - np.sum( np.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
+        if areaIdeal:
+            # We base the score on the deviation from the ideal area:
+            rscore = 1. / (1. + 0.001*np.abs(pArea - areaIdeal))
+            #print('==> rscore (area) =',round(rscore,4))
+        else:
+            # We base the score on the angles of the quadrangle:
+            rscore = 1. - np.sum( np.abs(pAngles[:] - 90.) ) / (4.*90.) ; # => 0 if perfect
+            #print('==> rscore (angles) =',round(rscore,4))
+    #print('')
     return lOK, rscore
 
 
@@ -247,7 +258,7 @@ def TriPntIDs2QuaPntIDs( xPntID ):
     return np.array( zPntID, dtype=int )
 
 
-def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e20), idbglev=0 ):
+def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(0.,8.e20), areaIdeal=None, idbglev=0 ):
     '''
     ### Attempt to merge triangles into quadrangles:
     ###  Each triangle inside the domain has 3 neighbors, so there are 3 options to merge
@@ -289,18 +300,18 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
             print(' *** Focus on triangle #'+str(jT)+' =>',[ zcN[i] for i in v3pnts ],'***')
             print(' **************************************************************')
 
-        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/2.5,areaR[1]/1.5)):
-            if ivb>1: print('       => disregarding this triangle!!! (because of extreme angles)')
+        # What is an acceptable area range for a triangle (to become part of a  areaR[0] <quadrangle <areaR[1])
+        #   => let's be tolerant: `> areaR[0]/3` & `< areaR[1]/1.4` 
+        if not lTisOK(vangles, pArea=rarea, anglR=anglRtri, areaR=(areaR[0]/3.,areaR[1]/1.4)):
+            if ivb>1: print('       => disregarding this triangle!!! (because of extreme angles or area)')
             idxTdead.append(jT) ; # Cancel this triangle
 
         elif jT in idxTused:
             if ivb>1: print('       => this triangle is in use in an already defined Quad !')
 
         else:
-            #
-            # Triangle `jT` has a "decent" shape and has not been used to build a quad yet!
-            # -----------------------------------------------------------------------------
-
+            # Triangle `jT` has a "decent" shape and has not been used to build a quad yet
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             if ivb>1: print('  ==> its 3 angles are:',vangles[:])
 
             vtmp   = Znghbs[jT,:]
@@ -328,10 +339,8 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
                     if ivb>1: print('          ==> trying neighbor triangle '+str(jN)+':')
 
                     vInd4V, vAng4V, zA, rat  = QSpecsFrom2T( Z3Pnts[[jT,jN],:], Zangls[[jT,jN],:], jT, jN, zXY, pnam=[] )
-                                      
-                    #lQok, score = lQisOK( vAng4V, rat, pArea=Zareas[jT]+Zareas[jN], ratioD=ratioD, anglR=anglR, areaR=areaR )
-                    #if lQok and zA<0.: print('LOLO: FUCK UP!!!!', zA)
-                    lQok, score = lQisOK( vAng4V, rat, pArea=zA, ratioD=ratioD, anglR=anglR, areaR=areaR )
+                    
+                    lQok, score = lQisOK( vAng4V, rat, pArea=zA, ratioD=ratioD, anglR=anglR, areaR=areaR, areaIdeal=areaIdeal )
 
                     cc = 'does NOT'
                     if lQok:

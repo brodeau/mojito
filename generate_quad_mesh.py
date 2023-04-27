@@ -78,17 +78,15 @@ if __name__ == '__main__':
 
     kl = cfg.initialize( mode=quality_mode )
     kk = cfg.updateConfig4Scale( reskm, mode=quality_mode )
+
+    zA_ideal = reskm*reskm ; # ideal Area of quadrangles to build!
+
     
     print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
     print(' *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
 
     print('\n *** Will only retain quadrangles with an area comprised between '
-          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(reskm**2)+'km^2 \n')
-
-
-
-
-
+          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(zA_ideal)+'km^2 \n')
 
     
     # We need a string to name the output files:
@@ -289,8 +287,9 @@ if __name__ == '__main__':
             
             # Merge triangles into quadrangles:
             xPxy, vPids, vTime, xQpnts, vQnam = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
-                                                                ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
-                                                                areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), idbglev=idebug )
+                                                              ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
+                                                              areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), areaIdeal=zA_ideal,
+                                                              idbglev=idebug )
 
             lquit = ( np.shape(xPxy)==(0,) or np.shape(xQpnts)==(0,) )
             if not lquit:

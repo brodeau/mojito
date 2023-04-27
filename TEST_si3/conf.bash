@@ -16,6 +16,8 @@ export LCOARSEN="640"
 export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
 
+DT_INC_DAYS=3.
+
 XTRA_SFX_SI3=""
 
 NJPAR=4 ; # number of jobs we can launch in //
@@ -27,7 +29,7 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         XTRA_SFX_SI3="_LIGHT480"
         LIST_NEMO_EXP="BBM00"
-        export iHSS=1 ;  LCOARSEN="640"
+        export iHSS=1 ;  LCOARSEN="320"
         XTRA_SFX_SI3="_LIGHT480"
         DATE2="${YEAR}0115"
         ;;
