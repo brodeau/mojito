@@ -21,7 +21,7 @@ figs
 *.svg
 *.odp
 *.pdf
-
+*.BAK
 
 # Distribution / packaging
 .Python
