@@ -16,7 +16,7 @@ mkdir -p ./logs
 ijob=0
 
 
-for RESKM in ${LCOARSEN}; do
+for RESKM in ${LCOARSEN[*]}; do
 
     echo; echo; echo ; echo " *** COARSENING: ${RESKM}km !!!"; echo
 

@@ -8,7 +8,7 @@ EXE="${MOJITO_DIR}/mkpdfs.py"
 DIR_NPZ="./npz"
 #DIR_NPZ="./BAK_DEF"
 
-for RESKM in ${LCOARSEN}; do
+for RESKM in ${LCOARSEN[*]}; do
 
     for NEMO_EXP in ${LIST_NEMO_EXP}; do
 

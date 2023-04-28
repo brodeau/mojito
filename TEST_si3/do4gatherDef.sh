@@ -9,7 +9,7 @@ DIR_NPZ="./npz"
 #DIR_NPZ="./BAK_DEF"
 
 
-for RESKM in ${LCOARSEN}; do
+for RESKM in ${LCOARSEN[*]}; do
 
     #DIR_NPZ="./npz/${RESKM}"
     

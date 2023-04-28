@@ -6,12 +6,6 @@ EXE="${SITRCK_DIR}/tools/generate_idealized_seeding.py"
 
 EXE2="${SITRCK_DIR}/tools/listofdates.py"
 
-LIST_DATES=`${EXE2} ${DATE1} ${DATE2} ${DT_INC_DAYS}`
-
-echo
-echo "LIST_DATES = ${LIST_DATES}"
-echo
-
 NEMO_EXP=`echo ${LIST_NEMO_EXP} | cut -d' ' -f1`
 
 DIR_FSI3IN="${DATA_DIR}/${NEMO_CONF}/${NEMO_EXP}"
@@ -21,26 +15,29 @@ mkdir -p ./logs
 
 ijob=0
 
+ires=-1
 
-for date in ${LIST_DATES}; do
-
-    YYYY=`echo ${date} | cut -c1-4`
-    MM=`echo ${date} | cut -c5-6`
-    DD=`echo ${date} | cut -c7-8`
-    hh=`echo ${date} | cut -c10-11`
-
-
-    #echo " DD = ${DD} / hh = ${hh}"; exit
+for RESKM in ${LCOARSEN[*]}; do
+    ires=$((ires+1))
+    DT_INC_DAYS=${LDTINCRM[${ires}]}
     
-    export NDATE0="${YYYY}-${MM}-${DD}_${hh}"
-    export LDATE0="${NDATE0}:00:00"
+    echo; echo; echo " *** RESKM = ${RESKM} => DT = ${DT_INC_DAYS} ***"
 
-
-    echo; echo ; echo ; echo " #### DATE: $NDATE0 ####"; echo
+    LIST_DATES=`${EXE2} ${DATE1} ${DATE2} ${DT_INC_DAYS}`
     
-    for RESKM in ${LCOARSEN}; do
+    echo "    ===> LIST_DATES = ${LIST_DATES}"; echo
 
-        echo; echo; echo " *** RESKM = ${RESKM} ***"        
+    for date in ${LIST_DATES}; do
+
+        YYYY=`echo ${date} | cut -c1-4`
+        MM=`echo ${date} | cut -c5-6`
+        DD=`echo ${date} | cut -c7-8`
+        hh=`echo ${date} | cut -c10-11`
+
+        export NDATE0="${YYYY}-${MM}-${DD}_${hh}"
+        export LDATE0="${NDATE0}:00:00"
+
+        echo; echo ; echo ; echo " #### DATE: $NDATE0 ####"; echo
 
         str="${NDATE0}_${RESKM}km"
 
@@ -63,7 +60,9 @@ for date in ${LIST_DATES}; do
             fi
 
         else
-            echo " File ${fout} is already there! Nothing to do!"            
+            echo " File ${fout} is already there! Nothing to do!"
         fi
+
     done
+
 done

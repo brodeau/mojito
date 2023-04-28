@@ -11,12 +11,11 @@ LIST_NEMO_EXP="BBM00 EVP00"
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0331"
 
-export LCOARSEN="640"
+export LCOARSEN=( "10" "20" "40" "80" "160" "320" "640" )
+export LDTINCRM=(  "3"  "3"  "3"  "3"  "3"   "3"   "1"  )
 
 export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
-
-DT_INC_DAYS=3.
 
 XTRA_SFX_SI3=""
 
@@ -56,20 +55,28 @@ case ${host} in
         #
         #export LCOARSEN="160"; export DT_INC_DAYS="3." ; # ok!
         #
-        export LCOARSEN="320"; export DT_INC_DAYS="3." ; # ok!
+        #export LCOARSEN="320"; export DT_INC_DAYS="3." ; # ok!
         ##export LCOARSEN="320"; export DT_INC_DAYS="1.5
         #
         ##export LCOARSEN="640"; export DT_INC_DAYS="3."
         #export LCOARSEN="640"; export DT_INC_DAYS="1." ; #ok
         #
-        LIST_NEMO_EXP="BBM00"
+        #LIST_NEMO_EXP="BBM00"
+        LIST_NEMO_EXP="BBM2300"
         #LIST_NEMO_EXP="EVP00"
+        #
+        export LCOARSEN=(  "80" "160" "320" "640" )
+        export LDTINCRM=(   "3"  "3"   "3"   "1"  )        
         #
         ;;
     *)
         echo "Unsupported host: ${host} !"
         exit
 esac
+
+
+
+
 
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"

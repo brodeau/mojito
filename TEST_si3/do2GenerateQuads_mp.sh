@@ -14,7 +14,7 @@ mkdir -p ./logs
 
 ijob=0
 
-for RESKM in ${LCOARSEN}; do
+for RESKM in ${LCOARSEN[*]}; do
 
     cxtraRES="_${RESKM}km"
 
