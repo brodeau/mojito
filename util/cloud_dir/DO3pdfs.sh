@@ -5,8 +5,8 @@ EXE="${HOME}/DEV/mojito/plot_comp_PDFs.py"
 
 #VRESKM=( 10 20 40 80 160 320 640 )
 #VDTBIN=(  6  6  6 72  72  72  72 )
-VRESKM=(  320 640 )
-VDTBIN=(   72  72 )
+VRESKM=(  20 )
+VDTBIN=(   6 )
 
 mkdir -p figs
 
@@ -28,13 +28,16 @@ for RESKM in ${VRESKM[*]}; do
 
     for cf in "shear" "total" "divergence" "convergence" "absDiv"; do
 
-        fRGPS=`find ./rgps -name PDF_RGPS_dt${DT_BINS_H}_${RESKM}km_*_${cf}.npz 2>/dev/null`
-        echo " * fRGPS = ${fRGPS}"; echo
+        fRGPS=`find -L ./rgps -name PDF_RGPS_dt${DT_BINS_H}_${RESKM}km_*_${cf}.npz 2>/dev/null`
+        #                        PDF_RGPS_dt6_20km_19970103-19970329_shear.npz
+        echo " * fRGPS = ${fRGPS}"; echo        
 
-        fBBM=`find ./bbm -name PDF_NEMO-SI3_NANUK4_BBM00_dt${DT_BINS_H}_${RESKM}km_*_${cf}.npz 2>/dev/null`
+        echo "PDF_NEMO-SI3_NANUK4_BBM00_dt0_${RESKM}km_*_${cf}.npz"
+        fBBM=`find -L ./bbm00 -name PDF_NEMO-SI3_NANUK4_BBM00_dt0_${RESKM}km_*_${cf}.npz 2>/dev/null`
+        #                      PDF_NEMO-SI3_NANUK4_BBM00_dt0_20km_19970102-19970330
         echo " * fBBM = ${fBBM}"; echo
 
-        fEVP=`find ./evp -name PDF_NEMO-SI3_NANUK4_EVP00_dt${DT_BINS_H}_${RESKM}km_*_${cf}.npz 2>/dev/null`
+        fEVP=`find -L ./bbm2300 -name PDF_NEMO-SI3_NANUK4_BBM2300_dt0_${RESKM}km_*_${cf}.npz 2>/dev/null`
         echo " * fEVP = ${fEVP}"; echo
 
         if [ "${fRGPS}" != "" ]; then
@@ -49,6 +52,7 @@ for RESKM in ${VRESKM[*]}; do
 
         echo
         echo " *** Wil launch: ${CMD}"
+        #exit
         echo
         ${CMD}
         echo
