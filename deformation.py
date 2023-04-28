@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 
     if iplot>0:
-        cfdir = './figs/deformation/'+str(reskm)
+        cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
 
 
