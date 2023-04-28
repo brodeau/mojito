@@ -3,7 +3,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path, mkdir
+from os import path, mkdir, makedirs
 import numpy as np
 from re import split
 
@@ -27,11 +27,6 @@ if __name__ == '__main__':
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
     time_dev_max= float(argv[3])
-
-    if iplot>0:
-        cdir = './figs/deformation'
-        for cc in ['./figs',cdir]:
-            if not path.exists(cc): mkdir(cc)
         
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
         
@@ -59,6 +54,14 @@ if __name__ == '__main__':
         print('ERROR: quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
         exit(0)
     print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
+
+
+    if iplot>0:
+        cfdir = './figs/deformation/'+str(reskm)
+        makedirs( cfdir, exist_ok=True )
+
+
+
     
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin    
@@ -181,14 +184,14 @@ if __name__ == '__main__':
         zUc = np.mean( zU[:,:], axis=1 )
         zVc = np.mean( zV[:,:], axis=1 )
         #
-        mjt.ShowDefQuad( zXc, zYc, zUc, cfig=cdir+'/zvUc_'+cfnm+figSfx, cwhat='Uc',
+        mjt.ShowDefQuad( zXc, zYc, zUc, cfig=cfdir+'/zvUc_'+cfnm+figSfx, cwhat='Uc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
-        mjt.ShowDefQuad( zXc, zYc, zVc, cfig=cdir+'/zvVc_'+cfnm+figSfx, cwhat='Vc',
+        mjt.ShowDefQuad( zXc, zYc, zVc, cfig=cfdir+'/zvVc_'+cfnm+figSfx, cwhat='Vc',
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
-        mjt.ShowDefQuad( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
+        mjt.ShowDefQuad( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cfdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
                              pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
 
-        #mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        #mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
         #                 pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
         #                 title=corigin+': divergence' )
 
@@ -241,29 +244,29 @@ if __name__ == '__main__':
 
         nmproj=NameArcticProj
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
                                   pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
                                   pFmin=0.,      pFmax=cfg.rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
                                   pFmin=0.,      pFmax=cfg.rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
-        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
+        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
                                   pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
-        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
+        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
                                   pFmin=0.,      pFmax=cfg.rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
-        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
+        mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
                                   pFmin=0.,      pFmax=cfg.rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
