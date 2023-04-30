@@ -34,10 +34,9 @@ for RESKM in ${LCOARSEN[*]}; do
             list_date_ref+=" ${date_ref}"
         done
         #list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
-        list_date_ref=$(echo "${list_date_ref}" | tr ' ' '\n' ) ; # unique only!
+        list_date_ref=$(echo "${list_date_ref}" | tr ' ' '\n'| sort -u ) ; # unique only!
 
         echo; echo " *** List of reference dates:"; echo "${list_date_ref}"; echo
-
         
         for dr in ${list_date_ref}; do
 

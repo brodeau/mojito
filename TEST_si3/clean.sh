@@ -10,7 +10,7 @@ elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/quadgener_*
 
 elif [ "$1" = "3" ]; then
-    rm -f figs/deformation/* npz/DEFORMATIONS_* logs/def_*
+    rm -rf figs/deformation/* npz/DEFORMATIONS_* logs/def_*
     
 elif [ "$1" = "4" ]; then
     rm -f npz/def_*
