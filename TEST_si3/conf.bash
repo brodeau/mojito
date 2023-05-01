@@ -62,13 +62,15 @@ case ${host} in
         #export LCOARSEN="640"; export DT_INC_DAYS="1." ; #ok
         #
         #LIST_NEMO_EXP="BBM00"
-        LIST_NEMO_EXP="BBM2300"
+        #LIST_NEMO_EXP="BBM2300"
         #LIST_NEMO_EXP="EVP00"
         #
         #export LCOARSEN=(  "80" "160" "320" "640" )
         #export LDTINCRM=(   "3"  "3"   "3"   "1"  )        
-        export LCOARSEN=(  "320" )
-        export LDTINCRM=(   "1" )
+        #export LCOARSEN=(  "320" )
+        #export LDTINCRM=(   "1" )
+        #
+        LIST_NEMO_EXP="BBM2301"
         #
         ;;
     *)
