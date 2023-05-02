@@ -11,7 +11,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path, environ, mkdir
+from os import path, environ, mkdir, makedirs
 import numpy as np
 from re import split
 from scipy.spatial import Delaunay
@@ -65,9 +65,8 @@ if __name__ == '__main__':
 
     if not path.exists('./nc'): mkdir('./nc')
     if iplot>0:
-        cfdir = './figs/coarsify'
-        for cdr in ['./figs',cfdir]:
-            if not path.exists(cdr): mkdir(cdr)
+        fdir = './figs/coarsify/'+creskm+'km'
+        makedirs( fdir, exist_ok=True )
 
     #########################################################################################################
 
@@ -236,21 +235,21 @@ if __name__ == '__main__':
                         vrngY = mjt.roundAxisRange( zXY[:,1,0], rndKM=50. )
                     
                     if idebug>0:
-                        kk = mjt.ShowTQMesh( zXY[:,0,jr], zXY[:,1,jr], cfig=cfdir+'/00_'+cfb+'_Original.png',
+                        kk = mjt.ShowTQMesh( zXY[:,0,jr], zXY[:,1,jr], cfig=fdir+'/00_'+cfb+'_Original.png',
                                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[:], 
                     
                     # After subsampling
-                    kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=cfdir+'/00_'+cfb+cfc+'.png',
+                    kk = mjt.ShowTQMesh( zXkm[jr,:], zYkm[jr,:], cfig=fdir+'/00_'+cfb+cfc+'.png',
                                          lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY ) ; #ppntIDs=vIDs[idxKeep], 
     
                 
                 # B: same, but on projection with geographic coordinates
                 ########################################################
                 if idebug>0:
-                    kk = mjt.ShowBuoysMap( vdate[jr], zGC[jr,:,0], zGC[jr,:,1], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+'_Original.png',
+                    kk = mjt.ShowBuoysMap( vdate[jr], zGC[jr,:,0], zGC[jr,:,1], pvIDs=vIDs[:], cfig=fdir+'/00_PROJ_'+cfb+'_Original.png',
                                            cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
     
-                kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfdir+'/00_PROJ_'+cfb+cfc+'.png',
+                kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=fdir+'/00_PROJ_'+cfb+cfc+'.png',
                                        cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
 
