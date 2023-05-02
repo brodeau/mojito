@@ -36,7 +36,7 @@ if __name__ == '__main__':
     rd_tc = None
     
     if not len(argv) in [3,4,5]:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>) (<rd_ss_km>)')
+        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>) (<min_dist_coast>)')
         exit(0)
 
     # Idea remove all the buoys closer to land than `rd_ss_km` km !!!

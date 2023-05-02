@@ -23,17 +23,16 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
+        DT_BINS_H=6 ;  RESKM=10
         #
         # 20km:
-        #DT_BINS_H=6 ;  RESKM=20 ; # defaut:15
+        #DT_BINS_H=6 ;  RESKM=20
         #
         # 40km:
-        DT_BINS_H=6 ; RESKM=40 ; # defaut:35
+        #DT_BINS_H=6 ; RESKM=40
         #
         # 80km:
         #DT_BINS_H=6 ;  RESKM=80
-        #DT_BINS_H=$((24*3)) ;  RESKM=80
         #
         # 160km:
         #DT_BINS_H=6 ;  RESKM=160
