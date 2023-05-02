@@ -24,6 +24,7 @@ case ${host} in
         #
         # 10km:
         DT_BINS_H=6 ;  RESKM=10
+        #
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20 ; # defaut:15
         #
@@ -32,7 +33,7 @@ case ${host} in
         #
         # 80km:
         #DT_BINS_H=6 ;  RESKM=80
-        DT_BINS_H=$((24*3)) ;  RESKM=80
+        #DT_BINS_H=$((24*3)) ;  RESKM=80
         #
         # 160km:
         #DT_BINS_H=6 ;  RESKM=160
