@@ -53,13 +53,11 @@ if __name__ == '__main__':
     if ldss:        
         rd_ss = float(argv[3])
     else:
-        kl = cfg.updateConfig4Scale( reskm ) ; #
+        kl = cfg.updateConfig4Scale( int(reskm) ) ; #
         rd_ss = cfg.rc_d_ss
-
+        
     if ldtc:        
         rd_tc = float(argv[4])
-
-
         
     mjt.chck4f(cf_nc_in)
 
@@ -145,7 +143,9 @@ if __name__ == '__main__':
     
         ### Too close to land for a given scale???
         rDmin = 100.
-        if ldss or (reskm>600):            
+        if ldss or (reskm>600):
+            print('LOLO: FIXME with what is inside config!!! Min and max distance!')
+            exit(0)
             if ldss:
                 if   ldtc:
                     rDmin = rd_tc
