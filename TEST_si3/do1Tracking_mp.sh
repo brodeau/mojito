@@ -25,7 +25,7 @@ for RESKM in ${LCOARSEN[*]}; do
     echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
     cxtraRES="_${RESKM}km"
 
-    list_seed_nc=`\ls ./nc/sitrack_seeding_nemoTsi3_${YEAR}*${cxtraRES}.nc`
+    list_seed_nc=`\ls ./nc/sitrack_seeding_nemoTsi3_${YEAR}*${cxtraRES}*.nc`
 
     nbf=`echo ${list_seed_nc} | wc -w`
 
@@ -64,8 +64,17 @@ for RESKM in ${LCOARSEN[*]}; do
                 fout="./nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking_nemoTsi3_idlSeed_${sdate0}_${sdate_stop}_${RESKM}km.nc"
 
                 if [ ! -f ${fout} ]; then
-
+                    
                     FSEED="./nc/sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}.nc"
+                    if [ ! -f ${FSEED} ]; then
+                        FSEED=`\ls ./nc/sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}_????????.nc`
+                    fi
+
+                    if [ `echo ${FSEED} | wc -w` -ge 2 ]; then
+                        echo "PROBLEM: more than one seed file with root sitrack_seeding_nemoTsi3_${cdate}${cxtraRES}_ !!!"
+                        echo "FSEED = ${FSEED}"
+                        exit
+                    fi
 
                     CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP}"
 
