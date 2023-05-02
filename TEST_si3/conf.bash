@@ -67,10 +67,11 @@ case ${host} in
         #
         #export LCOARSEN=(  "80" "160" "320" "640" )
         #export LDTINCRM=(   "3"  "3"   "3"   "1"  )        
-        export LCOARSEN=(  "40" )
-        export LDTINCRM=(   "3" )
+        #export LCOARSEN=(  "320" )
+        #export LDTINCRM=(   "3" )
         #
-        LIST_NEMO_EXP="BBM2301"
+        #LIST_NEMO_EXP="BBM2301"
+        LIST_NEMO_EXP="BBM2302"
         #
         ;;
     *)
