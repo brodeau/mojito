@@ -88,9 +88,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
     
     
     min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+
     
     if   irk==10:
-        rc_d_ss = 7.
+        rd_ss =  6.
         if mode in ['thorough','model']:
             rc_tolQuadA = 1
             rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
