@@ -22,6 +22,8 @@ from .util import epoch2clock
 
 #idebug = 0
 
+vcolor = [ 'k', '0.25', '0.5', '0.75', 'g', 'orange' ]
+
 rndaxiskm = 500 ;
 
 # Figure stuff:
@@ -1059,7 +1061,7 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
 
     for jo in range(No):
         plt.loglog( pscales[:,jo], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
-                    color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
+                    color=vcolor[jo], label=pcOrig[jo], zorder=5 )
 
 
     jo = 0
@@ -1107,6 +1109,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
 
+
+    
     
     (Ns,No) = np.shape(pscales)
     if np.shape(pcOrig) != (No,):
@@ -1145,11 +1149,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     for jo in range(No):
                 
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
-                    color=str(float(jo)/2.5), label=None, zorder=5 )
+                    color=vcolor[jo], label=None, zorder=5 )
         plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=4.5, fillstyle='none',
-                    color=str(float(jo)/2.5), label=pcOrig[jo], zorder=5 )
+                    color=vcolor[jo], label=pcOrig[jo], zorder=5 )
         plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
-                    color=str(float(jo)/2.5), label=None, zorder=5 )
+                    color=vcolor[jo], label=None, zorder=5 )
     #X-axis:
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
