@@ -8,7 +8,6 @@ ijob=0
 mkdir -p logs
 
 
-
 csf="_${RESKM}km"
 if [ "${LIST_RD_SS}" != "" ]; then
     cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
@@ -16,7 +15,7 @@ if [ "${LIST_RD_SS}" != "" ]; then
 fi
 
 
-if [ ${RESKM} -eq 10 ]; then csf=""; fi
+###if [ ${RESKM} -eq 10 ]; then csf=""; fi
 
 
 

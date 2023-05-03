@@ -6,13 +6,16 @@ if [ "$1" = "0" ]; then
     rm -f ./npz/RGPS_batch_selection_dt${DT_BINS_H}h_*${YEAR}*.npz
     
 elif [ "$1" = "1" ]; then
-    rm -f figs/SELECTION/* nc/SELECTION_*${YEAR}*.nc npz/SELECTION_*${YEAR}*.npz
+    rm -rf figs/SELECTION
+    rm -f nc/SELECTION_*${YEAR}*.nc
 
 elif [ "$1" = "c" ]; then
-    rm -f figs/coarsify/* nc/SELECTION_*${YEAR}*km.nc
+    rm -rf figs/coarsify
+    rm -f nc/SELECTION_*${YEAR}*_*km.nc logs/coarsify_*
 
 elif [ "$1" = "2" ]; then
-    rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/genquads_*
+    rm -rf ./figs/quadgener
+    rm -f npz/[TQ]-mesh_*.npz logs/genquads_*
     rm -f ./nc/*_postQG.nc
 
 elif [ "$1" = "3" ]; then

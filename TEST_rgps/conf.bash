@@ -122,19 +122,8 @@ case ${host} in
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #FILIN="RGPS_1996-12-21_1997-02-01.nc4"
-        #
-        #DT_BINS_H=72  ; # width of a bin for time sampling [hours]
-        #DT_BINS_H=6  ; DATE2="${YEAR}0131"
-        #
-        #DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*5)) ; DATE2="${YEAR}0115"
-        #
-        FILIN="RGPS_${YEAR}.nc4"; DATE1="${YEAR}0103_00:00" ; DT_BINS_H=$((24*7)) ; DATE2="${YEAR}0109" ; # Best display of full coverage ?
-        
-        #DATE1="${YEAR}0101_00:00" ; DT_BINS_H=$((24*9)) ; DATE2="${YEAR}0120" ; # testing for 200 km
-        #
-        #DATE1="${YEAR}0103_00:00" ; DATE2="${YEAR}0119"; DT_BINS_H=$((24*7))
-        #
+        DT_BINS_H=6 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
+        #DT_BINS_H=6 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=20
         ;;
     *)
         echo "Unsupported host: ${host} !"

@@ -4,6 +4,16 @@
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
 
+known_modes = ['thorough','model','rgps','xlose']
+
+
+def _check_mode_( caller, mode ):
+    if not mode in known_modes:
+        print('ERROR [config.'+caller+'()]: unknow mode: '+mode+'!')
+        exit(0)
+    return 0
+    
+
 def initialize( mode='model' ):
     '''
     '''
@@ -15,7 +25,9 @@ def initialize( mode='model' ):
     global lc_accurate_time
     global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     global data_dir, fdist2coast_nc, nc_MinDistFromLand
-
+    
+    lk = _check_mode_( 'initialize', mode )
+    
     rc_day2sec = 24*3600
 
     nc_min_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
@@ -34,25 +46,18 @@ def initialize( mode='model' ):
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    if mode in ['thorough','model']:        
+    if mode in ['thorough','model','rgps']:        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
-        #LOLO!
-        #rc_Qang_min =  50.  ; # minimum angle tolerable in a quadrangle [degree]
-        #rc_Qang_max = 130.  ; # maximum angle tolerable in a quadrangle [degree]
-        #LOLO.
+        rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='xlose':
         rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
         rc_dRatio_max = 3. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-    else:
-        print('ERROR [initialize()]: unknow mode: '+mode+'!'); exit(0)
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
-    #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
-
-    if mode == 'model':
+    
+    if mode in ['thorough','model','rgps']:
         rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)
         rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
     else:
@@ -78,9 +83,11 @@ def updateConfig4Scale( res_km,  mode='model' ):
     #
     global ivc_KnownScales, rc_d_ss
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
-
+    
     irk = int(res_km)
 
+    lk = _check_mode_( 'updateConfig4Scale', mode )
+    
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
@@ -92,70 +99,80 @@ def updateConfig4Scale( res_km,  mode='model' ):
     
     if   irk==10:
         rc_d_ss =  6.
-        if mode in ['thorough','model']:
-            rc_tolQuadA = 1
+        rc_tolQuadA = 2
+        if mode in ['thorough','model']:            
             rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
+        elif mode=='rgps':
+            # => more or less centered around 9.3km !!!
+            rc_Qarea_min, rc_Qarea_max = 9.3*9.3, 11.3*11.3
         elif mode=='xlose':
-            rc_tolQuadA = 5
             rc_Qarea_min, rc_Qarea_max = 2*2, 20*20
         else:
-            print('ERROR [updateConfig4Scale()]: unknow mode: '+mode+'!'); exit(0)
-
+            rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
+        #
     elif irk==20:
         rc_d_ss = 14.6
-        rc_tolQuadA = 3
-        rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
         min_div, min_shr, min_tot = 0.001, 0.001, 0.001
+        rc_tolQuadA = 4
+        if mode=='model':            
+            rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
+        elif mode=='rgps':
+            rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
+        else:
+            rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
     elif irk==40:
         rc_d_ss = 34.5
-        rc_tolQuadA = 7
-        if mode=='model':
+        rc_tolQuadA = 8
+        if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
-            #rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
+        elif mode=='rgps':
+            rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         #
     elif irk==80:
         rc_d_ss = 74.75
-        rc_tolQuadA = 15
-        if mode=='model':
+        rc_tolQuadA = 16
+        if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 79*79, 81*81
-            #rc_Qarea_min, rc_Qarea_max = 75*75, 85*85
+        elif mode=='rgps':
+            rc_Qarea_min, rc_Qarea_max = 72.*72., 88.*88.
         else:
             rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
         #
     elif irk==160:
         rc_d_ss = 156.
-        rc_tolQuadA = 20
-        if mode=='model':
+        rc_tolQuadA = 32
+        if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
-            #rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
-            #rc_Qarea_min, rc_Qarea_max = 150*150, 170*170
-            #rc_Qarea_min, rc_Qarea_max = 110*110, 210*210
+        elif mode=='rgps':
+            rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #
     elif irk==320:
         rc_d_ss = 315.6
-        rc_tolQuadA = 100
-        if mode=='model':
+        rc_tolQuadA = 64
+        if mode=='model':            
             rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
-            #rc_Qarea_min, rc_Qarea_max =  316*316, 350*350 ; # EXPERIMENTAL!!!!
+        elif mode=='rgps':
+            rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
         else:
-            rc_Qarea_min, rc_Qarea_max =  280*280, 360*360
+            rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
         #
     elif irk==640:
         rc_d_ss = 636.
-        rc_tolQuadA = 300
-        if mode=='model':
-            rc_Qarea_min, rc_Qarea_max =  632*632, 648*648 ; #ok!
-            #rc_Qarea_min, rc_Qarea_max =  632*632, 660*660  ; # EXPERIMENTAL!!!!
+        rc_tolQuadA = 128
+        if mode=='model':            
+            rc_Qarea_min, rc_Qarea_max =  632*632, 648*648
+        elif mode=='rgps':
+            rc_Qarea_min, rc_Qarea_max = 576.*576., 704.*704.
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
         #
     else:
-        print('ERROR [updateConfig4Scale]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
+        print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
         
   

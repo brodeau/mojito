@@ -13,7 +13,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path, environ, mkdir
+from os import path, environ, mkdir, makedirs
 import numpy as np
 from re import split
 from scipy.spatial import Delaunay
@@ -23,12 +23,9 @@ from mojito import config as cfg
 
 idebug = 0
 
-iplot  = 0 ; # Create figures to see what we are doing...
+iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
-
-quality_mode = 'model'
-#quality_mode = 'xlose' ; # extra lose => good to make maps of deformations, bad for scaling!!!
 
 lapplyDistCoast = False
 
@@ -46,7 +43,7 @@ if __name__ == '__main__':
     cf_nc_in = argv[1]
     lstrec = argv[2]
     creskm = argv[3]
-    reskm = float(creskm)
+    reskm = int(creskm)
 
     if len(argv)==5:
         crd_ss = argv[4]
@@ -61,26 +58,28 @@ if __name__ == '__main__':
     
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
-        cfdir = './figs/quadgener'
-        if not path.exists('./figs'): mkdir('./figs')
-        if not path.exists(cfdir): mkdir(cfdir)
-
+        cfdir = './figs/quadgener/'+str(reskm)+'km'
+        makedirs( cfdir, exist_ok=True )
     
     # Loading the data for the 2 selected records:
     Nt, NbP, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
 
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
 
-    #print('LOLO: corigin=',corigin)
-    if split('_',corigin)[0] == 'NEMO-SI3':        
-        quality_mode = 'model'
-        print('LOLO: switching to `quality_mode` =', quality_mode)
+    quality_mode = 'unknown'
 
+    if corigin == 'RGPS':
+        quality_mode = 'rgps'
+    elif split('_',corigin)[0] == 'NEMO-SI3':
+        quality_mode = 'model'
+    else:
+        print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
+        exit(0)
+        
     kl = cfg.initialize( mode=quality_mode )
     kk = cfg.updateConfig4Scale( reskm, mode=quality_mode )
 
     zA_ideal = reskm*reskm ; # ideal Area of quadrangles to build!
-
     
     print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
     print(' *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
@@ -91,25 +90,21 @@ if __name__ == '__main__':
     
     # We need a string to name the output files:
     kdt = -4
-    if creskm=='10': kdt = -3
+    #if creskm=='10': kdt = -3
+    #
     if corigin == 'RGPS':
         cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the batch
         cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
-        
+        #
     elif split('_',corigin)[0] == 'NEMO-SI3':
         sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the batch
         cfstr = sl[0]+'_'+sl[1]+'_'+sl[2]+'_'+sl[4]
         cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
-    else:
-        print('FIXME for corigin = '+corigin+' !!!'); exit(0)
-    #if not cdtbin[1:3] in ['dt','id']:
     if not cdtbin[1:3] in ['dt']:
-        # "id" for `_idlSeed`
-        #print('ERROR: we could not figure out `cdtbin`!'); exit(0)
         print('WARNING: we could not figure out `cdtbin`!')
         cdtbin = '_NoBin'
-    #
     cfstr += cdtbin
+    
 
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
@@ -337,13 +332,15 @@ if __name__ == '__main__':
             print('\n *** About our quadrangles:')
             zsides = QUADS0.lengths()
             zareas = QUADS0.area()
+            zscale = np.sqrt(zareas)
             rl_average_side = np.mean(zsides)
-            rl_average_scal = np.mean( np.sqrt(zareas) )
-            rl_average_area = np.mean(zareas) ; rl_stdev_area = mjt.StdDev(rl_average_area, zareas)
-            print('    ==> average scale (sqrt[A]) is '+str(round(rl_average_scal,3))+' km')
+            rl_average_scal = np.mean(zscale)
+            rl_stdev_scal   = mjt.StdDev(rl_average_scal, zscale)
+            rl_average_area = np.mean(zareas)
+            print('    ==> scale: mean, StDev, min, max =',round(rl_average_scal,3), round(rl_stdev_scal,2), round(np.min(zscale),2), round(np.max(zscale),3),' km')
             print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
-            print('    ==> average area is '+str(round(rl_average_area,1))+' km^2, StDev =',str(round(rl_stdev_area,1))+' km^2')
-            del zareas, zsides
+            print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
+            del zareas, zsides, zscale
             zdev = abs(rl_average_scal-reskm)
             if zdev > cfg.rc_tolQuadA:
                 print(' ERROR: the mean scale is too different from the '+creskm

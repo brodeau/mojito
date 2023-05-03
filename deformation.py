@@ -55,12 +55,9 @@ if __name__ == '__main__':
         exit(0)
     print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
 
-
     if iplot>0:
         cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
-
-
 
     
     # Comprehensive name for npz and figs to save later on:
