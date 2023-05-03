@@ -6,10 +6,8 @@
 echo " *** ${RESKM}km !"
 
 
-#if [ ${RESKM} -gt 10 ]; then
 ./do1bCoarsify.sh
 wait
-#fi
 
 ./do2GenerateQuads_mp.sh
 wait
