@@ -204,13 +204,11 @@ if __name__ == '__main__':
     xXQ = np.ma.masked_where(xXQ<-9000., xXQ)
 
 
-
+    Naxis = 0
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png',
-                              lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=2 )
-
-
+                              lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis )
 
     # Separate: 
     cfroot = './figs/0scaling_'+cfield+'_q1_mean_'+corig+'_dt'+str(dtbin)
