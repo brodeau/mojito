@@ -19,7 +19,8 @@ elif [ "$1" = "2" ]; then
     rm -f ./nc/*_postQG.nc
 
 elif [ "$1" = "3" ]; then
-    rm -f figs/deformation/* npz/DEFORMATIONS_* logs/def_*
+    rm -rf figs/deformation
+    rm -f npz/DEFORMATIONS_* logs/def_*
     
 elif [ "$1" = "4" ]; then
     rm -f npz/def_*

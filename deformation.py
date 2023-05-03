@@ -187,14 +187,6 @@ if __name__ == '__main__':
                              pFmin=-0.2, pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
         mjt.ShowDefQuad( zXc, zYc, np.sqrt(zUc*zUc+zVc*zVc), cfig=cfdir+'/zUMc_'+cfnm+figSfx, cwhat='UMc',
                              pFmin=0., pFmax=0.2, zoom=zoom, rangeX=zrx, rangeY=zry, unit='m/s' )
-
-        #mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-        #                 pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-        #                 title=corigin+': divergence' )
-
-
-        
-        #
         del zUc, zVc
 
     # Divergence aka SigmaI:
@@ -206,6 +198,8 @@ if __name__ == '__main__':
     del zdUdxy, zdVdxy
 
     (nD,) = np.shape(zdiv)    
+    if  nQ != nD:
+        print('ERROR: `Q != nD` !!!'); exit(0)
     if  np.shape(zshr2) != (nD,):
         print('ERROR: `np.shape(zdiv) != np.shape(zshr2)` !!!'); exit(0)
         
@@ -217,13 +211,21 @@ if __name__ == '__main__':
     # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
     (idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) )
     #
-    #print('LOLO: shape before clean: ', np.shape(zdiv))
+    #print('LOLO: shape before clean, nD, nQ =', np.shape(zdiv), nD, nQ)
     if len(idxKeep) < nD:
-        zdiv = zdiv[idxKeep]
-        zshr = zshr[idxKeep]
-        nD   = len(idxKeep)
+        zdiv  =  zdiv[idxKeep]
+        zshr  =  zshr[idxKeep]
+        zshr2 = zshr2[idxKeep]
+        zXc   =   zXc[idxKeep]
+        zYc   =   zYc[idxKeep]
+        zAq   =   zAq[idxKeep]
+        nD    = len(idxKeep)
+        if iplot>0:
+            zX =   zX[idxKeep,:]
+            zY =   zY[idxKeep,:]
     del idxKeep
-    #print('LOLO: shape after clean: ', np.shape(zdiv), nD); exit(0)
+    #print('LOLO: shape after clean: ', np.shape(zdiv), nD)
+    #print('LOLO: shape zX: ', np.shape(zX)); exit(0)
 
     
     # Total deformation rate:
@@ -234,7 +236,7 @@ if __name__ == '__main__':
 
 
     # Saving data:
-    np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nQ,
+    np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nD,
                          Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
 
