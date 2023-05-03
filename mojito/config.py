@@ -56,17 +56,15 @@ def initialize( mode='model' ):
         rc_dRatio_max = 3. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
-    
-    if mode in ['thorough','model','rgps']:
-        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)
-        rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
+
+    rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
+    if mode in ['thorough','model']:
+        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
     elif mode in ['rgps']:
-        # Because noisy!!!
+        # Because noisy!!!        
         rc_div_min, rc_shr_min, rc_tot_min = 7.e-5, 7.e-5, 7.e-5      ; # based on scatter plot of scaling
-        rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
     else:
         rc_div_min, rc_shr_min, rc_tot_min = 0.8e-4, 0.8e-4, 0.8e-4   ; # for scaling (not PDFs)
-        rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
 
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
