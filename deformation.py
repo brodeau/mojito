@@ -134,7 +134,7 @@ if __name__ == '__main__':
         print('\n WARNING: time for some buoys is the same in the 2 records!')
         (idxKeep,) = np.where( (zdT[:,0]>0.) & (zdT[:,1]>0.) & (zdT[:,2]>0.) & (zdT[:,3]>0.) )
         idxKeep = np.array( idxKeep , dtype=int )
-        nQn = len(idxKeep)
+        zshr2nQn = len(idxKeep)
         print('   ==> '+str(nQ-nQn)+' quads /'+str(nQ)+' disregarded because they have the same time in both record !')
         vidx1 = vidx1[idxKeep]
         vidx2 = vidx2[idxKeep]
@@ -207,32 +207,33 @@ if __name__ == '__main__':
     zshr = np.zeros(nD)
     zshr = np.sqrt(zshr2)
 
-
+    # Total deformation rate:
+    ztot = np.zeros(nD)
+    ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
+    del zshr2
+    
     # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
-    (idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) )
+    (idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) & (ztot>cfg.rc_tot_min) )
     #
     #print('LOLO: shape before clean, nD, nQ =', np.shape(zdiv), nD, nQ)
-    if len(idxKeep) < nD:
-        zdiv  =  zdiv[idxKeep]
-        zshr  =  zshr[idxKeep]
-        zshr2 = zshr2[idxKeep]
-        zXc   =   zXc[idxKeep]
-        zYc   =   zYc[idxKeep]
-        zAq   =   zAq[idxKeep]
-        nD    = len(idxKeep)
+    nDn = len(idxKeep)
+    if nDn < nD:
+        print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
+        zdiv = zdiv[idxKeep]
+        zshr = zshr[idxKeep]
+        ztot = ztot[idxKeep]
+        zXc  =  zXc[idxKeep]
+        zYc  =  zYc[idxKeep]
+        zAq  =  zAq[idxKeep]
+        nD   = nDn
         if iplot>0:
-            zX =   zX[idxKeep,:]
-            zY =   zY[idxKeep,:]
+            zX = zX[idxKeep,:]
+            zY = zY[idxKeep,:]
     del idxKeep
     #print('LOLO: shape after clean: ', np.shape(zdiv), nD)
     #print('LOLO: shape zX: ', np.shape(zX)); exit(0)
 
     
-    # Total deformation rate:
-    ztot = np.zeros(nD)
-    ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
-
-    del zshr2
 
 
     # Saving data:
