@@ -63,7 +63,7 @@ def initialize( mode='model' ):
         rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
     elif mode in ['rgps']:
         # Because noisy!!!        
-        rc_div_min, rc_shr_min, rc_tot_min = 7.e-5, 7.e-5, 7.e-5      ; # based on scatter plot of scaling
+        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
     else:
         rc_div_min, rc_shr_min, rc_tot_min = 0.8e-4, 0.8e-4, 0.8e-4   ; # for scaling (not PDFs)
 
