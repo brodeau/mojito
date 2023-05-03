@@ -144,8 +144,8 @@ if __name__ == '__main__':
         ### Too close to land for a given scale???
         rDmin = 100.
         if ldss or (reskm>600):
-            print('LOLO: FIXME with what is inside config!!! Min and max distance!')
-            exit(0)
+            #print('LOLO: FIXME with what is inside config!!! Min and max distance!')
+            #exit(0)
             if ldss:
                 if   ldtc:
                     rDmin = rd_tc
