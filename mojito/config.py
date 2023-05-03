@@ -27,7 +27,7 @@ def initialize( mode='model' ):
     global data_dir, fdist2coast_nc, nc_MinDistFromLand
     
     lk = _check_mode_( 'initialize', mode )
-    
+
     rc_day2sec = 24*3600
 
     nc_min_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
@@ -57,7 +57,8 @@ def initialize( mode='model' ):
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures
+    # Extremas for deformations, in [day^-1] !!!
+    rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures    
     if mode in ['thorough','model']:
         rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
     elif mode in ['rgps']:

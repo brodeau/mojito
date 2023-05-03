@@ -19,7 +19,6 @@ zoom=2
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize()
     
     if not len(argv) in [4]:
         print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)>')
@@ -42,8 +41,6 @@ if __name__ == '__main__':
     ctimeC = mjt.epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
     rdt = rTm2 - rTm1
-    if not cfg.lc_accurate_time:
-        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
     vclck = split('_',ctimeC)
     chh, cmm = split(':',vclck[1])[0], split(':',vclck[1])[1]
@@ -64,6 +61,21 @@ if __name__ == '__main__':
     corigin = QUA1.origin    
     cfnm    = corigin
 
+    if corigin == 'RGPS':
+        quality_mode = 'rgps'
+    elif split('_',corigin)[0] == 'NEMO-SI3':
+        quality_mode = 'model'
+    else:
+        print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
+        exit(0)
+    
+    kk = cfg.initialize( mode=quality_mode )
+
+    
+    if not cfg.lc_accurate_time:
+        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
+
+    
     # Some info from npz file name: #fixme: too much dependency on file name...
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
     if corigin == 'RGPS':
@@ -72,12 +84,9 @@ if __name__ == '__main__':
     elif split('_',corigin)[0] == 'NEMO-SI3':
         cbatch =  split('_',cf1)[-5]
         cdtbin = '_'+split('_',cf1)[-4]        
-    else:
-        print('FIXME: unknow origin: ',corigin); exit(0)
     if not cdtbin[1:3] in ['dt','No']:
         print('ERROR: we could not figure out `cdtbin`!'); exit
 
-    #print('LOLO: cdtbin[1:3] =',cdtbin[1:3]);exit(0)
         
     # Test for coarsening realisations:
     cr1, cr2 = '', ''
@@ -213,8 +222,12 @@ if __name__ == '__main__':
     del zshr2
     
     # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
-    (idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) & (ztot>cfg.rc_tot_min) )
+    #(idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) & (ztot>cfg.rc_tot_min) )
+    (idxKeep,) = np.where( ztot*cfg.rc_day2sec > cfg.rc_tot_min )
     #
+    #print('LOLO')
+    #print('LOLO: cfg.rc_tot_min =',cfg.rc_tot_min)
+    #print('LOLO: ztot= ',ztot[::50])
     #print('LOLO: shape before clean, nD, nQ =', np.shape(zdiv), nD, nQ)
     nDn = len(idxKeep)
     if nDn < nD:
@@ -232,9 +245,6 @@ if __name__ == '__main__':
     del idxKeep
     #print('LOLO: shape after clean: ', np.shape(zdiv), nD)
     #print('LOLO: shape zX: ', np.shape(zX)); exit(0)
-
-    
-
 
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nD,
