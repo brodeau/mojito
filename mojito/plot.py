@@ -706,7 +706,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     (nQ,) = np.shape(pF)
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
-        print('\n *** ERROR [ShowDefQuad]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
+        print('\n *** ERROR [ShowDefQuadGeoArctic]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
 
     kk = _initStyle_(fntzoom=zoom)
 

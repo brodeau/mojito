@@ -212,11 +212,19 @@ if __name__ == '__main__':
     # Maximum Shear Strain Rate aka SigmaII:
     zshr = np.zeros(nD)
     zshr = np.sqrt(zshr2)
-    
-    #print('LOLO: zdiv[:] ('+str(len(zdiv))+')=',zdiv)
-    #print('LOLO: zshr[:] ('+str(len(zshr))+')=',zshr)
-    #exit(0)
-    
+
+
+    # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
+    (idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) )
+    #
+    #print('LOLO: shape before clean: ', np.shape(zdiv))
+    if len(idxKeep) < nD:
+        zdiv = zdiv[idxKeep]
+        zshr = zshr[idxKeep]
+        nD   = len(idxKeep)
+    del idxKeep
+    #print('LOLO: shape after clean: ', np.shape(zdiv), nD); exit(0)
+
     
     # Total deformation rate:
     ztot = np.zeros(nD)
