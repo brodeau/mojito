@@ -151,10 +151,12 @@ if __name__ == '__main__':
                     rDmin = rd_tc
                 elif corigin=='RGPS' and reskm>600:
                     rDmin = rd_ss
-                    #if reskm>300:
-                    #    rDmin = 1.25*( max( 110. ,  100. - 2*(rd_ss-reskm) ) ); # so it still varies...                
                     if reskm>350:
-                        rDmin = max( 110. ,  100. - 1.*(rd_ss-reskm) ) ; # so it still varies...                        
+                        #lolo
+                        from random import random
+                        zrnd = random() ; # Between 0 and 1
+                        #rDmin = max( 150. ,  100. - 2.*(rd_ss-reskm) ) ; # so it still varies...
+                        rDmin = 150. + 150*zrnd
             else:
                 #if  reskm==320:
                 #    rDmin = 200

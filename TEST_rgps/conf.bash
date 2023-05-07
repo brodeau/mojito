@@ -39,7 +39,7 @@ case ${host} in
         #DT_BINS_H=$((24*3)) ;  RESKM=160
         #
         # 320km:
-        DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="290 305 315 325 340" ; # ok new!
+        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="290 305 315 325 340" ; # ok new!
         #
         #DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="295 305 315 325" ; #(280, 360) / ZOLEIL++  8==D 
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="300" ; #(260, 380) / 128 pt / Pas mal!
@@ -65,6 +65,8 @@ case ${host} in
         ##DT_BINS_H=6 ;  RESKM=320; LIST_RD_SS="280 295 310 320 330"  # defaut:295
         #
         # 640km:
+        DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 625 630 635 640 645 655"  ; #
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 625 635 645 655"  ; # ok !!!
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="600 620 635 650 670"
         #***********************
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="610 630 650" ; # (480, 800)/Tdev=24h =>  192p / Au dessus c l'soleil! FOLEIL
