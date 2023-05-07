@@ -320,6 +320,77 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
 
 
 
+
+
+def ShowQuads( pQuads, cfig='mesh_quad_map.png', rangeX=None, rangeY=None ):
+    '''
+    '''
+    
+    (nbQ,n4,n2) = np.shape(pQuads)
+
+    if [n4,n2] != [4,2]:
+        print('\n *** ERROR ['+caller+'.ShowQuads()]: wrong shape for "pQuads"!'); exit(0)
+
+    zoom = 1
+    zrat = 1./zoom
+    kk = _initStyle_(fntzoom=zoom)
+    rsz_annot  = 5*zoom**0.4
+
+    #(nbP,) = np.shape(pX) ; # Number of points that defines all the triangles...
+
+    #if lGeoCoor:
+    #    # Geograhic coordinates (lon,lat)
+    #    import cartopy.crs     as ccrs
+    #    import cartopy.feature as cftr
+    #    #
+    #    ProjPC = ccrs.PlateCarree()
+    #    #
+    #    vfig = (10*zoom,10*zoom)
+    #    if cProj=='NPS':
+    #        Proj = ccrs.NorthPolarStereo()
+    #    elif cProj=='PC':
+    #        Proj = ProjPC
+    #        vfig = (12*zoom,9*zoom)
+    #    else:
+    #        print('\n *** ERROR ['+caller+'.ShowQuads()]: Unknown projection "'+cProj+'"!'); exit(0)
+    #    #
+    #else:
+    # Cartesian coordinates (x,y) in km...
+    #(xA,xB), (yA,yB), (Lx,Ly), (dx,dy), vfig = _set_fig_axis_( pX, pY, zoom=zoom, rangeX=rangeX, rangeY=rangeY )
+
+
+    vfig = (12*zoom,9*zoom)
+    fig = plt.figure(num=1, figsize=vfig, facecolor='w')
+
+    #if lGeoCoor:
+    #    ax   = plt.axes([0.02, 0.02, 0.96, 0.96], projection=Proj, facecolor=col_bg)
+    #    ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
+    #    ax.add_feature(cftr.LAND, color='0.5', zorder=70)
+    #    # Showing points:
+    #    plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
+    #else:
+    #    ddx = dx*Ly/Lx
+    #    ax  = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')
+    #    plt.axis([ xA,xB , yA,yB ])
+    #    # Showing points:
+    #    plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200 )
+
+    for jQ in range(nbQ):
+
+        plt.fill( pQuads[jQ,:,0], pQuads[jQ,:,1], facecolor='0.5', edgecolor='k', linewidth=1. )
+
+    print('     ===> saving figure: '+cfig)
+    plt.savefig(cfig)
+    plt.close(1)
+
+
+
+
+
+
+    
+
+
 def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[], qnames=[], TriMesh=[],
                 pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS',
                 rangeX=None, rangeY=None ):
