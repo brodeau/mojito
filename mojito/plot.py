@@ -22,14 +22,13 @@ from .util import epoch2clock
 
 #idebug = 0
 
-vcolor = [ 'k', '0.25', '0.5', '0.75', 'g', 'orange' ]
 
 rndaxiskm = 500 ;
 
 # Figure stuff:
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
 color_top = 'w'
-clr_yellow = '#ffed00'
+
 
 fig_type='png'
 rDPI = 150
@@ -40,12 +39,14 @@ col_bg = '#041a4d'
 
 col_red = '#873520'
 col_blu = '#3475a3'
-
+col_ylw = '#ffed00'
 
 msPoints = 8  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
+#vcolor = [ 'k', '0.25', '0.5', '0.75', 'g', 'orange' ]
+vcolor = [ 'k', col_red, col_blu, col_ylw, 'g' ]
 
 
 
@@ -1183,10 +1184,10 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
     # With cloud of point:
-    
+    # ********************
     cfig = str.replace(cfig,'total','mean')
     #ylog_min, ylog_max = 5.e-3,2.e-2
-    ylog_min, ylog_max = 1.e-6,1.
+    ylog_min, ylog_max = 3.e-5,1.
     fig = plt.figure( num = 1, figsize=(10,17), dpi=None )
     ax = plt.axes([0.11, 0.06, 0.85, 0.9])
 
