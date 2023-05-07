@@ -206,16 +206,23 @@ def updateConfig4Scale( res_km,  mode='model' ):
 
     #############################
 
+    # Only for RGPS data:
+    # *******************
     # When not at the nominal scale, we can adapt `rc_t_dev_cancel` to the scale we are dealing with:
     #    a quadrangle can involve points that are too distant from one another in terms of time
     #    => we disregard any quadrangles which standard deviation of the time of the 4 positions
     #       excess `t_dev_cancel` seconds !
     rc_t_dev_cancel = 60
-    if res_km>=300.:
-        rc_t_dev_cancel = 12*3600
-        if res_km>=600.:
-            rc_t_dev_cancel = 24*3600
-            #rc_t_dev_cancel = 18*3600
+
+    if mode == 'rgps':
+        if   res_km>=150. and res_km<300.:
+            rc_t_dev_cancel =  3*3600    
+        elif res_km>=300. and res_km<600.:
+            rc_t_dev_cancel =  6*3600
+        elif res_km>=600.:
+            rc_t_dev_cancel = 12*3600
+    #
+    if rc_t_dev_cancel > 60:
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
     return 0

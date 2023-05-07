@@ -33,6 +33,12 @@ elif [ "$1" = "all" ]; then
     rm -rf figs logs nc
     rm -f npz/PDF_* npz/DEFORMATIONS_* npz/[QT]-mesh* npz/def_*
 
+elif [ "$1" = "less" ]; then
+    rm -f *.out *.err *~ \#*
+    rm -rf figs logs nc/SELECTION_*km.nc
+    rm -f npz/PDF_* npz/DEFORMATIONS_* npz/[QT]-mesh* npz/def_*
+
+    
 else
     echo "Tell me something!"
 

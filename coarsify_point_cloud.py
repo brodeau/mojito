@@ -143,27 +143,13 @@ if __name__ == '__main__':
     
         ### Too close to land for a given scale???
         rDmin = 100.
-        if ldss or (reskm>600):
-            #print('LOLO: FIXME with what is inside config!!! Min and max distance!')
-            #exit(0)
-            if ldss:
-                if   ldtc:
-                    rDmin = rd_tc
-                elif corigin=='RGPS' and reskm>600:
-                    rDmin = rd_ss
-                    if reskm>350:
-                        #lolo
-                        from random import random
-                        zrnd = random() ; # Between 0 and 1
-                        #rDmin = max( 150. ,  100. - 2.*(rd_ss-reskm) ) ; # so it still varies...
-                        rDmin = 150. + 150*zrnd
-            else:
-                #if  reskm==320:
-                #    rDmin = 200
-                if reskm==640:
-                    rDmin = 300
-                #else:
-                #    rDmin = 200
+        if ldss:
+            if   ldtc:
+                rDmin = rd_tc
+            elif corigin=='RGPS' and reskm>150:
+                from random import random
+                zrnd = random() ; # Between 0 and 1
+                rDmin = 150. + reskm/2.*zrnd
             #
             if rDmin>105:
                 print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
