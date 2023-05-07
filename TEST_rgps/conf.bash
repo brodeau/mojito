@@ -41,11 +41,12 @@ case ${host} in
         #
         #
         # 320km:
-        DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="290 300 305 310 315 320 325 330 340" ; # ok new!
-        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="290 305 315 325 340" ; # ok new!
+        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="290 300 305 310 315 320 325 330 340" ; # The cream!!!
         #
         #
         # 640km:
+        DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="590 600 610 620 625 628 631 633 635 637 639 642 645 650 660 670 680"  ; # 
+        #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="590 600 610 620 625 630 633 635 637 640 645 650 660 670 680"  ; # 
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 625 630 635 640 645 655"  ; # Pretty good!!! :)
         ##DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="615 625 635 645 655"  ; # ok !!!
         ##DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="600 620 635 650 670"
