@@ -10,3 +10,4 @@ from .ncio     import *
 from .geomesh  import *
 from .polygons import *
 from .plot     import *
+from .mogpt    import *

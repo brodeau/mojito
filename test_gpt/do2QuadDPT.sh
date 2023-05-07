@@ -48,7 +48,6 @@ for ff in ${list_nc}; do
             ijob=$((ijob+1))
             echo "    ==> will launch:"; echo "     ${CMD}"; echo
             ${CMD}
-
             exit
             # 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             #
