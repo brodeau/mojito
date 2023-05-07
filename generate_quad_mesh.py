@@ -58,8 +58,8 @@ if __name__ == '__main__':
     
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
-        cfdir = './figs/quadgener/'+str(reskm)+'km'
-        makedirs( cfdir, exist_ok=True )
+        fdir = './figs/quadgener/'+str(reskm)+'km'
+        makedirs( fdir, exist_ok=True )
     
     # Loading the data for the 2 selected records:
     Nt, NbP, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
@@ -319,7 +319,7 @@ if __name__ == '__main__':
                 if iplot>2:
                     # Show triangles on a map:
                     print('\n *** Launching Triangle plot!')
-                    kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=cfdir+'/fig01_Mesh_Triangles_'+cfbase+'.png',
+                    kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=fdir+'/fig01_Mesh_Triangles_'+cfbase+'.png',
                                          ppntIDs=TRIAS.PointIDs,
                                          TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
                                          rangeX=vrngX, rangeY=vrngY )
@@ -433,21 +433,24 @@ if __name__ == '__main__':
             if iplot>1:
                 # Show triangles together with the quadrangles on a map:
                 print('\n *** Launching Triangle+Quad plot!')
-                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig=cfdir+'/fig02_Mesh_Quadrangles_'+cfbase+'.png',
+                kk = mjt.ShowTQMesh( TRI.PointXY[:,0], TRI.PointXY[:,1], cfig=fdir+'/fig02_Mesh_Quadrangles_'+cfbase+'.png',
                                      ppntIDs=TRI.PointIDs, TriMesh=TRI.MeshVrtcPntIdx,
                                      pX_Q=QUA.PointXY[:,0], pY_Q=QUA.PointXY[:,1], QuadMesh=QUA.MeshVrtcPntIdx,
                                      lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
             if iplot>2:
                 # Show only points composing the quadrangles:
-                kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cfdir+'/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
+                kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=fdir+'/fig03a_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                      ppntIDs=QUA.PointIDs, lGeoCoor=False, zoom=rzoom_fig )
             
             # Show only the quads with only the points that define them:
             print('\n *** Launching Quad-only plot!')
-            kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=cfdir+'/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
+            kk = mjt.ShowTQMesh( QUA.PointXY[:,0], QUA.PointXY[:,1], cfig=fdir+'/fig03_Mesh_Points4Quadrangles_'+cfbase+'.png',
                                  ppntIDs=QUA.PointIDs, QuadMesh=QUA.MeshVrtcPntIdx, qIDs=QUA.QuadIDs,
                                  lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
+
+            #kk = mjt.ShowQuads( QUA.PointXY[QUA.MeshVrtcPntIdx,:], cfig=fdir+'/fig04_Quadrangles_'+cfbase+'.png', rangeX=vrngX, rangeY=vrngY )
+            
     ### for jr in range(Nrec):
 
 
@@ -476,7 +479,7 @@ if __name__ == '__main__':
             # Ploting what we saved in NC file:
             for jr in range(Nrec):
                 cfig = str.replace( cf_nc_out, '.nc', '_postQG'+'_rec%3.3i'%(jr)+'.png' )
-                cfig = str.replace( cfig , './nc', cfdir )
+                cfig = str.replace( cfig , './nc', fdir )
                 kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfig,
                                        cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
