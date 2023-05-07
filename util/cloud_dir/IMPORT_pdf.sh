@@ -47,15 +47,18 @@ for EXP in ${lst_exps}; do
 
     echo; echo " * Inside `pwd` !"
 
-    #dir=${DIR_RGPS_REMOTE}
-    #csfx=${cw}
-    #cxtr="RGPS"
-    #if [ "${cw}" != "rgps" ]; then
+    csfx=${cw}
+
+    #echo "LOLO: cw = ${cw}"
+    
+    if [ "${cw}" != "rgps" ]; then
+        csfx="si3"
+    fi
+        
     dir=${DIR_TRCK_REMOTE}
-    csfx="si3"
-    #cxtr="${cw^^}0"
-    #cxtr="${cw}"
-    #fi
+
+    #echo " ${dir}/TEST_${csfx}/${DIR_NPZ}"
+    #exit
     
     import_frazilo ${dir}/TEST_${csfx}/${DIR_NPZ}/def_\*${EXP}\*.npz .
     import_frazilo ${dir}/TEST_${csfx}/${DIR_NPZ}/PDF_\*${EXP}\*.npz .

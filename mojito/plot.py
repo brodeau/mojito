@@ -1040,10 +1040,13 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
     xlog_min, xlog_max = 7.5 , 800.
     if   what=='Mean':
         ylog_min,ylog_max =  6.e-3, 0.2e-1
+        zexp = -0.14
     elif what=='Variance':
         ylog_min,ylog_max =  5.e-5, 5.e-3
+        zexp = -0.5
     elif what=='Skewness':
         ylog_min,ylog_max =  5.e-7, 1.e-3
+        zexp = -0.9
 
     rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     cxlabs = np.array(rxlabs,dtype='U4')
@@ -1066,10 +1069,9 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
 
     jo = 0
     zvx = np.array( [ 2.**k for k in range(3,11) ] )
-    zexp = -0.14
     zA = pX[0,jo]/(pscales[0,jo]**zexp)
     plt.loglog( zvx, zA*zvx**zexp, 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
-                    color='r', label=pcOrig[jo], zorder=5 )
+                    color='r', label=r'l$^{'+str(zexp)+'}$', zorder=5 )
 
         
         
