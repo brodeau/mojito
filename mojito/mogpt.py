@@ -3,13 +3,13 @@ from itertools import combinations
 from scipy.spatial import KDTree, ConvexHull, Delaunay
 
 
-def sub_sample4(XY, d):
+def CoarsifyCloudXY( rd, XY ):
     """
-    Sub-samples an array of (x,y) Cartesian coordinates so that points are at least d distance apart.
+    Sub-samples an array of (x,y) Cartesian coordinates so that points are at least rd distance apart.
 
     Parameters:
         XY (ndarray): An array of shape (N, 2) containing the (x, y) coordinates of N points.
-        d (float): The minimum distance between points in the sub-sampled array.
+        rd (float): The minimum distance between points in the sub-sampled array.
 
     Returns:
         ndarray: An array of shape (M, 2) containing the (x, y) coordinates of M points in the sub-sampled array.
@@ -18,23 +18,19 @@ def sub_sample4(XY, d):
     XY = np.asarray(XY)
     
     # Initialize the output array with the first point from the input array
-    subsampled = [XY[0]]
+    zXYss   = [XY[0]]
     idxKeep = []    
-    # Iterate over the input array, adding points that are at least d distance apart
+    # Iterate over the input array, adding points that are at least rd distance apart
     for i in range(1, len(XY)):
-        # Check if the current point is at least d distance away from all points in the output array
-        if np.all(np.linalg.norm(XY[i] - np.asarray(subsampled), axis=1) >= d):
-            subsampled.append(XY[i])
+        # Check if the current point is at least rd distance away from all points in the output array
+        if np.all(np.linalg.norm(XY[i] - np.asarray(zXYss), axis=1) >= rd):
+            zXYss.append(XY[i])
             idxKeep.append(i)
     
-    # Convert the output list to a numpy array and return it
-    #    return np.asarray(subsampled)
     (nss,) = np.shape(idxKeep)
-    # Convert the output list to a numpy array and return it
-    #return np.asarray(subsampled)
-    return nss, np.asarray(subsampled), np.asarray(idxKeep, dtype=int)
+    return nss, np.asarray(zXYss), np.asarray(idxKeep, dtype=int)
 
-
+##############################################################################
 
 
 def get_quadrangular_mesh(XY):
