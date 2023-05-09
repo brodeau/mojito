@@ -48,8 +48,10 @@ def initialize( mode='model' ):
     #
     if mode in ['thorough','model','rgps']:        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+        #rc_Qang_min =  60. ;#lolo ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        #rc_dRatio_max = 0.3 ;#lolo ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='xlose':
         rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]

@@ -452,7 +452,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
 
 
 
-def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel ):
+def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' ):
     '''
     #
     # Get rid of quadrangles that have excessively asynchronous vertices:
@@ -460,17 +460,29 @@ def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel ):
     #
     '''
     from .util import StdDev
+    #
+    if not mode in ['stdev','maxdiff']:
+        print('ERROR [QuadVrtcTDev()]: mode "'+mode+'" is unknown!'); exit(0)
+    
     (nQ,_) = np.shape(pQpnts)
     zQVtime = np.array([ pTime[i] for i in pQpnts ]) ; # => same shape as `pQpnts` !
     idxKeep = []
     std_max = 0.
     for jQ in range(nQ):
         z4t = zQVtime[jQ,:]
-        zstd = StdDev( np.mean(z4t), z4t )
-        if zstd < t_dev_cancel:
-            idxKeep.append(jQ)
-        if zstd>std_max: std_max=zstd
-    print(' * [QuadVrtcTDev()]: max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
+        if mode=='stdev':
+            zstd = StdDev( np.mean(z4t), z4t )
+            if zstd < t_dev_cancel:
+                idxKeep.append(jQ)
+            #if zstd>std_max:
+            #    std_max=zstd
+        #print(' * [QuadVrtcTDev()]: max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
+        #
+        elif mode=='maxdiff':
+            diff_max = np.max(z4t) - np.min(z4t)
+            if diff_max < t_dev_cancel:
+                idxKeep.append(jQ)
+
     idxKeep = np.array( idxKeep , dtype=int )
     nQn = len(idxKeep)
     if nQn<=0:
