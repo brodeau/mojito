@@ -220,7 +220,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         elif res_km>=300. and res_km<600.:
             rc_t_dev_cancel =  6*3600
         elif res_km>=600.:
-            rc_t_dev_cancel = 12*3600
+            #rc_t_dev_cancel = 12*3600
+            rc_t_dev_cancel = 6*3600
     #
     if rc_t_dev_cancel > 60:
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')

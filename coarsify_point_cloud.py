@@ -149,9 +149,9 @@ if __name__ == '__main__':
             elif corigin=='RGPS' and reskm>150:
                 from random import random
                 zrnd = random() ; # Between 0 and 1
-                rDmin = 150. + reskm/2.*zrnd
+                rDmin = 150. + rd_ss/2.*zrnd
             #
-            if rDmin>105:
+            if rDmin>101.:
                 print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
                 
                 for jr in range(Nrec):
@@ -160,7 +160,7 @@ if __name__ == '__main__':
                 # How many points left after elimination of buoys that get too close to land (at any record):
                 NbP  = np.sum(mask)
                 NbRM = nBmax-NbP
-                print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the dist2coast test => ', str(NbRM)+' points to delete!')
+                print('\n *** '+str(NbP)+' / '+str(nBmax)+' points survived the `dist2coast` cleanup => ', str(NbRM)+' points deleted!')
                 if NbRM>0:
                     zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim, recAxis=2 )
                 if NbP<4:
