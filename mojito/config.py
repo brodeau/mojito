@@ -218,9 +218,9 @@ def updateConfig4Scale( res_km,  mode='model' ):
 
     if mode == 'rgps':
         if   res_km>=150. and res_km<300.:
-            rc_t_dev_cancel =  3*3600    
+            rc_t_dev_cancel =  1.5*3600    
         elif res_km>=300. and res_km<600.:
-            rc_t_dev_cancel =  6*3600
+            rc_t_dev_cancel =  3*3600
         elif res_km>=600.:
             rc_t_dev_cancel = 6*3600
     #
