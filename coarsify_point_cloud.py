@@ -30,34 +30,40 @@ if __name__ == '__main__':
 
     #cdata_dir = environ.get('DATA_DIR')
 
-    kk = cfg.initialize()
     
     rd_ss = None
     rd_tc = None
     
-    if not len(argv) in [3,4,5]:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <res_km> (<rd_ss_km>) (<min_dist_coast>)')
+    if not len(argv) in [4,5,6]:
+        print('Usage: '+argv[0]+' <origin:rgps/model> <file_mojito.nc> <res_km> (<rd_ss_km>) (<min_dist_coast>)')
         exit(0)
 
     # Idea remove all the buoys closer to land than `rd_ss_km` km !!!
     # => this way avoids big quadrangles attached to coastal regions
     # => better for randomizing...    
-        
-    cf_nc_in = argv[1]
-    creskm = argv[2]
+
+    corigin  = argv[1]
+    cf_nc_in = argv[2]
+    creskm = argv[3]
     reskm = float(creskm)
 
-    ldss = ( len(argv)==4 or len(argv)==5 ); # a `rd_ss` is provided!
-    ldtc =   len(argv)==5 ; # a minimum distance to coast is provided
+    if not corigin in ['rgps','model']:
+        print('ERROR: unknown origin! => '+corigin); exit(0)
+    
+
+    kk = cfg.initialize( mode=corigin )
+        
+    ldss = ( len(argv)==5 or len(argv)==6 ); # a `rd_ss` is provided!
+    ldtc =   len(argv)==6 ; # a minimum distance to coast is provided
 
     if ldss:        
-        rd_ss = float(argv[3])
+        rd_ss = float(argv[4])
     else:
-        kl = cfg.updateConfig4Scale( int(reskm) ) ; #
+        kl = cfg.updateConfig4Scale( int(reskm), mode=corigin )
         rd_ss = cfg.rc_d_ss
         
     if ldtc:        
-        rd_tc = float(argv[4])
+        rd_tc = float(argv[5])
         
     mjt.chck4f(cf_nc_in)
 

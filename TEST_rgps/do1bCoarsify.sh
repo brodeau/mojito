@@ -44,7 +44,7 @@ for ff in ${list_nc}; do
         fout=`echo ${ff} | sed -e "s|.nc|_${RESKM}km.nc|g"`
         if [ ! -f ${fout} ]; then
             flog="coarsify_`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
-            CMD="${EXE} ${ff} ${RESKM}"
+            CMD="${EXE} rgps ${ff} ${RESKM}"
             ijob=$((ijob+1))
             echo "    ==> will launch:"; echo "     ${CMD}"; echo
             ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
@@ -65,9 +65,9 @@ for ff in ${list_nc}; do
                 #
                 if [ "${LIST_MINDC}" != "" ]; then
                     rdcmin=${VMINDC[${icpt}]}
-                    CMD="${EXE} ${ff} ${RESKM} ${rdss} ${rdcmin}"
+                    CMD="${EXE} rgps ${ff} ${RESKM} ${rdss} ${rdcmin}"
                 else
-                    CMD="${EXE} ${ff} ${RESKM} ${rdss} "
+                    CMD="${EXE} rgps ${ff} ${RESKM} ${rdss} "
                 fi
                 ijob=$((ijob+1))
                 echo "    ==> will launch:"; echo "     ${CMD}"; echo

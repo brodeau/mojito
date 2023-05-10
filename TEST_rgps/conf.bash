@@ -23,7 +23,7 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
+        DT_BINS_H=6 ;  RESKM=10
         #
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20
@@ -32,13 +32,10 @@ case ${host} in
         #DT_BINS_H=6 ; RESKM=40
         #
         # 80km:
-        #DT_BINS_H=6 ;  RESKM=80
+        #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="70 75 80"
         #
         # 160km: in decreasing order of quality:
-        DT_BINS_H=$((24*3)) ;  RESKM=160 ; LIST_RD_SS="140 145 155 165 170"
-        ##DT_BINS_H=$((24*3)) ;  RESKM=160 ; # 541p        
-        ##DT_BINS_H=6 ;  RESKM=160 ; # 571p
-        #
+        #DT_BINS_H=$((24*3)) ;  RESKM=160 ; LIST_RD_SS="140 145 155 165 170" ; 
         #
         # 320km:
         #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="220 240 250 260 270 280 290 295 300 305 310 313 315 317 320 325 330 335 340 350 360 370 380 390 400 410 420"
