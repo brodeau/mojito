@@ -1202,10 +1202,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if (n1,n2,n3) != (Ns,No,3):
             print('ERROR [plot3ScalingDef]: wrong shape for `pXS` !',np.shape(pXS)); exit(0)
 
-    vNbPoints = np.zeros(Ns, dtype=int)
+    vNbPoints = np.zeros((Ns,No), dtype=int)
     for js in range(Ns):
-        (idxOk,) = np.where(pXQ[:,js,Naxis,0].data>0)
-        vNbPoints[js] = len(idxOk)
+        for jo in range(No):
+            (idxOk,) = np.where(pXQ[:,js,jo,0].data>0)
+            vNbPoints[js,jo] = len(idxOk)
 
         
     ki = _initStyle_()
@@ -1246,7 +1247,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax.annotate('q=3', xy=(740, 2.e-6),  xycoords='data', ha='left', **cfont_axis)
     #
     for js in range(Ns):
-        ax.annotate( str(vNbPoints[js]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
+        #for jo in range(No):
+            ax.annotate( str(vNbPoints[js,Naxis]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
     #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
@@ -1259,12 +1261,12 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     cfig = str.replace(cfig,'total','mean')
     #ylog_min, ylog_max = 5.e-3,2.e-2
     ylog_min, ylog_max = 3.e-5,1.
-    fig = plt.figure( num = 1, figsize=(10,17), dpi=None )
-    ax = plt.axes([0.11, 0.06, 0.85, 0.9])
+    fig = plt.figure( num = 1, figsize=(8,12), dpi=None )
+    ax = plt.axes([0.12, 0.07, 0.85, 0.9])
 
     for jo in range(No):
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
-                    color='g', label=None, zorder=50 )
+                    color=vcolor[jo], label=None, zorder=50 )
                     #color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
     plt.xlabel('Spatial scale [km]')
@@ -1273,7 +1275,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
     ax.set_ylim(ylog_min, ylog_max)
     #
-    ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+    #ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
     if lAddCloud:
         jo=Naxis
@@ -1281,7 +1283,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
                     color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
 
     for js in range(Ns):
-        ax.annotate( str(vNbPoints[js]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
+        for jo in range(No):
+            cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15), 'color':vcolor[jo] }
+            ax.annotate( str(vNbPoints[js,jo]) , xy=(pscales[js,0],(1.-jo*0.2)*1.5*ylog_min), ha='center', xycoords='data', **cflabN )
     #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
