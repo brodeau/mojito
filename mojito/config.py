@@ -124,7 +124,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
         elif mode=='rgps':
-            rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
+            #rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
+            rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
@@ -134,7 +135,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
         elif mode=='rgps':
-            rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
+            #rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
+            rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         #
@@ -144,7 +146,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 79*79, 81*81
         elif mode=='rgps':
-            rc_Qarea_min, rc_Qarea_max = 72.*72., 88.*88.
+            #rc_Qarea_min, rc_Qarea_max = 72.*72., 88.*88.
+            rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
         else:
             rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
         #
@@ -154,7 +157,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
         elif mode=='rgps':
-            rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
+            #rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
+            rc_Qarea_min, rc_Qarea_max = 156.*156., 164.*164
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #
@@ -164,7 +168,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
         elif mode=='rgps':
-            rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
+            #rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
+            rc_Qarea_min, rc_Qarea_max = 312.*312., 328.*328
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
         #
