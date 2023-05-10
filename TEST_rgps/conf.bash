@@ -32,6 +32,7 @@ case ${host} in
         #DT_BINS_H=6 ; RESKM=40
         #
         # 80km:
+        #DT_BINS_H=6 ;  RESKM=80
         #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="70 75 80"
         #
         # 160km: in decreasing order of quality:
