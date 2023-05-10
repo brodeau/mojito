@@ -1178,7 +1178,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         According to Fiffure's taste...
     '''
     xlog_min, xlog_max = 7.5 , 1.e3
-    ylog_min,ylog_max  =  0.5e-6, 0.2e-1
+    ylog_min,ylog_max  =  0.5e-6, 0.5e-1
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
@@ -1211,13 +1211,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         
     ki = _initStyle_()
 
-    fig = plt.figure( num = 1, figsize=(8,14), dpi=None )
-    ax = plt.axes([0.13, 0.06, 0.83, 0.9])
-
-    #if lAddCloud:
-    #    jo=0
-    #    plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
-    #                color=str(float(jo)/2.5), label=None, alpha=0.3, zorder=5 )
+    fig = plt.figure( num = 1, figsize=(7,12), dpi=None )
+    ax = plt.axes([0.13, 0.06, 0.83, 0.92])
 
     if lOnlyObs: No=1
         
@@ -1247,8 +1242,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax.annotate('q=3', xy=(740, 2.e-6),  xycoords='data', ha='left', **cfont_axis)
     #
     for js in range(Ns):
-        #for jo in range(No):
-            ax.annotate( str(vNbPoints[js,Naxis]) , xy=(pscales[js,0],ylog_max), ha='center', xycoords='data', **cfont_axis )
+        for jo in range(No):
+            cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
+            ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.-jo*0.2)*0.8*ylog_max), ha='center', xycoords='data', **cflabN )
     #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
@@ -1284,7 +1280,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
     for js in range(Ns):
         for jo in range(No):
-            cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15), 'color':vcolor[jo] }
+            cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
             ax.annotate( str(vNbPoints[js,jo]) , xy=(pscales[js,0],(1.-jo*0.2)*1.5*ylog_min), ha='center', xycoords='data', **cflabN )
     #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
