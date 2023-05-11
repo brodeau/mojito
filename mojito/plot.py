@@ -1277,9 +1277,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
     if lAddCloud:
-        jo=Naxis
-        plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
-                    color=str(float(jo)/2.5), label=None, alpha=0.25, zorder=5 )
+        for jo in range(No):
+            plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+                        color=vcolor[jo], label=None, alpha=0.25, zorder=5 )
 
     for js in range(Ns):
         for jo in range(No):
