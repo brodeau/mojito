@@ -29,7 +29,7 @@ lOnlyRGPS = False
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize( mode='model' )
+    k1 = cfg.initialize( mode='model' )
     
     if not len(argv)==4:
         print('Usage: '+argv[0]+' <dir_npz_in> <list_exp> <list_scales>')
@@ -61,7 +61,9 @@ if __name__ == '__main__':
 
 
     zmin_tot_def = np.zeros(Nscl) ; # minimum deformation allowed for a givn scale
-    
+
+
+    k2 = cfg.updateConfig4Scale( 10, mode='model' )
     zmin_tot_def[:] = cfg.rc_tot_min
 
     if lAdaptMinDef:
