@@ -181,10 +181,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
             rc_div_max, rc_shr_max, rc_tot_max = 2.e-2, 2.e-2, 2.e-2 ; # day^-1 ; => supresses irrealistically large values
             #                                                 # due to time-measurement discrepencies across the 4 buoys forming the Quad
             #rc_Qarea_min, rc_Qarea_max = 624.*624., 656.*656.
-            #rc_Qarea_min, rc_Qarea_max = 610.*610., 670.*670.
-            rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
-            #rc_Qarea_min, rc_Qarea_max = 576.*576., 704.*704.
-            #rc_Qarea_min, rc_Qarea_max = 580.*580., 700.*700.
+            rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680. ; #ok
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
         #
@@ -238,7 +235,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
             #rc_t_dev_cancel = 6*3600
             #rc_t_dev_cancel = 9*3600
             #rc_t_dev_cancel = 12*3600
-            rc_t_dev_cancel = 24*3600
+            rc_t_dev_cancel = 24*3600 ; # ok
         #
     if rc_t_dev_cancel > 60:
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
