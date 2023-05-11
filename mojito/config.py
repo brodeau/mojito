@@ -45,12 +45,14 @@ def initialize( mode='model' ):
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
-    if mode in ['thorough','model','rgps']:        
+    if mode in ['thorough','model']:
+        rc_Qang_min =  60.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 140
+        rc_dRatio_max = 0.25 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    elif mode=='rgps':        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        #rc_Qang_min =  60. ;#lolo ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-        #rc_dRatio_max = 0.3 ;#lolo ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='xlose':
         rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
@@ -78,6 +80,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
     global ivc_KnownScales, rc_d_ss
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
     global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
+    global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig
     
     irk = int(res_km)
 
@@ -87,7 +90,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
     rc_d_ss = 10 ; # default radius for subsampling the cloud of points [km]
-    
+
+
+    # Extremas for figures only:
+    rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
 
     # Extremas for deformations, in [day^-1]:
     rc_div_max, rc_shr_max, rc_tot_max = 2., 2., 2.
@@ -104,11 +110,11 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_d_ss =  6.
         rc_tolQuadA = 2
         if mode in ['thorough','model']:            
-            rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
+            #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
+            rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
             rc_d_ss =  5.
             # When lose, average scale is 10.33 km with a standard deviation of ~1km!
-            #rc_Qarea_min, rc_Qarea_max = 9.77*9.77, 11.33*11.33
             rc_Qarea_min, rc_Qarea_max = 10.08*10.08, 10.58*10.58 ; # 10.33 +- 0.25
         elif mode=='xlose':
             rc_Qarea_min, rc_Qarea_max = 2*2, 20*20
@@ -118,10 +124,11 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==20:
         rc_d_ss = 14.6
         rc_tolQuadA = 4
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-1, 5.e-1, 5.e-1
         if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
+            #rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
+            rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         elif mode=='rgps':
-            #rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
@@ -129,8 +136,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==40:
         rc_d_ss = 34.5
         rc_tolQuadA = 8
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.e-1, 2.e-1, 2.e-1
         if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
+            #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
+            rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
         elif mode=='rgps':
             #rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
@@ -140,10 +149,11 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==80:
         rc_d_ss = 74.75
         rc_tolQuadA = 16
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
         if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max = 79*79, 81*81
+            #rc_Qarea_min, rc_Qarea_max = 79*79, 81*81
+            rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
         elif mode=='rgps':
-            #rc_Qarea_min, rc_Qarea_max = 72.*72., 88.*88.
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
         else:
             rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
@@ -151,8 +161,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==160:
         rc_d_ss = 156.
         rc_tolQuadA = 32
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 7.5e-2, 7.5e-2, 7.5e-2
         if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
+            #rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
+            rc_Qarea_min, rc_Qarea_max = 152.5*152.5, 168.5*168.5
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 8.e-2, 8.e-2, 8.e-2 ; # day^-1 ; => supresses irrealistically large values
             #
@@ -166,8 +178,11 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==320:
         rc_d_ss = 315.6
         rc_tolQuadA = 64
-        if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-2, 5.e-2, 5.e-2
+        if mode=='model':
+            print('LOLO: config 320/model!!!!')
+            #rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
+            rc_Qarea_min, rc_Qarea_max = 300.*300., 340.*340
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 3.e-2, 3.e-2, 3.e-2 ; # day^-1 ; => supresses irrealistically large values
             #
@@ -178,8 +193,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
     elif irk==640:
         rc_d_ss = 636.
         rc_tolQuadA = 128
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.5e-2, 2.5e-2, 2.5e-2
         if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max =  632*632, 648*648
+            #rc_Qarea_min, rc_Qarea_max =  632*632, 648*648
+            rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 2.e-2, 2.e-2, 2.e-2 ; # day^-1 ; => supresses irrealistically large values
             #                                                 # due to time-measurement discrepencies across the 4 buoys forming the Quad
