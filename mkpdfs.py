@@ -211,27 +211,27 @@ if __name__ == '__main__':
     cperiod = cperd1
 
     # For large scales, we must increase the size of bins:
-    min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+    zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     if   reskm >= 15. and reskm < 35.:
-        min_div, min_shr, min_tot = 0.001, 0.001, 0.001
+        zmin_div, zmin_shr, zmin_tot = 0.001, 0.001, 0.001
     elif   reskm >= 35. and reskm < 50.:
-        min_div, min_shr, min_tot = 5.e-4, 5.e-4, 5.e-4
+        zmin_div, zmin_shr, zmin_tot = 5.e-4, 5.e-4, 5.e-4
         wVbin_min = 1.5*wVbin_min        
         rfexp_bin = rfexp_bin*1.2
     elif reskm >= 50. and reskm < 100.:
-        min_div, min_shr, min_tot = 1.e-4, 1.e-4, 1.e-4
+        zmin_div, zmin_shr, zmin_tot = 1.e-4, 1.e-4, 1.e-4
         wVbin_min = 2.*wVbin_min
         rfexp_bin = rfexp_bin*1.5
     elif reskm >= 100. and reskm < 200.:
-        min_div, min_shr, min_tot = 1.e-5, 1.e-5, 1.e-5
+        zmin_div, zmin_shr, zmin_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 4.*wVbin_min
         rfexp_bin = rfexp_bin*2.
     elif reskm >= 200. and reskm < 400.:
-        min_div, min_shr, min_tot = 1.e-5, 1.e-5, 1.e-5
+        zmin_div, zmin_shr, zmin_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 6.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     elif reskm >= 400. and reskm < 700.:
-        min_div, min_shr, min_tot = 1.e-5, 1.e-5, 1.e-5
+        zmin_div, zmin_shr, zmin_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 8.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     if reskm >= 35.:
@@ -243,30 +243,30 @@ if __name__ == '__main__':
     cxtra = ''
     if l_cst_bins:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = constructCstBins( min_div, max_div, wbin_div, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = constructCstBins( zmin_div, max_div, wbin_div, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( min_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )        
+        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( zmin_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )        
         # For the total deformation:
-        nBinsS, xbin_bounds_tot, xbin_center_tot = constructCstBins( min_tot, max_tot, wbin_tot, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_tot, xbin_center_tot = constructCstBins( zmin_tot, max_tot, wbin_tot, name='shear',      iverbose=idebug )
         
     else:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = constructExpBins( rfexp_bin, min_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = constructExpBins( rfexp_bin, zmin_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, min_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
         # For the total deformation:
-        nBinsS, xbin_bounds_tot, xbin_center_tot = constructExpBins( rfexp_bin, min_tot, max_tot, wVbin_min, name='total',      iverbose=idebug )
+        nBinsS, xbin_bounds_tot, xbin_center_tot = constructExpBins( rfexp_bin, zmin_tot, max_tot, wVbin_min, name='total',      iverbose=idebug )
         cxtra = '_incB'
 
 
 
     # Signed divergence:
-    (idxN,) = np.where(ZDiv<-min_div)
+    (idxN,) = np.where(ZDiv<-zmin_div)
     nPn  = len(idxN)
     Zcnv = np.zeros(nPn)
     Zcnv[:] = - ZDiv[idxN] ; # We want it to be positive for the graph...
     
-    (idxP,) = np.where(ZDiv> min_div)
+    (idxP,) = np.where(ZDiv> zmin_div)
     nPp  = len(idxP)
     Zdiv = np.zeros(nPp)
     Zdiv[:] = ZDiv[idxP]

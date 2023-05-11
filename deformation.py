@@ -56,7 +56,8 @@ if __name__ == '__main__':
         cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
 
-    
+
+        
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin    
     cfnm    = corigin
@@ -69,8 +70,11 @@ if __name__ == '__main__':
         print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
         exit(0)
     
-    kk = cfg.initialize( mode=quality_mode )
+    k1 = cfg.initialize(                mode=quality_mode )
+    k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
 
+
+    print('LOLO: min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
     
     if not cfg.lc_accurate_time:
         print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
@@ -113,8 +117,6 @@ if __name__ == '__main__':
         print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
 
 
-    #kk = cfg.updateConfig4Scale( reskm )
-    #print('\n *** Max time deviation accepted for vertices: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')    
     
     if cfg.lc_accurate_time:
         figSfx='_tbuoy.png'
@@ -222,13 +224,9 @@ if __name__ == '__main__':
     del zshr2
     
     # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
-    #(idxKeep,) = np.where( (zshr>cfg.rc_shr_min) & (np.abs(zdiv)>cfg.rc_div_min) & (ztot>cfg.rc_tot_min) )
-    (idxKeep,) = np.where( ztot*cfg.rc_day2sec > cfg.rc_tot_min )
+    #(idxKeep,) = np.where( ztot*cfg.rc_day2sec > cfg.rc_tot_min )
+    (idxKeep,) = np.where( (ztot*cfg.rc_day2sec > cfg.rc_tot_min) & (ztot*cfg.rc_day2sec < cfg.rc_tot_max) )
     #
-    #print('LOLO')
-    #print('LOLO: cfg.rc_tot_min =',cfg.rc_tot_min)
-    #print('LOLO: ztot= ',ztot[::50])
-    #print('LOLO: shape before clean, nD, nQ =', np.shape(zdiv), nD, nQ)
     nDn = len(idxKeep)
     if nDn < nD:
         print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')

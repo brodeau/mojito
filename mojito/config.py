@@ -23,7 +23,6 @@ def initialize( mode='model' ):
     global lc_drop_overlap, rc_Dtol_km
     global rc_Tang_min, rc_Tang_max, rc_Qang_min, rc_Qang_max, rc_dRatio_max
     global lc_accurate_time
-    global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     global data_dir, fdist2coast_nc, nc_MinDistFromLand
     
     lk = _check_mode_( 'initialize', mode )
@@ -59,16 +58,6 @@ def initialize( mode='model' ):
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
 
-    # Extremas for deformations, in [day^-1] !!!
-    rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1            ; # for figures    
-    if mode in ['thorough','model']:
-        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
-    elif mode in ['rgps']:
-        # Because noisy!!!        
-        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
-    else:
-        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-4, 0.8e-4, 0.8e-4   ; # for scaling (not PDFs)
-
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
         print('\n ERROR: Set the `DATA_DIR` environement variable!\n'); exit(0)
@@ -88,6 +77,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
     #
     global ivc_KnownScales, rc_d_ss
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
+    global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     
     irk = int(res_km)
 
@@ -98,8 +88,16 @@ def updateConfig4Scale( res_km,  mode='model' ):
 
     rc_d_ss = 10 ; # default radius for subsampling the cloud of points [km]
     
-    
-    min_div, min_shr, min_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
+
+    # Extremas for deformations, in [day^-1]:
+    rc_div_max, rc_shr_max, rc_tot_max = 2., 2., 2.
+    if mode in ['thorough','model']:
+        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
+    elif mode in ['rgps']:
+        # Because noisy!!!        
+        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
+    else:
+        print('FIXME: set the minimum deformation allowed for mode ="'+mode+'" !'); exit(0)
 
     
     if   irk==10:
@@ -119,7 +117,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
         #
     elif irk==20:
         rc_d_ss = 14.6
-        min_div, min_shr, min_tot = 0.001, 0.001, 0.001
         rc_tolQuadA = 4
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 19.75*19.75, 20.25*20.25
@@ -168,9 +165,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
         elif mode=='rgps':
+            rc_div_max, rc_shr_max, rc_tot_max = 3.2e-2, 3.2e-2, 3.2e-2 ; # day^-1 ; => supresses irrealistically large values
+            #
             #rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
-            #rc_Qarea_min, rc_Qarea_max = 312.*312., 328.*328
-            rc_Qarea_min, rc_Qarea_max = 300.*300., 340.*340
+            rc_Qarea_min, rc_Qarea_max = 312.*312., 328.*328
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
         #
@@ -180,9 +178,13 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max =  632*632, 648*648
         elif mode=='rgps':
+            rc_div_max, rc_shr_max, rc_tot_max = 2.e-2, 2.e-2, 2.e-2 ; # day^-1 ; => supresses irrealistically large values
+            #                                                 # due to time-measurement discrepencies across the 4 buoys forming the Quad
+            #rc_Qarea_min, rc_Qarea_max = 624.*624., 656.*656.
+            #rc_Qarea_min, rc_Qarea_max = 610.*610., 670.*670.
+            rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
             #rc_Qarea_min, rc_Qarea_max = 576.*576., 704.*704.
-            #rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
-            rc_Qarea_min, rc_Qarea_max = 580.*580., 700.*700.
+            #rc_Qarea_min, rc_Qarea_max = 580.*580., 700.*700.
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
         #
@@ -230,9 +232,13 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if   res_km>=150. and res_km<300.:
             rc_t_dev_cancel =  1.5*3600    
         elif res_km>=300. and res_km<600.:
-            rc_t_dev_cancel =  3*3600
+            #rc_t_dev_cancel =  3*3600
+            rc_t_dev_cancel =  6*3600
         elif res_km>=600.:
-            rc_t_dev_cancel = 6*3600
+            #rc_t_dev_cancel = 6*3600
+            #rc_t_dev_cancel = 9*3600
+            #rc_t_dev_cancel = 12*3600
+            rc_t_dev_cancel = 24*3600
         #
     if rc_t_dev_cancel > 60:
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
