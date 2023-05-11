@@ -249,6 +249,9 @@ if __name__ == '__main__':
                          Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
 
+    if np.any(ztot*cfg.rc_day2sec>2.e-2):
+        print('LOLO: have a def>2.e-2 in: '+cf_Q1)
+
     # Some plots:
     if iplot>0:
 
@@ -261,29 +264,29 @@ if __name__ == '__main__':
         nmproj=NameArcticProj
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=cfg.rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=cfg.rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
         mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
-                                  pFmin=-cfg.rc_div_max, pFmax=cfg.rc_div_max, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo )
 
         mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/zs_'+cfnm+'_Shear'+figSfx,      cwhat='shr',
-                                  pFmin=0.,      pFmax=cfg.rc_shr_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo )
 
         mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/zt_'+cfnm+'_Total'+figSfx,      cwhat='tot',
-                                  pFmin=0.,      pFmax=cfg.rc_tot_max,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo )
 
 
