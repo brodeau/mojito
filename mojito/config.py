@@ -154,8 +154,12 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
         elif mode=='rgps':
+            rc_div_max, rc_shr_max, rc_tot_max = 8.e-2, 8.e-2, 8.e-2 ; # day^-1 ; => supresses irrealistically large values
+            #
             #rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
-            rc_Qarea_min, rc_Qarea_max = 156.*156., 164.*164
+            #rc_Qarea_min, rc_Qarea_max = 156.*156., 164.*164
+            #rc_Qarea_min, rc_Qarea_max = 150.*150., 170.*170
+            rc_Qarea_min, rc_Qarea_max = 152.5*152.5, 168.5*168.5
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #
@@ -226,10 +230,11 @@ def updateConfig4Scale( res_km,  mode='model' ):
 
     if mode == 'rgps':
         if   res_km>=150. and res_km<300.:
-            rc_t_dev_cancel =  1.5*3600    
+            #rc_t_dev_cancel =  1.5*3600
+            rc_t_dev_cancel =  6*3600   ; #ok
         elif res_km>=300. and res_km<600.:
             #rc_t_dev_cancel =  3*3600
-            rc_t_dev_cancel =  24*3600
+            rc_t_dev_cancel =  18*3600  ; #ok
         elif res_km>=600.:
             #rc_t_dev_cancel = 6*3600
             #rc_t_dev_cancel = 9*3600
