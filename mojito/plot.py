@@ -47,6 +47,7 @@ clPNames = 'w' ; # color for city/point annotations
 
 #vcolor = [ 'k', '0.25', '0.5', '0.75', 'g', 'orange' ]
 vcolor = [ 'k', col_red, col_blu, col_ylw, 'g' ]
+vlwdth = [ 6  ,   4    ,    4   ,    4   ,  4  ]
 
 
 
@@ -1137,7 +1138,7 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
+        plt.loglog( pscales[:,jo], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                     color=vcolor[jo], label=pcOrig[jo], zorder=5 )
 
 
@@ -1221,11 +1222,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         
     for jo in range(No):
                 
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=4.5, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                     color=vcolor[jo], label=pcOrig[jo], zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                     color=vcolor[jo], label=None, zorder=5 )
     #X-axis:
     plt.xlabel('Spatial scale [km]')
@@ -1264,7 +1265,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=3, fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                     color=vcolor[jo], label=None, zorder=50 )
                     #color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
