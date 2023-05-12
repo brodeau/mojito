@@ -46,9 +46,9 @@ def initialize( mode='model' ):
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
     if mode in ['thorough','model']:
-        rc_Qang_min =  60.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
-        rc_dRatio_max = 0.25 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='rgps':        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
@@ -164,7 +164,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 7.5e-2, 7.5e-2, 7.5e-2
         if mode=='model':            
             #rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
-            rc_Qarea_min, rc_Qarea_max = 152.5*152.5, 168.5*168.5
+            rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 8.e-2, 8.e-2, 8.e-2 ; # day^-1 ; => supresses irrealistically large values
             #
@@ -182,7 +182,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':
             print('LOLO: config 320/model!!!!')
             #rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
-            rc_Qarea_min, rc_Qarea_max = 300.*300., 340.*340
+            rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
+            #rc_Qarea_min, rc_Qarea_max = 300.*300., 340.*340
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 3.e-2, 3.e-2, 3.e-2 ; # day^-1 ; => supresses irrealistically large values
             #
@@ -194,9 +195,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_d_ss = 636.
         rc_tolQuadA = 128
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.5e-2, 2.5e-2, 2.5e-2
-        if mode=='model':            
+        if mode=='model':
+            rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
             #rc_Qarea_min, rc_Qarea_max =  632*632, 648*648
-            rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
+            #rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 2.e-2, 2.e-2, 2.e-2 ; # day^-1 ; => supresses irrealistically large values
             #                                                 # due to time-measurement discrepencies across the 4 buoys forming the Quad
