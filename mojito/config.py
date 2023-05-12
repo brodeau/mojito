@@ -151,7 +151,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_tolQuadA = 16
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
         if mode=='model':            
-            #rc_Qarea_min, rc_Qarea_max = 79*79, 81*81
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
         elif mode=='rgps':
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
@@ -163,7 +162,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_tolQuadA = 32
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 7.5e-2, 7.5e-2, 7.5e-2
         if mode=='model':            
-            #rc_Qarea_min, rc_Qarea_max = 158*158, 162*162
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 8.e-2, 8.e-2, 8.e-2 ; # day^-1 ; => supresses irrealistically large values
@@ -180,7 +178,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_tolQuadA = 64
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-2, 5.e-2, 5.e-2
         if mode=='model':
-            print('LOLO: config 320/model!!!!')
             #rc_Qarea_min, rc_Qarea_max =  316*316, 324*324
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
             #rc_Qarea_min, rc_Qarea_max = 300.*300., 340.*340
