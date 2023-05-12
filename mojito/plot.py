@@ -1182,7 +1182,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         According to Fiffure's taste...
     '''
     xlog_min, xlog_max = 7.5 , 1.e3
-    ylog_min,ylog_max  =  0.5e-6, 0.5e-1
+    ylog_min,ylog_max  =  0.7e-6, 0.3e-1
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
@@ -1248,7 +1248,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     for js in range(Ns):
         for jo in range(No):
             cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
-            ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.-jo*0.2)*0.8*ylog_max), ha='center', xycoords='data', **cflabN )
+            #ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.-jo*0.2)*0.1*ylog_max), ha='center', xycoords='data', **cflabN )
+            ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.+jo*0.3)*0.08*ylog_max), ha='center', xycoords='data', **cflabN )
     #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
