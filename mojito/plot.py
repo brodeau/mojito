@@ -46,10 +46,10 @@ clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
 #vcolor = [ 'k', '0.25', '0.5', '0.75', 'g', 'orange' ]
-vcolor = [ 'k', col_red, col_blu, col_ylw, 'g' ]
-vlwdth = [ 6  ,   4    ,    4   ,    4   ,  4  ]
-
-
+vcolor = [ 'k', col_blu, col_red, col_ylw, 'g' ]
+vlwdth = [ 8  ,   5    ,    4   ,    4   ,  4  ]
+vlwdth = np.array(vlwdth)/2
+vfills = [ 'none','full','none','none','none']
 
 def _initStyle_( fntzoom=1., color_top='k' ):
     #
@@ -60,7 +60,7 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
                'font.size':       int(18.*fntzoom_inv),
-               'legend.fontsize': int(16.*fntzoom_inv),
+               'legend.fontsize': int(14.*fntzoom_inv),
                'xtick.labelsize': int(15.*fntzoom_inv),
                'ytick.labelsize': int(15.*fntzoom_inv),
                'axes.labelsize':  int(17.*fntzoom) }
@@ -1103,25 +1103,36 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     return 0
 
 
+#=================================
+
+def _power_law_fit_(x, y):
+    from scipy.optimize import curve_fit
+    #
+    # Define the power law function
+    def _power_law_(x, a, b):
+        return a * np.power(x, b)
+    #
+    # Perform the curve fitting
+    params, _ = curve_fit(_power_law_, x, y)
+    #
+    # Extract the fitted parameters
+    # params == [zA, zExp]
+    #
+    return params
 
 
 
-def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
+def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
                     cfig='Scaling.png' ):
     '''
     '''
     xlog_min, xlog_max = 7.5 , 800.
-    zA = None
     if   what=='Mean':
         ylog_min,ylog_max =  6.e-3, 0.2e-1
-        #zA, zexp =  0.0184, -0.13
-        zA, zexp =  0.0187, -0.135
     elif what=='Variance':
         ylog_min,ylog_max =  5.e-5, 5.e-3
-        zexp = -0.65
     elif what=='Skewness':
         ylog_min,ylog_max =  5.e-7, 1.e-3
-        zexp = -1.55
 
     rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     cxlabs = np.array(rxlabs,dtype='U4')
@@ -1129,8 +1140,8 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
     (Ns,No) = np.shape(pscales)
     if np.shape(pcOrig) != (No,):
         print('ERROR [plotScalingDef]: wrong shape for `pcOrig` or `pscales` !',np.shape(pcOrig),np.shape(pscales)); exit(0)
-    if np.shape(pX) != (Ns,No):
-        print('ERROR [plotScalingDef]: wrong shape for `pX` !'); exit(0)
+    if np.shape(pF) != (Ns,No):
+        print('ERROR [plotScalingDef]: wrong shape for `pF` !'); exit(0)
 
     ki = _initStyle_()
 
@@ -1138,17 +1149,18 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pX[:,jo], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+        plt.loglog( pscales[:,jo], pF[:,jo], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                     color=vcolor[jo], label=pcOrig[jo], zorder=5 )
 
 
+    # Fit power-law to points:
     jo = 0
     zvx = np.array( [ 2.**k for k in range(3,11) ] )
-    if not zA:
-        zA = pX[0,jo]/(pscales[0,jo]**zexp)
-    plt.loglog( zvx, zA*zvx**zexp, 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
-                    color='r', label=r'l$^{'+str(zexp)+'}$', zorder=5 )
 
+    [zA,zexp] = _power_law_fit_(pscales[:,jo], pF[:,jo])
+    
+    plt.loglog( zvx, zA*zvx**zexp, 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
+                    color='#F5BD3B', label=r'l$^{'+str(round(zexp,2))+'}$', zorder=5 )
         
         
     #X-axis:
@@ -1176,8 +1188,8 @@ def plotScalingDef( pscales, pX, pcOrig, what='Mean', name='Total Deformation',
 
 
 
-def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation',
-                     cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=0 ):
+def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', lAddPowerLawFit=True,
+                     lAddNumberPoints=False, cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=0 ):
     '''
         According to Fiffure's taste...
     '''
@@ -1187,9 +1199,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
 
-
-    
-    
+        
     (Ns,No) = np.shape(pscales)
     if np.shape(pcOrig) != (No,):
         print('ERROR [plot3ScalingDef]: wrong shape for `pcOrig` or `pscales` !',np.shape(pcOrig),np.shape(pscales)); exit(0)
@@ -1206,6 +1216,19 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if (n1,n2,n3) != (Ns,No,3):
             print('ERROR [plot3ScalingDef]: wrong shape for `pXS` !',np.shape(pXS)); exit(0)
 
+
+    # Add power-law to points:
+    if lAddPowerLawFit:
+        zEcoeff = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
+        for jo in range(No):
+            for jq in range(3):
+                zEcoeff[:,jo,jq] = _power_law_fit_(pscales[:,jo], pMQ[:,jo,jq])
+                
+        #pMFit = np.zeros(np.shape(pMQ))
+        #jo = Naxis
+        #zvx = np.array( [ 2.**k for k in range(3,11) ] )        
+
+
     vNbPoints = np.zeros((Ns,No), dtype=int)
     for js in range(Ns):
         for jo in range(No):
@@ -1219,20 +1242,33 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax = plt.axes([0.13, 0.06, 0.83, 0.92])
 
     if lOnlyObs: No=1
-        
+    
     for jo in range(No):
-                
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+        zlw, cxtralab = vlwdth[jo], ''
+        if lAddPowerLawFit:
+            zlw = 0
+            cxtralab=' ('+str(round(zEcoeff[1,jo,0],2))+', '+str(round(zEcoeff[1,jo,1],2))+', '+str(round(zEcoeff[1,jo,2],2))+')'
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
-                    color=vcolor[jo], label=pcOrig[jo], zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
+                    color=vcolor[jo], label=pcOrig[jo]+cxtralab, zorder=5 )
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
+        
+    # Add power-law to points:
+    if lAddPowerLawFit:
+        for jo in range(No):
+            for jq in range(3):
+                [zA,zE] = zEcoeff[:,jo,jq]
+                plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+                            color=vcolor[jo], label=None, zorder=5 )
+        
     #X-axis:
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
     #ax.set_xticks(rxlabs)
     #ax.set_xticklabels(cxlabs)
+    #
     # Y-axis:
     plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
     ax.set_ylim(ylog_min, ylog_max)
@@ -1241,24 +1277,25 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-    ax.annotate('q=1', xy=(740, 0.85e-2), xycoords='data', ha='left', **cfont_axis)
-    ax.annotate('q=2', xy=(740, 1.5e-4), xycoords='data', ha='left', **cfont_axis)
-    ax.annotate('q=3', xy=(740, 2.e-6),  xycoords='data', ha='left', **cfont_axis)
+    ax.annotate('q=1', xy=(720, 0.85e-2), xycoords='data', ha='left', **cfont_axis)
+    ax.annotate('q=2', xy=(720, 1.5e-4), xycoords='data', ha='left', **cfont_axis)
+    ax.annotate('q=3', xy=(720, 2.e-6),  xycoords='data', ha='left', **cfont_axis)
     #
-    for js in range(Ns):
-        for jo in range(No):
-            cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
-            #ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.-jo*0.2)*0.1*ylog_max), ha='center', xycoords='data', **cflabN )
-            ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.+jo*0.3)*0.08*ylog_max), ha='center', xycoords='data', **cflabN )
+    if lAddNumberPoints:
+        for js in range(Ns):
+            for jo in range(No):
+                cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
+                ax.annotate( str(vNbPoints[js,jo]), xy=(pscales[js,0],(1.+jo*0.3)*0.08*ylog_max), ha='center', xycoords='data', **cflabN )
     #
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
 
 
-
-    # With cloud of point:
-    # ********************
+    
+    # **********************************
+    # Same figure With cloud of points *
+    # **********************************
     cfig = str.replace(cfig,'total','mean')
     #ylog_min, ylog_max = 5.e-3,2.e-2
     ylog_min, ylog_max = 3.e-5,1.
@@ -1292,6 +1329,49 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
 
+
+
+    # ********************
+    # Structure function *
+    # ********************
+    if lAddPowerLawFit:
+        cfig = str.replace(cfig,'SCALING_mean','StructureFunction')
+        cfig = str.replace(cfig,'_dt0','')
+
+        fig = plt.figure( num = 1, figsize=(8,8), dpi=None )
+        ax = plt.axes([0.12, 0.08, 0.84, 0.88])
+
+        zx = np.arange(0,4.,1.)
+                
+        for jo in range(No):
+            zy = np.concatenate([[0],zEcoeff[1,jo,:]])
+            plt.plot( zx, -zy, 'o-', label=pcOrig[jo], color=vcolor[jo], linewidth=vlwdth[jo],
+                      markersize=9, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo] )
+
+        ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+
+        #plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+        #            color=vcolor[jo], label=None, zorder=50 )
+                        #color=str(float(jo)/2.5), label=None, zorder=5 )
+        #X-axis:
+        plt.xlabel('Moment order (q)')
+        ax.set_xlim(-0.1,3.1)
+        # Y-axis:
+        plt.ylabel(r'$\beta(q)$', color='k')
+        ax.set_ylim(-0.1, 1.6)
+        #
+        ax.legend(loc='upper left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+        
+        plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+        plt.close(1)
+        print(' * [plot3ScalingDef()]: created figure '+cfig)
+
+
+
+
+
+
+    
     return 0
 
 
