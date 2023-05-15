@@ -34,9 +34,9 @@ def initialize( mode='model' ):
     nc_MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
     
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
-    nc_min_cnsctv = 2        ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
+    nc_min_cnsctv = 2          ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
 
-    rc_dev_dt_Nmnl = 6*3600  ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
+    rc_dev_dt_Nmnl = 6*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
     
     lc_drop_overlap = True
     rc_Dtol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
@@ -89,14 +89,13 @@ def updateConfig4Scale( res_km,  mode='model' ):
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
-    rc_d_ss = 10 ; # default radius for subsampling the cloud of points [km]
-
+    rc_d_ss = 5.5 ; # default radius for subsampling the cloud of points [km]
 
     # Extremas for figures only:
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
-
     # Extremas for deformations, in [day^-1]:
     rc_div_max, rc_shr_max, rc_tot_max = 2., 2., 2.
+    
     if mode in ['thorough','model']:
         rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
     elif mode in ['rgps']:
@@ -207,30 +206,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
     else:
         print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
-        
-  
-
-        
-    #vscales = np.array( [ 5*2**i  for i in range(10) ], dtype=int )
-    #vUb = (vscales[0:-1]+vscales[1:])/2.
-    #vLb = np.zeros(len(vUb))
-    #vLb[1:] = vUb[0:-1]
-    #ivc_KnownScales = vscales[1:-1]
-    #del vscales
-    #vLb = vLb[1:]
-    #vUb = vUb[1:]
-    #Ns = len(ivc_KnownScales)
-    #if len(vLb)!=Ns or len(vUb)!=Ns:
-    #    print('ERROR [updateConfig4Scale]: `len(vLb)!=Ns or len(vUb)!=Ns`')
-    #vtolerc = np.array( [ 0.1*2**i  for i in range(Ns) ] ) ; #print('LOLO: toler. =', vtolerc)
-    #vLb, vUb = vLb + vtolerc , vUb - vtolerc
-    ##for ks in range(Ns-1):
-    ##    print('* Scale =',ivc_KnownScales[ks],'  => lower and upper bounds =', vLb[ks], vUb[ks])
-    #if not int(res_km) in ivc_KnownScales:
-    #    print('ERROR [updateConfig4Scale]: scale "'+str(res_km)+' km" is unknown!'); sys.exit(0)
-    #([js],) = np.where(ivc_KnownScales==int(res_km))
-    #rc_Qarea_min, rc_Qarea_max = vLb[js]*vLb[js], vUb[js]*vUb[js]
-
+    
     print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', np.sqrt([rc_Qarea_min, rc_Qarea_max]))
     print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
 

@@ -40,6 +40,8 @@ if __name__ == '__main__':
         print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km> (<rd_ss_km>)')
         exit(0)
 
+
+    
     cf_nc_in = argv[1]
     lstrec = argv[2]
     creskm = argv[3]
