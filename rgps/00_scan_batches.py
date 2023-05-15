@@ -181,7 +181,7 @@ if __name__ == '__main__':
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
                             XNRc[ibatch,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
                             XIX0[ibatch,jb,:nbRecOK] = idx0VUCR[:nbRecOK] ; # indices for these valid records of this buoy
-                        ### if rd_ini > cfg.nc_MinDistFromLand
+                        #
                     else:
                         iBcnl_CR += 1
                     #
