@@ -1106,6 +1106,21 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 #=================================
 
+def _linear_fit_loglog_(x, y):
+    from scipy.optimize import curve_fit
+    #
+    zx = np.log(x)
+    zy = np.log(y)
+    # Define the linear function:
+    def _line_(x, a, b):
+        return a*x + b
+    # Perform the curve fitting
+    zcoeffs, _ = curve_fit(_line_, zx, zy)
+    #
+    return zcoeffs
+
+
+
 def _power_law_fit_(x, y):
     from scipy.optimize import curve_fit
     #
@@ -1114,30 +1129,25 @@ def _power_law_fit_(x, y):
         return a * np.power(x, b)
     #
     # Perform the curve fitting
-    params, _ = curve_fit(_power_law_, x, y)
+    zcoeffs, _ = curve_fit(_power_law_, x, y)
     #
     # Extract the fitted parameters
-    # params == [zA, zExp]
+    # zcoeffs == [zA, zExp]
     #
-    return params
+    return zcoeffs
 
 
 def _quadratic_fit_(x, y):
     from scipy.optimize import curve_fit
     #
     # Define the power law function
-    def _parabole_(x, a):
-        return a*x**2 
+    def _parabole_(x, a, b, c):
+        return a*x**2 + b*x + c
     #
     # Perform the curve fitting
-    [za], _ = curve_fit(_parabole_, x, y)
+    zcoeffs, _ = curve_fit(_parabole_, x, y)
     #
-    #print("LOLO: parabole coeff.: za =",za)
-    #exit(0)
-    # Extract the fitted parameters
-    # za == [zA, zExp]
-    #
-    return za
+    return zcoeffs
 
 
 
@@ -1175,11 +1185,11 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     # Fit power-law to points:
     jo = 0
     zvx = np.array( [ 2.**k for k in range(3,11) ] )
-
-    [zA,zexp] = _power_law_fit_(pscales[:,jo], pF[:,jo])
+    (idxKeep,) = np.where(pscales[:,jo]<600)
+    [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
     
-    plt.loglog( zvx, zA*zvx**zexp, 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
-                    color='#F5BD3B', label=r'l$^{'+str(round(zexp,2))+'}$', zorder=5 )
+    plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
+                color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
         
         
     #X-axis:
@@ -1238,14 +1248,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
     # Add power-law to points:
     if lAddPowerLawFit:
-        zEcoeff = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
+        zAB = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
         for jo in range(No):
             for jq in range(3):
-                zEcoeff[:,jo,jq] = _power_law_fit_(pscales[:,jo], pMQ[:,jo,jq])
-                
-        #pMFit = np.zeros(np.shape(pMQ))
-        #jo = Naxis
-        #zvx = np.array( [ 2.**k for k in range(3,11) ] )        
+                (idxKeep,) = np.where(pscales[:,jo]<600)
+                zAB[:,jo,jq] = _linear_fit_loglog_(pscales[idxKeep,jo], pMQ[idxKeep,jo,jq])
 
 
     vNbPoints = np.zeros((Ns,No), dtype=int)
@@ -1265,8 +1272,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     for jo in range(No):
         zlw, cxtralab = vlwdth[jo], ''
         if lAddPowerLawFit:
-            zlw = 0
-            cxtralab=' ('+str(round(zEcoeff[1,jo,0],2))+', '+str(round(zEcoeff[1,jo,1],2))+', '+str(round(zEcoeff[1,jo,2],2))+')'
+            zlw = 0             # 
+            cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
         plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
@@ -1278,8 +1285,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     if lAddPowerLawFit:
         for jo in range(No):
             for jq in range(3):
-                [zA,zE] = zEcoeff[:,jo,jq]
-                plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+                #[zA,zE] = zAB[:,jo,jq]
+                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+                #            color=vcolor[jo], label=None, zorder=5 )
+                [zA,zB] = zAB[:,jo,jq]
+                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
                             color=vcolor[jo], label=None, zorder=5 )
         
     #X-axis:
@@ -1363,13 +1373,14 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         zx = np.arange(0,4.,1.)
                 
         for jo in range(No):
-            zy = -1. * np.concatenate([[0],zEcoeff[1,jo,:]])
-            zA = _quadratic_fit_(zx, zy)
+            zy = -1. * np.concatenate([[0],zAB[0,jo,:]])
+            [zA,zB,zC] = _quadratic_fit_(zx[:], zy[:])
             zzx = np.arange(0,4.,0.001)
             #
             plt.plot( zx, zy, 'o', label=pcOrig[jo]+', a = '+str(round(zA,2)), color=vcolor[jo], linewidth=vlwdth[jo],
                       markersize=9, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo] )
-            plt.plot( zzx, zA*zzx*zzx, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
+            #plt.plot( zzx, zA*zzx*zzx, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
+            plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
 
         ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
         #X-axis:
