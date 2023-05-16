@@ -59,18 +59,18 @@ def _initStyle_( fntzoom=1., color_top='k' ):
     #
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
-               'font.size':       int(18.*fntzoom_inv),
-               'legend.fontsize': int(14.*fntzoom_inv),
-               'xtick.labelsize': int(15.*fntzoom_inv),
-               'ytick.labelsize': int(15.*fntzoom_inv),
-               'axes.labelsize':  int(17.*fntzoom) }
+               'font.size':       int(10.*fntzoom_inv),
+               'legend.fontsize': int(10.*fntzoom_inv),
+               'xtick.labelsize': int(10.*fntzoom_inv),
+               'ytick.labelsize': int(10.*fntzoom_inv),
+               'axes.labelsize':  int(10.*fntzoom) }
     #
     mpl.rcParams.update(params)
     #
-    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
+    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(13.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(16.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
@@ -760,7 +760,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
 
 def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
-                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, unit=None, title=None ):
+                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$' ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ### => each quadrangle is filled with the appropriate color from colormap !!!
@@ -801,13 +801,10 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
         cm = plt.cm.get_cmap('RdBu')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
 
-
-
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
-
 
     fig = plt.figure(num=1, figsize=(7.54*1.3, 7.2*1.3), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor='w')
@@ -825,15 +822,14 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     PROJ.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
     PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
 
-
-
     if title:
         ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
-    #if unit:
-    #    # => triggers the colorbar
-    #    ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
-    #    clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
-    #    clb.set_label(unit, **cfont_clb)
+    if unit:
+        #lolo
+        #    # => triggers the colorbar
+        ax2 = plt.axes([0.48, 0.08, 0.48, 0.02])
+        clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
+        clb.set_label(unit, **cfont_clb)
 
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
