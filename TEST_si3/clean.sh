@@ -9,6 +9,9 @@ if [ "$1" = "1" ]; then
     done
 
 elif [ "$1" = "2" ]; then
+    for NEMO_EXP in ${LIST_NEMO_EXP}; do
+        rm -f ./nc/NEMO-SI3_NANUK4_${NEMO_EXP}_tracking_nemoTsi3_idlSeed_*km.nc
+    done
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/quadgener_*
 
 elif [ "$1" = "3" ]; then
