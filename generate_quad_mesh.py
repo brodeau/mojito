@@ -81,10 +81,6 @@ if __name__ == '__main__':
 
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
 
-    if not corigin in ['RGPS', 'model']
-        print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
-        exit(0)
-        
     kl = cfg.initialize( mode=quality_mode )
     kk = cfg.updateConfig4Scale( reskm, mode=quality_mode )
 

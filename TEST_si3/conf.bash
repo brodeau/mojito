@@ -71,8 +71,8 @@ case ${host} in
         #export LCOARSEN=( "10" "20" "40" "80" "160" ) ; export LDTINCRM=( "1" "1" "1" "1" "1" )
         #export LCOARSEN=(  "80" ) ; export LDTINCRM=(   "1" )
         #export LCOARSEN=(  "160" ) ; export LDTINCRM=(   "1" )
-        #export LCOARSEN=(  "320" ) ; export LDTINCRM=(   "1" )
-        export LCOARSEN=(  "640" ) ; export LDTINCRM=(   "0.5" )
+        export LCOARSEN=(  "320" ) ; export LDTINCRM=(   "1" )
+        #export LCOARSEN=(  "640" ) ; export LDTINCRM=(   "0.5" )
         #
         LIST_NEMO_EXP="BBM2302 EVP2302"
         #LIST_NEMO_EXP="EVP2302"

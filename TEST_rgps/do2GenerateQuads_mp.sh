@@ -45,7 +45,7 @@ for ff in ${list_nc}; do
     if [ "${LIST_RD_SS}" = "" ]; then
         flog="genquads_`echo ${fb} | sed -e s/'.nc'/''/g`_${RESKM}km"
         ijob=$((ijob+1))
-        CMD="${EXE} ${MODE} ${ff} 0,1 ${RESKM}"
+        CMD="${EXE} ${ff} 0,1 ${RESKM} ${MODE}"
         echo "    ==> will launch:"; echo "     ${CMD}"; echo
         ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
         if [ $((ijob%NJPAR)) -eq 0 ]; then
@@ -59,7 +59,7 @@ for ff in ${list_nc}; do
             #
             fn=`echo ${ff} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`            
             #
-            CMD="${EXE} ${MODE} ${fn} 0,1 ${RESKM} ${rdss}"
+            CMD="${EXE} ${fn} 0,1 ${RESKM} ${MODE} ${rdss}"
             echo "    ==> will launch:"; echo "     ${CMD}"; echo
             ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             if [ $((ijob%NJPAR)) -eq 0 ]; then
