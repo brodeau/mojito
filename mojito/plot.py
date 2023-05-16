@@ -302,8 +302,6 @@ def plot_interp_series( iID, cname, vTs, vTt, vFs, vFt ):
     cfig = 'debug_interp_'+cname+'_ID'+'%6.6i'%(iID)+'.'+fig_type
     fig = plt.figure(num=1, figsize=(12,5), dpi=None, facecolor='w', edgecolor='k')
     ax  = plt.axes([0.05, 0.13, 0.9, 0.8])
-    #lolo
-    #
     #
     func = np.vectorize(dtm.utcfromtimestamp)
     ax.set_xlim( dtm.utcfromtimestamp(vTt[0,1]), dtm.utcfromtimestamp(vTt[-1,2]) )
@@ -1121,6 +1119,24 @@ def _power_law_fit_(x, y):
     return params
 
 
+def _quadratic_fit_(x, y):
+    from scipy.optimize import curve_fit
+    #
+    # Define the power law function
+    def _parabole_(x, a):
+        return a*x**2 
+    #
+    # Perform the curve fitting
+    [za], _ = curve_fit(_parabole_, x, y)
+    #
+    #print("LOLO: parabole coeff.: za =",za)
+    #exit(0)
+    # Extract the fitted parameters
+    # za == [zA, zExp]
+    #
+    return za
+
+
 
 def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
                     cfig='Scaling.png' ):
@@ -1344,15 +1360,15 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         zx = np.arange(0,4.,1.)
                 
         for jo in range(No):
-            zy = np.concatenate([[0],zEcoeff[1,jo,:]])
-            plt.plot( zx, -zy, 'o-', label=pcOrig[jo], color=vcolor[jo], linewidth=vlwdth[jo],
+            zy = -1. * np.concatenate([[0],zEcoeff[1,jo,:]])
+            zA = _quadratic_fit_(zx, zy)
+            zzx = np.arange(0,4.,0.001)
+            #
+            plt.plot( zx, zy, 'o', label=pcOrig[jo]+', a = '+str(round(zA,2)), color=vcolor[jo], linewidth=vlwdth[jo],
                       markersize=9, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo] )
+            plt.plot( zzx, zA*zzx*zzx, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
 
         ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
-
-        #plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
-        #            color=vcolor[jo], label=None, zorder=50 )
-                        #color=str(float(jo)/2.5), label=None, zorder=5 )
         #X-axis:
         plt.xlabel('Moment order (q)')
         ax.set_xlim(-0.1,3.1)
