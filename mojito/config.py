@@ -102,7 +102,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
         # Because noisy!!!        
         rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
     else:
-        print('FIXME: set the minimum deformation allowed for mode ="'+mode+'" !'); exit(0)
+        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
 
     
     if   irk==10:
@@ -116,6 +116,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
             # When lose, average scale is 10.33 km with a standard deviation of ~1km!
             rc_Qarea_min, rc_Qarea_max = 10.08*10.08, 10.58*10.58 ; # 10.33 +- 0.25
         elif mode=='xlose':
+            rc_tolQuadA = 10
             rc_Qarea_min, rc_Qarea_max = 2*2, 20*20
         else:
             rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
