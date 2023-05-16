@@ -146,12 +146,15 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
     lIDs = ( np.shape(pvIDs)==(Nb,) )
     #
     # Number of remaining valid points:
-    #NbValid = None
+    NbValid = 0
     if np.ma.isMaskedArray(pvlat):
         NbValid = pvlon.count()
     else:
-        NbValid = 0
-        #NbValid = ( (pvlon>=-180.) and (pvlon<=360.)(pvlat>=-90.) and (pvlat<=-90.) ).sum()
+        #NbValid = ( (pvlon>=-360.)and(pvlon<=360.) and (pvlat>=-90.)and(pvlat<=-90.) ).sum()
+        zmsk = np.zeros(np.shape(pvlon),dtype='i1')
+        zmsk[np.where( (pvlon>=-360.) & (pvlon<=360.) & (pvlat>=-90.) & (pvlat<=90.) )] = 1
+        NbValid = zmsk.sum()
+        del zmsk
     #
     vfig_size = [ 7.54*rzoom, 7.2*rzoom ]
     

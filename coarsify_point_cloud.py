@@ -25,7 +25,6 @@ iplot  = 1 ; # Create figures to see what we are doing...
 rzoom_fig = 2
 
 
-
 if __name__ == '__main__':
 
     #cdata_dir = environ.get('DATA_DIR')
@@ -101,20 +100,12 @@ if __name__ == '__main__':
         zXY   = np.zeros( (nBmax,2,Nrec) )
         zmsk  = np.zeros( (nBmax,Nrec), dtype='i1' )
         ztim  = np.zeros( (nBmax,Nrec), dtype=int )        
-        #vdate = np.zeros( Nrec,  dtype=int )
-        #vIDs  = np.zeros( nBmax, dtype=int )
-        #xPosG = np.zeros( (Nrec,nBmax,2) )
-        #xPosC = np.zeros( (Nrec,nBmax,2) )
-        #pmsk  = np.zeros( (Nrec,nBmax), dtype='i1' )
-        #ztim  = np.zeros((Nrec,nBmax), dtype=int )
-
 
         if lTimePos:        
-            vdate[:], vIDs[:], zGC[:,:,:], zXY[:,:,:], zmsk[:,:], ztim[:,:] = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=True,   convention='F' )
+            vdate[:], vIDs[:], zGC[:,:,:], zXY[:,:,:], zmsk[:,:], ztim[:,:] = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=True,  convention='F' )
         else:
             vdate[:], vIDs[:], zGC[:,:,:], zXY[:,:,:], zmsk[:,:]            = mjt.LoadNCdataMJT( cf_nc_in, lmask=True, lGetTimePos=False, convention='F' )
     
-        
         # Need some calendar info:
         NbDays = int( (vdate[1] - vdate[0]) )/ cfg.rc_day2sec
         cdt1 = mjt.epoch2clock(vdate[0] )
@@ -132,7 +123,6 @@ if __name__ == '__main__':
     
         NbP = nBmax
     
-
         if idebug>0:
             for jr in range(Nrec):
                 print('\n  DEBUG *** Record jr='+str(jr)+':')
@@ -142,7 +132,6 @@ if __name__ == '__main__':
                     if str(vIDs[jc])!=zPnm[jc]:
                         print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
             print('')
-    
     
         cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
     
