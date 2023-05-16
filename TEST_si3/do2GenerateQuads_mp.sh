@@ -42,7 +42,7 @@ for RESKM in ${LCOARSEN[*]}; do
                     lstrec="0,$((Nr-1))"
                     flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                     ijob=$((ijob+1))
-                    CMD="${EXE} ${ff} ${lstrec} ${RESKM}"
+                    CMD="${EXE} ${MODE} ${ff} ${lstrec} ${RESKM}"
                     echo "    ==> will launch:"; echo "     ${CMD}"; echo
 
                     ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &

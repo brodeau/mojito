@@ -41,8 +41,8 @@ if __name__ == '__main__':
 
 
     
-    if not len(argv) in [4,5]:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km> (<rd_ss_km>)')
+    if not len(argv) in [5,6]:
+        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km> <mode (rgps,model,xlose)> (<rd_ss_km>)')
         exit(0)
 
 
@@ -55,9 +55,13 @@ if __name__ == '__main__':
     lstrec = argv[2]
     creskm = argv[3]
     reskm = int(creskm)
+    quality_mode = argv[4]
 
-    if len(argv)==5:
-        crd_ss = argv[4]
+    if not quality_mode  in ['thorough','model','rgps','xlose']:
+        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
+    
+    if len(argv)==6:
+        crd_ss = argv[5]
 
     
     vcrec = split(',',lstrec)
@@ -77,13 +81,7 @@ if __name__ == '__main__':
 
     if lTimePos: print(' *** There is the "time_pos" data in input netCDF file! => gonna use it!')
 
-    quality_mode = 'unknown'
-
-    if corigin == 'RGPS':
-        quality_mode = 'rgps'
-    elif split('_',corigin)[0] == 'NEMO-SI3':
-        quality_mode = 'model'
-    else:
+    if not corigin in ['RGPS', 'model']
         print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
         exit(0)
         

@@ -17,6 +17,8 @@ export LDTINCRM=(  "3"  "3"  "3"  "3"  "3"   "3"   "1"  )
 export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
 
+MODE="model"
+
 XTRA_SFX_SI3=""
 
 NJPAR=4 ; # number of jobs we can launch in //

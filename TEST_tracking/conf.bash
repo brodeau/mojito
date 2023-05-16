@@ -13,6 +13,8 @@ export SI3DATE2="${YEAR}0331"
 
 XTRA_SFX_SI3=""
 
+MODE="model"
+
 NJPAR=4 ; # number of jobs we can launch in //
 
 host=`hostname | cut -d '.' -f2`

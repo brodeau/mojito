@@ -12,6 +12,8 @@ LIST_RD_SS=""
 LIST_MINDC=""
 RESKM=10
 
+MODE='RGPS'
+
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     #
@@ -61,7 +63,7 @@ case ${host} in
         export DATA_DIR="/data/gcm_setup"
         #FILIN="RGPS_${YEAR}LIGHT.nc4"
         #DT_BINS_H=6 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
-        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10
+        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #DT_BINS_H=$((7*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10
         #
         ;;
