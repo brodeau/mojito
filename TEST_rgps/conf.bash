@@ -12,7 +12,7 @@ LIST_RD_SS=""
 LIST_MINDC=""
 RESKM=10
 
-MODE='RGPS'
+MODE='rgps'
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
@@ -73,7 +73,8 @@ case ${host} in
         #
         NJPAR=34
         #
-        DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0131"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        DT_BINS_H=24 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0131"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #
         ;;

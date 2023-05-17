@@ -28,7 +28,7 @@ NbtchMax  =  200 ; # Max number of Batches, guess!, just for dimensionning array
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize()
+    
 
     for cd in ['npz','figs']:
         if not path.exists('./'+cd): mkdir('./'+cd)
@@ -36,14 +36,22 @@ if __name__ == '__main__':
 
     ####################################################################################################
     narg = len(argv)
-    if not narg in [5]:
-        print('Usage: '+argv[0]+' <file_RGPS.nc> <YYYYMMDD(_HH:MM)1> <YYYYMMDD(_HH:MM)2> <dt_binning (hours)>')
+    if not narg in [6]:
+        print('Usage: '+argv[0]+' <file_RGPS.nc> <YYYYMMDD(_HH:MM)1> <YYYYMMDD(_HH:MM)2> <dt_binning (hours)> <mode (rgps,model,xlose)>')
         exit(0)
     cf_in    =     argv[1]
     cdate1   =     argv[2]
     cdate2   =     argv[3]
     idtbin_h = int(argv[4])
+    quality_mode = argv[5]
+    
+    if not quality_mode  in ['thorough','model','rgps','xlose']:
+        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
+
     ####################################################################################################
+
+    kk = cfg.initialize( mode=quality_mode)
+    
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
     

@@ -13,7 +13,7 @@ YEAR=`echo ${DATE1} | cut -c1-4`
 MMDD1=`echo ${DATE1} | cut -c5-8`
 MMDD2=`echo ${DATE2} | cut -c5-8`
 
-CMD="${EXE} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H}"
+CMD="${EXE} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE}"
 
 echo
 echo " *** About to launch:"; echo "     ${CMD}"; echo
