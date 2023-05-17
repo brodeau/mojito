@@ -36,7 +36,7 @@ def initialize( mode='model' ):
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
     nc_min_cnsctv = 2          ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
 
-    rc_dev_dt_Nmnl = 6*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
+    rc_dev_dt_Nmnl = 3*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
     
     lc_drop_overlap = False ; # Because this is done in Quad generation...
     rc_Dtol_km = 6. # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
@@ -62,7 +62,7 @@ def initialize( mode='model' ):
         rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
         rc_dRatio_max = 3. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-        rc_dev_dt_Nmnl = 12*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
+        #rc_dev_dt_Nmnl = 24*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
 
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
 

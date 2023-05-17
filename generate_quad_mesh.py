@@ -337,6 +337,8 @@ if __name__ == '__main__':
             print('\n *** About our quadrangles:')
             zsides = QUADS0.lengths()
             zareas = QUADS0.area()
+            if np.isnan(zareas).any():
+                print('ERROR: there are "NANs" in `zarea`!!!!'); exit(0)
             zscale = np.sqrt(zareas)
             rl_average_side = np.mean(zsides)
             rl_average_scal = np.mean(zscale)

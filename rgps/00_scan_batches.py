@@ -55,7 +55,7 @@ if __name__ == '__main__':
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
     
-    print('\n *** Max. allowed deviation in time from the `dt_Nmnl` between 2 consec. points to select =',cfg.rc_dev_dt_Nmnl/3600,'hours')
+    print('\n *** Max. allowed deviation in time from the `dt_Nmnl` between 2 consec. points, `rc_dev_dt_Nmnl` =',int(cfg.rc_dev_dt_Nmnl/3600),'h')
 
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
 
