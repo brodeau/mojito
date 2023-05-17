@@ -137,10 +137,10 @@ if __name__ == '__main__':
 
 
             #---------------------------------------------------------------------------------------------------------------------
-            NBinBtch  = 0     ; # number of buoys in the batch
-            IDXofStr = []  ; # keeps memory of buoys that are already been included, but only at the batch level
-
-            iBcnl_CR = 0  ; # counter for buoys excluded because of consecutive records...
+            NBinBtch  = 0  ; # number of buoys in the batch
+            iBcnl_CR  = 0  ; # counter for buoys excluded because of consecutive records...
+            iBcnl_DC  = 0  ; # counter for buoys excluded because of excessive proximity to coastline
+            IDXofStr  = [] ; # keeps memory of buoys that are already been included, but only at the batch level
 
             if Nok >= cfg.nc_min_buoys_in_batch:
 
@@ -181,13 +181,22 @@ if __name__ == '__main__':
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
                             XNRc[ibatch,jb] = nbRecOK          ; # keeps memory of n. of "retained" consec. records
                             XIX0[ibatch,jb,:nbRecOK] = idx0VUCR[:nbRecOK] ; # indices for these valid records of this buoy
+                        else:
+                            iBcnl_DC += 1
                         #
                     else:
                         iBcnl_CR += 1
                     #
                     ### if nbRecOK == 2
                 ### for jidx in idxOK
-                print('     => '+str(iBcnl_CR)+' buoys were canceled for not having a reasonable upcomming position in time!')
+                if Nok-NBinBtch != iBcnl_CR+iBcnl_DC:
+                    print('ERROR: `ok-NBinBtch != iBcnl_CR+iBcnl_DC` !!!',Nok-NBinBtch, iBcnl_CR+iBcnl_DC)
+                    exit(0)
+                #
+                print('  *** '+str(Nok-NBinBtch)+' buoys were canceled:')
+                print('         => '+str(iBcnl_CR)+' for not having a reasonable upcomming position in time!')
+                print('         => '+str(iBcnl_DC)+' for being excessively close to land!')
+
 
                 if NBinBtch >= cfg.nc_min_buoys_in_batch:
                     print('   +++ C O N F I R M E D   V A L I D   B A T C H   #'+str(ibatch)+' +++ => selected '+str(NBinBtch)+' buoys!')
