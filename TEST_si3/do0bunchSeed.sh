@@ -58,14 +58,6 @@ for RESKM in ${LCOARSEN[*]}; do
                     idt=0 ;;
             esac
         fi
-        if [ "${DT_INC_DAYS}" = "0.5" ]; then
-            case ${idt} in
-                2)
-                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_AlskGrnlnd.nc|g"`
-                    #fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_CndNns.nc|g"`
-                    idt=0 ;;
-            esac
-        fi
 
         sdate0=`echo ${NDATE0} | sed -e s/'-'/''/g`
         fout="./nc/sitrack_seeding_nemoTsi3_${sdate0}_${RESKM}km.nc"
