@@ -20,14 +20,17 @@ ires=-1
 for RESKM in ${LCOARSEN[*]}; do
     ires=$((ires+1))
     DT_INC_DAYS=${LDTINCRM[${ires}]}
-    
+
     echo; echo; echo " *** RESKM = ${RESKM} => DT = ${DT_INC_DAYS} ***"
 
     LIST_DATES=`${EXE2} ${DATE1} ${DATE2} ${DT_INC_DAYS}`
-    
+
     echo "    ===> LIST_DATES = ${LIST_DATES}"; echo
 
+    idt=0
     for date in ${LIST_DATES}; do
+
+        idt=`expr ${idt} + 1`
 
         YYYY=`echo ${date} | cut -c1-4`
         MM=`echo ${date} | cut -c5-6`
@@ -43,12 +46,32 @@ for RESKM in ${LCOARSEN[*]}; do
 
         flog="seeding_${str}"
 
+        fmaskRGPS=${FFSM}
+        if [ "${DT_INC_DAYS}" = "0.25" ]; then
+            case ${idt} in
+                2)
+                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_AlskGrnlnd.nc|g"` ;;
+                3)
+                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_GrnlndNwSbr.nc|g"` ;;
+                4)
+                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_CndNns.nc|g"`
+                    idt=0 ;;
+            esac
+        fi
+        if [ "${DT_INC_DAYS}" = "0.5" ]; then
+            case ${idt} in
+                2)
+                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_AlskGrnlnd.nc|g"`
+                    idt=0 ;;
+            esac
+        fi
+
         sdate0=`echo ${NDATE0} | sed -e s/'-'/''/g`
         fout="./nc/sitrack_seeding_nemoTsi3_${sdate0}_${RESKM}km.nc"
 
         if [ ! -f ${fout} ]; then
 
-            CMD="${EXE} -d ${LDATE0} -m ${FNMM} -i ${FSI3IN} -k 0 -f ${FFSM} -C ${RESKM}"
+            CMD="${EXE} -d ${LDATE0} -m ${FNMM} -i ${FSI3IN} -k 0 -f ${fmaskRGPS} -C ${RESKM}"
             echo
             echo " *** About to launch:"; echo "     ${CMD}"; echo
             ijob=$((ijob+1))

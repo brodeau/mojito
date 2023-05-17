@@ -46,9 +46,13 @@ def initialize( mode='model' ):
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     #
     if mode in ['thorough','model']:
-        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 140
-        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_Qang_min =  50  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 130 
+        rc_dRatio_max = 0.3 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        #
+        #rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+        #rc_Qang_max = 140
+        #rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='rgps':        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
@@ -195,8 +199,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.5e-2, 2.5e-2, 2.5e-2
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
-            #rc_Qarea_min, rc_Qarea_max =  632*632, 648*648
-            #rc_Qarea_min, rc_Qarea_max = 600.*600., 680.*680.
         elif mode=='rgps':
             rc_div_max, rc_shr_max, rc_tot_max = 2.e-2, 2.e-2, 2.e-2 ; # day^-1 ; => supresses irrealistically large values
             #                                                 # due to time-measurement discrepencies across the 4 buoys forming the Quad

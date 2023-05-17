@@ -10,7 +10,7 @@ if [ "$1" = "1" ]; then
 
 elif [ "$1" = "2" ]; then
     for NEMO_EXP in ${LIST_NEMO_EXP}; do
-        rm -f ./nc/NEMO-SI3_NANUK4_${NEMO_EXP}_tracking_nemoTsi3_idlSeed_*km.nc
+        rm -f npz/[QT]-mesh_NEMO-SI3_NANUK4_${NEMO_EXP}_nemoTsi3_NoBin_*.npz
     done
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/quadgener_*
 
@@ -19,7 +19,7 @@ elif [ "$1" = "3" ]; then
     
 elif [ "$1" = "4" ]; then
     rm -f npz/def_*
-    
+
 elif [ "$1" = "5" ]; then
     rm -f npz/PDF_*.npz figs/*PDF_*.*
     

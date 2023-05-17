@@ -17,6 +17,9 @@ export LDTINCRM=(  "3"  "3"  "3"  "3"  "3"   "3"   "1"  )
 export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
 
+
+export FMASK_RGPS="mask_RGPS_all.nc"
+
 MODE="model"
 
 XTRA_SFX_SI3=""
@@ -71,8 +74,8 @@ case ${host} in
         #export LCOARSEN=( "10" "20" "40" "80" "160" ) ; export LDTINCRM=( "1" "1" "1" "1" "1" )
         #export LCOARSEN=(  "80" ) ; export LDTINCRM=(   "1" )
         #export LCOARSEN=(  "160" ) ; export LDTINCRM=(   "1" )
-        export LCOARSEN=(  "320" ) ; export LDTINCRM=(   "0.5" )
-        #export LCOARSEN=(  "640" ) ; export LDTINCRM=(   "0.5" )
+        #export LCOARSEN=(  "320" ) ; export LDTINCRM=(   "0.5" )
+        export LCOARSEN=(  "640" ) ; export LDTINCRM=(   "0.25" )
         #
         LIST_NEMO_EXP="BBM2302 EVP2302"
         #LIST_NEMO_EXP="EVP2302"
@@ -89,7 +92,7 @@ esac
 
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
-export FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mask_RGPS_${NEMO_CONF}.nc"
+export FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/${FMASK_RGPS}"
 
 mkdir -p ./figs ./npz
 
