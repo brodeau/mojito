@@ -61,7 +61,8 @@ for RESKM in ${LCOARSEN[*]}; do
         if [ "${DT_INC_DAYS}" = "0.5" ]; then
             case ${idt} in
                 2)
-                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_AlskGrnlnd.nc|g"`
+                    #fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_AlskGrnlnd.nc|g"`
+                    fmaskRGPS=`echo ${FFSM} | sed -e "s|_all.nc|_CndNns.nc|g"`
                     idt=0 ;;
             esac
         fi

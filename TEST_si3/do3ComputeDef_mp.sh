@@ -52,7 +52,7 @@ for RESKM in ${LCOARSEN[*]}; do
                     echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
                     flog=`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`; flog="def_${flog}"
                     ijob=$((ijob+1))
-                    CMD="${EXE} ${fQ1} ${fQ2} 0"
+                    CMD="${EXE} ${fQ1} ${fQ2} 0 ${MODE}"
                     echo "  ==> ${CMD}"; echo
 
                     ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
