@@ -66,6 +66,15 @@ case ${host} in
         DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #DT_BINS_H=$((7*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10
         #
+        #
+        ;;
+    "jackzilla")
+        export DATA_DIR="/data1/nobackup/laurent"
+        #
+        NJPAR=34
+        #
+        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #
         ;;
     *)
         echo "Unsupported host: ${host} !"
