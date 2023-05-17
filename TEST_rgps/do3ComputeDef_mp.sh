@@ -78,9 +78,9 @@ for cbtch in ${list_btch}; do
                         ijob=$((ijob+1))
                         #
                         if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
+                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600)) ${MODE}"
                         else
-                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
+                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19)) ${MODE}"
                         fi
                         echo "  ==> ${CMD}"; echo
                         ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
@@ -108,9 +108,9 @@ for cbtch in ${list_btch}; do
                             ijob=$((ijob+1))
                             #
                             if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))"
+                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600)) ${MODE}"
                             else
-                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19))"
+                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/19)) ${MODE}"
                             fi
                             echo "  ==> ${CMD}"; echo
                             ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &

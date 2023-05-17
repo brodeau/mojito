@@ -99,15 +99,13 @@ def updateConfig4Scale( res_km,  mode='model' ):
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
     # Extremas for deformations, in [day^-1]:
     rc_div_max, rc_shr_max, rc_tot_max = 2., 2., 2.
-    
-    if mode in ['thorough','model']:
-        rc_div_min, rc_shr_min, rc_tot_min = 0.8e-12, 0.8e-12, 0.8e-12; # for scaling (not PDFs)        
-    elif mode in ['rgps']:
-        # Because noisy!!!        
-        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
-    else:
-        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5      ; # based on scatter plot of scaling
 
+
+    if mode in ['rgps']:
+        # Because noisy at tiny deformation!!!        
+        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5    ; # based on scatter plot of scaling        
+    else:
+        rc_div_min, rc_shr_min, rc_tot_min = 1.e-15, 1.e-15, 1.e-15 ; # for deformation generation
     
     if   irk==10:
         rc_d_ss =  6.

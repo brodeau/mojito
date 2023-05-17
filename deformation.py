@@ -19,16 +19,20 @@ zoom=2
 
 if __name__ == '__main__':
 
-    
-    if not len(argv) in [4]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)>')
+
+    if not len(argv) in [5]:
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <mode (rgps,model,xlose)>')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
     time_dev_max= float(argv[3])
-        
+    quality_mode = argv[4]
+
+    if not quality_mode  in ['thorough','model','rgps','xlose']:
+        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
+
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
-        
+
     # Reading the quad meshes in both npz files:
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
     QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
@@ -36,7 +40,7 @@ if __name__ == '__main__':
     # Debug have a look at the times of all points and get the actual mean time for each file:
     rTm1, rStD1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
     rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
-    
+
     rtimeC = 0.5*(rTm1+rTm2)
     ctimeC = mjt.epoch2clock(rtimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
@@ -45,7 +49,7 @@ if __name__ == '__main__':
     vclck = split('_',ctimeC)
     chh, cmm = split(':',vclck[1])[0], split(':',vclck[1])[1]
     cclck = str.replace( vclck[0],'-','')+'-'+chh+'h'+cmm
-    
+
     reskm, reskm2 = QUA1.reskm_nmnl, QUA2.reskm_nmnl
     if reskm != reskm2:
         print('ERROR: quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
@@ -57,29 +61,29 @@ if __name__ == '__main__':
         makedirs( cfdir, exist_ok=True )
 
 
-        
+
     # Comprehensive name for npz and figs to save later on:
-    corigin = QUA1.origin    
+    corigin = QUA1.origin
     cfnm    = corigin
 
-    if corigin == 'RGPS':
-        quality_mode = 'rgps'
-    elif split('_',corigin)[0] == 'NEMO-SI3':
-        quality_mode = 'model'
-    else:
-        print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
-        exit(0)
-    
+    #if corigin == 'RGPS':
+    #    quality_mode = 'rgps'
+    #elif split('_',corigin)[0] == 'NEMO-SI3':
+    #    quality_mode = 'model'
+    #else:
+    #    print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
+    #    exit(0)
+
     k1 = cfg.initialize(                mode=quality_mode )
     k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
 
 
     print('LOLO: min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
-    
+
     if not cfg.lc_accurate_time:
         print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
-    
+
     # Some info from npz file name: #fixme: too much dependency on file name...
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
     if corigin == 'RGPS':
@@ -87,11 +91,11 @@ if __name__ == '__main__':
         cdtbin =  '_'+split('_',cf1)[3]
     elif split('_',corigin)[0] == 'NEMO-SI3':
         cbatch =  split('_',cf1)[-5]
-        cdtbin = '_'+split('_',cf1)[-4]        
+        cdtbin = '_'+split('_',cf1)[-4]
     if not cdtbin[1:3] in ['dt','No']:
         print('ERROR: we could not figure out `cdtbin`!'); exit
 
-        
+
     # Test for coarsening realisations:
     cr1, cr2 = '', ''
     cc1, cc2 = split('-',split('_',cf1)[-1]), split('-',split('_',cf2)[-1])
@@ -103,10 +107,10 @@ if __name__ == '__main__':
         print('     => realisation with `rd_ss` =',cc1[0],'km !!!')
 
     cfnm += '_'+cbatch+cdtbin
-    cfnm += '_'+cclck        
+    cfnm += '_'+cclck
     cfnm += '_'+cr1+str(reskm)+'km'
     #print('LOLO: cfnm =',cfnm); exit(0)
-    
+
     print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
     print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
 
@@ -117,12 +121,12 @@ if __name__ == '__main__':
         print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
 
 
-    
+
     if cfg.lc_accurate_time:
         figSfx='_tbuoy.png'
     else:
         figSfx='_tglob.png'
-    
+
     # The Quads we retain, i.e. those who exist in both snapshots:
     vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
     nQ = len(vnm) ; # also = len(vidx*)
@@ -164,10 +168,10 @@ if __name__ == '__main__':
         zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
         zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
         #
-        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2], 
+        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
                                                               xtime1=zTime1, xtime2=zTime2, iverbose=idebug )
         # => having rdt=1 will yield fuck-up fields if used, and must not be used!
-        
+
     else:
 
         zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
@@ -186,7 +190,7 @@ if __name__ == '__main__':
     zXc = np.mean( zX[:,:], axis=1 )
     zYc = np.mean( zY[:,:], axis=1 )
 
-    
+
     if idebug>1 and iplot>0:
         # Velocities of barycenter of Quads at center of time interval:
         zUc = np.mean( zU[:,:], axis=1 )
@@ -208,12 +212,12 @@ if __name__ == '__main__':
 
     del zdUdxy, zdVdxy
 
-    (nD,) = np.shape(zdiv)    
+    (nD,) = np.shape(zdiv)
     if  nQ != nD:
         print('ERROR: `Q != nD` !!!'); exit(0)
     if  np.shape(zshr2) != (nD,):
         print('ERROR: `np.shape(zdiv) != np.shape(zshr2)` !!!'); exit(0)
-        
+
     # Maximum Shear Strain Rate aka SigmaII:
     zshr = np.zeros(nD)
     zshr = np.sqrt(zshr2)
@@ -222,35 +226,30 @@ if __name__ == '__main__':
     ztot = np.zeros(nD)
     ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
     del zshr2
-    
-    # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
-    #(idxKeep,) = np.where( ztot*cfg.rc_day2sec > cfg.rc_tot_min )
-    (idxKeep,) = np.where( (ztot*cfg.rc_day2sec > cfg.rc_tot_min) & (ztot*cfg.rc_day2sec < cfg.rc_tot_max) )
-    #
-    nDn = len(idxKeep)
-    if nDn < nD:
-        print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
-        zdiv = zdiv[idxKeep]
-        zshr = zshr[idxKeep]
-        ztot = ztot[idxKeep]
-        zXc  =  zXc[idxKeep]
-        zYc  =  zYc[idxKeep]
-        zAq  =  zAq[idxKeep]
-        nD   = nDn
-        if iplot>0:
-            zX = zX[idxKeep,:]
-            zY = zY[idxKeep,:]
-    del idxKeep
-    #print('LOLO: shape after clean: ', np.shape(zdiv), nD)
-    #print('LOLO: shape zX: ', np.shape(zX)); exit(0)
+
+    if np.any( (ztot*cfg.rc_day2sec <= cfg.rc_tot_min) & (ztot*cfg.rc_day2sec >= cfg.rc_tot_max) ):
+        # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
+        (idxKeep,) = np.where( (ztot*cfg.rc_day2sec > cfg.rc_tot_min) & (ztot*cfg.rc_day2sec < cfg.rc_tot_max) )
+        #
+        nDn = len(idxKeep)
+        if nDn < nD:
+            print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
+            zdiv = zdiv[idxKeep]
+            zshr = zshr[idxKeep]
+            ztot = ztot[idxKeep]
+            zXc  =  zXc[idxKeep]
+            zYc  =  zYc[idxKeep]
+            zAq  =  zAq[idxKeep]
+            nD   = nDn
+            if iplot>0:
+                zX = zX[idxKeep,:]
+                zY = zY[idxKeep,:]
+        del idxKeep
 
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nD,
                          Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
-
-    if np.any(ztot*cfg.rc_day2sec>2.e-2):
-        print('LOLO: have a def>2.e-2 in: '+cf_Q1)
 
     # Some plots:
     if iplot>0:
@@ -258,7 +257,7 @@ if __name__ == '__main__':
         if corigin != 'RGPS':
             corigin = str.replace( corigin,'NEMO-','')
             corigin = str.replace( corigin,'_NANUK4_','-')
-        
+
         cresinfo = '('+str(reskm)+' km)'
 
         nmproj=NameArcticProj

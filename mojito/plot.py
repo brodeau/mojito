@@ -760,7 +760,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
 
 def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
-                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$' ):
+                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', date=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ### => each quadrangle is filled with the appropriate color from colormap !!!
@@ -824,13 +824,16 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     if title:
         ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+    if date:
+        print('LOLO: LocTitle =',LocTitle)
+        ax.annotate(date, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     if unit:
         #lolo
         #    # => triggers the colorbar
         ax2 = plt.axes([0.48, 0.08, 0.48, 0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
-
+        
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
     plt.close(1)
