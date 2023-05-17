@@ -1,3 +1,6 @@
+
+* review `ValidUpComingRecord()`, it's really removing a lot of buoys + weakly sensitive to `rc_dev_dt_Nmnl` !!!
+
 * review the use of `areaR` in `lTisOK()` !
 
 * review the `rscore` in `lQisOK()`
