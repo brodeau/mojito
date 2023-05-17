@@ -41,8 +41,8 @@ if __name__ == '__main__':
     rTm1, rStD1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
     rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
 
-    rtimeC = 0.5*(rTm1+rTm2)
-    ctimeC = mjt.epoch2clock(rtimeC)
+    itimeC = int( 0.5*(rTm1+rTm2) )
+    ctimeC = mjt.epoch2clock(itimeC)
     print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
     rdt = rTm2 - rTm1
 
@@ -247,7 +247,7 @@ if __name__ == '__main__':
         del idxKeep
 
     # Saving data:
-    np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=rtimeC, date=ctimeC, Npoints=nD,
+    np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,
                          Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
 
@@ -264,15 +264,15 @@ if __name__ == '__main__':
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
                                   pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': divergence '+cresinfo )
+                                  title=corigin+': divergence '+cresinfo, idate=itimeC )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
                                   pFmin=0.,      pFmax=cfg.rc_shr_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': shear '+cresinfo )
+                                  title=corigin+': shear '+cresinfo, idate=itimeC )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zt_'+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
                                   pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': total deformation '+cresinfo )
+                                  title=corigin+': total deformation '+cresinfo, idate=itimeC )
 
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):

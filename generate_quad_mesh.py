@@ -303,10 +303,10 @@ if __name__ == '__main__':
 
             if corigin == 'RGPS':
                 # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
-                xPxy, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPxy, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel )
+                #xPxy, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPxy, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel )
+                xPxy, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPxy, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel, mode='maxdiff' )
                 (nbP,_), (nbQ,_) = np.shape(xPxy), np.shape(xQpnts)
-                print('\n *** After vertices time check: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points')
-
+                print('\n *** After vertices time check (t_dev<'+str(round(cfg.rc_t_dev_cancel/3600.,3))+'h): we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points')
                 
             # Save the triangular mesh info:
             mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', origin=corigin )

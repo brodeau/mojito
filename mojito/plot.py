@@ -760,7 +760,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
 
 def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
-                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', date=None ):
+                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', idate=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ### => each quadrangle is filled with the appropriate color from colormap !!!
@@ -802,6 +802,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
 
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
+
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
@@ -824,12 +825,10 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     if title:
         ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
-    if date:
-        print('LOLO: LocTitle =',LocTitle)
-        ax.annotate(date, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
+    if idate:
+        ax.annotate(epoch2clock(idate, precision='D'), xy=(LocTitle[0]+0.1,LocTitle[1]-0.03), xycoords='figure fraction', **cfont_clock) ; #ha='center'
     if unit:
-        #lolo
-        #    # => triggers the colorbar
+        # => triggers the colorbar
         ax2 = plt.axes([0.48, 0.08, 0.48, 0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
@@ -937,7 +936,6 @@ def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
         if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
         plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-
 
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
@@ -1117,7 +1115,6 @@ def _linear_fit_loglog_(x, y):
     zcoeffs, _ = curve_fit(_line_, zx, zy)
     #
     return zcoeffs
-
 
 
 def _power_law_fit_(x, y):
