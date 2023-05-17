@@ -82,10 +82,6 @@ if __name__ == '__main__':
     cf_npz_in = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'.npz'
     mjt.chck4f(cf_npz_in)
 
-    #if cfg.lc_drop_overlap and l_drop_tooclose:
-    #    print(' ERROR: you cannot use `cfg.lc_drop_overlap` and `l_drop_tooclose`! Choose one of the two!!!')
-    #    exit(0)
-
     print('\n *** Date range to restrain data to:')
     print(' ==> '+cdt1+' to '+cdt2 )
 

@@ -38,9 +38,10 @@ def initialize( mode='model' ):
 
     rc_dev_dt_Nmnl = 6*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
     
-    lc_drop_overlap = True
-    rc_Dtol_km = 5.5 # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
-
+    lc_drop_overlap = False ; # Because this is done in Quad generation...
+    rc_Dtol_km = 6. # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
+    #               # Should be same as `rc_d_ss` for 10km as in "updateConfig4Scale()"
+    #
     # Selection of appropriate quadrangles:
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
@@ -93,7 +94,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
-    rc_d_ss = 5.5 ; # default radius for subsampling the cloud of points [km]
+    rc_d_ss = 6. ; # default radius for subsampling the cloud of points [km]
 
     # Extremas for figures only:
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
@@ -108,14 +109,14 @@ def updateConfig4Scale( res_km,  mode='model' ):
         rc_div_min, rc_shr_min, rc_tot_min = 1.e-15, 1.e-15, 1.e-15 ; # for deformation generation
     
     if   irk==10:
-        rc_d_ss =  6.
+        rc_d_ss = 6.
         rc_tolQuadA = 2
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  0.1, 0.05, 0.05
         if mode in ['thorough','model']:            
             #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
-            rc_d_ss =  5.
+            #rc_d_ss =  5.
             # When lose, average scale is 10.33 km with a standard deviation of ~1km!
             rc_Qarea_min, rc_Qarea_max = 10.08*10.08, 10.58*10.58 ; # 10.33 +- 0.25
         elif mode=='xlose':

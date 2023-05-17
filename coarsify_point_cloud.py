@@ -55,7 +55,7 @@ if __name__ == '__main__':
     ldss = ( len(argv)==5 or len(argv)==6 ); # a `rd_ss` is provided!
     ldtc =   len(argv)==6 ; # a minimum distance to coast is provided
 
-    if ldss:        
+    if ldss:
         rd_ss = float(argv[4])
     else:
         kl = cfg.updateConfig4Scale( int(reskm), mode=corigin )
