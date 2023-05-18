@@ -4,12 +4,10 @@
 
 if [ "$1" = "0" ]; then
     rm -f ./npz/RGPS_batch_selection_dt${DT_BINS_H}h_*${YEAR}*.npz
-    
-elif [ "$1" = "1" ]; then
     rm -rf figs/SELECTION
     rm -f nc/SELECTION_*${YEAR}*.nc
 
-elif [ "$1" = "c" ]; then
+elif [ "$1" = "1" ]; then
     rm -rf figs/coarsify
     rm -f nc/SELECTION_*${YEAR}*_*km.nc logs/coarsify_*
 

@@ -102,7 +102,7 @@ def LoadData4TimeRange( idate1, idate2, fRGPS, l_doYX=False ):
         return nPr, nBu, zIDsU, ztime0, zIDs0, zlat0, zlon0
 
 
-def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom=6*3600 ):
+def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, devdtNom=6*3600 ):
     '''
         * time_min: date at the lower time bound of the considered time bin [s]
         * kidx:     integer => the index that accesses the currently treated buoy in the `*0` original arrays like `ptime0` or `pBIDs0`!
@@ -174,12 +174,7 @@ def ValidUpComingRecord( time_min, kidx, ptime0, pBIDs0, pidxIgnore, devdtNom=6*
             #
             idxUC = idxBuoy[idxUC] ; # in the ref0 frame!
 
-            if idxUC in pidxIgnore:
-                print('ERROR [ValidUpComingRecord()] `idxUC` is forbidden by `pidxIgnore`! ')
-                exit(0)
-            #
             zidx0_recs = np.array([idxT0, idxUC], dtype=int)
-
         else:
             zidx0_recs = np.array([idxT0], dtype=int)
 

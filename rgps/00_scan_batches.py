@@ -96,8 +96,7 @@ if __name__ == '__main__':
     XNRc    = np.zeros((NbtchMax, Nb),    dtype=int) - 999 ; # stores the number of records for each buoy in a given batch
     Xmsk    = np.zeros((NbtchMax, Nb),    dtype='i1')      ; # tells if given buoy of given batch is alive (1) or dead (0)
     XIX0    = np.zeros((NbtchMax, Nb, 2), dtype=int) - 999 ;
-
-    IDXtakenG = []  ; # keeps memory of points (indices) that have already been used by previous batches
+    #IDXtakenG = []  ; # keeps memory of buoy positions (indices) that have already been used by previous batches
 
     ibatch = -1
     for jt in range(NTbin):
@@ -127,7 +126,9 @@ if __name__ == '__main__':
             print('     => after "multi-occurence" exclusions: '+str(Nok0)+' pos. involving '+str(len(np.unique(vIDs0[idxOK0])))+' different buoys!')
 
             # Exclude points if index has already been used or canceled:
-            idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
+            #lolo:idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
+            idxOK = idxOK0;#lolo
+            
             Nok    = len(idxOK)
             zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
             if len(np.unique(zIDsOK)) != Nok:
@@ -163,15 +164,17 @@ if __name__ == '__main__':
 
                     jID = vIDs0[jidx]
 
-                    if jidx in IDXtakenG:
-                        print('WOW! `jidx in IDXtakenG` !!!'); exit(0) ; #fixme
-                    #if not jidx in IDXtakenG:
+                    #lolo:
+                    #if jidx in IDXtakenG:
+                    #    print('WOW! `jidx in IDXtakenG` !!!'); exit(0) ; #fixme
+                    ##if not jidx in IDXtakenG:
 
-                    nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), devdtNom=cfg.rc_dev_dt_Nmnl )
+                    nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, devdtNom=cfg.rc_dev_dt_Nmnl )
 
-                    if nbRecOK==0:
-                        IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
-                        #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
+                    #lolo:
+                    #if nbRecOK==0:
+                    #    IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
+                    #    #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
 
                     # * nbRecOK : number of valid consecutive records for this buoy
                     # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy, including the present
@@ -211,7 +214,7 @@ if __name__ == '__main__':
                     VNB_ini[ibatch] = NBinBtch
                     VjtBinN[ibatch] = jt
                     # Only now can we register the points indices we used into `IDXtakenG`:
-                    IDXtakenG.extend(IDXofStr)
+                    #lolo:IDXtakenG.extend(IDXofStr)
                 else:
                     print('  * Well, this batch did not make it through the selection process... :(')
                     Xmsk[ibatch,:] = 0
