@@ -775,8 +775,6 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     ###     traingle world!
     '''
     from .util import ConvertCartesianNPSkm2Geo
-    #from cartopy.crs import PlateCarree, NorthPolarStereo
-    #
 
     (nQ,) = np.shape(pF)
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
@@ -784,17 +782,15 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     kk = _initStyle_(fntzoom=zoom)
 
-    # Need lat,lon from pX4, pY4 !
-    #crs_src = NorthPolarStereo(central_longitude=-45, true_scale_latitude=70) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
-    #crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
-
     zlat, zlon = ConvertCartesianNPSkm2Geo( pY4, pX4 )
 
     # Colormap:
     if   cwhat=='shr':
         cm = plt.cm.get_cmap('viridis')
     elif   cwhat=='tot':
-        cm = plt.cm.get_cmap('inferno')
+        #cm = plt.cm.get_cmap('inferno')
+        #cm = plt.cm.get_cmap('cividis')
+        cm = plt.cm.get_cmap('Greys')
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
@@ -829,7 +825,8 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
         ax.annotate(epoch2clock(idate, precision='D'), xy=(LocTitle[0]+0.1,LocTitle[1]-0.03), xycoords='figure fraction', **cfont_clock) ; #ha='center'
     if unit:
         # => triggers the colorbar
-        ax2 = plt.axes([0.48, 0.08, 0.48, 0.02])
+        #ax2 = plt.axes([0.48, 0.08, 0.48, 0.02])
+        ax2 = plt.axes([0.025, 0.85, 0.29, 0.018])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
         clb.set_label(unit, **cfont_clb)
         
