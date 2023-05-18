@@ -2,11 +2,14 @@
 
 . ./conf.bash
 
+echo ; echo " *** ${RESKM}km !"; echo
 
-echo " *** ${RESKM}km !"
+if [ "${1}" = "0" ]; then
+    ./do0ScanBatches.sh
+    wait
+fi
 
-
-./do1bCoarsify.sh
+./do1Coarsify.sh
 wait
 
 ./do2GenerateQuads_mp.sh
