@@ -298,15 +298,16 @@ if __name__ == '__main__':
             if lquit:
                 print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
                 
-            print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!')
+            print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')
 
 
             if corigin == 'RGPS':
+                nbQo,nbPo = nbQ,nbP
                 # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
                 #xPxy, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPxy, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel )
                 xPxy, vPids, vTime, xQpnts, vQnam = mjt.QuadVrtcTDev( xPxy, vPids, vTime, xQpnts, vQnam, cfg.rc_t_dev_cancel, mode='maxdiff' )
                 (nbP,_), (nbQ,_) = np.shape(xPxy), np.shape(xQpnts)
-                print('\n *** After vertices time check (t_dev<'+str(round(cfg.rc_t_dev_cancel/3600.,3))+'h): we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points')
+                print(' *** '+str(nbQo-nbQ)+' quads ('+str(nbPo-nbP)+' points) were supressed for inconsistent time across vertices!!! (t_dev<'+str(round(cfg.rc_t_dev_cancel/3600.,3))+'h)')
                 
             # Save the triangular mesh info:
             mjt.SaveClassPolygon( cf_npzT, TRIAS, ctype='T', origin=corigin )
