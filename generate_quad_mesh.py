@@ -24,7 +24,7 @@ from mojito.util import epoch2clock as e2c
 
 idebug = 0
 
-iplot = 1 ; # Create figures to see what we are doing...
+iplot = 0 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
@@ -79,10 +79,10 @@ def _QuadStat_( kr, QD ):
     rl_average_scal = np.mean(zscale)
     rl_stdev_scal   = mjt.StdDev(rl_average_scal, zscale)
     rl_average_area = np.mean(zareas)
-    print('    ==> scale: mean, StDev, min, max =',round(rl_average_scal,3), round(rl_stdev_scal,2),
+    print('  Quads @ rec '+str(kr)+' ==> scale: mean, StDev, min, max =',round(rl_average_scal,3), round(rl_stdev_scal,2),
           round(np.min(zscale),2), round(np.max(zscale),3),' km')
-    print('    ==> average side length is '+str(round(rl_average_side,3))+' km')
-    print('    ==> average area is '+str(round(rl_average_area,1))+' km^2')
+    print('  Quads @ rec '+str(kr)+' ==> average side length is '+str(round(rl_average_side,3))+' km')
+    print('  Quads @ rec '+str(kr)+' ==> average area is '+str(round(rl_average_area,1))+' km^2')
     del zareas, zsides, zscale
     zdev = abs(rl_average_scal-reskm)
     if zdev > cfg.rc_tolQuadA:
