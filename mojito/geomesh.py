@@ -25,6 +25,13 @@ def intersect2Seg( pcA, pcB, pcC, pcD ):
     return ( _ccw_(pcA,pcC,pcD) != _ccw_(pcB,pcC,pcD) ) and ( _ccw_(pcA,pcB,pcC) != _ccw_(pcA,pcB,pcD) )
 
 
+def IsQuadCrossed( pQxy ):
+    '''
+       Is the Quad defined by 4 point coordinates pQxy a  "crossed fucked-up" quadrangle ?
+       * pQxy: shape = (4,2)
+    '''
+    return intersect2Seg( pQxy[0,:], pQxy[1,:], pQxy[2,:], pQxy[3,:] )
+
 
 def __distAB2__(pC1, pC2):
     ''' Square of the distance between 2 points based on their [x,y] coordinates '''
@@ -86,9 +93,9 @@ def AreaOfQuadrangle( pX4, pY4 ):
     # Output:
              * the area of the quadrangle
     '''
-    nv = len(pX4[:]) ; # number of vertices...
     if len(pX4[:]) != 4 or len(pY4[:]) != 4:
-        print('ERROR [AreaOfQuadrangle]: I am only designed for quadrangles! => 4 vertices!!!') ; exit(0)
+        print('ERROR [AreaOfQuadrangle]: I am only designed for quadrangles! => 4 vertices!!!')
+        exit(0)
     #
     rA = np.sum( np.array([ pX4[k]*pY4[(k+1)%4] - pX4[(k+1)%4]*pY4[k] for k in range(4) ]) )
     #
@@ -419,40 +426,54 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
         print('\n WARNING => No Quads could be generated! :(')
     print('')
 
+    
     # Check if some "crossed" quads:
     zQcoor = np.array( [ zPxy[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad! shape:(nQ,4,2) !
     for jQ in range(NbQ):
-        if intersect2Seg( zQcoor[jQ,0,:], zQcoor[jQ,1,:], zQcoor[jQ,2,:], zQcoor[jQ,3,:] ):
+        if IsQuadCrossed( zQcoor[jQ,:,:] ):
             print('WARNING [Tri2Quad()]: we have crossed fucked-up quadrangle!!! => name =',zQname[jQ])
+            #zzA = AreaOfQuadrangle( zQcoor[jQ,:,0], zQcoor[jQ,:,1] )
+            #print('Area of this quad before correction =', zzA)            
             # Correction: p3 moved to pos#1 (apparently no other bad combinations arise...):
-            zQcoor[jQ,1:,:] = [ zQcoor[jQ,3,:], zQcoor[jQ,1,:], zQcoor[jQ,2,:] ]
-            zQpind[jQ,1:]   = [ zQpind[jQ,3],   zQpind[jQ,1],   zQpind[jQ,2]   ]
-            zQname[jQ]      = zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,3]]+'-'+zcN[zQPT[jQ,1]]+'-'+zcN[zQPT[jQ,2]]
-            if intersect2Seg( zQcoor[jQ,0,:], zQcoor[jQ,1,:], zQcoor[jQ,2,:], zQcoor[jQ,3,:] ):
-                print('ERROR [Tri2Quad()]: fucked-up Quad! Do not know how to fix!'); exit(0)
-            print('WARNING [Tri2Quad()]: fixed! => new name is: ',zQname[jQ])
+            lOk = False
+            ipass = 1
+            while not lOk:
+                if ipass==1:
+                    i1, i2, i3 = 3, 1, 2
+                elif ipass==2:
+                    i1, i2, i3 = 3, 2, 1
+                zQpind[jQ,1:]   = [ zQpind[jQ,i1],   zQpind[jQ,i2],   zQpind[jQ,i3]   ]
+                zQname[jQ]      = zcN[zQPT[jQ,0]]+'-'+zcN[zQPT[jQ,i1]]+'-'+zcN[zQPT[jQ,i2]]+'-'+zcN[zQPT[jQ,i3]]
+                zQcoor[jQ,:,:] = zPxy[zQpind[jQ,:],:] ; # is build upon `zQpind` and `zPxy` !!!
+                #
+                if IsQuadCrossed( zQcoor[jQ,:,:] ):
+                    print('ERROR [Tri2Quad()]: fucked-up Quad #1! Do not know how to fix!'); exit(0)
+                # Now, a wrong permutation, while solving the cross-fuck-up, can yield a negative area:
+                zzA = AreaOfQuadrangle( zQcoor[jQ,:,0], zQcoor[jQ,:,1] )
+                #print('Area of this quad after correction =', zzA)
+                lOk = (zzA>0)
+                ipass+=1
+                if not lOk and ipass==3:
+                    print('ERROR [Tri2Quad()]: fucked-up Quad #1! Do not know how to fix!'); exit(0)
+            print('WARNING [Tri2Quad()]: fixed! => new name is: ',zQname[jQ],'\n')
 
     
-    if ivb>0:
-        # DEBUG: identify negative areas??? How did they pass through `lQisOK`? #fixme
-        zQcoor = np.array( [ zPxy[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad!
-        zareas = QuadsAreas( zQcoor )
-        if np.any(zareas<0.):
-            print('ERROR [Tri2Quad]: at least a quad with negative area!')
-            (idxFU,) = np.where(zareas<0.)
-            print('   for Quads with following indices:',idxFU)
-            print(' Area(s) => ', zareas[idxFU])
-            print(' Name(s) => ', zQname[idxFU])
-            print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
-            exit(0)
-        
+    # Check if som quads with a negative area (How did they pass through `lQisOK`?) #fixme
+    zQcoor = np.array( [ zPxy[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad!
+    zareas = QuadsAreas( zQcoor )
+    if np.any(zareas<0.):        
+        (idxFU,) = np.where(zareas<0.)
+        print('WARNING [Tri2Quad]: we have '+str(len(idxFU))+' quads with a negative area!')
+        print('    * quads with following indices:',idxFU)
+        print('    * area(s) => ', zareas[idxFU])
+        print('    * name(s) => ', zQname[idxFU])
+        print('   => fix `mjt.Tri2Quad` so these do not go through!!!')
+        exit(0)
+            
     return zPxy, zPIDs, zPtime, zQpind, zQname
 
 
-
-
-
-def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' ):
+def QuadVrtcTDev( pPxy, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' ):
     '''
     #
     # Get rid of quadrangles that have excessively asynchronous vertices:
@@ -466,14 +487,14 @@ def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev
     
     (nQ,_) = np.shape(pQpnts)
     zQVtime = np.array([ pTime[i] for i in pQpnts ]) ; # => same shape as `pQpnts` !
-    idxKeep = []
+    idxQkeep = []
     std_max = 0.
     for jQ in range(nQ):
         z4t = zQVtime[jQ,:]
         if mode=='stdev':
             zstd = StdDev( np.mean(z4t), z4t )
             if zstd < t_dev_cancel:
-                idxKeep.append(jQ)
+                idxQkeep.append(jQ)
             #if zstd>std_max:
             #    std_max=zstd
         #print(' * [QuadVrtcTDev()]: max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
@@ -481,10 +502,10 @@ def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev
         elif mode=='maxdiff':
             diff_max = np.max(z4t) - np.min(z4t)
             if diff_max < t_dev_cancel:
-                idxKeep.append(jQ)
+                idxQkeep.append(jQ)
 
-    idxKeep = np.array( idxKeep , dtype=int )
-    nQn = len(idxKeep)
+    idxQkeep = np.array( idxQkeep , dtype=int )
+    nQn = len(idxQkeep)
     if nQn<=0:
         print(' * [QuadVrtcTDev()]: 0 quads left!!! => exiting!!!'); exit(0)
     if nQn<nQ:
@@ -494,24 +515,27 @@ def QuadVrtcTDev( pPcoor, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev
         nQ = nQn
         zQpnts = np.zeros((nQ,4),dtype=int)
         zQnam  = np.zeros( nQ,   dtype='U32')
-        zQpnts[:,:] = pQpnts[idxKeep,:] ; #=> not enough because it's indices in the current n. of points => must be corrected later!
-        zQnam[:]    = pQnam[idxKeep]
-        # Now arrays with `nP` as a dimension:
+        zQpnts[:,:] = pQpnts[idxQkeep,:] ; #=> not enough because it's indices in the current n. of points => must be corrected later!
+        zQnam[:]    =  pQnam[idxQkeep]
+        #
+        # Now arrays with `nP` as a dimension:        
         zPidx = np.unique( zQpnts ); # =>indices !!!
         zPids = pPids[zPidx]
         (nP,) = np.shape(zPids)
+        idxPkeep = np.zeros(nP, dtype=int)
         zTime  = np.zeros( nP   , dtype=int)
-        zPcoor = np.zeros((nP,2))
+        zPxy = np.zeros((nP,2))
         jP = 0
         for jid in zPids:
             zQpnts[np.where(zQpnts==zPidx[jP])] = jP
             ([idx],)     = np.where(pPids==jid)
+            idxPkeep[jP] = idx
             zTime[jP]    =  pTime[idx]
-            zPcoor[jP,:] = pPcoor[idx,:]
+            zPxy[jP,:] = pPxy[idx,:]
             jP+=1
-        return zPcoor, zPids, zTime, zQpnts, zQnam
+        return zPxy, zPids, zTime, zQpnts, zQnam, idxQkeep, idxPkeep
     else:        
-        return pPcoor, pPids, pTime, pQpnts, pQnam ; # Nothing canceled!
+        return pPxy, pPids, pTime, pQpnts, pQnam, [], [] ; # Nothing canceled!
 
 
 
