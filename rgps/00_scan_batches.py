@@ -127,13 +127,12 @@ if __name__ == '__main__':
 
             # Exclude points if index has already been used or canceled:
             #lolo:idxOK  = np.setdiff1d( idxOK0, np.array(IDXtakenG)) ; # keep values of `idxOK0` that are not in `IDXtakenG`
-            idxOK = idxOK0;#lolo
-            
+            idxOK = idxOK0;#lolo            
             Nok    = len(idxOK)
             zIDsOK = vIDs0[idxOK] ; # the buoys IDs we work with
             if len(np.unique(zIDsOK)) != Nok:
                 print('ERROR: `unique(zIDsOK) != Nok` => `ExcludeMultiOccurences()` did not do its job :('); exit(0)
-            print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
+            #print('     => after "already in use" exclusions: '+str(Nok)+' pos. involving '+str(len(np.unique(zIDsOK)))+' different buoys!')
 
             if idebug>0:
                 # Sanity check: if any of the buoys found here do not belong to the whole-period reference buoy list `vIDsU0`:
@@ -206,7 +205,8 @@ if __name__ == '__main__':
                 #
                 print('  *** '+str(Nok-NBinBtch)+' buoys were canceled:')
                 print('         => '+str(iBcnl_CR)+' for not having a reasonable upcomming position in time!')
-                print('         => '+str(iBcnl_DC)+' for being excessively close to land!')
+                print('         => '+str(iBcnl_DC)+' for being excessively close to land! (d < '
+                      +str(int(cfg.nc_MinDistFromLand))+'km)')
 
 
                 if NBinBtch >= cfg.nc_min_buoys_in_batch:
