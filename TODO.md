@@ -1,5 +1,5 @@
 
-* review `ValidUpComingRecord()`, it's really removing a lot of buoys + weakly sensitive to `rc_dev_dt_Nmnl` !!!
+* check why NANs in qud generation logs about stat on quads!!!
 
 * review the use of `areaR` in `lTisOK()` !
 
