@@ -167,7 +167,7 @@ if __name__ == '__main__':
                         print('WOW! `jidx in IDXtakenG` !!!'); exit(0) ; #fixme
                     #if not jidx in IDXtakenG:
 
-                    nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), cfg.rc_dev_dt_Nmnl )
+                    nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, np.array(IDXtakenG), devdtNom=cfg.rc_dev_dt_Nmnl )
 
                     if nbRecOK==0:
                         IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
