@@ -1,6 +1,9 @@
 
 * check why NANs in qud generation logs about stat on quads!!!
 
+* double-check how are really canceled quads with inconsistent time across vertices, and in particular for quad at t=t0 and the one at t=t0+dtNom !!!
+  * the one at `t0+dtNom` should be checked, and the two canceled if any time fuckup at vertices !!!
+
 * review the use of `areaR` in `lTisOK()` !
 
 * review the `rscore` in `lQisOK()`
