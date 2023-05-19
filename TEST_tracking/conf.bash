@@ -6,7 +6,7 @@ SITRCK_DIR="${HOME}/DEV/sitrack"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
 NEMO_CONF="NANUK4"
-LIST_NEMO_EXP="BBM00 EVP00"
+LIST_NEMO_EXP="BBM2302 EVP2302"
 
 export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
@@ -35,13 +35,18 @@ case ${host} in
         #
         NJPAR=30
         #
+        # For maps:
+        MODE="xlose"
+        #LIST_NEMO_EXP="BBM2302"
+        LIST_NEMO_EXP="EVP2302"
+        #
         ;;
     *)
         echo "Unsupported host: ${host} !"
         exit
 esac
 
-export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps/nc"
+export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps/nc"
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
 
