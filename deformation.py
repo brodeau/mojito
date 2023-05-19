@@ -78,10 +78,10 @@ if __name__ == '__main__':
     k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
 
 
-    print('LOLO: min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
+    print(' *** Min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
 
     if not cfg.lc_accurate_time:
-        print('      => time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
+        print(' *** Time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
 
     # Some info from npz file name: #fixme: too much dependency on file name...
@@ -227,9 +227,11 @@ if __name__ == '__main__':
     ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
     del zshr2
 
-    if np.any( (ztot*cfg.rc_day2sec <= cfg.rc_tot_min) & (ztot*cfg.rc_day2sec >= cfg.rc_tot_max) ):
-        # Must get rid of extremely small deformation (required for RGPS, for the rest, `rc_div_min, rc_shr_min, rc_tot_min` are chosen ridiculously tiny!!!)
-        (idxKeep,) = np.where( (ztot*cfg.rc_day2sec > cfg.rc_tot_min) & (ztot*cfg.rc_day2sec < cfg.rc_tot_max) )
+    # Non-realistic / error extreme values in computed deformation:
+    ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
+    if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
+        # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
+        (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
         #
         nDn = len(idxKeep)
         if nDn < nD:
@@ -245,7 +247,8 @@ if __name__ == '__main__':
                 zX = zX[idxKeep,:]
                 zY = zY[idxKeep,:]
         del idxKeep
-
+    del ztotdm1
+    
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,
                          Xc=zXc, Yc=zYc, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )

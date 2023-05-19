@@ -4,7 +4,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/deformation.py"
+EXE="python3 -u ${MOJITO_DIR}/deformation.py"
 
 mkdir -p ./logs
 

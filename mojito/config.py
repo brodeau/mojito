@@ -95,7 +95,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
     # Extremas for figures only:
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
     # Extremas for deformations, in [day^-1]:
-    rc_div_max, rc_shr_max, rc_tot_max = 2., 2., 2.
+    rc_div_max, rc_shr_max, rc_tot_max = 1., 1., 1.
 
 
     if mode in ['rgps']:
@@ -113,7 +113,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
             # When lose, average scale is 10.33 km with a standard deviation of ~1km!
-            rc_Qarea_min, rc_Qarea_max = 10.08*10.08, 10.58*10.58 ; # 10.33 +- 0.25
+            #rc_Qarea_min, rc_Qarea_max = 10.08*10.08, 10.58*10.58 ; # 10.33 +- 0.25
+            rc_Qarea_min, rc_Qarea_max = 9.83*9.83, 10.83*10.83 ; # 10.33 +- 0.5
         elif mode=='xlose':
             rc_tolQuadA = 10
             rc_Qarea_min, rc_Qarea_max = 5*5, 15*15

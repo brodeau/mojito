@@ -9,7 +9,7 @@ NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 
 cxtraRES=""
 if [ "${LIST_RD_SS}" = "" ]; then
-    if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+    cxtraRES="_${RESKM}km"
 else
     cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
     cxtraRES="_${cr1}-${RESKM}km"
