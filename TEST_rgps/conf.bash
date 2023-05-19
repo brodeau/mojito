@@ -36,7 +36,7 @@ case ${host} in
         #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 75 78"
         #
         # 160km: in decreasing order of quality:
-        #DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="135 140 145 155 165 170 175" ;
+        #DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165" ; #ok!
         #
         # 320km:
         DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="250 260 270 280 290 295 300 305 310 315 320 325 330 335 340 350 360 370 380 390" ; # yeah!
