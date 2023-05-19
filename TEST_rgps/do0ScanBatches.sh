@@ -14,19 +14,27 @@ YEAR=`echo ${DATE1} | cut -c1-4`
 MMDD1=`echo ${DATE1} | cut -c5-8`
 MMDD2=`echo ${DATE2} | cut -c5-8`
 
-CMD="${EXE1} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE}"
 
-echo
-echo " *** About to launch:"; echo "     ${CMD}"; echo
-${CMD}
+
+fout="./npz/RGPS_batch_selection_dt${DT_BINS_H}h_${DATE1}_${DATE2}_mode-${MODE}.npz"
+
+if [ ! -f ${fout} ]; then
+
+    CMD="${EXE1} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE}"
+    echo
+    echo " *** About to launch:"; echo "     ${CMD}"; echo
+    ${CMD}
+    echo; echo
+    
+fi
 
 
 # Second script:
 
 if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-    CMD="${EXE2} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} $((DT_BINS_H*2/3))"
+    CMD="${EXE2} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE} $((DT_BINS_H*2/3))"
 else
-    CMD="${EXE2} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H}"
+    CMD="${EXE2} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE}"
 fi
 
 echo

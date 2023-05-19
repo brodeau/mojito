@@ -47,7 +47,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             # -i FSI3 -m FMMM -s FSDG [-k KREC] [-e DEND]
             CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc}" ; # with nc file for init seed...
             echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
-            exit;#lolo
+            #exit;#lolo
             clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
             ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
             ijob=$((ijob+1))
