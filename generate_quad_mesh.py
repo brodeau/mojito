@@ -329,7 +329,7 @@ if __name__ == '__main__':
     if corigin == 'RGPS':
         nbQo,nbPo = nbQ,nbP
         # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
-        xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _, _ = mjt.QuadVrtcTDev( xPxy1, vPids1, vTime1, xQpnts1, vQnam1,
+        xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _, _ = mjt.CancelQuadVrtcTDev( xPxy1, vPids1, vTime1, xQpnts1, vQnam1,
                                                                    cfg.rc_t_dev_cancel, mode=mode_ctl_vrtc )
         (nbP,_), (nbQ,_) = np.shape(xPxy1), np.shape(xQpnts1)
         print(' *** '+str(nbQo-nbQ)+' quads ('+str(nbPo-nbP)+' points) were supressed for inconsistent time across vertices! (t_dev<'
@@ -401,29 +401,56 @@ if __name__ == '__main__':
     # Recycling Quads found at 1st record (QUADS1):
     xPxy2, vTime2, xQpnts2, vPids2, vQnam2, vQIDs2  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS1,  iverbose=idebug )
 
-    # Here too, we must ensure that no quadrangle bears too much time inconsitency across vertices:
+    # Time to spot possible issues in these recycled quads at 2nd record and fix them...
+    ifix = 0 ; # if ifix>0 later, then QUADS1 has to be rebuilt!
+    
+    # Fix #1: possible that some quads that were ok at the first record have become twisted (with a negative area) now
+    # at the second record:
+    nbQo,nbPo = nbQ,nbP
+    zQcoor = np.array( [ xPxy2[xQpnts2[jQ,:],:] for jQ in range(nbQ) ])
+    zareas = mjt.QuadsAreas( zQcoor )
+    if np.any(zareas < 0.):
+        print('WARNING: some quads have become twisted (negative area) in the second record (recycling)!')
+        (idxFU,) = np.where(zareas < 0.)
+        nFU = len(idxFU)
+        print('       => '+str(nFU)+' of such quads...')
+        print('       => calling `CancelQuadNegArea()` !')
+        #
+        xPxy2, vPids2, vTime2, xQpnts2, vQnam2, idxQk, idxPk = mjt.CancelQuadNegArea( xPxy2, vPids2, vTime2, xQpnts2, vQnam2 )
+        #
+        (nbP,_), (nbQ,_) = np.shape(xPxy2), np.shape(xQpnts2)
+        if nbQo-nbQ != nFU:
+            print('ERROR: `nbQo-nbQ != nFU` (Areas) !'); exit(0)
+        #
+        print('    * '+str(nbQo-nbQ)+' quads in second records had to be supressed because of negative area!!!')
+        print('       => cancelling the same quads at 1st record as well!')
+        xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _ = mjt.KeepSpcfdQuads( idxQk, xPxy1, vPids1, vTime1, xQpnts1, vQnam1 )
+        ifix+=1
+    #
+    del zQcoor, zareas
+        
+    # Fix #2: here too, we must ensure that no quadrangle bears too much time inconsitency across vertices:
     if corigin == 'RGPS':
         nbQo,nbPo = nbQ,nbP
         # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
-        xPxy2, vPids2, vTime2, xQpnts2, vQnam2, idxQk, idxPk = mjt.QuadVrtcTDev( xPxy2, vPids2, vTime2, xQpnts2, vQnam2,
+        xPxy2, vPids2, vTime2, xQpnts2, vQnam2, idxQk, idxPk = mjt.CancelQuadVrtcTDev( xPxy2, vPids2, vTime2, xQpnts2, vQnam2,
                                                                    cfg.rc_t_dev_cancel, mode=mode_ctl_vrtc )
         (nbP,_), (nbQ,_) = np.shape(xPxy2), np.shape(xQpnts2)
-
         if nbQ<nbQo:
-            print(' *** '+str(nbQo-nbQ)+' quads in second records had to be supressed because of vertices time inconsistencies!!!')
-            # So we remove these bad points into quads of 1st records as well:
-            zQpnts1 = xQpnts1[idxQk,:]; #=> not enough because it's indices in the current n. of points => must be corrected later!
-            zPidx   = np.unique( zQpnts1 ); # =>indices !!!
-            for jP in range(nbP):
-                zQpnts1[np.where(zQpnts1==zPidx[jP])] = jP
-            # Update QUADS1:
-            QUADS1 = mjt.Quadrangle( xPxy1[idxPk,:], zQpnts1, vPids1[idxPk], vTime1[idxPk], vQnam1[idxQk],
-                                     date=cdats, origin=corigin, reskm_nmnl=reskm )
-            del zQpnts1, zPidx
+            print('    * '+str(nbQo-nbQ)+' quads in second records had to be supressed because of vertices time inconsistencies!!!')
+            print('       => cancelling the same quads at 1st record as well!')
+            xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _ = mjt.KeepSpcfdQuads( idxQk, xPxy1, vPids1, vTime1, xQpnts1, vQnam1 )
+            ifix+=1
+
 
     
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
-    QUADS2 = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
+    if ifix>0:
+        QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )        
+    QUADS2     = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
+
+    del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
+    del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2
 
     
     k1 = _QuadStat_( 0, QUADS1 )

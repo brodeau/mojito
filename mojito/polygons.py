@@ -462,3 +462,38 @@ def RecycleQuads( pXY, pTime, pIDs, pQDS,  iverbose=0 ):
 
     return zXY, zPtime, zQ4idx, zPids, zQnms, zQids
 
+
+
+def KeepSpcfdQuads( kidxQ2Keep, pPxy, pPids, pTime, pQpnts, pQnam ):
+    '''
+        Shrink the different arrays defining the set of quads by keeping only the quads based on
+        the indices of quads to retain: `kidxQ2Keep`
+    '''
+    (nQo,_) = np.shape(pQpnts)
+    (nQn,)  = np.shape(kidxQ2Keep)
+    if nQn>=nQo or nQn<1:
+        print('ERROR [KeepSpcfdQuads]: `nQn>=nQo or nQn<1`'); exit(0)
+    #
+    zQpnts = np.zeros((nQn,4),dtype=int)
+    zQnam  = np.zeros( nQn,   dtype='U32')
+    #
+    zQpnts[:,:] = pQpnts[kidxQ2Keep,:] ; #=> not enough because it's indices in the current n. of points => must be corrected later!
+    zQnam[:]    =  pQnam[kidxQ2Keep]
+    #
+    # Now arrays with `nP` as a dimension:
+    zPidx = np.unique( zQpnts ); # =>indices !!!
+    zPids = pPids[zPidx]
+    (nP,) = np.shape(zPids)
+    idxPkeep = np.zeros(nP, dtype=int)
+    zTime    = np.zeros(nP, dtype=int)
+    zPxy = np.zeros((nP,2))
+    jP = 0
+    for jid in zPids:
+        zQpnts[np.where(zQpnts==zPidx[jP])] = jP
+        ([idx],)     = np.where(pPids==jid)
+        idxPkeep[jP] = idx
+        zTime[jP]    =  pTime[idx]
+        zPxy[jP,:] = pPxy[idx,:]
+        jP+=1
+    #
+    return zPxy, zPids, zTime, zQpnts, zQnam, idxPkeep

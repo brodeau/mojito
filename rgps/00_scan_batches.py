@@ -60,7 +60,7 @@ if __name__ == '__main__':
     cdt1, cdt2, cdtS1, cdtS2 = mjt.DateString( cdate1, cdate2, returnShort=True )
 
     # File to save work in:
-    cf_npz_out = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'.npz'
+    cf_npz_out = './npz/RGPS_batch_selection_dt'+str(idtbin_h)+'h_'+cdtS1+'_'+cdtS2+'_mode-'+quality_mode+'.npz'
     if path.exists(cf_npz_out):
         print('\n *** File '+cf_npz_out+' is already here!!! I have nothing to do!')
         exit(0)

@@ -428,7 +428,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
 
     
     # Check if some "crossed" quads:
-    zQcoor = np.array( [ zPxy[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coordinates of the 4 vert. of each Quad! shape:(nQ,4,2) !
+    zQcoor = np.array( [ zPxy[zQpind[jQ,:],:] for jQ in range(NbQ) ]) ; #magic, the (x,y) coor. of the 4 vert. of Quads! shape:(nQ,4,2) !
     for jQ in range(NbQ):
         if IsQuadCrossed( zQcoor[jQ,:,:] ):
             print('WARNING [Tri2Quad()]: we have crossed fucked-up quadrangle!!! => name =',zQname[jQ])
@@ -463,7 +463,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
     zareas = QuadsAreas( zQcoor )
     if np.any(zareas<0.):        
         (idxFU,) = np.where(zareas<0.)
-        print('WARNING [Tri2Quad]: we have '+str(len(idxFU))+' quads with a negative area!')
+        print('ERROR [Tri2Quad]: we have '+str(len(idxFU))+' quads with a negative area!')
         print('    * quads with following indices:',idxFU)
         print('    * area(s) => ', zareas[idxFU])
         print('    * name(s) => ', zQname[idxFU])
@@ -473,7 +473,7 @@ def Tri2Quad( pTRIAs, anglRtri=(15.,115.), ratioD=0.5, anglR=(65.,120.), areaR=(
     return zPxy, zPIDs, zPtime, zQpind, zQname
 
 
-def QuadVrtcTDev( pPxy, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' ):
+def CancelQuadVrtcTDev( pPxy, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' ):
     '''
     #
     # Get rid of quadrangles that have excessively asynchronous vertices:
@@ -481,10 +481,11 @@ def QuadVrtcTDev( pPxy, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' 
     #
     '''
     from .util import StdDev
+    from .polygons import KeepSpcfdQuads
     #
     if not mode in ['stdev','maxdiff']:
-        print('ERROR [QuadVrtcTDev()]: mode "'+mode+'" is unknown!'); exit(0)
-    
+        print('ERROR [CancelQuadVrtcTDev()]: mode "'+mode+'" is unknown!'); exit(0)
+    #
     (nQ,_) = np.shape(pQpnts)
     zQVtime = np.array([ pTime[i] for i in pQpnts ]) ; # => same shape as `pQpnts` !
     idxQkeep = []
@@ -495,51 +496,58 @@ def QuadVrtcTDev( pPxy, pPids, pTime, pQpnts, pQnam, t_dev_cancel, mode='stdev' 
             zstd = StdDev( np.mean(z4t), z4t )
             if zstd < t_dev_cancel:
                 idxQkeep.append(jQ)
-            #if zstd>std_max:
-            #    std_max=zstd
-        #print(' * [QuadVrtcTDev()]: max point-time-position StDev found within a Quadrangles is =',round(std_max/60.,2),'min')
         #
         elif mode=='maxdiff':
             diff_max = np.max(z4t) - np.min(z4t)
             if diff_max < t_dev_cancel:
                 idxQkeep.append(jQ)
-
+    #
     idxQkeep = np.array( idxQkeep , dtype=int )
     nQn = len(idxQkeep)
     if nQn<=0:
-        print(' * [QuadVrtcTDev()]: 0 quads left!!! => exiting!!!'); exit(0)
+        print(' * [CancelQuadVrtcTDev()]: 0 quads left!!! => exiting!!!'); exit(0)
     if nQn<nQ:
         # Some Quads must be cancelled!!!!
-        print(' * [QuadVrtcTDev()]: we shall disregard '+str(nQ-nQn)+' quads /'+str(nQ)+
+        print(' * [CancelQuadVrtcTDev()]: we shall cancel '+str(nQ-nQn)+' quads /'+str(nQ)+
               ' because excessive time dev. accros the 4 vertices (>'+str(int(t_dev_cancel/60.))+' min)')
-        nQ = nQn
-        zQpnts = np.zeros((nQ,4),dtype=int)
-        zQnam  = np.zeros( nQ,   dtype='U32')
-        zQpnts[:,:] = pQpnts[idxQkeep,:] ; #=> not enough because it's indices in the current n. of points => must be corrected later!
-        zQnam[:]    =  pQnam[idxQkeep]
+        zPxy, zPids, zTime, zQpnts, zQnam, idxPkeep = KeepSpcfdQuads( idxQkeep, pPxy, pPids, pTime, pQpnts, pQnam )
         #
-        # Now arrays with `nP` as a dimension:        
-        zPidx = np.unique( zQpnts ); # =>indices !!!
-        zPids = pPids[zPidx]
-        (nP,) = np.shape(zPids)
-        idxPkeep = np.zeros(nP, dtype=int)
-        zTime  = np.zeros( nP   , dtype=int)
-        zPxy = np.zeros((nP,2))
-        jP = 0
-        for jid in zPids:
-            zQpnts[np.where(zQpnts==zPidx[jP])] = jP
-            ([idx],)     = np.where(pPids==jid)
-            idxPkeep[jP] = idx
-            zTime[jP]    =  pTime[idx]
-            zPxy[jP,:] = pPxy[idx,:]
-            jP+=1
         return zPxy, zPids, zTime, zQpnts, zQnam, idxQkeep, idxPkeep
     else:        
         return pPxy, pPids, pTime, pQpnts, pQnam, [], [] ; # Nothing canceled!
 
 
 
+def CancelQuadNegArea( pPxy, pPids, pTime, pQpnts, pQnam ):
+    '''
+    #
+    # Get rid of quadrangles that have a negative area
+    # => we should pass the list of problematic jQs and treat only them!!! #fixme!
+    #
+    '''
+    from .polygons import KeepSpcfdQuads
+    #
+    (nQ,_) = np.shape(pQpnts)
+    zQcoor = np.array( [pPxy[pQpnts[jQ,:],:] for jQ in range(nQ) ])    
+    idxQkeep = []
+    for jQ in range(nQ):
+        zzA = AreaOfQuadrangle( zQcoor[jQ,:,0], zQcoor[jQ,:,1] )
+        if zzA>0.:
+            idxQkeep.append(jQ)
+    idxQkeep = np.array( idxQkeep , dtype=int )
+    nQn = len(idxQkeep)
+    if nQn<=0:
+        print(' * [CancelQuadNegArea()]: 0 quads left!!! => exiting!!!'); exit(0)
+    if nQn<nQ:
+        # Some Quads must be cancelled!!!!
+        print(' * [CancelQuadNegArea()]: we shall cancel '+str(nQ-nQn)+' quads /'+str(nQ)+' because of negative area!')
+        zPxy, zPids, zTime, zQpnts, zQnam, idxPkeep = KeepSpcfdQuads( idxQkeep, pPxy, pPids, pTime, pQpnts, pQnam )
+        return zPxy, zPids, zTime, zQpnts, zQnam, idxQkeep, idxPkeep
+    else:        
+        return pPxy, pPids, pTime, pQpnts, pQnam, [], [] ; # Nothing canceled!
 
+
+    
 def PDVfromPos( pdt, pXY1, pXY2, pA1, pA2,  xtime1=[], xtime2=[], iverbose=0 ):
     '''
         Computes spatial (x,y) partial derivatives of the velocity vector.

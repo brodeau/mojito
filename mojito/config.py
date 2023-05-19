@@ -36,21 +36,19 @@ def initialize( mode='model' ):
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
     nc_min_cnsctv = 2          ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
 
-    rc_dev_dt_Nmnl = 6*3600    ; # RGPS: maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
+    rc_dev_dt_Nmnl = 6*3600    ; # RGPS: max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
     
     lc_drop_overlap = False ; # Because this is done in Quad generation...
-    rc_Dtol_km = 6. # tolerance distance in km below which we decide to cancel one of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
+    rc_Dtol_km = 6. # tolerance distance in km below which we cancel 1 of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
     #               # Should be same as `rc_d_ss` for 10km as in "updateConfig4Scale()"
-    #
+    
+    lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
+
     # Selection of appropriate quadrangles:
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
-    #
+    
     if mode in ['thorough','model']:
-        #rc_Qang_min =  50  ; # minimum angle tolerable in a quadrangle [degree]
-        #rc_Qang_max = 130 
-        #rc_dRatio_max = 0.3 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-        #
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
@@ -59,12 +57,10 @@ def initialize( mode='model' ):
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='xlose':
-        rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 150.  ; # maximum angle tolerable in a quadrangle [degree]
+        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
         rc_dRatio_max = 2. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-        rc_dev_dt_Nmnl = 24*3600    ; # maximum allowed deviation from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
-
-    lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
+        rc_dev_dt_Nmnl = 24*3600 ; # max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
 
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
@@ -73,7 +69,6 @@ def initialize( mode='model' ):
     fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
 
     return 0
-
 
 
 
@@ -117,7 +112,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
             #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
-            #rc_d_ss =  5.
             # When lose, average scale is 10.33 km with a standard deviation of ~1km!
             rc_Qarea_min, rc_Qarea_max = 10.08*10.08, 10.58*10.58 ; # 10.33 +- 0.25
         elif mode=='xlose':
