@@ -14,11 +14,15 @@ EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
 cxtraRES=""
 if [ "${LIST_RD_SS}" = "" ]; then
-    if [ ${RESKM} -gt 10 ]; then cxtraRES="_${RESKM}km"; fi
+    cxtraRES="_${RESKM}km"
 else
     cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
     cxtraRES="_${cr1}-${RESKM}km"
 fi
+
+
+echo " RESKM = ${RESKM}"
+echo " cxtraRES = ${cxtraRES}"
 
 list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
 
@@ -40,8 +44,10 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     for fnc in ${list_seed_nc}; do
         
         if [ "${LIST_RD_SS}" = "" ]; then
-            CMD="${EXE} ${FSI3IN} ${FNMM} ${fnc}" ; # with nc file for init seed...
+            # -i FSI3 -m FMMM -s FSDG [-k KREC] [-e DEND]
+            CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc}" ; # with nc file for init seed...
             echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
+            exit;#lolo
             clog=`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`
             ${CMD} 1>./logs/out_${clog}.out 2>./logs/err_${clog}.err &
             ijob=$((ijob+1))

@@ -11,7 +11,6 @@ NJPAR=4 ; # number of jobs we can launch in //
 LIST_RD_SS=""
 LIST_MINDC=""
 RESKM=10
-
 MODE='rgps'
 
 host=`hostname | cut -d '.' -f2`
@@ -47,7 +46,7 @@ case ${host} in
         #
         # 640km:
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="585 590 595 600 605 610 615 620 625 630 635 640 645 650 655 660 665 670 675 680 685 690 695 700"
-        ##DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="585 590 595 600 605 610 613 615 617 620 623 625 627 630 632 633 635 637 640 643 645 647 650 655 660 665 670 675 680 685 690 695 700 705"
+        #
         #
         ;;        
     "merlat")
