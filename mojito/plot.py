@@ -1319,8 +1319,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     # Same figure With cloud of points *
     # **********************************
     cfig = str.replace(cfig,'total','mean')
-    #ylog_min, ylog_max = 5.e-3,2.e-2
-    ylog_min, ylog_max = 3.e-5,1.
+    ylog_min, ylog_max = 0.5e-6,2. ; # Shows all points!
+    #ylog_min, ylog_max = 3.e-5,1.
     fig = plt.figure( num = 1, figsize=(8,12), dpi=None )
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
 
