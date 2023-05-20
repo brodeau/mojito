@@ -144,10 +144,10 @@ if __name__ == '__main__':
             elif corigin=='RGPS' and reskm>150:
                 from random import random
                 zrnd = random() ; # Between 0 and 1
-                rDmin = 150. + rd_ss/2.*zrnd
+                rDmin = min( 100. + rd_ss/5.*zrnd , 200. )
             #
             if rDmin>101.:
-                print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> coarsification with `rDmin` =',rDmin,'km !!!' )
+                print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> MaskCoastal() with `rDmin` =',rDmin,'km !!!' )
                 
                 for jr in range(Nrec):
                     print('    * Record #'+str(jr)+':')
