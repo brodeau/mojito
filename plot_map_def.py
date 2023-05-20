@@ -41,6 +41,8 @@ if __name__ == '__main__':
         nP    = data['Npoints']
         Xc    = data['Xc']
         Yc    = data['Yc']
+        X4    = data['X4']
+        Y4    = data['Y4']
         corig = str(data['origin'])
         reskm = int(data['reskm_nmnl'])
     print(' * date =', e2c(itime))
@@ -108,7 +110,7 @@ if __name__ == '__main__':
 
     nmproj=NameArcticProj
     # Filled quads projected on the Arctic map:
-    mjt.ShowDefQuadGeoArctic( Xc, Yc, cfg.rc_day2sec*FD, cfig=fdir+'/map_Divergence',
+    mjt.ShowDefQuadGeoArctic( X4, Y4, cfg.rc_day2sec*FD, cfig=fdir+'/map_Divergence.'+iffrmt,
                               nmproj=NameArcticProj, cwhat='div',
                               pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=1,
                               rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
