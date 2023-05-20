@@ -107,7 +107,7 @@ if __name__ == '__main__':
         
     elif cv_in == 'shear':
         cwhat = 'shr'
-        mjt.ShowDefQuadGeoArctic( X4, Y4, cfg.rc_day2sec*FD, cfig=fdir+'/map_'+cv_in+'.'+iffrmt,
+        mjt.ShowDefQuadGeoArctic( X4, Y4, cfg.rc_day2sec*FD, cfig=fdir+'/map_'+cv_in+'_'+corig+'.'+iffrmt,
                                   nmproj=NameArcticProj, cwhat=cwhat,
                                   pFmin=0., pFmax=cfg.rc_shr_max_fig, zoom=1,
                                   rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
