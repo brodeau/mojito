@@ -32,8 +32,6 @@ if __name__ == '__main__':
     if not cv_in in ['divergence','shear','total']:
         print('ERROR: wrong deformation variable:', cv_in, '!!!'); exit(0)
 
-
-        
     mjt.chck4f(cf_in)
     with np.load(cf_in) as data:
         FD    = data[cv_in]
@@ -90,14 +88,6 @@ if __name__ == '__main__':
         
 
 
-
-    if cv_in == 'divergence':
-        cwhat = 'div'
-    elif cv_in == 'shear':
-        cwhat = 'shr'
-    elif cv_in == 'total':
-        cwhat = 'tot'
-
         
     fdir = './figs/maps'
     if not path.exists(fdir): makedirs( fdir, exist_ok=True )
@@ -109,12 +99,28 @@ if __name__ == '__main__':
     cresinfo = '('+str(reskm)+' km)'
 
     nmproj=NameArcticProj
+
+
+
+    if cv_in == 'divergence':
+        cwhat = 'div'
+        
+    elif cv_in == 'shear':
+        cwhat = 'shr'
+        mjt.ShowDefQuadGeoArctic( X4, Y4, cfg.rc_day2sec*FD, cfig=fdir+'/map_'+cv_in+'.'+iffrmt,
+                                  nmproj=NameArcticProj, cwhat=cwhat,
+                                  pFmin=0., pFmax=cfg.rc_shr_max_fig, zoom=1,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corig+': '+cv_in+' '+cresinfo, idate=itime )
+        
+    elif cv_in == 'total':
+        cwhat = 'tot'
+
+
+
+
+    
     # Filled quads projected on the Arctic map:
-    mjt.ShowDefQuadGeoArctic( X4, Y4, cfg.rc_day2sec*FD, cfig=fdir+'/map_Divergence.'+iffrmt,
-                              nmproj=NameArcticProj, cwhat='div',
-                              pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=1,
-                              rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                              title=corig+': divergence '+cresinfo, idate=itime )
 
 
     exit(0)
