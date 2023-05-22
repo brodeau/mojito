@@ -24,6 +24,7 @@ iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 2
 
+l_intermediate_randomization_big_scales = True
 
 if __name__ == '__main__':
 
@@ -144,7 +145,8 @@ if __name__ == '__main__':
             elif corigin=='RGPS' and reskm>300:
                 from random import random
                 zrnd = 2*random() - 1 ; # Between -1 and 1
-                rDmin =  150. - 50.*zrnd                    
+                rDmin =  125. - 25.*zrnd                    
+            #
             #
             if rDmin>101.:
                 print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> MaskCoastal() with `rDmin` =',rDmin,'km !!!' )
@@ -175,9 +177,24 @@ if __name__ == '__main__':
         cdate  = str.replace( mjt.epoch2clock(vdate[jr], precision='D'), '-', '')
     
         print('    * which is original record '+str(jr)+' => date =',cdats)
-    
-        print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
-        NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[:,:,jr] )
+
+
+        if corigin=='RGPS' and reskm>300 and l_intermediate_randomization_big_scales:
+            #
+            # We do it in a 2-stage fashion introcuding noise
+            # A/ to something betwee 8 and 30 km:
+            zrnd = 2*random() - 1 ; # Between -1 and +1
+            rd_int = 0.5*( (8. + 30.) - (30. - 8.)*zrnd )
+            print('LOLO: intermediate coarsening radius =',rd_int,'km')
+            NbPss0, zXYss0, idxKeep0 = mjt.SubSampCloud( rd_int, zXY[:,:,jr] )
+            print('LOLO: Now, final coarsening radius =',rd_ss,'km')
+            NbPss, zXYss, idxKeep2 = mjt.SubSampCloud( rd_ss, zXYss0[:,:] )
+            idxKeep = idxKeep0[idxKeep2]
+            del NbPss0, zXYss0, idxKeep0, idxKeep2
+            #
+        else:
+            print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
+            NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[:,:,jr] )
     
         zYkm = np.zeros( (Nrec,NbPss) )
         zXkm = np.zeros( (Nrec,NbPss) )
