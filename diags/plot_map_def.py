@@ -135,6 +135,14 @@ if __name__ == '__main__':
                                       pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=1,
                                       rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                       title=corig+': '+cv_in+' '+cresinfo, idate=itime )
+        elif l3files:
+            mjt.ShowMultiDefQuadGeoArctic( X4p, Y4p, FD, X4p2, Y4p2, FD2, X4p3, Y4p3, FD3,
+                                           cfig=fdir+'/map_'+cv_in+'_'+corig+'.'+iffrmt,
+                                           nmproj=NameArcticProj, cwhat=cwhat,
+                                           pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_tot_max_fig,
+                                           rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                           title1=corig+': '+cv_in+' '+cresinfo, idate=itime,
+                                           title2=corig2+': '+cv_in+' '+cresinfo, title3=corig3+': '+cv_in+' '+cresinfo )
         else:
             print('Fixme!')
         
@@ -146,6 +154,15 @@ if __name__ == '__main__':
                                       pFmin=0., pFmax=cfg.rc_shr_max_fig, zoom=1,
                                       rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                       title=corig+': '+cv_in+' '+cresinfo, idate=itime )
+
+        elif l3files:
+            mjt.ShowMultiDefQuadGeoArctic( X4p, Y4p, FD, X4p2, Y4p2, FD2, X4p3, Y4p3, FD3,
+                                           cfig=fdir+'/map_'+cv_in+'_'+corig+'.'+iffrmt,
+                                           nmproj=NameArcticProj, cwhat=cwhat,
+                                           pFmin=0., pFmax=cfg.rc_tot_max_fig,
+                                           rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                           title1=corig+': '+cv_in+' '+cresinfo, idate=itime,
+                                           title2=corig2+': '+cv_in+' '+cresinfo, title3=corig3+': '+cv_in+' '+cresinfo )
         else:
             print('Fixme!')
         
@@ -158,7 +175,6 @@ if __name__ == '__main__':
                                       rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                       title=corig+': '+cv_in+' '+cresinfo, idate=itime )
         elif l3files:
-            #mjt.ShowMultiDefQuadGeoArctic( X4p, Y4p, FD[::10], X4p2, Y4p2, FD2[::10], X4p3, Y4p3, FD3[::10],
             mjt.ShowMultiDefQuadGeoArctic( X4p, Y4p, FD, X4p2, Y4p2, FD2, X4p3, Y4p3, FD3,
                                            cfig=fdir+'/map_'+cv_in+'_'+corig+'.'+iffrmt,
                                            nmproj=NameArcticProj, cwhat=cwhat,

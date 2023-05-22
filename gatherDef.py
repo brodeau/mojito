@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
     print('      => files to gather into a single one:',listnpz,'\n')
     
-    kBatchName = np.zeros(nbFiles, dtype='U4')
+    kBatchName  = np.zeros(nbFiles, dtype='U4')
     kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
     kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file    
     
@@ -107,6 +107,7 @@ if __name__ == '__main__':
     ZDiv = np.zeros(nP)
     Ztot = np.zeros(nP)
     ZAqd = np.zeros(nP)
+    Zdat = np.zeros(nP,dtype=int)
     
     jP = 0 ; # Counter from 0 to nP-1
     kf = 0 ; # Counter for files, 0 to nbFiles-1
@@ -117,11 +118,12 @@ if __name__ == '__main__':
             zshr  =      data['shear']
             ztot  =      data['total']
             za    =      data['quadArea']
-        #
+        #kf
         ZDiv[jP:jPe] = cfg.rc_day2sec*zdiv ; # day^-1
         Zshr[jP:jPe] = cfg.rc_day2sec*zshr ; # day^-1
         Ztot[jP:jPe] = cfg.rc_day2sec*ztot ; # day^-1
         ZAqd[jP:jPe] =     za     ; # km^2
+        Zdat[jP:jPe] =  kiDate[kf]
         #
         jP = jPe
         kf = kf+1
@@ -135,18 +137,19 @@ if __name__ == '__main__':
     # Save it for the scaling and PDFs to come ...
     print(' *** Saving: '+cd_in+'/def_SHR_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
+                         Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
-                         Np=nP, xshr=Zshr, quadArea=ZAqd )
+                         Np=nP, xshr=Zshr, quadArea=ZAqd, dates_point=Zdat )
 
     print(' *** Saving: '+cd_in+'/def_DIV_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
+                         Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
-                         Np=nP, xdiv=ZDiv, quadArea=ZAqd )
+                         Np=nP, xdiv=ZDiv, quadArea=ZAqd, dates_point=Zdat )
 
     print(' *** Saving: '+cd_in+'/def_TOT_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_TOT_'+cfroot+'.npz', name='shear', origin=corigin,
+                         Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, period=cperiod, dtbin=dtbin, Nbatch=nbFiles,
-                         Np=nP, xtot=Ztot, quadArea=ZAqd )
+                         Np=nP, xtot=Ztot, quadArea=ZAqd, dates_point=Zdat )
 
-
-    
