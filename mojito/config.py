@@ -188,8 +188,9 @@ def updateConfig4Scale( res_km,  mode='model' ):
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
         elif mode=='rgps':            
-            rc_Qarea_min, rc_Qarea_max = 608.*608., 672.*672.
-            #rc_div_max, rc_shr_max, rc_tot_max = 4.e-2, 4.e-2, 4.e-2 ; # day^-1 ; => supresses irrealistically large values
+            #rc_Qarea_min, rc_Qarea_max = 608.*608., 672.*672.
+            rc_Qarea_min, rc_Qarea_max = 590.*590., 690.*690
+            rc_div_max, rc_shr_max, rc_tot_max = 3.e-2, 3.e-2, 3.e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
         #
@@ -226,8 +227,10 @@ def updateConfig4Scale( res_km,  mode='model' ):
             #rc_t_dev_cancel = 6*3600
             #rc_t_dev_cancel = 9*3600
             #rc_t_dev_cancel = 12*3600
-            rc_t_dev_cancel = 24*3600 ; # ok
-        #
+            #rc_t_dev_cancel = 24*3600 ; # ok
+            #rc_t_dev_cancel = 32*3600 ; # lolo?
+            rc_t_dev_cancel = 36*3600 ; #lolo?
+            #
     if rc_t_dev_cancel > 60:
         print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 

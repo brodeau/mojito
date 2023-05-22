@@ -28,9 +28,7 @@ if [ ! -f ${fout} ]; then
     
 fi
 
-
 # Second script:
-
 if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
     CMD="${EXE2} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE} $((DT_BINS_H*2/3))"
 else
