@@ -59,7 +59,8 @@ def initialize( mode='model' ):
     elif mode=='xlose':
         rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
-        rc_dRatio_max = 2. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_dRatio_max = 0.75 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        #rc_dRatio_max = 2. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
         rc_dev_dt_Nmnl = 24*3600 ; # max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
 
     data_dir = environ.get('DATA_DIR')
@@ -116,7 +117,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
             rc_Qarea_min, rc_Qarea_max = 9.83*9.83, 10.83*10.83 ; # 10.33 +- 0.5
         elif mode=='xlose':
             rc_tolQuadA = 10
-            rc_Qarea_min, rc_Qarea_max = 5*5, 15*15
+            rc_Qarea_min, rc_Qarea_max = 7*7, 13*13
         else:
             rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
         #
