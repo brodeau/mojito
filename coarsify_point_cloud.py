@@ -185,9 +185,9 @@ if __name__ == '__main__':
             # A/ to something betwee 8 and 30 km:
             zrnd = 2*random() - 1 ; # Between -1 and +1
             rd_int = 0.5*( (8. + 30.) - (30. - 8.)*zrnd )
-            print('LOLO: intermediate coarsening radius =',rd_int,'km')
+            print(' ### Intermediate coarsening radius =',rd_int,'km')
             NbPss0, zXYss0, idxKeep0 = mjt.SubSampCloud( rd_int, zXY[:,:,jr] )
-            print('LOLO: Now, final coarsening radius =',rd_ss,'km')
+            print(' ### Now, final/post-intermediate coarsening radius =',rd_ss,'km')
             NbPss, zXYss, idxKeep2 = mjt.SubSampCloud( rd_ss, zXYss0[:,:] )
             idxKeep = idxKeep0[idxKeep2]
             del NbPss0, zXYss0, idxKeep0, idxKeep2
