@@ -141,10 +141,10 @@ if __name__ == '__main__':
         if ldss:
             if   ldtc:
                 rDmin = rd_tc
-            elif corigin=='RGPS' and reskm>150:
+            elif corigin=='RGPS' and reskm>300:
                 from random import random
-                zrnd = random() ; # Between 0 and 1
-                rDmin = min( 100. + rd_ss/5.*zrnd , 200. )
+                zrnd = 2*random() - 1 ; # Between -1 and 1
+                rDmin =  150. - 50.*zrnd                    
             #
             if rDmin>101.:
                 print( ' *** COARSIFICATION: reskm=',reskm,'=> rd_ss=',rd_ss,'=> MaskCoastal() with `rDmin` =',rDmin,'km !!!' )
