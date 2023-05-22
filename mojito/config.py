@@ -107,7 +107,7 @@ def updateConfig4Scale( res_km,  mode='model' ):
     if   irk==10:
         rc_d_ss = 6.
         rc_tolQuadA = 2
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  0.1, 0.05, 0.05
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  0.1, 0.1, 0.1
         if mode in ['thorough','model']:            
             #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
