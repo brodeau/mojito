@@ -6,8 +6,9 @@ from sys import argv, exit
 from os import path, mkdir
 #from glob import glob
 import numpy as np
-#from re import split
+from re import split
 import mojito   as mjt
+from mojito.util import epoch2clock as e2c
 
 idebug=1
 iplot=1
@@ -103,58 +104,41 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 if __name__ == '__main__':
 
     if not len(argv) in [2]:
-        print('Usage: '+argv[0]+' <file_divergence.npz>')
+        print('Usage: '+argv[0]+' <file_deformation_gatheres.npz>')
         exit(0)
 
-    cf_div_in = argv[1]
-    cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
-    cf_tot_in = str.replace( cf_div_in, 'DIV', 'TOT' )
+    cf_in = argv[1]
 
-    cd_in = path.dirname(cf_div_in)
+    # What fields are we dealing with based on filename:
+    cv_in = split( '_', path.basename(cf_in) )[1]
+    print(cv_in)
+
+    if cv_in == 'DIV':
+        cfield = 'divergence'
+    elif cv_in == 'SHR':
+        cfield = 'shear'
+    elif cv_in == 'TOT':
+        cfield = 'total'
+    else:
+        print('ERROR: wrong `cv_in` !!! ', cv_in); exit(0)
+
     
-    with np.load(cf_div_in) as data:
-        dtbin1 = data['dtbin']
-        reskm1 = data['reskm_nmnl']
-        corig1 = str(data['origin'])        
-        cperd1 = str(data['period'])
-        nbF1 = int(data['Nbatch'])
+    cd_in = path.dirname(cf_in)
+    
+    with np.load(cf_in) as data:
+        dtbin = data['dtbin']
+        reskm = data['reskm_nmnl']
+        corigin = str(data['origin'])        
+        cperiod = str(data['period'])
+        nbF = int(data['Nbatch'])
+        vdates_batch = data['dates_batch']
+        Zdat = data['dates_point']
         ZDiv = data['xdiv']
-
-    with np.load(cf_shr_in) as data:
-        dtbin2 = data['dtbin']
-        reskm2 = data['reskm_nmnl']
-        corig2 = str(data['origin'])
-        cperd2 = str(data['period'])        
-        nbF2   = int(data['Nbatch'])
-        Zshr   =     data['xshr']
-
-    with np.load(cf_tot_in) as data:
-        dtbin3 = data['dtbin']
-        reskm3 = data['reskm_nmnl']
-        corig3 = str(data['origin'])
-        cperd3 = str(data['period'])        
-        nbF3   = int(data['Nbatch'])
-        Ztot   =     data['xtot']
-
         
-    # Control agreement:
-    if dtbin1!=dtbin2 or dtbin1!=dtbin3:
-        print('ERROR: `dtbin1!=dtbin2` !!!'); exit(0)
-    if reskm1!=reskm2 or reskm1!=reskm3:
-        print('ERROR: `reskm1!=reskm2` !!!'); exit(0)
-    if corig1!=corig2 or corig1!=corig3:
-        print('ERROR: `corig1!=corig2` !!!'); exit(0)
-    if cperd1!=cperd2 or cperd1!=cperd3:
-        print('ERROR: `cperd1!=cperd2` !!!'); exit(0)
-    if nbF1!=nbF2 or nbF1!=nbF3:
-        print('ERROR: `nbF1!=nbF2` !!!'); exit(0)
 
-    dtbin  = dtbin1
-    cdtbin = str(dtbin1)
-    reskm  = reskm1
-    creskm = str(reskm1)
-    corigin = corig1
-    cperiod = cperd1
+    cdtbin = str(dtbin)
+    reskm  = reskm
+    creskm = str(reskm)
 
     # For large scales, we must increase the size of bins:
     #zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
@@ -185,7 +169,28 @@ if __name__ == '__main__':
             
     #print(ZDiv)
 
-    
+
+    print('\n *** All availabled dates for deformation:')
+    for jd in vdates_batch:
+        print('       - '+e2c(jd))
+
+        (idxDate,) = np.where( Zdat == jd )
+        print('         => '+str(len(idxDate))+' '+cv_in+' deformation for this date....')
+        
+        #zdef = 
+
+
+
+
+
+        
+        print('')
+
+
+
+
+
+    exit(0)
     cxtra = ''
     if l_cst_bins:
         # For the divergence
