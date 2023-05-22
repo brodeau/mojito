@@ -57,8 +57,10 @@ def initialize( mode='model' ):
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode=='xlose':
-        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
+        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 140        
+        #rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
+        #rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
         rc_dRatio_max = 0.75 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
         #rc_dRatio_max = 2. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
         rc_dev_dt_Nmnl = 24*3600 ; # max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]

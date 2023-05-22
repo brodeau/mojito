@@ -147,8 +147,8 @@ if __name__ == '__main__':
     #print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
     print('\n *** Max time deviation accepted across vertices of a Quad: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
     print('\n *** Will only retain quadrangles with an area comprised between '
-          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(zA_ideal)+'km^2 \n')
-
+          +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(zA_ideal)+'km^2')
+    print('       + min and max angles, and ratio dev:', cfg.rc_Qang_min, cfg.rc_Qang_max, cfg.rc_dRatio_max)
     
     # We need a string to name the output files:
     kdt = -4

@@ -10,7 +10,8 @@ elif [ "$1" = "2" ]; then
     rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/*_SELECTION_RGPS_S*.err
 
 elif [ "$1" = "3" ]; then
-    rm -f figs/deformation/* npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
+    rm -rf figs/deformation/*
+    rm -f npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
     
 elif [ "$1" = "4" ]; then
     rm -f npz/def_*
