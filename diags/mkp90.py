@@ -115,10 +115,13 @@ if __name__ == '__main__':
 
     if cv_in == 'DIV':
         cfield = 'divergence'
+        cvar   = 'xdiv'
     elif cv_in == 'SHR':
         cfield = 'shear'
+        cvar   = 'xshr'
     elif cv_in == 'TOT':
         cfield = 'total'
+        cvar   = 'xtot'
     else:
         print('ERROR: wrong `cv_in` !!! ', cv_in); exit(0)
 
@@ -133,7 +136,7 @@ if __name__ == '__main__':
         nbF = int(data['Nbatch'])
         vdates_batch = data['dates_batch']
         Zdat = data['dates_point']
-        ZDiv = data['xdiv']
+        ZDEF = data[cvar]
         
 
     cdtbin = str(dtbin)
@@ -167,7 +170,7 @@ if __name__ == '__main__':
     #if reskm >= 35.:
     #    print('\n * Increased the width of bins and exp growth!!! Because large scale! wVbin_min, rfexp_bin =',wVbin_min, rfexp_bin)
             
-    #print(ZDiv)
+    #print(ZDEF)
 
 
     print('\n *** All availabled dates for deformation:')
@@ -177,11 +180,15 @@ if __name__ == '__main__':
         (idxDate,) = np.where( Zdat == jd )
         print('         => '+str(len(idxDate))+' '+cv_in+' deformation for this date....')
         
-        #zdef = 
+        ztmp = ZDEF[idxDate]
+        #xdef = np.sort(ztmp[::-1])
+        xdef = np.sort(ztmp)
 
+        
+        for zd in xdef:
+            print(zd)
 
-
-
+        exit(0)
 
         
         print('')
@@ -212,15 +219,15 @@ if __name__ == '__main__':
 
 
     # Signed divergence:
-    (idxN,) = np.where(ZDiv<-zmin_div)
+    (idxN,) = np.where(ZDEF<-zmin_div)
     nPn  = len(idxN)
     Zcnv = np.zeros(nPn)
-    Zcnv[:] = - ZDiv[idxN] ; # We want it to be positive for the graph...
+    Zcnv[:] = - ZDEF[idxN] ; # We want it to be positive for the graph...
     
-    (idxP,) = np.where(ZDiv> zmin_div)
+    (idxP,) = np.where(ZDEF> zmin_div)
     nPp  = len(idxP)
     Zdiv = np.zeros(nPp)
-    Zdiv[:] = ZDiv[idxP]
+    Zdiv[:] = ZDEF[idxP]
 
 
     if l_add_gaussian:
@@ -229,7 +236,7 @@ if __name__ == '__main__':
         nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,    Zshr,  cwhat='shear',      iverbose=idebug )
 
     nPs, PDF_tot = computePDF( xbin_bounds_tot, xbin_center_tot,        Ztot,  cwhat='total',       iverbose=idebug )    
-    nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
+    nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDEF), cwhat='Divergence',  iverbose=idebug )
     nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
     nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
 
