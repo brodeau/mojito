@@ -6,7 +6,7 @@ str_exps=`echo ${EXPS} | sed -e s/','/'_'/g`
 
 fout="scaling_TotDefRate_${str_exps}.pdf"
 
-EXE="${HOME}/DEV/mojito/mkscaling.py"
+EXE="${HOME}/DEV/mojito/diags/mkscaling.py"
 
 #CMD1="inkscape --export-text-to-path --export-type=pdf"
 

@@ -3,7 +3,7 @@
 . ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/mkpdfs.py"
+EXE="${MOJITO_DIR}/diags/mkpdfs.py"
 
 
 for NEMO_EXP in ${LIST_NEMO_EXP}; do

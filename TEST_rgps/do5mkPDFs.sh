@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${MOJITO_DIR}/mkpdfs.py"
+EXE="${MOJITO_DIR}/diags/mkpdfs.py"
 
 
 
