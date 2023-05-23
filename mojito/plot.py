@@ -1400,7 +1400,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 
-def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3,
+def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3, zoom=1,
                                cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div',
                                pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title1=None, unit=r'days$^{-1}$', idate=None,
                                title2=None, title3=None ):
@@ -1429,7 +1429,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
         print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
 
-    kk = _initStyle_(fntzoom=1.5)
+    kk = _initStyle_(fntzoom=min(1.5,zoom))
 
     zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
     zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )
@@ -1456,7 +1456,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     LTtl = (0.5,1.02)
     
-    fig = plt.figure(num=1, figsize=(18,7), dpi=None, facecolor='w', edgecolor='k')
+    fig = plt.figure(num=1, figsize=(zoom*18,zoom*7), dpi=None, facecolor='w', edgecolor='k')
 
     zyf = 0.11
     
