@@ -9,9 +9,14 @@ import numpy as np
 from re import split
 import mojito   as mjt
 from mojito.util import epoch2clock as e2c
+#
+from math import floor
 
 idebug=1
 iplot=1
+izoom=3
+
+Nmin = 500 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
 #l_cst_bins = False ; rfexp_bin = 0.3
 l_cst_bins = False ; rfexp_bin = 0.25
@@ -143,6 +148,15 @@ if __name__ == '__main__':
     reskm  = reskm
     creskm = str(reskm)
 
+
+
+    if np.shape(vdates_batch) != (nbF,):
+        print('ERROR: problem #0!'); exit(0)
+
+
+    VF90 = np.zeros( nbF )
+    imsk = np.zeros( nbF, dtype='i1' )
+    
     # For large scales, we must increase the size of bins:
     #zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
     #if   reskm >= 15. and reskm < 35.:
@@ -174,24 +188,50 @@ if __name__ == '__main__':
 
 
     print('\n *** All availabled dates for deformation:')
+
+    ic = 0
     for jd in vdates_batch:
         print('       - '+e2c(jd))
 
         (idxDate,) = np.where( Zdat == jd )
-        print('         => '+str(len(idxDate))+' '+cv_in+' deformation for this date....')
+        nV = len(idxDate)
+        print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
         
         ztmp = ZDEF[idxDate]
         #xdef = np.sort(ztmp[::-1])
         xdef = np.sort(ztmp)
 
-        
-        for zd in xdef:
-            print(zd)
+        if xdef.shape != (nV,):
+            print('ERROR: problem #1'); exit(0)
+                        
+        #for zd in xdef:
+        #    print(zd)
 
-        exit(0)
+
+        ri90 = 0.9*float(nV)
+        #print(" ri90 = ", ri90, '/', nV)
+        i90 = int( floor( ri90 ) )
+        #print(" i90 = ", i90, '/', nV)
+        rw = ri90 - float(i90)
+        #print(" rw = ", rw)
+
+        if i90+1<nV-1:
+            # otherwize we are too close to the end of the series, this probably a bad batch!
+            v90 = (1.-rw)*xdef[i90] + rw*xdef[i90+1]
+            #print(" v90 =",v90, " v90_floor=",xdef[i90], " v90_ceil=",xdef[i90+1])
+            
+            VF90[ic] = v90
+
+            if v90>=Nmin:
+                imsk[ic] = 1
+            
+        print(' * '+e2c(jd)+' => v90 =', v90, '(mask =',imsk[ic],')')
+            
+        ic+=1
+
 
         
-        print('')
+    print('')
 
 
 
