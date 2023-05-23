@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     ic = 0
     for jd in vdates_batch:
-        print('       - '+e2c(jd))
+        print('\n *** '+e2c(jd))
 
         (idxDate,) = np.where( Zdat == jd )
         nV = len(idxDate)
@@ -215,17 +215,20 @@ if __name__ == '__main__':
         rw = ri90 - float(i90)
         #print(" rw = ", rw)
 
-        if i90+1<nV-1:
-            # otherwize we are too close to the end of the series, this probably a bad batch!
+        #print('lolo: nV, Nmin, i90, nV-1 ')
+        if nV>=Nmin and i90<nV-2:
+            # sample size must be large enough
+            # and: otherwize we are too close to the end of the series, this probably a bad batch!
             v90 = (1.-rw)*xdef[i90] + rw*xdef[i90+1]
             #print(" v90 =",v90, " v90_floor=",xdef[i90], " v90_ceil=",xdef[i90+1])
             
             VF90[ic] = v90
-
+            imsk[ic] = 1
             if v90>=Nmin:
                 imsk[ic] = 1
+
             
-        print(' * '+e2c(jd)+' => v90 =', v90, '(mask =',imsk[ic],')')
+        print('         => v90 =', v90, '(mask =',imsk[ic],')')
             
         ic+=1
 
