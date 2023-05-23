@@ -21,8 +21,6 @@ Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to ac
 
 
 
-
-
 def Construct90P( ifile, vdates_batch, pdates, pdef ):
     '''
         * ifile: number of the file treated
@@ -86,9 +84,9 @@ def Construct90P( ifile, vdates_batch, pdates, pdef ):
 
     
 
-def PlotP90Series( vt, V1, V2=[], V3=[], figname='fig_series_P90.png', vlabels=[], y_range=(0.,0.1), x_range=None, dy=0.01 ):
+def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, figname='fig_series_P90.png', vlabels=[], y_range=(0.,0.1), x_range=None, dy=0.01 ):
     '''
-        * vt: time array as Epoch Unix time 
+        * vt1: time array as Epoch Unix time 
     '''
     import matplotlib as mpl
     mpl.use('Agg')
@@ -98,14 +96,19 @@ def PlotP90Series( vt, V1, V2=[], V3=[], figname='fig_series_P90.png', vlabels=[
     #ras = np.mean(V1) ; ram = np.mean(VM)
     #ymin, ymax, dy = sym_round_bounds(min(np.min(VM-ram),np.min(V1-ras)), max(np.max(VM-ram), np.max(V1-ras)), base=0.1 )
 
+    import mojito.plot as mjtp
 
-    (nT,) = np.shape(vt)
+    vcol = mjtp.vcolor
+    vlw  = mjtp.vlwdth
+    vorg = mjtp.vorig
 
-    if np.shape(V1) != (nT,):
-        print('ERROR: `V1` and `vt` do not agree in shape!'); exit(0)
-    
-    ldo2 = ( np.shape(V2) == (nT,) )
-    ldo3 = ( np.shape(V2) == (nT,) )
+    (nT1,) = np.shape(vt1)
+
+    if np.shape(V1) != (nT1,):
+        print('ERROR: `V1` and `vt1` do not agree in shape!'); exit(0)
+
+    ldo2 = ( np.shape(V2)!=(0,) and np.shape(vt2)==np.shape(V2) )
+    ldo3 = ( np.shape(V3)!=(0,) and np.shape(vt3)==np.shape(V3) )
 
     if ldo3 and not ldo2:
         print('ERROR: `ldo3 and not ldo2` !!!'); exit(0)
@@ -113,35 +116,44 @@ def PlotP90Series( vt, V1, V2=[], V3=[], figname='fig_series_P90.png', vlabels=[
     if x_range:
         (xmin,xmax) = x_range
     else:
-        (xmin,xmax) = (np.min(vt), np.max(vt))
+        (xmin,xmax) = (np.min(vt1), np.max(vt1))
 
-    
+    vdate1 = np.array([ e2c(vt1[jt], precision='D') for jt in range(nT1) ], dtype='U10')    
+    VX1 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate1]
 
-    vdate = np.array([ e2c(vt[jt], precision='D') for jt in range(nT) ], dtype='U10')
-    
-    VX = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate]
-
-
+    if ldo2:
+        (nT2,) = np.shape(vt2)
+        vdate2 = np.array([ e2c(vt2[jt], precision='D') for jt in range(nT2) ], dtype='U10')    
+        VX2 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate2]
         
+    if ldo3:
+        (nT3,) = np.shape(vt3)
+        vdate3 = np.array([ e2c(vt3[jt], precision='D') for jt in range(nT3) ], dtype='U10')    
+        VX3 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate3]
+        
+    
     fig = plt.figure(num = 1, figsize=(12,7), facecolor='w', edgecolor='k')
-
-    ax  = plt.axes([0.07, 0.22, 0.9, 0.75])
+    ax  = plt.axes([0.07, 0.18, 0.9, 0.75])
 
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation='60')
 
-    plt.plot(VX, vt*0.0         , '-', color='k',                     label=None,  zorder=5)
-    plt.plot(VX, V1, 'o', color='r', markersize=6, alpha=0.5, label='RGPS', zorder=10)
-
+    plt.plot(VX1, vt1*0.0         , '-', color='k',                     label=None,  zorder=5)
+    plt.plot(VX1, V1, 'o-', color=vcol[0], linewidth=vlw[0], markersize=6, alpha=0.9,     label=vorg[0], zorder=10)
+    if ldo2:
+        plt.plot(VX2, V2, 'o-', color=vcol[1], linewidth=vlw[1], markersize=6, alpha=0.9, label=vorg[1], zorder=10)
+    if ldo3:
+        plt.plot(VX3, V3, 'o-', color=vcol[2], linewidth=vlw[2], markersize=6, alpha=0.9, label=vorg[2], zorder=10)
 
     (ymin,ymax) = y_range
 
 
     plt.yticks( np.arange(ymin, ymax+dy, dy) )
     ax.set_ylim(ymin,ymax)
-    ##ax.set_xlim(VX[0],VX[-1])
-    
-    #plt.ylabel('SSH [m]')
+    ##ax.set_xlim(VX1[0],VX1[-1])
+
+    if field:
+        plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
     ax.grid(color='k', linestyle='-', linewidth=0.3)
     plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
 
@@ -199,7 +211,8 @@ if __name__ == '__main__':
     if np.shape(VDTB1) != (nbF1,):
         print('ERROR: problem #0 for file 1!'); exit(0)
                 
-    if ldo2:
+    if ldo2 or ldo3:
+        cf_in2 = argv[2]
         with np.load(cf_in2) as data:
             dtbin2 = data['dtbin']
             reskm2 = data['reskm_nmnl']
@@ -216,6 +229,7 @@ if __name__ == '__main__':
             print('ERROR: problem #0 for file 2!'); exit(0)
 
     if ldo3:
+        cf_in3 = argv[3]
         with np.load(cf_in3) as data:
             dtbin3 = data['dtbin']
             reskm3 = data['reskm_nmnl']
@@ -239,4 +253,22 @@ if __name__ == '__main__':
     VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1  )
 
 
-    kk= PlotP90Series( VDAT1, V90P1, figname='./figs/series.png', y_range=(0.,0.1), dy=0.01 )
+
+    
+
+
+    
+    if ldo3:
+        cfig = 'fig_series_P90_RGPS-BBM-aEVP.png'        
+        VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2 )
+        VDAT3, V90P3 = Construct90P(3, VDTB3, Zdat3, ZDEF3 )
+
+        kk= PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.08), dy=0.01 )
+        
+    elif ldo2:
+        cfig = 'fig_series_P90_RGPS-BBM.png'        
+        VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2  )
+    
+    else:
+        cfig = 'fig_series_P90_RGPS.png'        
+        kk= PlotP90Series( VDAT1, V90P1, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
