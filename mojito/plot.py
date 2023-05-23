@@ -23,6 +23,13 @@ from .util import epoch2clock
 #idebug = 0
 
 
+col_obs =   'k'
+col_red = '#873520'
+col_blu = '#3475a3'
+col_ylw = '#ffed00'
+
+
+
 rndaxiskm = 500 ;
 
 # Figure stuff:
@@ -37,16 +44,13 @@ vfig_size = [ 7.54, 7.2 ]
 vsporg = [0., 0., 1., 1.]
 col_bg = '#041a4d'
 
-col_red = '#873520'
-col_blu = '#3475a3'
-col_ylw = '#ffed00'
 
 msPoints = 8  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
-#vcolor = [ 'k', '0.25', '0.5', '0.75', 'g', 'orange' ]
-vcolor = [ 'k', col_blu, col_red, col_ylw, 'g' ]
+vorig  = [ 'RGPS',   'BBM',  'aEVP',  'unknown1', 'unknown2' ]
+vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
 vlwdth = [ 8  ,   5    ,    4   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
 vfills = [ 'none','full','none','none','none']
