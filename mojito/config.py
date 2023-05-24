@@ -116,7 +116,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
             rc_Qarea_min, rc_Qarea_max = 9.83*9.83, 10.83*10.83 ; # 10.33 +- 0.5
         elif mode=='xlose':
             rc_tolQuadA = 10
-            rc_Qarea_min, rc_Qarea_max = 5*5, 18*18
+            #rc_Qarea_min, rc_Qarea_max = 5*5, 18*18
+            rc_Qarea_min, rc_Qarea_max = 7.5*7.5,12.5*12.5
         else:
             rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
         #

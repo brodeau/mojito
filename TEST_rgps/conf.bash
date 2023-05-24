@@ -51,18 +51,18 @@ case ${host} in
         NJPAR=5
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #DT_BINS_H=6 ;         DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
-        #DT_BINS_H=6 ;         DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=40
-        #DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0131"; RESKM=160
-        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0123"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #DT_BINS_H=6 ;         DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10
+        #DT_BINS_H=6 ;         DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=40
+        #DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0131"; RESKM=160
+        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0123"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
         #FILIN="RGPS_${YEAR}LIGHT.nc4"
-        #DT_BINS_H=6 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10
-        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
-        #DT_BINS_H=$((7*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10
+        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10
+        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #DT_BINS_H=$((7*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"; RESKM=10
         #
         #
         ;;
@@ -71,10 +71,10 @@ case ${host} in
         #
         NJPAR=34
         #
-        #DT_BINS_H=6 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
-        #DT_BINS_H=24 ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
-        #DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0131"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
-        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101_00:00" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #DT_BINS_H=6 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #DT_BINS_H=24 ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        #DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0131"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
+        DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #
         ;;
     *)

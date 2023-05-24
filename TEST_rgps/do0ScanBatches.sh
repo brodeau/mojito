@@ -18,6 +18,10 @@ MMDD2=`echo ${DATE2} | cut -c5-8`
 
 fout="./npz/RGPS_batch_selection_dt${DT_BINS_H}h_${DATE1}_${DATE2}_mode-${MODE}.npz"
 
+
+#echo "LOLO: fout = ${fout}"
+#exit
+
 if [ ! -f ${fout} ]; then
 
     CMD="${EXE1} ${RGPS_DIR}/${FILIN} ${DATE1} ${DATE2} ${DT_BINS_H} ${MODE}"
