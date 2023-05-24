@@ -16,12 +16,13 @@ idebug=1
 iplot=1
 izoom=3
 
-lPlotClouds = True
+lPlotClouds = False
+lPlotPDFs = True
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
 
-def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
+def Construct90P( ifile, vdates_batch, pdates, pdef ):
     '''
         * ifile: number of the file treated
         
@@ -35,15 +36,6 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
 
     zdates, zdef = pdates.copy(), pdef.copy()
 
-    if origin=='RGPS':
-        # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
-        from mojito import config as cfg
-        kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
-        print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
-        (idxKeep,) = np.where(zdef>cfg.rc_tot_min)
-        zdef = zdef[idxKeep]
-        zdates = zdates[idxKeep]
-    
     ic = 0
     for jd in vdates_batch:
         print('\n *** file #'+str(ifile)+''+e2c(jd))
@@ -81,7 +73,7 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
 
 
 
-def Construct90P_old( ifile, vdates_batch, pdates, pdef, origin=None ):
+def Construct90P_old( ifile, vdates_batch, pdates, pdef ):
     '''
         * ifile: number of the file treated
         
@@ -95,15 +87,6 @@ def Construct90P_old( ifile, vdates_batch, pdates, pdef, origin=None ):
 
     zdates, zdef = pdates.copy(), pdef.copy()
 
-    if origin=='RGPS':
-        # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
-        from mojito import config as cfg
-        kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
-        print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
-        (idxKeep,) = np.where(zdef>cfg.rc_tot_min)
-        zdef = zdef[idxKeep]
-        zdates = zdates[idxKeep]
-    
     ic = 0
     for jd in vdates_batch:
         print('\n *** file #'+str(ifile)+''+e2c(jd))
@@ -356,7 +339,16 @@ if __name__ == '__main__':
     cdtbin1 = str(dtbin1)
     if np.shape(VDTB1) != (nbF1,):
         print('ERROR: problem #0 for file 1!'); exit(0)
-                
+
+    if corigin1=='RGPS':
+        # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+        from mojito import config as cfg
+        kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
+        print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
+        (idxKeep,) = np.where(ZDEF1>cfg.rc_tot_min)
+        ZDEF1 = ZDEF1[idxKeep]
+        Zdat1 = Zdat1[idxKeep]
+
     if ldo2 or ldo3:
         cf_in2 = argv[2]
         mjt.chck4f(cf_in2)        
@@ -374,6 +366,8 @@ if __name__ == '__main__':
         cdtbin2 = str(dtbin2)
         if np.shape(VDTB2) != (nbF2,):
             print('ERROR: problem #0 for file 2!'); exit(0)
+        if corigin2=='RGPS':
+            print('ERROR: oops did not expect second file to be RGPS!'); exit(0)
 
     if ldo3:
         cf_in3 = argv[3]
@@ -391,6 +385,8 @@ if __name__ == '__main__':
         cdtbin3 = str(dtbin3)
         if np.shape(VDTB3) != (nbF3,):
             print('ERROR: problem #0 for file 3!'); exit(0)
+        if corigin3=='RGPS':
+            print('ERROR: oops did not expect third file to be RGPS!'); exit(0)
 
         
     reskm  = reskm1
@@ -412,14 +408,63 @@ if __name__ == '__main__':
             Zdat3 = Zdat3[idxD]
     
 
+            
+
+            
     if lPlotClouds:
         k0 = PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
 
 
+        
+    if cfield=='shear' and lPlotPDFs:
+        max_shr = 1.5 ; # day^-1
+        zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1
+        rfexp_bin = 0.25
+        wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
+
+        print('LOLO: shape(VDTB1), shape(VDTB2), shape(VDTB3) =', np.shape(VDTB1), np.shape(VDTB2), np.shape(VDTB3))
+
+        for jt in range(27):
+            print(e2c(VDTB1[jt]),e2c(VDTB2[jt]),e2c(VDTB3[jt]))
+
+
+
+        for jd in VDTB2:
+            
+            print('\n *** Model info at date:',e2c(jd))
+            (idxDate,) = np.where( Zdat2 == jd )
+            nV = len(idxDate)
+            print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
+
+
+            
+        exit(0)
+
+
+        
+        for jd in VDTB1:
+            
+            print('\n *** Preparing PDF plot batch at date:',e2c(jd))
+            (idxDate,) = np.where( Zdat1 == jd )
+            nV = len(idxDate)
+            print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
+
+            if nV>=Nmin:
+                zdef = ZDEF1[idxDate]
+
+            nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear' )
+            nPs, PDF_shr = mjt.computePDF( xbin_bounds_shr, xbin_center_shr,    zdef,  cwhat='shear' )
+
+            kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='shear', cfig='./figs/PDF_shear_'+e2c(jd)+'.png' )
+            #, reskm=reskm,
+            #title=cName+cnxtraScl, period=cperiod )
+        exit(0)
 
 
     
-    VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1, origin=corigin1 )
+
+
+    VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1 )
     
     if ldo3:
         if lPlotClouds:

@@ -6,7 +6,7 @@ from sys import argv, exit
 from os import path, mkdir
 #from glob import glob
 import numpy as np
-#from re import split
+ #from re import split
 import mojito   as mjt
 
 idebug=1
@@ -30,125 +30,6 @@ else:
     wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
 
 l_add_gaussian = False
-    
-
-def constructCstBins( rmin, rmax, wdthB, name='unknown', iverbose=0 ):
-    #
-    nB = (rmax - rmin) / wdthB
-    if not nB%1.==0.:
-        print('ERROR [constructBins()]: "'+name+'" => nB is not an integer! nB =',nB); exit(0)
-    nB = int(nB)
-    #
-    zbin_bounds = [ rmin + float(i)*wdthB                 for i in range(nB+1) ]
-    zbin_center = [ 0.5*(zbin_bounds[i]+zbin_bounds[i+1]) for i in range(nB)   ]    
-    zbin_bounds = np.round( zbin_bounds, 6 )
-    zbin_center = np.round( zbin_center, 6 )
-    #
-    if iverbose>0:
-        for jb in range(nB):
-            print( ' * [constructBins] Bin #',jb,' =>', zbin_bounds[jb],zbin_bounds[jb+1], zbin_center[jb] )
-        
-    # len(zbin_bounds) = nB + 1 !!!
-    return nB, zbin_bounds, zbin_center
-
-
-def constructExpBins( rfexp, rmin, rmax, wbmin, name='unknown', iverbose=0 ):
-    #
-    from math import exp
-    #
-    kc  = 0
-    zwbin = []
-    zacc  = rmin
-    while not zacc>=rmax:
-        rc = float(kc)
-        wb = wbmin*exp(rfexp*rc)
-        zwbin.append(wb)
-        zacc = zacc+wb
-        kc = kc+1
-    zwbin = np.array(zwbin)
-    nB    = len(zwbin)
-    zbin_bounds = np.zeros(nB+1)
-    zbin_center = np.zeros(nB)
-
-    zbin_bounds[0] = rmin
-    for jb in range(nB):
-        zbin_bounds[jb+1] = zbin_bounds[jb] + zwbin[jb]
-        zbin_center[jb]   = zbin_bounds[jb] + 0.5*zwbin[jb]
-
-    if iverbose>0:
-        for jb in range(nB):
-            print( ' * [constructExpBins] Bin #',jb,' =>',zwbin[jb], zbin_bounds[jb],zbin_bounds[jb+1], zbin_center[jb] )
-
-    print(' * [constructExpBins]: narrowest and widest bins:',zwbin[0],zwbin[-1])
-    
-    return nB, zbin_bounds, zbin_center
-
-
-
-def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 ):
-    '''
-        * pBb, pBc: vectors for boundaries and center of bins
-    '''
-    (nBins,) = np.shape(pBc)
-    if np.shape(pBb)!=(nBins+1,):
-        print('ERROR [computePDF()]: `shape(pBb)!=(nBins+1,)` !!!')
-        exit(0)
-    
-    (nbP,) = np.shape(pX)
-    #
-    zxmin, zxmax = pBb[0], pBb[-1]
-    zxrng = zxmax - zxmin
-    zbW  = np.array( [ (pBb[i+1]-pBb[i]) for i in range(nBins) ] ) ; # width of bins...
-    
-    lvbw = (  np.sum(np.abs(zbW[1:]-zbW[:-1])) > 1.e-11 ) ; # Constant or variable-width bins?
-    if lvbw:
-        if iverbose>0: print(' * [computePDF()]: variable-width bins for '+cwhat+'!')
-        #zscal   = zbW[0]/zbW[:]
-        zscal   = 1./zbW[:]
-    #
-    if return_cleaned:
-        zXclean = []
-    
-    zPDF = np.zeros(nBins)
-    nPok = 0
-    for iP in range(nbP):
-    
-        zX = pX[iP]
-    
-        if zX>zxmax or zX<zxmin:
-            if iverbose>1:
-                print(' * WARNING [computePDF()]: excluding tiny or extreme value of '+cwhat+': ',zX,'day^-1')
-            #
-        else:
-            jf  = np.argmin( np.abs( pBc - zX ) )
-            lOk = ( zX>pBb[jf] and zX<=pBb[jf+1] )
-            if not lOk:
-                if zX<=pBb[jf]:   jf = jf-1
-                if zX >pBb[jf+1]: jf = jf+1                
-            if not ( zX>pBb[jf] and zX<=pBb[jf+1] ):
-                print(' Binning error on divergence!')
-                print('  => divergence =',zX)
-                print('  => bounds =',pBb[jf],pBb[jf+1])
-                exit(0)
-            zPDF[jf] = zPDF[jf] + 1.
-            nPok = nPok + 1; # another valid point
-            #
-            if return_cleaned:
-                zXclean.append(zX)
-
-            
-
-    # Normalization:
-    if lvbw:
-        zPDF[:] = zPDF[:]*zscal[:]
-    #
-    zPDF[:] = zPDF[:]/float(nPok)
-
-    if return_cleaned:
-        return nPok, zPDF, np.array(zXclean)
-    else:
-        return nPok, zPDF
-
 
 
 if __name__ == '__main__':
@@ -244,19 +125,19 @@ if __name__ == '__main__':
     cxtra = ''
     if l_cst_bins:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = constructCstBins( zmin_div, max_div, wbin_div, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = mjt.constructCstBins( zmin_div, max_div, wbin_div, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructCstBins( zmin_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )        
+        nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructCstBins( zmin_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )        
         # For the total deformation:
-        nBinsS, xbin_bounds_tot, xbin_center_tot = constructCstBins( zmin_tot, max_tot, wbin_tot, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_tot, xbin_center_tot = mjt.constructCstBins( zmin_tot, max_tot, wbin_tot, name='shear',      iverbose=idebug )
         
     else:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = constructExpBins( rfexp_bin, zmin_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = mjt.constructExpBins( rfexp_bin, zmin_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
         # For the total deformation:
-        nBinsS, xbin_bounds_tot, xbin_center_tot = constructExpBins( rfexp_bin, zmin_tot, max_tot, wVbin_min, name='total',      iverbose=idebug )
+        nBinsS, xbin_bounds_tot, xbin_center_tot = mjt.constructExpBins( rfexp_bin, zmin_tot, max_tot, wVbin_min, name='total',      iverbose=idebug )
         cxtra = '_incB'
 
 
@@ -274,14 +155,14 @@ if __name__ == '__main__':
 
 
     if l_add_gaussian:
-        nPs, PDF_shr, ZshrClean = computePDF( xbin_bounds_shr, xbin_center_shr, Zshr, cwhat='shear', return_cleaned=True   ,  iverbose=idebug )
+        nPs, PDF_shr, ZshrClean = mjt.computePDF( xbin_bounds_shr, xbin_center_shr, Zshr, cwhat='shear', return_cleaned=True   ,  iverbose=idebug )
     else:
-        nPs, PDF_shr = computePDF( xbin_bounds_shr, xbin_center_shr,    Zshr,  cwhat='shear',      iverbose=idebug )
+        nPs, PDF_shr = mjt.computePDF( xbin_bounds_shr, xbin_center_shr,    Zshr,  cwhat='shear',      iverbose=idebug )
 
-    nPs, PDF_tot = computePDF( xbin_bounds_tot, xbin_center_tot,        Ztot,  cwhat='total',       iverbose=idebug )    
-    nPD, PDF_Div = computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
-    nPd, PDF_div = computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
-    nPc, PDF_cnv = computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
+    nPs, PDF_tot = mjt.computePDF( xbin_bounds_tot, xbin_center_tot,        Ztot,  cwhat='total',       iverbose=idebug )    
+    nPD, PDF_Div = mjt.computePDF( xbin_bounds_div, xbin_center_div, np.abs(ZDiv), cwhat='Divergence',  iverbose=idebug )
+    nPd, PDF_div = mjt.computePDF( xbin_bounds_div, xbin_center_div,        Zdiv , cwhat='divergence',  iverbose=idebug )
+    nPc, PDF_cnv = mjt.computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
 
 
     cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod   
