@@ -15,7 +15,7 @@ from mojito import config as cfg
 idebug=1
 iffrmt='png'
 #iffrmt='svg'
-izoom = 3
+izoom = 1.5
 
 NameArcticProj='SmallArctic'
 
@@ -136,15 +136,15 @@ if __name__ == '__main__':
                                       nmproj=NameArcticProj, cwhat=cwhat,
                                       pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=izoom,
                                       rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                      title=corig+': '+cv_in+' '+cresinfo, idate=itime )
+                                      title=mjt.vorig[0]+': '+cv_in+' '+cresinfo, idate=itime )
         elif l3files:
             mjt.ShowMultiDefQuadGeoArctic( X4p, Y4p, FD, X4p2, Y4p2, FD2, X4p3, Y4p3, FD3, zoom=izoom,
                                            cfig=fdir+'/map_'+cv_in+'_'+corig+'.'+iffrmt,
                                            nmproj=NameArcticProj, cwhat=cwhat,
                                            pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_tot_max_fig,
                                            rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                           title1=corig+': '+cv_in+' '+cresinfo, idate=itime,
-                                           title2=corig2+': '+cv_in+' '+cresinfo, title3=corig3+': '+cv_in+' '+cresinfo )
+                                           title1=mjt.vorig[0]+': '+cv_in+' '+cresinfo, idate=itime,
+                                           title2=mjt.vorig[1]+': '+cv_in+' '+cresinfo, title3=mjt.vorig[2]+': '+cv_in+' '+cresinfo )
         else:
             print('Fixme!')
         
@@ -155,7 +155,7 @@ if __name__ == '__main__':
                                       nmproj=NameArcticProj, cwhat=cwhat,
                                       pFmin=0., pFmax=cfg.rc_shr_max_fig, zoom=izoom,
                                       rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                      title=corig+': '+cv_in+' '+cresinfo, idate=itime )
+                                      title=mjt.vorig[0]+': '+cv_in+' '+cresinfo, idate=itime )
 
         elif l3files:
             mjt.ShowMultiDefQuadGeoArctic( X4p, Y4p, FD, X4p2, Y4p2, FD2, X4p3, Y4p3, FD3, zoom=izoom,
@@ -163,8 +163,8 @@ if __name__ == '__main__':
                                            nmproj=NameArcticProj, cwhat=cwhat,
                                            pFmin=0., pFmax=cfg.rc_tot_max_fig,
                                            rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                           title1=corig+': '+cv_in+' '+cresinfo, idate=itime,
-                                           title2=corig2+': '+cv_in+' '+cresinfo, title3=corig3+': '+cv_in+' '+cresinfo )
+                                           title1=mjt.vorig[0]+': '+cv_in+' '+cresinfo, idate=itime,
+                                           title2=mjt.vorig[1]+': '+cv_in+' '+cresinfo, title3=mjt.vorig[2]+': '+cv_in+' '+cresinfo )
         else:
             print('Fixme!')
         
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                                            pFmin=0., pFmax=cfg.rc_tot_max_fig,
                                            rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                            title1=corig+': '+cv_in+' '+cresinfo, idate=itime,
-                                           title2=corig2+': '+cv_in+' '+cresinfo, title3=corig3+': '+cv_in+' '+cresinfo )
+                                           title2=mjt.vorig[1]+': '+cv_in+' '+cresinfo, title3=mjt.vorig[2]+': '+cv_in+' '+cresinfo )
 
         
         else:

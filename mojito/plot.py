@@ -49,7 +49,7 @@ msPoints = 8  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
-vorig  = [ 'RGPS',   'BBM',  'aEVP',  'unknown1', 'unknown2' ]
+vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
 vlwdth = [ 8  ,   5    ,    4   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
@@ -74,7 +74,7 @@ def initStyle( fntzoom=1., color_top='k' ):
     cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(13.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(12.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(10.*fntzoom), 'color':color_top }
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
@@ -84,6 +84,9 @@ def initStyle( fntzoom=1., color_top='k' ):
 
 
 def _SelectArcticProjExtent_( nameProj ):
+    #
+    if not nameProj in ['CentralArctic','SmallArctic','BigArctic']:
+        print('ERROR [_SelectArcticProjExtent_()] unknown projection: '+nameProj+' !!!'); exit(0)
     #
     # Stereographice projections:
     if   nameProj=='BigArctic':
@@ -99,6 +102,36 @@ def _SelectArcticProjExtent_( nameProj ):
         LocTtl = (0.025, 0.925)
         #
     return LocTtl, NProj
+
+def _AdjustMapArctic_( nameProj, projH ):
+    '''
+         * nameProj:  name of polar projection
+         * projH: handle of the basemap projection
+    '''
+    if not nameProj in ['CentralArctic','SmallArctic','BigArctic']:
+        print('ERROR [_AdjustMapArctic_()] unknown projection: '+nameProj+' !!!'); exit(0)
+    #
+    if nameProj == 'CentralArctic':
+        projH.drawcoastlines(linewidth=0.5)
+        projH.fillcontinents(color='grey') #, alpha=0)
+        projH.drawmeridians(np.arange(-180,180,20), labels=[1,0,0,0], linewidth=0.3)
+        projH.drawparallels(np.arange( 20, 90,5),  labels=[0,0,0,1], linewidth=0.3)
+        #
+    elif  nameProj == 'SmallArctic':
+        projH.drawcoastlines(linewidth=0.5)
+        projH.fillcontinents(color='grey') #, alpha=0)
+        projH.drawmeridians(np.arange(-180,180,20), labels=[1,0,0,0], linewidth=0.3)
+        projH.drawparallels(np.arange( 20, 90,5),  labels=[0,0,0,1], linewidth=0.3)
+        #
+    elif  nameProj == 'BigArctic':
+        projH.drawcoastlines(linewidth=0.5)
+        projH.fillcontinents(color='grey') #, alpha=0)
+        projH.drawmeridians(np.arange(-180,180,20), labels=[1,0,0,0], linewidth=0.3)
+        projH.drawparallels(np.arange( 20, 90,5),  labels=[0,0,0,1], linewidth=0.3)
+    
+
+
+
 
 
 def roundAxisRange( pR, rndKM=None ):
@@ -818,10 +851,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
             colrgb = cm(znorm)
             plt.fill( x0[jQ,:], y0[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
 
-    PROJ.drawcoastlines(linewidth=0.5)
-    PROJ.fillcontinents(color='grey') #, alpha=0)
-    PROJ.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-    PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
+    _AdjustMapArctic_( nmproj, PROJ )
 
     if title:
         ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
@@ -1404,6 +1434,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 
+
 def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3, zoom=1,
                                cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div',
                                pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title1=None, unit=r'days$^{-1}$', idate=None,
@@ -1433,7 +1464,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
         print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
 
-    kk = initStyle(fntzoom=min(1.5,zoom))
+    kk = initStyle(fntzoom=2.*zoom)
 
     zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
     zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )
@@ -1460,68 +1491,45 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     LTtl = (0.5,1.02)
     
-    fig = plt.figure(num=1, figsize=(zoom*18,zoom*7), dpi=None, facecolor='w', edgecolor='k')
+    fig = plt.figure(num=1, figsize=(zoom*18.5,zoom*7), dpi=None, facecolor='w', edgecolor='k')
 
     zyf = 0.11
+
+    dxL, xw = 0.03, 0.29
     
-    ax1  = plt.axes([0.025,zyf,0.3,0.9], facecolor='w')
+    ax1  = plt.axes([0.03,zyf,xw,0.9], facecolor='w')
     x1,y1 = PROJ(zlon1,zlat1)
-    #
     for jQ in range(nQ1):
         if not np.isnan(pF1[jQ]):
             znorm = cn(pF1[jQ])
             colrgb = cm(znorm)
             plt.fill( x1[jQ,:], y1[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-    #
-    PROJ.drawcoastlines(linewidth=0.5)
-    PROJ.fillcontinents(color='grey') #, alpha=0)
-    PROJ.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-    PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
-    #
+    _AdjustMapArctic_( nmproj, PROJ )
     if title1:
         ax1.annotate(title1, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-    #if idate:
-    #    ax1.annotate(epoch2clock(idate, precision='D'), xy=(LocTitle[0]+0.1,LocTitle[1]-0.03), xycoords='axes fraction', **cfont_clock) ; #ha='center'
 
     
-    ax2  = plt.axes([1./3.+0.025,zyf,0.3,0.9], facecolor='w')
+    ax2  = plt.axes([1./3.+dxL,zyf,xw,0.9], facecolor='w')
     x2,y2 = PROJ(zlon2,zlat2)
-    #
     for jQ in range(nQ2):
         if not np.isnan(pF2[jQ]):
             znorm = cn(pF2[jQ])
             colrgb = cm(znorm)
             plt.fill( x2[jQ,:], y2[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-    #
-    PROJ.drawcoastlines(linewidth=0.5)
-    PROJ.fillcontinents(color='grey') #, alpha=0)
-    PROJ.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-    PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
-    #
+    _AdjustMapArctic_( nmproj, PROJ )
     if title2:
         ax2.annotate(title2, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-    #if idate:
-    #    ax2.annotate(epoch2clock(idate, precision='D'), xy=(LocTitle[0]+0.1,LocTitle[1]-0.03), xycoords='axes fraction', **cfont_clock) ; #ha='center'
 
-    ax3  = plt.axes([2./3.+0.025,zyf,0.3,0.9], facecolor='w')
+    ax3  = plt.axes([2./3.+dxL,zyf,xw,0.9], facecolor='w')
     x3,y3 = PROJ(zlon3,zlat3)
-    #
     for jQ in range(nQ3):
         if not np.isnan(pF3[jQ]):
             znorm = cn(pF3[jQ])
             colrgb = cm(znorm)
             plt.fill( x3[jQ,:], y3[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-    #
-    PROJ.drawcoastlines(linewidth=0.5)
-    PROJ.fillcontinents(color='grey') #, alpha=0)
-    PROJ.drawmeridians(np.arange(-180,180,20), labels=[0,0,0,1], linewidth=0.3)
-    PROJ.drawparallels(np.arange( -90, 90,10), labels=[1,0,0,0], linewidth=0.3)
-    #
+    _AdjustMapArctic_( nmproj, PROJ )
     if title3:
         ax3.annotate(title3, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-    #if idate:
-    #    ax3.annotate(epoch2clock(idate, precision='D'), xy=(LocTitle[0]+0.1,LocTitle[1]-0.03), xycoords='axes fraction', **cfont_clock) ; #ha='center'
-
 
     if unit:
         # => triggers the colorbar
