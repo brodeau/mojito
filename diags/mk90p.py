@@ -16,12 +16,72 @@ idebug=1
 iplot=1
 izoom=3
 
+lPlotClouds = True
+
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
 
-
-
 def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
+    '''
+        * ifile: number of the file treated
+        
+    '''
+    lmaskArrays = True
+    (nbF,) = np.shape(vdates_batch)
+    
+    Z90P = np.zeros( nbF )
+    zdat = np.zeros( nbF, dtype=int )
+    imsk = np.zeros( nbF, dtype='i1' )
+
+    zdates, zdef = pdates.copy(), pdef.copy()
+
+    if origin=='RGPS':
+        # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+        from mojito import config as cfg
+        kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
+        print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
+        (idxKeep,) = np.where(zdef>cfg.rc_tot_min)
+        zdef = zdef[idxKeep]
+        zdates = zdates[idxKeep]
+    
+    ic = 0
+    for jd in vdates_batch:
+        print('\n *** file #'+str(ifile)+''+e2c(jd))
+
+        (idxDate,) = np.where( zdates == jd )
+        nV = len(idxDate)
+        print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
+                
+        if nV>=Nmin:
+            # sample size must be large enough
+            ztmp = zdef[idxDate]
+            Z90P[ic] = np.nanpercentile(ztmp, 90)
+            zdat[ic] =  jd
+            imsk[ic] = 1
+            
+        ic+=1
+
+    if lmaskArrays:
+        Z90Pm = np.ma.masked_where(imsk!=1, Z90P)
+        zdatm = np.ma.masked_where(imsk!=1, zdat)
+    
+        zt = np.ma.MaskedArray.compressed( zdatm )
+        zx = zt[1:] - zt[:-1]
+        if np.any(zx<=0):
+            print('ERROR [Construct90P]: `zdatm` is not increasing!'); exit(0)
+        print('')        
+        return zt, np.ma.MaskedArray.compressed( Z90Pm )
+    else:
+        (idxM,) = np.where(imsk==0)
+        Z90P[idxM] = 0.
+
+        return zdat, Z90P
+
+
+
+
+
+def Construct90P_old( ifile, vdates_batch, pdates, pdef, origin=None ):
     '''
         * ifile: number of the file treated
         
@@ -59,7 +119,7 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
         #exit(0)
         
         if zdfw.shape != (nV,):
-            print('ERROR [Construct90P()]: problem #1'); exit(0)
+            print('ERROR [Construct90P_old()]: problem #1'); exit(0)
 
         ri90 = 0.9*float(nV)
         i90f = int( floor( ri90 ) ) - 1   ; # `-1` because C-indexing...
@@ -86,7 +146,7 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
         zt = np.ma.MaskedArray.compressed( zdatm )
         zx = zt[1:] - zt[:-1]
         if np.any(zx<=0):
-            print('ERROR [Construct90P]: `zdatm` is not increasing!'); exit(0)
+            print('ERROR [Construct90P_old]: `zdatm` is not increasing!'); exit(0)
         print('')        
         return zt, np.ma.MaskedArray.compressed( Z90Pm )
     else:
@@ -107,14 +167,10 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     from datetime import datetime as dt
-    #ras = np.mean(V1) ; ram = np.mean(VM)
-    #ymin, ymax, dy = sym_round_bounds(min(np.min(VM-ram),np.min(V1-ras)), max(np.max(VM-ram), np.max(V1-ras)), base=0.1 )
 
-    import mojito.plot as mjtp
-
-    vcol = mjtp.vcolor
-    vlw  = mjtp.vlwdth
-    vorg = mjtp.vorig
+    vcol = mjt.vcolor
+    vlw  = mjt.vlwdth
+    vorg = mjt.vorig
 
     (nT1,) = np.shape(vt1)
 
@@ -131,11 +187,12 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
         (xmin,xmax) = x_range
     else:
         (xmin,xmax) = (np.min(vt1), np.max(vt1))
-
         
-    vdate1 = np.array([ e2c(vt1[jt], precision='D') for jt in range(nT1) ], dtype='U10')    
-    VX1 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate1]
-
+    #vdate1 = np.array([ e2c(vt1[jt], precision='D') for jt in range(nT1) ], dtype='U10')    
+    #VX1 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate1]
+    vdate1 = np.array([ e2c(dt) for dt in vt1 ], dtype='U19')    
+    VX1    = np.array([dt.strptime(d, "%Y-%m-%d_%H:%M:%S").date() for d in vdate1])
+    
     # Construt the generic time axis for the figure => PRETTY MUCH USELESS!!!!
     dt_sec = dt_days*24*3600
     vtg = np.arange(xmin,xmax+dt_sec,dt_sec)
@@ -151,15 +208,11 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
         (nT3,) = np.shape(vt3)
         vdate3 = np.array([ e2c(vt3[jt], precision='D') for jt in range(nT3) ], dtype='U10')    
         VX3 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate3]
-        
-
-    kk = mjtp.initStyle( fntzoom=1.5 )
+    
+    kk = mjt.initStyle( fntzoom=1.5 )
         
     fig = plt.figure(num = 1, figsize=(12,7), facecolor='w', edgecolor='k')
     ax  = plt.axes([0.07, 0.18, 0.9, 0.75])
-
-
-    #plt.plot(VX, vtg*0.0         , '-', color='k',                     label=None,  zorder=5)
 
     # Date ticks stuff:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
@@ -170,7 +223,6 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
     #ax.xaxis.set_minor_formatter(mdates.DateFormatter('%d'))
     #ax.xaxis.set_minor_locator(mdates.MonthLocator())
     #ax.xaxis.set_minor_locator(mdates.DayLocator(bymonthday=(1,5,10), interval=3, tz=None))
-
     
     plt.plot(VX1, V1, 'o-', color=vcol[0], linewidth=vlw[0], markersize=6, alpha=0.9,     label=vorg[0], zorder=10)
     if ldo2:
@@ -180,21 +232,84 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
 
     (ymin,ymax) = y_range
 
-
     plt.yticks( np.arange(ymin, ymax+dy, dy) )
     ax.set_ylim(ymin,ymax)
-    #ax.set_xlim(VX[0],VX[-1])
 
     if field:
         plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
     ax.grid(color='0.5', linestyle='-', linewidth=0.3)
     plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
 
-    #plt.savefig( figname, dpi=120, transparent=False)
     print(' *** Saving figure',figname)
     plt.savefig( figname )
     plt.close(1)
     return 0
+
+
+
+
+def PlotCloud( ki, xdate, xdef, field=None, dt_days=3,
+               figname='fig_series_P90.png', y_range=(0.,0.1), x_range=None, dy=0.01, zoom=1 ):
+    '''
+        * 
+    '''
+    import matplotlib as mpl
+    mpl.use('Agg')
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    from datetime import datetime as dt
+
+    vcol = mjt.vcolor
+    vlw  = mjt.vlwdth
+    vorg = mjt.vorig
+
+    if np.shape(xdate) != np.shape(xdef):
+        print('ERROR: `xdate` and `xdef` do not agree in shape!'); exit(0)
+
+    if x_range:
+        (xmin,xmax) = x_range
+    else:
+        (xmin,xmax) = (np.min(xdate), np.max(xdate))
+
+    vdate = np.array([ e2c(dt) for dt in xdate ], dtype='U19')    
+    VX    = np.array([dt.strptime(d, "%Y-%m-%d_%H:%M:%S").date() for d in vdate])
+    
+    kk = mjt.initStyle( fntzoom=1.5*zoom )
+        
+    fig = plt.figure(num = 1, figsize=(zoom*12,zoom*7), facecolor='w', edgecolor='k')
+    ax  = plt.axes([0.07, 0.18, 0.9, 0.75])
+    
+    #plt.plot(VX1, V1, 'o-', color=vcol[0], linewidth=vlw[0], markersize=6, alpha=0.9,     label=vorg[0], zorder=10)
+    #plt.scatter( xdate, xdef, marker=',', alpha=0.3, s=1 )
+    plt.scatter( VX, xdef, marker=',', c=vcol[ki-1], alpha=0.3, s=1 )
+    #, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)
+    # , s=None, c=None
+
+
+    # Date ticks stuff:
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+    plt.xticks(rotation='60')
+    #ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+
+    
+    #(ymin,ymax) = y_range
+
+    #plt.yticks( np.arange(ymin, ymax+dy, dy) )
+    #ax.set_ylim(ymin,ymax)
+
+    #if field:
+    #    plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
+    #ax.grid(color='0.5', linestyle='-', linewidth=0.3)
+    #plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
+
+    print(' *** Saving figure',figname)
+    plt.savefig( figname )
+    plt.close(1)
+    return 0
+
+
+
 
 
 
@@ -228,9 +343,7 @@ if __name__ == '__main__':
     else:
         print('ERROR: wrong `cv_in` !!! ', cv_in); exit(0)
 
-    
-    #cd_in = path.dirname(cf_in1)
-    
+    mjt.chck4f(cf_in1)
     with np.load(cf_in1) as data:
         dtbin1 = data['dtbin']
         reskm1 = data['reskm_nmnl']
@@ -246,6 +359,7 @@ if __name__ == '__main__':
                 
     if ldo2 or ldo3:
         cf_in2 = argv[2]
+        mjt.chck4f(cf_in2)        
         with np.load(cf_in2) as data:
             dtbin2 = data['dtbin']
             reskm2 = data['reskm_nmnl']
@@ -263,12 +377,12 @@ if __name__ == '__main__':
 
     if ldo3:
         cf_in3 = argv[3]
+        mjt.chck4f(cf_in3)        
         with np.load(cf_in3) as data:
             dtbin3 = data['dtbin']
             reskm3 = data['reskm_nmnl']
             corigin3 = str(data['origin'])        
-            #cperiod3 = str(data['period'])
-            nbF3 = int(data['Nbatch'])
+            nbF3 = int(data['Nbatch']) # 
             VDTB3 = data['dates_batch']
             Zdat3 = data['dates_point']
             ZDEF3 = data[cvar]
@@ -281,17 +395,36 @@ if __name__ == '__main__':
         
     reskm  = reskm1
     creskm = str(reskm)
+
+
+    if cfield=='divergence':
+        idxD  = np.where(ZDEF1>0.)
+        ZDEF1 = ZDEF1[idxD]
+        Zdat1 = Zdat1[idxD]
+        #
+        if ldo2 or ldo3:
+            idxD  = np.where(ZDEF2>0.)
+            ZDEF2 = ZDEF2[idxD]
+            Zdat2 = Zdat2[idxD]
+        if ldo3:
+            idxD  = np.where(ZDEF3>0.)
+            ZDEF3 = ZDEF3[idxD]
+            Zdat3 = Zdat3[idxD]
     
 
+    if lPlotClouds:
+        k0 = PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
+
+
+
+
+    
     VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1, origin=corigin1 )
-
-
-
-    
-
-
     
     if ldo3:
+        if lPlotClouds:
+            k0 = PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
+            k0 = PlotCloud( 3, Zdat3, ZDEF3, field=cfield, figname='./figs/Cloud_'+corigin3+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
         cfig = 'fig_series_P90_RGPS-BBM-aEVP_'+cfield+'.png'        
         VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2 )
         VDAT3, V90P3 = Construct90P(3, VDTB3, Zdat3, ZDEF3 )
@@ -299,6 +432,8 @@ if __name__ == '__main__':
         kk= PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.08), dy=0.01 )
         
     elif ldo2:
+        if lPlotClouds:
+            k0 = PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
         cfig = 'fig_series_P90_RGPS-BBM'+cfield+'.png'        
         VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2  )
     

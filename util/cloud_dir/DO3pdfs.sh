@@ -2,7 +2,7 @@
 
 . ./conf.bash
 
-EXE="${HOME}/DEV/mojito/plot_comp_PDFs.py"
+EXE="${HOME}/DEV/mojito/diags/plot_comp_PDFs.py"
 
 
 VEXPS=( `echo ${EXPS} | sed -e s/','/' '/g`)

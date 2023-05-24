@@ -9,5 +9,6 @@ from .rgps     import *
 from .ncio     import *
 from .geomesh  import *
 from .polygons import *
+from .stats    import *
 from .plot     import *
 from .mogpt    import *
