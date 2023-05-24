@@ -16,7 +16,7 @@ idebug=1
 iplot=1
 izoom=3
 
-lPlotClouds = False
+lPlotClouds = True
 lPlotPDFs = True
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
@@ -275,11 +275,9 @@ def PlotCloud( ki, xdate, xdef, field=None, dt_days=3,
     #ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
 
-    
-    #(ymin,ymax) = y_range
-
-    #plt.yticks( np.arange(ymin, ymax+dy, dy) )
-    #ax.set_ylim(ymin,ymax)
+    (ymin,ymax) = y_range
+    plt.yticks( np.arange(ymin, ymax+dy, dy) )
+    ax.set_ylim(ymin,ymax)
 
     #if field:
     #    plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
@@ -368,6 +366,9 @@ if __name__ == '__main__':
             print('ERROR: problem #0 for file 2!'); exit(0)
         if corigin2=='RGPS':
             print('ERROR: oops did not expect second file to be RGPS!'); exit(0)
+        if np.shape(VDTB2)!=np.shape(VDTB1):
+            print('ERROR: `shape(VDTB2)!=shape(VDTB1)`!'); exit(0)
+        
 
     if ldo3:
         cf_in3 = argv[3]
@@ -387,6 +388,8 @@ if __name__ == '__main__':
             print('ERROR: problem #0 for file 3!'); exit(0)
         if corigin3=='RGPS':
             print('ERROR: oops did not expect third file to be RGPS!'); exit(0)
+        if np.shape(VDTB3)!=np.shape(VDTB1):
+            print('ERROR: `shape(VDTB3)!=shape(VDTB1)`!'); exit(0)
 
         
     reskm  = reskm1
@@ -406,70 +409,54 @@ if __name__ == '__main__':
             idxD  = np.where(ZDEF3>0.)
             ZDEF3 = ZDEF3[idxD]
             Zdat3 = Zdat3[idxD]
-    
-
-            
-
-            
+                        
     if lPlotClouds:
-        k0 = PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
+        k0 = PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
 
 
         
-    if cfield=='shear' and lPlotPDFs:
+    if cfield=='shear' and lPlotPDFs and ldo3:
         max_shr = 1.5 ; # day^-1
         zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1
         rfexp_bin = 0.25
         wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
 
-        print('LOLO: shape(VDTB1), shape(VDTB2), shape(VDTB3) =', np.shape(VDTB1), np.shape(VDTB2), np.shape(VDTB3))
+        (Nt,) = np.shape(VDTB1)
+        for jt in range(Nt):
+            kd1, kd2, kd3 = VDTB1[jt],VDTB2[jt],VDTB3[jt] ;  # date
+            print('\n *** Preparing PDF plot batch at date:',e2c(kd1))
+            (idxDate1,) = np.where( Zdat1 == kd1 )
+            (idxDate2,) = np.where( Zdat2 == kd2 )
+            (idxDate3,) = np.where( Zdat3 == kd3 )
+            nV1,nV2,nV3 = len(idxDate1),len(idxDate2),len(idxDate3)
+            print('         => '+str(nV1)+' '+cv_in+' deformation for this date....')
 
-        for jt in range(27):
-            print(e2c(VDTB1[jt]),e2c(VDTB2[jt]),e2c(VDTB3[jt]))
+            if nV1>=Nmin and nV2>=Nmin and nV3>=Nmin:
+                zdf1, zdf2, zdf3 = ZDEF1[idxDate1], ZDEF2[idxDate2], ZDEF3[idxDate3]
 
+            nBinsS, xbin_bounds, xbin_center = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear' )
+            nP1, PDF1 = mjt.computePDF( xbin_bounds, xbin_center,    zdf1,  cwhat='shear' )
+            nP2, PDF2 = mjt.computePDF( xbin_bounds, xbin_center,    zdf2,  cwhat='shear' )
+            nP3, PDF3 = mjt.computePDF( xbin_bounds, xbin_center,    zdf3,  cwhat='shear' )
 
-
-        for jd in VDTB2:
-            
-            print('\n *** Model info at date:',e2c(jd))
-            (idxDate,) = np.where( Zdat2 == jd )
-            nV = len(idxDate)
-            print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
-
-
-            
-        exit(0)
-
-
-        
-        for jd in VDTB1:
-            
-            print('\n *** Preparing PDF plot batch at date:',e2c(jd))
-            (idxDate,) = np.where( Zdat1 == jd )
-            nV = len(idxDate)
-            print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
-
-            if nV>=Nmin:
-                zdef = ZDEF1[idxDate]
-
-            nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear' )
-            nPs, PDF_shr = mjt.computePDF( xbin_bounds_shr, xbin_center_shr,    zdef,  cwhat='shear' )
-
-            kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='shear', cfig='./figs/PDF_shear_'+e2c(jd)+'.png' )
+            #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1)+'.png' )
             #, reskm=reskm,
             #title=cName+cnxtraScl, period=cperiod )
-        exit(0)
 
+            kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1,precision='D')+'.png',
+                                origin=mjt.vorig[0], title='Shear', period=e2c(kd1),
+                                ppdf2=PDF2, Np2=nP2, origin2=mjt.vorig[1], ppdf3=PDF3, Np3=nP3, origin3=mjt.vorig[2] )
 
-    
+            
+
 
 
     VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1 )
     
     if ldo3:
         if lPlotClouds:
-            k0 = PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
-            k0 = PlotCloud( 3, Zdat3, ZDEF3, field=cfield, figname='./figs/Cloud_'+corigin3+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
+            k0 = PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
+            k0 = PlotCloud( 3, Zdat3, ZDEF3, field=cfield, figname='./figs/Cloud_'+corigin3+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
         cfig = 'fig_series_P90_RGPS-BBM-aEVP_'+cfield+'.png'        
         VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2 )
         VDAT3, V90P3 = Construct90P(3, VDTB3, Zdat3, ZDEF3 )
@@ -478,7 +465,7 @@ if __name__ == '__main__':
         
     elif ldo2:
         if lPlotClouds:
-            k0 = PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,0.08), dy=0.01, zoom=1 )
+            k0 = PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
         cfig = 'fig_series_P90_RGPS-BBM'+cfield+'.png'        
         VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2  )
     
