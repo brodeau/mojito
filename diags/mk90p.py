@@ -292,16 +292,16 @@ if __name__ == '__main__':
 
     
     if ldo3:
-        cfig = 'fig_series_P90_RGPS-BBM-aEVP.png'        
+        cfig = 'fig_series_P90_RGPS-BBM-aEVP_'+cfield+'.png'        
         VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2 )
         VDAT3, V90P3 = Construct90P(3, VDTB3, Zdat3, ZDEF3 )
 
         kk= PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.08), dy=0.01 )
         
     elif ldo2:
-        cfig = 'fig_series_P90_RGPS-BBM.png'        
+        cfig = 'fig_series_P90_RGPS-BBM'+cfield+'.png'        
         VDAT2, V90P2 = Construct90P(2, VDTB2, Zdat2, ZDEF2  )
     
     else:
-        cfig = 'fig_series_P90_RGPS.png'        
+        cfig = 'fig_series_P90_RGPS'+cfield+'.png'        
         kk= PlotP90Series( VDAT1, V90P1, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
