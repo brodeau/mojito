@@ -21,7 +21,7 @@ Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to ac
 
 
 
-def Construct90P( ifile, vdates_batch, pdates, pdef ):
+def Construct90P( ifile, vdates_batch, pdates, pdef, origin=None ):
     '''
         * ifile: number of the file treated
         
@@ -29,34 +29,48 @@ def Construct90P( ifile, vdates_batch, pdates, pdef ):
     lmaskArrays = True
     (nbF,) = np.shape(vdates_batch)
     
-    z90p = np.zeros( nbF )
+    Z90P = np.zeros( nbF )
     zdat = np.zeros( nbF, dtype=int )
     imsk = np.zeros( nbF, dtype='i1' )
+
+    zdates, zdef = pdates.copy(), pdef.copy()
+
+    if origin=='RGPS':
+        # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+        from mojito import config as cfg
+        kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
+        print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
+        (idxKeep,) = np.where(zdef>cfg.rc_tot_min)
+        zdef = zdef[idxKeep]
+        zdates = zdates[idxKeep]
     
     ic = 0
     for jd in vdates_batch:
         print('\n *** file #'+str(ifile)+''+e2c(jd))
 
-        (idxDate,) = np.where( pdates == jd )
+        (idxDate,) = np.where( zdates == jd )
         nV = len(idxDate)
         print('         => '+str(nV)+' '+cv_in+' deformation for this date....')
         
-        ztmp = pdef[idxDate]
-        xdef = np.sort(ztmp)
-
-        if xdef.shape != (nV,):
+        ztmp = zdef[idxDate]
+        zdfw = np.sort(ztmp) ; # Sorted in increasing order!
+        #for rr in zdfw:
+        #    print(rr)
+        #exit(0)
+        
+        if zdfw.shape != (nV,):
             print('ERROR [Construct90P()]: problem #1'); exit(0)
 
         ri90 = 0.9*float(nV)
-        i90 = int( floor( ri90 ) )
-        rw = ri90 - float(i90)
+        i90f = int( floor( ri90 ) ) - 1   ; # `-1` because C-indexing...
+        rw = ri90 - float(i90f)           ; # weight for interpolation
 
-        if nV>=Nmin and i90<nV-2:
+        if nV>=Nmin and i90f<nV-2:
             # sample size must be large enough
             # and: otherwize we are too close to the end of the series, this probably a bad batch!
-            z90 = (1.-rw)*xdef[i90] + rw*xdef[i90+1]
+            z90 = (1.-rw)*zdfw[i90f] + rw*zdfw[i90f+1]
             
-            z90p[ic] = z90
+            Z90P[ic] = z90
             zdat[ic] =  jd
             imsk[ic] = 1
             if z90>=Nmin:
@@ -66,21 +80,20 @@ def Construct90P( ifile, vdates_batch, pdates, pdef ):
         ic+=1
 
     if lmaskArrays:
-        z90pm = np.ma.masked_where(imsk!=1, z90p)
+        Z90Pm = np.ma.masked_where(imsk!=1, Z90P)
         zdatm = np.ma.masked_where(imsk!=1, zdat)
     
         zt = np.ma.MaskedArray.compressed( zdatm )
         zx = zt[1:] - zt[:-1]
         if np.any(zx<=0):
             print('ERROR [Construct90P]: `zdatm` is not increasing!'); exit(0)
-        #print(zx)    
         print('')        
-        return zt, np.ma.MaskedArray.compressed( z90pm )
+        return zt, np.ma.MaskedArray.compressed( Z90Pm )
     else:
         (idxM,) = np.where(imsk==0)
-        z90p[idxM] = 0.
+        Z90P[idxM] = 0.
 
-        return zdat, z90p
+        return zdat, Z90P
 
     
 
@@ -270,7 +283,7 @@ if __name__ == '__main__':
     creskm = str(reskm)
     
 
-    VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1  )
+    VDAT1, V90P1 = Construct90P(1, VDTB1, Zdat1, ZDEF1, origin=corigin1 )
 
 
 

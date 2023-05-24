@@ -72,7 +72,7 @@ def initialize( mode='model' ):
 
 
 
-def updateConfig4Scale( res_km,  mode='model' ):
+def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     '''
         * res_km: nominal scale for quadrangles we are dealing with [km]
     '''
@@ -198,8 +198,8 @@ def updateConfig4Scale( res_km,  mode='model' ):
         print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
     
-    print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', np.sqrt([rc_Qarea_min, rc_Qarea_max]))
-    print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
+    if ltalk: print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', np.sqrt([rc_Qarea_min, rc_Qarea_max]))
+    if ltalk: print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
 
     #############################
 
@@ -232,6 +232,6 @@ def updateConfig4Scale( res_km,  mode='model' ):
             rc_t_dev_cancel = 48*3600 ; #lolo?
             #
     if rc_t_dev_cancel > 60:
-        print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
+        if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
     return 0
