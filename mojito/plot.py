@@ -55,7 +55,7 @@ vlwdth = [ 8  ,   5    ,    4   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
 vfills = [ 'none','full','none','none','none']
 
-def _initStyle_( fntzoom=1., color_top='k' ):
+def initStyle( fntzoom=1., color_top='k' ):
     #
     global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail
     #
@@ -221,7 +221,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
 
     if not path.exists('./figs'): mkdir('./figs')
 
-    ki = _initStyle_( fntzoom=zoom , color_top='w' )
+    ki = initStyle( fntzoom=zoom , color_top='w' )
 
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
@@ -261,7 +261,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
 
     if not path.exists('./figs'): mkdir('./figs')
 
-    ki = _initStyle_()
+    ki = initStyle()
 
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
@@ -339,7 +339,7 @@ def ShowQuads( pQuads, cfig='mesh_quad_map.png', rangeX=None, rangeY=None ):
 
     zoom = 1
     zrat = 1./zoom
-    kk = _initStyle_(fntzoom=zoom)
+    kk = initStyle(fntzoom=zoom)
     rsz_annot  = 5*zoom**0.4
 
     #(nbP,) = np.shape(pX) ; # Number of points that defines all the triangles...
@@ -413,7 +413,7 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
     ###  * ppntIDs: (len=nP) ID (integer)  for each point
     '''
     zrat = 1./zoom
-    kk = _initStyle_(fntzoom=zoom)
+    kk = initStyle(fntzoom=zoom)
 
     rsz_annot  = 5*zoom**0.4
 
@@ -518,7 +518,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
     ###     traingle world!
     '''
     zrat = 1./zoom
-    kk = _initStyle_(fntzoom=zoom)
+    kk = initStyle(fntzoom=zoom)
 
     # Colormap:
     if   cwhat=='shr':
@@ -629,7 +629,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
 
     xmax = 0.1
 
-    ki = _initStyle_()
+    ki = initStyle()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     #
@@ -714,7 +714,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
         print('\n *** ERROR [ShowDefQuad]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
 
-    kk = _initStyle_(fntzoom=zoom)
+    kk = initStyle(fntzoom=zoom)
 
     # Colormap:
     if   cwhat=='shr':
@@ -784,7 +784,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
         print('\n *** ERROR [ShowDefQuadGeoArctic]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
 
-    kk = _initStyle_(fntzoom=zoom)
+    kk = initStyle(fntzoom=zoom)
 
     zlat, zlon = ConvertCartesianNPSkm2Geo( pY4, pX4 )
 
@@ -907,7 +907,7 @@ def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
         if reskm>30:
             lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
 
-    ki = _initStyle_()
+    ki = initStyle()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
@@ -1041,7 +1041,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         if reskm>30:
             lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
 
-    ki = _initStyle_()
+    ki = initStyle()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
@@ -1169,7 +1169,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     if np.shape(pF) != (Ns,No):
         print('ERROR [plotScalingDef]: wrong shape for `pF` !'); exit(0)
 
-    ki = _initStyle_()
+    ki = initStyle()
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
@@ -1259,7 +1259,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             vNbPoints[js,jo] = len(idxOk)
 
         
-    ki = _initStyle_()
+    ki = initStyle()
 
     fig = plt.figure( num = 1, figsize=(7,12), dpi=None )
     ax = plt.axes([0.13, 0.06, 0.83, 0.92])
@@ -1433,7 +1433,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
         print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
 
-    kk = _initStyle_(fntzoom=min(1.5,zoom))
+    kk = initStyle(fntzoom=min(1.5,zoom))
 
     zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
     zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )

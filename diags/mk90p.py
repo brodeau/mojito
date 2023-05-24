@@ -84,7 +84,8 @@ def Construct90P( ifile, vdates_batch, pdates, pdef ):
 
     
 
-def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, figname='fig_series_P90.png', vlabels=[], y_range=(0.,0.1), x_range=None, dy=0.01 ):
+def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
+                   figname='fig_series_P90.png', y_range=(0.,0.1), x_range=None, dy=0.01 ):
     '''
         * vt1: time array as Epoch Unix time 
     '''
@@ -118,9 +119,16 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, figname='fig_
     else:
         (xmin,xmax) = (np.min(vt1), np.max(vt1))
 
+        
     vdate1 = np.array([ e2c(vt1[jt], precision='D') for jt in range(nT1) ], dtype='U10')    
     VX1 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate1]
 
+    # Construt the generic time axis for the figure => PRETTY MUCH USELESS!!!!
+    dt_sec = dt_days*24*3600
+    vtg = np.arange(xmin,xmax+dt_sec,dt_sec)
+    vdg = np.array([ e2c(vtg[jt], precision='D') for jt in range(len(vtg)) ], dtype='U10')    
+    VX  = [dt.strptime(d, "%Y-%m-%d").date() for d in vdg]
+    
     if ldo2:
         (nT2,) = np.shape(vt2)
         vdate2 = np.array([ e2c(vt2[jt], precision='D') for jt in range(nT2) ], dtype='U10')    
@@ -131,14 +139,26 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, figname='fig_
         vdate3 = np.array([ e2c(vt3[jt], precision='D') for jt in range(nT3) ], dtype='U10')    
         VX3 = [dt.strptime(d, "%Y-%m-%d").date() for d in vdate3]
         
-    
+
+    kk = mjtp.initStyle( fntzoom=1.5 )
+        
     fig = plt.figure(num = 1, figsize=(12,7), facecolor='w', edgecolor='k')
     ax  = plt.axes([0.07, 0.18, 0.9, 0.75])
 
+
+    #plt.plot(VX, vtg*0.0         , '-', color='k',                     label=None,  zorder=5)
+
+    # Date ticks stuff:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation='60')
+    #ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    #
+    #ax.xaxis.set_minor_formatter(mdates.DateFormatter('%d'))
+    #ax.xaxis.set_minor_locator(mdates.MonthLocator())
+    #ax.xaxis.set_minor_locator(mdates.DayLocator(bymonthday=(1,5,10), interval=3, tz=None))
 
-    plt.plot(VX1, vt1*0.0         , '-', color='k',                     label=None,  zorder=5)
+    
     plt.plot(VX1, V1, 'o-', color=vcol[0], linewidth=vlw[0], markersize=6, alpha=0.9,     label=vorg[0], zorder=10)
     if ldo2:
         plt.plot(VX2, V2, 'o-', color=vcol[1], linewidth=vlw[1], markersize=6, alpha=0.9, label=vorg[1], zorder=10)
@@ -150,11 +170,11 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, figname='fig_
 
     plt.yticks( np.arange(ymin, ymax+dy, dy) )
     ax.set_ylim(ymin,ymax)
-    ##ax.set_xlim(VX1[0],VX1[-1])
+    #ax.set_xlim(VX[0],VX[-1])
 
     if field:
         plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
-    ax.grid(color='k', linestyle='-', linewidth=0.3)
+    ax.grid(color='0.5', linestyle='-', linewidth=0.3)
     plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
 
     #plt.savefig( figname, dpi=120, transparent=False)
@@ -271,4 +291,4 @@ if __name__ == '__main__':
     
     else:
         cfig = 'fig_series_P90_RGPS.png'        
-        kk= PlotP90Series( VDAT1, V90P1, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
+        kk= PlotP90Series( VDAT1, V90P1, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
