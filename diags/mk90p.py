@@ -17,7 +17,7 @@ iplot=1
 izoom=3
 
 lPlotClouds = True
-lPlotPDFs = True
+lPlotPDFs = False
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
@@ -36,6 +36,15 @@ def Construct90P( ifile, vdates_batch, pdates, pdef ):
 
     zdates, zdef = pdates.copy(), pdef.copy()
 
+    # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+    from mojito import config as cfg
+    kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
+    print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean all data!!!')        
+    (idxKeep,) = np.where(pdef>cfg.rc_tot_min)
+    zdef = pdef[idxKeep]
+    zdates = pdates[idxKeep]
+
+    
     ic = 0
     for jd in vdates_batch:
         print('\n *** file #'+str(ifile)+''+e2c(jd))
@@ -47,7 +56,12 @@ def Construct90P( ifile, vdates_batch, pdates, pdef ):
         if nV>=Nmin:
             # sample size must be large enough
             ztmp = zdef[idxDate]
-            Z90P[ic] = np.nanpercentile(ztmp, 90)
+            #print('LOLO: ztmp[-5:]=',ztmp[-5:])
+            #zmax = np.max(ztmp)
+            #ztmp[:] = ztmp[:]/zmax ; # Normalize with highest value            
+            #Z90P[ic] = np.nanpercentile(ztmp, 90, 'median_unbiased')
+            Z90P[ic] = np.percentile(ztmp, 90)
+            #Z90P[ic] = Z90P[ic]*zmax ; # de-normalize!
             zdat[ic] =  jd
             imsk[ic] = 1
             
@@ -338,14 +352,14 @@ if __name__ == '__main__':
     if np.shape(VDTB1) != (nbF1,):
         print('ERROR: problem #0 for file 1!'); exit(0)
 
-    if corigin1=='RGPS':
-        # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
-        from mojito import config as cfg
-        kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
-        print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
-        (idxKeep,) = np.where(ZDEF1>cfg.rc_tot_min)
-        ZDEF1 = ZDEF1[idxKeep]
-        Zdat1 = Zdat1[idxKeep]
+    #if corigin1=='RGPS':
+    #    # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+    #    from mojito import config as cfg
+    #    kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
+    #    print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
+    #    (idxKeep,) = np.where(ZDEF1>cfg.rc_tot_min)
+    #    ZDEF1 = ZDEF1[idxKeep]
+    #    Zdat1 = Zdat1[idxKeep]
 
     if ldo2 or ldo3:
         cf_in2 = argv[2]
