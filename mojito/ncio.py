@@ -239,11 +239,19 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
     print('\n *** [ncSaveCloudBuoys]: About to generate file: '+cf_out+' ...')
     (Nt,) = np.shape(ptime)
     (Nb,) = np.shape(pIDs)
-    if np.shape(pY)!=(Nt,Nb) or np.shape(pX)!=(Nt,Nb) or np.shape(pLat)!=(Nt,Nb) or np.shape(pLon)!=(Nt,Nb):
-        print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
-        exit(0)
-    lSaveMask = (np.shape(mask)  == (Nt,Nb))
-    lSaveTime = (np.shape(xtime) == (Nt,Nb)) ; # time for each buoy!
+    #
+    if Nt>1:
+        if np.shape(pY)!=(Nt,Nb) or np.shape(pX)!=(Nt,Nb) or np.shape(pLat)!=(Nt,Nb) or np.shape(pLon)!=(Nt,Nb):
+            print('ERROR [ncSaveCloudBuoys]: one of the 2D arrays has a wrong shape!!!')
+            exit(0)
+        lSaveMask = (np.shape(mask)  == (Nt,Nb))
+        lSaveTime = (np.shape(xtime) == (Nt,Nb)) ; # time for each buoy!            
+    else:
+        if np.shape(pY)!=(Nb,) or np.shape(pX)!=(Nb,) or np.shape(pLat)!=(Nb,) or np.shape(pLon)!=(Nb,):
+            print('ERROR [ncSaveCloudBuoys]: one of the 1D arrays has a wrong shape!!!')
+            exit(0)
+        lSaveMask = (np.shape(mask)  == (Nb,))
+        lSaveTime = (np.shape(xtime) == (Nb,)) ; # time for each buoy!            
     #
     f_out = Dataset(cf_out, 'w', format='NETCDF4')
     #
@@ -278,16 +286,28 @@ def ncSaveCloudBuoys( cf_out, ptime, pIDs, pY, pX, pLat, pLon, mask=[], xtime=[]
     v_buoy[:] = np.arange(Nb,dtype='i4')
     v_bid[:]  = pIDs[:]
     #
-    for jt in range(Nt):
+    if Nt>1:
+        for jt in range(Nt):
+            v_time[jt]  = ptime[jt]
+            x_lat[jt,:] =  pLat[jt,:]
+            x_lon[jt,:] =  pLon[jt,:]
+            x_ykm[jt,:] =    pY[jt,:]
+            x_xkm[jt,:] =    pX[jt,:]
+            if lSaveMask:
+                v_mask[jt,:] = mask[jt,:]
+            if lSaveTime:
+                x_tim[jt,:] = xtime[jt,:]
+    else:
+        jt = 0
         v_time[jt]  = ptime[jt]
-        x_lat[jt,:] =  pLat[jt,:]
-        x_lon[jt,:] =  pLon[jt,:]
-        x_ykm[jt,:] =    pY[jt,:]
-        x_xkm[jt,:] =    pX[jt,:]
+        x_lat[jt,:] =  pLat[:]
+        x_lon[jt,:] =  pLon[:]
+        x_ykm[jt,:] =    pY[:]
+        x_xkm[jt,:] =    pX[:]
         if lSaveMask:
-            v_mask[jt,:] = mask[jt,:]
+            v_mask[jt,:] = mask[:]
         if lSaveTime:
-            x_tim[jt,:] = xtime[jt,:]
+            x_tim[jt,:] = xtime[:]
     #
     if corigin:
          f_out.Origin = corigin

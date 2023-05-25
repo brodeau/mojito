@@ -76,8 +76,6 @@ if __name__ == '__main__':
         kf = mjt.ShowBuoysMap( idate, zPGC[:,0], zPGC[:,1], pvIDs=[], cfig='buoys_Q2NC.png', nmproj='CentralArctic', cnmfig=None,
                                ms=5, ralpha=0.5, lShowDate=True, zoom=1., title=None )
 
-
-
     
     ##############################
     # Time to save the stuff !!! #
@@ -85,10 +83,10 @@ if __name__ == '__main__':
 
     cf_nc_out = str.replace( cfQin, '.npz', '.nc' )
 
-    print('   * Saving file: '+cf_nc_out)
-    #kk = mjt.ncSaveCloudBuoys( cf_nc_out, ztim, vIDs, xYkm, xXkm, xlat, xlon, mask=xmsk,
-    #                                   xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
-
+    print('   * Saving file: '+cf_nc_out+' (only 1 record!)')
+    kk = mjt.ncSaveCloudBuoys( cf_nc_out, [ idate ], zIDs, zPXY[:,0], zPXY[:,1], zPGC[:,0], zPGC[:,1],
+                                       xtime=ztim, fillVal=mjt.FillValue, corigin='RGPS' )
+    #mask=xmsk,
 
 
     
