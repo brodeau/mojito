@@ -44,6 +44,8 @@ if __name__ == '__main__':
     Nrec = len(listnpz)
 
     print(' *** We have '+str(Nrec)+' files, and hence '+str(Nrec)+' records in output file!')
+    if Nrec<1:
+        exit(0)
     for ff in listnpz:
         print('       * '+ff)
         mjt.chck4f(ff)
@@ -56,7 +58,7 @@ if __name__ == '__main__':
 
         # Dates as string from file name:
         cfQinB = path.basename(cfQin)
-        print(cfQinB)
+        cfig_root = split('\.',cfQinB)[0]    
         zsfn = split('_',cfQinB)
                 
         if jr==0:
@@ -92,7 +94,7 @@ if __name__ == '__main__':
             # Show the quads as just read:
             vrngX = mjt.roundAxisRange( QUADin.PointXY[:,0], rndKM=50. )
             vrngY = mjt.roundAxisRange( QUADin.PointXY[:,1], rndKM=50. )    
-            kk = mjt.ShowTQMesh( QUADin.PointXY[:,0], QUADin.PointXY[:,1], cfig='QUADin_as_read_rec%2.2i'%(jr)+'.png',
+            kk = mjt.ShowTQMesh( QUADin.PointXY[:,0], QUADin.PointXY[:,1], cfig='figs/QUADin_as_read_'+cfig_root+'_rec%2.2i'%(jr)+'.png',
                                  ppntIDs=QUADin.PointIDs, QuadMesh=QUADin.MeshVrtcPntIdx, qIDs=QUADin.QuadIDs,
                                  lGeoCoor=False, zoom=zoom, rangeX=vrngX, rangeY=vrngY, lShowIDs=lShowIDs )
     
@@ -103,7 +105,7 @@ if __name__ == '__main__':
         #exit(0)
         
         if iplot>0:
-            kf = mjt.ShowBuoysMap( idate, zPGC[:,0], zPGC[:,1], pvIDs=[], cfig='buoys_Q2NC_rec%2.2i'%(jr)+'.png',
+            kf = mjt.ShowBuoysMap( idate, zPGC[:,0], zPGC[:,1], pvIDs=[], cfig='figs/buoys_Q2NC_'+cfig_root+'_rec%2.2i'%(jr)+'.png',
                                    nmproj='CentralArctic', cnmfig=None,
                                    ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
@@ -130,7 +132,7 @@ if __name__ == '__main__':
         
             xPxy2, vTime2, xQpnts2, vPids2, vQnam2, vQIDs2  = mjt.RecycleQuads( xPXY[jr,:,:], xtim[jr,:], zIDs, QUADin )
         
-            kk = mjt.ShowTQMesh( xPxy2[:,0], xPxy2[:,1], cfig='QUAD_RECONSTRUCTED_rec%2.2i'%(jr)+'.png',
+            kk = mjt.ShowTQMesh( xPxy2[:,0], xPxy2[:,1], cfig='figs/QUAD_RECONSTRUCTED_'+cfig_root+'_rec%2.2i'%(jr)+'.png',
                                  ppntIDs=vPids2, QuadMesh=xQpnts2, qIDs=vQIDs2,
                                  lGeoCoor=False, zoom=zoom, rangeX=vrngX, rangeY=vrngY, lShowIDs=lShowIDs )
 

@@ -15,6 +15,9 @@ XTRA_SFX_SI3=""
 
 MODE="model"
 
+ISEED_BASE='selection' ; # 'selection' or 'quads' => will seed based on one or the other
+
+
 NJPAR=4 ; # number of jobs we can launch in //
 
 host=`hostname | cut -d '.' -f2`
@@ -23,6 +26,7 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         XTRA_SFX_SI3="_LIGHT480"
         LIST_NEMO_EXP="BBM00"
+        ISEED_BASE='quads'
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
@@ -46,8 +50,8 @@ case ${host} in
         exit
 esac
 
-#export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps/nc"
-export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps/nc"
+#export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
+export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
 

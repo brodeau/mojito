@@ -11,7 +11,7 @@ XTRASFX=""
 EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 
 # 1/ populate the proper NC files to seed from:
-echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS} for RESKM = ${RESKM}"
+echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
 cxtraRES=""
 if [ "${LIST_RD_SS}" = "" ]; then
     cxtraRES="_${RESKM}km"
@@ -24,7 +24,7 @@ fi
 echo " RESKM = ${RESKM}"
 echo " cxtraRES = ${cxtraRES}"
 
-list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
 
 nbf=`echo ${list_seed_nc} | wc -w`
 
