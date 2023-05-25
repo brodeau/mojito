@@ -418,8 +418,6 @@ def Geo2CartNPSkm1D( pcoorG, lat0=70., lon0=-45. ):
     if n2!=2:
         print(' ERROR [Geo2CartNPSkm1D()]: input array `pcoorG` has a wrong a shape!')
         exit(0)
-    #
-    print('LOLO Geo2CartNPSkm1D => lat0, lon0 =', lat0, lon0)
     
     crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
@@ -429,23 +427,29 @@ def Geo2CartNPSkm1D( pcoorG, lat0=70., lon0=-45. ):
     return np.array([ zy/1000., zx/1000. ]).T
 
 
-def CartNPSkm2Geo1D( pcoorC, lat0=70., lon0=-45. ):
+def CartNPSkm2Geo1D( pcoorC, lat0=70., lon0=-45.,  convArray='C' ):
     '''
-         => from cartesian (x,y)[km] with RGPS' `NorthPolarStereo` proj to Geo coor. (lon,lat)[degrees] !
+         => from cartesian (Y,X) coordinates [km] with RGPS' `NorthPolarStereo` proj
+         => to Geo coor. (lat,lon) [degrees] !
     '''
     from cartopy.crs import PlateCarree, NorthPolarStereo
     #
     (_,n2) = np.shape(pcoorC)
     if n2!=2:
-        print(' ERROR [CartNPSkm2Geo1D()]: input array `pcoorC` has a wrong a shape!')
-        exit(0)    
+        print(' ERROR [CartNPSkm2Geo1D()]: input array `pcoorC` has a wrong a shape!'); exit(0)    
     #
     crs_src = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     #
-    zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*pcoorC[:,1], 1000.*pcoorC[:,0]).T
+    if convArray=='C':
+        zlon,zlat,_ = crs_trg.transform_points(crs_src, 1000.*pcoorC[:,1], 1000.*pcoorC[:,0]).T
+        zGC = np.array( [zlat, zlon] ).T
+    elif convArray=='F':
+        zGC = np.array( crs_trg.transform_points(crs_src, 1000.*pcoorC[:,0], 1000.*pcoorC[:,1]) )
+    else:
+        print(' ERROR [CartNPSkm2Geo1D()]: `convArray` can only be "C" or "F"!'); exit(0)
     #
-    return np.array([zlat, zlon]).T
+    return zGC
 
 
 

@@ -146,7 +146,7 @@ class Quadrangle:
         self.nP        = nP ; # number of points making the quadrangles
         self.nQ        = nQ ; # number of quadrangles (nQ < nP)
         self.length    = nQ ; #    "        "
-        self.date      = date ;  # as a string!
+        self.date      = str(date) ;  # as a string!
 
         # NumPy Arrays:
         self.PointIDs     = np.array( vPIDs,   dtype=int )   ; # point IDs   => shape = (nP)
