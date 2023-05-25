@@ -67,8 +67,8 @@ if __name__ == '__main__':
     print('   =>',Np,'points and',Nq,'Quads!\n      * Mean date: '+cdate)
 
 
-    if iplot>0:
-        # Show the quads:
+    if idebug>0 and iplot>0:
+        # Show the quads as just read:
         vrngX = mjt.roundAxisRange( QUADin.PointXY[:,0], rndKM=50. )
         vrngY = mjt.roundAxisRange( QUADin.PointXY[:,1], rndKM=50. )    
         kk = mjt.ShowTQMesh( QUADin.PointXY[:,0], QUADin.PointXY[:,1], cfig='QUADin_as_read.png',
@@ -88,25 +88,28 @@ if __name__ == '__main__':
     # Time to save the stuff !!! #
     ##############################
 
-    cf_nc_out = str.replace( cfQin, '.npz', '.nc' )
+    cf_nc_out = str.replace( cfQin, 'npz', 'nc' )
 
     print('   * Saving file: '+cf_nc_out+' (only 1 record!)')
-    kk = mjt.ncSaveCloudBuoys( cf_nc_out, [ idate ], zIDs, zPXY[:,0], zPXY[:,1], zPGC[:,0], zPGC[:,1],
+    kk = mjt.ncSaveCloudBuoys( cf_nc_out, [ idate ], zIDs, zPXY[:,1], zPXY[:,0], zPGC[:,1], zPGC[:,0],
                                        xtime=ztim, fillVal=mjt.FillValue, corigin='RGPS' )
 
 
 
-    # Now! We have a cloud of points read (saved) in the netCDF file that has all the points involved in the definition
-    # of the quads we need.
-    # We want to use the this cloud of point, together with the quads pattern known in the Quad file we use to reconstruct
-    # exactly the same quads!!!
-
-    xPxy2, vTime2, xQpnts2, vPids2, vQnam2, vQIDs2  = mjt.RecycleQuads( zPXY[:,:], ztim, zIDs, QUADin )
-
-
-    kk = mjt.ShowTQMesh( xPxy2[:,0], xPxy2[:,1], cfig='QUAD_RECONSTRUCTED.png',
-                         ppntIDs=vPids2, QuadMesh=xQpnts2, qIDs=vQIDs2,
-                         lGeoCoor=False, zoom=zoom, rangeX=vrngX, rangeY=vrngY, lShowIDs=lShowIDs )
-
-    #ppntIDs=vPids2, QuadMesh=QUADin.MeshVrtcPntIdx, qIDs=QUADin.QuadIDs,
+    if idebug>0:
+        # Control what we plan to do later on once the model has advected this cloud of points...
+        
+        # Now! We have a cloud of points read (saved) in the netCDF file that has all the points involved in the definition
+        # of the quads we need.
+        # We want to use the this cloud of point, together with the quads pattern known in the Quad file we use to reconstruct
+        # exactly the same quads!!!
+    
+        xPxy2, vTime2, xQpnts2, vPids2, vQnam2, vQIDs2  = mjt.RecycleQuads( zPXY[:,:], ztim, zIDs, QUADin )
+    
+    
+        kk = mjt.ShowTQMesh( xPxy2[:,0], xPxy2[:,1], cfig='QUAD_RECONSTRUCTED.png',
+                             ppntIDs=vPids2, QuadMesh=xQpnts2, qIDs=vQIDs2,
+                             lGeoCoor=False, zoom=zoom, rangeX=vrngX, rangeY=vrngY, lShowIDs=lShowIDs )
+    
+        #ppntIDs=vPids2, QuadMesh=QUADin.MeshVrtcPntIdx, qIDs=QUADin.QuadIDs,
     
