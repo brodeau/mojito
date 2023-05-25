@@ -446,6 +446,7 @@ def CartNPSkm2Geo1D( pcoorC, lat0=70., lon0=-45.,  convArray='C' ):
         zGC = np.array( [zlat, zlon] ).T
     elif convArray=='F':
         zGC = np.array( crs_trg.transform_points(crs_src, 1000.*pcoorC[:,0], 1000.*pcoorC[:,1]) )
+        zGC = zGC[:,:2] ; # cause 2nd dim is of size 3...
     else:
         print(' ERROR [CartNPSkm2Geo1D()]: `convArray` can only be "C" or "F"!'); exit(0)
     #
