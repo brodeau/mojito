@@ -23,7 +23,7 @@ from mojito.util import epoch2clock as e2c
 
 idebug = 0
 
-iplot = 0 ; # Create figures to see what we are doing...
+iplot = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
@@ -98,21 +98,22 @@ if __name__ == '__main__':
     
     crd_ss = None
     
-    if not len(argv) in [5,6]:
-        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <basic_res_km> <mode (rgps,model,xlose)> (<rd_ss_km>)')
+    if not len(argv) in [6,7]:
+        print('Usage: '+argv[0]+' <file_mojito.nc> <records to use (C), comma-separated> <npz_model_Quad_file> <basic_res_km> <mode (rgps,model,xlose)> (<rd_ss_km>)')
         exit(0)
 
     cf_nc_in = argv[1]
-    lstrec = argv[2]
-    creskm = argv[3]
+    lstrec  = argv[2]
+    cf_Q_npz = argv[3]
+    creskm = argv[4]
     reskm = int(creskm)
-    quality_mode = argv[4]
+    quality_mode = argv[5]
 
     if not quality_mode  in ['thorough','model','rgps','xlose']:
         print('ERROR => unknow mode: '+mode+'!') ; exit(0)
     
-    if len(argv)==6:
-        crd_ss = argv[5]
+    if len(argv)==7:
+        crd_ss = argv[6]
 
     
     vcrec = split(',',lstrec)
@@ -124,6 +125,7 @@ if __name__ == '__main__':
     del vcrec
 
     mjt.chck4f(cf_nc_in)
+    mjt.chck4f(cf_Q_npz)
     
     if not path.exists('./npz'): mkdir('./npz')
     if iplot>0:
@@ -243,163 +245,51 @@ if __name__ == '__main__':
     # 1st record #
     ##############
 
+
     jr, jrec, cdats, cdate, cfbase1, cf_npzQ1 = _init4rec_( 0, vRec, vdate, cdate0, cfstr, creskm, crd_ss )
+
+    print('\n *** Quad recycling for 1st record jr=',jr)
+    print('      => based on Quads specs found in file: '+cf_Q_npz)
+
+    QUADStmplt = mjt.LoadClassPolygon( cf_Q_npz, ctype='Q' )
+
+
+    nbP = QUADStmplt.nP
+    nbQ = QUADStmplt.nQ
     
-    #jr   = 0
-    #jrec = vRec[jr]
-    #print('\n\n *** QUAD-MESH GENERATION => record #'+str(jrec)+': record = '+str(jr))
-    #cdats = e2c(vdate[jr])
-    #cdate = _formDate_( vdate[jr] )
-    #cfbase1 = cfstr+'_'+cdate0+'t0_'+cdate+'_'+creskm+'km'
-    #if crd_ss:
-    #    cfbase1 = cfstr+'_'+cdate0+'t0_'+cdate+'_'+crd_ss+'-'+creskm+'km'        
-    #print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase1)
-    #cf_npzQ1 = './npz/Q-mesh_'+cfbase1+'.npz'
+    print('      => number of Quads and Points in this template npz file:',nbQ,nbP)
     
-    print('\n *** Delaunay triangulation for 1st record!')
+    # Recycling Quads of template file using new info read in netCDF file:
+    xPxy1, vTime1, xQpnts1, vPids1, vQnam1, vQIDs1  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADStmplt,  iverbose=idebug )
+    print('      => Recycling done for 1st record! :)\n')
+    del QUADStmplt
 
-    cf_npzT1 = './npz/T-mesh_'+cfbase1+'.npz'
-
-    # Generating triangular meshes out of the cloud of points for 1st record:
-    lOK = False
-    while not lOK:
-
-        TRI = Delaunay(zXY[:,:,jr])
-        
-        xTpnts = TRI.simplices.copy() ; # shape = (Nbt,3) A simplex of 2nd order is a triangle! *_*
-        (NbT,_) = np.shape(xTpnts) ; # NbT => number of triangles
-        xNeighborIDs = TRI.neighbors.copy() ;  # shape = (Nbt,3)
-
-        # For some reasons, here, `xTpnts` can involve less points than the number of points
-        # fed into Delaunay (zXY), if it is the case we have to shrink `zXY`, `vIDs`, `zPnm`
-        # accordingly...
-        PntIdxInUse = np.unique( xTpnts.flatten() )
-        NbPnew      = len(PntIdxInUse)
-        lOK = ( NbPnew == NbP )
-
-        if not lOK:
-            if NbPnew > NbP:
-                print('ERROR: `NbPnew > NbP` !!!'); exit(0)
-            print('\n *** Need to cancel the '+str(NbP-NbPnew)+' points that vanished in Delaunay triangulation!')
-            mask  = np.zeros(  NbP, dtype=int )
-            zPntIdx0 = np.arange( NbP, dtype=int )
-            _,ind2keep,_ = np.intersect1d(zPntIdx0, PntIdxInUse, return_indices=True); # retain only indices of `zPntIdx0` that exist in `PntIdxInUse`
-            mask[ind2keep] = 1
-            if np.sum(mask) != NbPnew:
-                print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
-            zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
-            del zPntIdx0, mask, ind2keep
-            NbP = NbPnew
-            print('      => done! Only '+str(NbP)+' points left in the game...')
-
-        del PntIdxInUse, NbPnew
-
-    ### while not lOK
-    print('\n *** We have '+str(NbT)+' triangles!')
-
+    QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )        
+    print('      => "QUADS1" constructed! :)\n')
     
-    # Conversion to the `Triangle` class:
-    TRIAS = mjt.Triangle( zXY[:,:,jr], xTpnts, xNeighborIDs, vIDs, ztim[:,jr], zPnm, origin=corigin )
-    del xTpnts, xNeighborIDs, TRI
-
-    # Info on the triangles:
-    if idebug>0:
-        zlngth = np.mean( TRIAS.lengths(), axis=1)
-        zml = np.mean(zlngth)
-        print('   => mean length and stdev of the sides of all triangles =',zml,mjt.StdDev( zml, zlngth ), 'km')
-        del zlngth, zml
-    
-    # Merge triangles into quadrangles:
-    xPxy1, vPids1, vTime1, xQpnts1, vQnam1 = mjt.Tri2Quad( TRIAS, anglRtri=(cfg.rc_Tang_min,cfg.rc_Tang_max),
-                                                      ratioD=cfg.rc_dRatio_max, anglR=(cfg.rc_Qang_min,cfg.rc_Qang_max),
-                                                      areaR=(cfg.rc_Qarea_min,cfg.rc_Qarea_max), areaIdeal=zA_ideal,
-                                                      idbglev=idebug )
-
-    lquit = ( np.shape(xPxy1)==(0,) or np.shape(xQpnts1)==(0,) )
-    if not lquit:
-        (nbP,_), (nbQ,_) = np.shape(xPxy1), np.shape(xQpnts1)                
-        lquit = (nbQ<=0)
-    if lquit:
-        print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
-        
-    print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')
-
-
-    if corigin == 'RGPS':
-        nbQo,nbPo = nbQ,nbP
-        # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
-        xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _, _ = mjt.CancelQuadVrtcTDev( xPxy1, vPids1, vTime1, xQpnts1, vQnam1,
-                                                                   cfg.rc_t_dev_cancel, mode=mode_ctl_vrtc )
-        (nbP,_), (nbQ,_) = np.shape(xPxy1), np.shape(xQpnts1)
-        print(' *** '+str(nbQo-nbQ)+' quads ('+str(nbPo-nbP)+' points) were supressed for inconsistent time across vertices! (t_dev<'
-              +str(round(cfg.rc_t_dev_cancel/3600.,3))+'h)')
-        
-    # Save the triangular mesh info:
-    mjt.SaveClassPolygon( cf_npzT1, TRIAS, ctype='T', origin=corigin )
-
-    # To be used for other record, indices of Points to keep for Quads:
-    _,ind2keep,_ = np.intersect1d(vIDs, vPids1, return_indices=True); # retain only indices of `vIDs` that exist in `vPids1`
-
-
-    # Plots specific to `jrec==0`:
     if iplot>0:
-        # We need to find a descent X and Y range for the figures:
-        vrngX = mjt.roundAxisRange( TRIAS.PointXY[:,0], rndKM=50. )
-        vrngY = mjt.roundAxisRange( TRIAS.PointXY[:,1], rndKM=50. )
-        #
-        if iplot>2:
-            # Show triangles on a map:
-            print('\n *** Launching Triangle plot!')
-            kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=fdir+'/fig01_Mesh_Triangles_'+cfbase1+'.png',
-                                 ppntIDs=TRIAS.PointIDs,
-                                 TriMesh=TRIAS.MeshVrtcPntIdx, lGeoCoor=False, zoom=rzoom_fig,
-                                 rangeX=vrngX, rangeY=vrngY )
-            
-
-    #
-    #if lExportCloudPoints:  
-    #    # To be saved in a NC file:
-    #    zpid  = np.zeros(nbP, dtype=int)
-    #    zPxy  = np.zeros((nbP,2,Nrec))
-    #    zPgc  = np.zeros((nbP,2,Nrec))
-    #    zmask = np.zeros((nbP,Nrec))
-    #    ztime = np.zeros((nbP,Nrec))
-    #    zPxy[:,:,jr] = xPxy1[:,:]
-    #    for jb in range(nbP):
-    #        [zx,zy] = xPxy1[jb,:]
-    #        #print(' zx,zy =',zx,zy)
-    #        (idx,) = np.where( (np.round(zXY[:,0,jr],6) == round(zx,6)) & (np.round(zXY[:,1,jr],6) == round(zy,6)) )
-    #        #print('idx =',idx)
-    #        if len(idx)!=1:
-    #            print('ERROR: `len(idx)!=1` !'); exit(0)
-    #        zPgc[jb,:,jr] =  zGC[idx[0],:,jr]
-    #        zpid[jb]      = vIDs[idx[0]]
-    #        zmask[jb,jr] = zmsk[idx[0],jr]
-    #        ztime[jb,jr] =  ztim[idx[0],jr]
-        
-    
-    
-    #######################################################################################################
-
-    ##############
-    # 2nd record #
-    ##############
-
-    jr, jrec, cdats, cdate, cfbase2, cf_npzQ2 = _init4rec_( 1, vRec, vdate, cdate0, cfstr, creskm, crd_ss )
-
-    print('\n *** Quad recycling for jr=',jr)
-
-    QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )
-
+        vrngX = mjt.roundAxisRange( QUADS1.PointXY[:,0], rndKM=50. )
+        vrngY = mjt.roundAxisRange( QUADS1.PointXY[:,1], rndKM=50. )
     if iplot>1:
         print('\n *** Launching Quad-only plot for Quads at 1st record (BEFORE 2nd pass REMOVAL )!')
         kk = mjt.ShowTQMesh( QUADS1.PointXY[:,0], QUADS1.PointXY[:,1], cfig=fdir+'/fig03_BEFORE-clean_QUADS1_'+cfbase1+'.png',
                              ppntIDs=QUADS1.PointIDs, QuadMesh=QUADS1.MeshVrtcPntIdx, qIDs=QUADS1.QuadIDs,
                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
+
+    #######################################################################################################
+
+    ##############
+    # 2nd record #
+    ##############    
+    jr, jrec, cdats, cdate, cfbase2, cf_npzQ2 = _init4rec_( 1, vRec, vdate, cdate0, cfstr, creskm, crd_ss )
+
+    print('\n *** Quad recycling for jr=',jr)
+
     
     # Recycling Quads found at 1st record (QUADS1):
     xPxy2, vTime2, xQpnts2, vPids2, vQnam2, vQIDs2  = mjt.RecycleQuads( zXY[:,:,jr], ztim[:,jr], vIDs, QUADS1,  iverbose=idebug )
-
+    print('      => Recycling done for 2nd record! :)\n')
+    
     # Time to spot possible issues in these recycled quads at 2nd record and fix them...
     ifix = 0 ; # if ifix>0 later, then QUADS1 has to be rebuilt!
     
@@ -428,28 +318,17 @@ if __name__ == '__main__':
     #
     del zQcoor, zareas
         
-    # Fix #2: here too, we must ensure that no quadrangle bears too much time inconsitency across vertices:
-    if corigin == 'RGPS':
-        nbQo,nbPo = nbQ,nbP
-        # Check if time deviation accros the 4 vertices of a quadrangle is too large, and cancel it if so...
-        xPxy2, vPids2, vTime2, xQpnts2, vQnam2, idxQk, idxPk = mjt.CancelQuadVrtcTDev( xPxy2, vPids2, vTime2, xQpnts2, vQnam2,
-                                                                   cfg.rc_t_dev_cancel, mode=mode_ctl_vrtc )
-        (nbP,_), (nbQ,_) = np.shape(xPxy2), np.shape(xQpnts2)
-        if nbQ<nbQo:
-            print('    * '+str(nbQo-nbQ)+' quads in second records had to be supressed because of vertices time inconsistencies!!!')
-            print('       => cancelling the same quads at 1st record as well!')
-            xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _ = mjt.KeepSpcfdQuads( idxQk, xPxy1, vPids1, vTime1, xQpnts1, vQnam1 )
-            ifix+=1
-
-
     
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
     if ifix>0:
+        print('WARNING: fixing (updating) QUADS1 !!!')
         QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )        
     QUADS2     = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
-
+    print('      => "QUADS2" constructed! :)\n')
+    
     del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
     del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2
+
 
     
     k1 = _QuadStat_( 0, QUADS1 )
@@ -462,14 +341,6 @@ if __name__ == '__main__':
         
     if iplot>0:
 
-        if iplot>1:
-            # Show triangles together with the quadrangles on a map:
-            print('\n *** Launching Triangle+Quad plot!')
-            kk = mjt.ShowTQMesh( TRIAS.PointXY[:,0], TRIAS.PointXY[:,1], cfig=fdir+'/fig02_TRI1_'+cfbase1+'.png',
-                                 ppntIDs=TRIAS.PointIDs, TriMesh=TRIAS.MeshVrtcPntIdx,
-                                 pX_Q=QUADS1.PointXY[:,0], pY_Q=QUADS1.PointXY[:,1], QuadMesh=QUADS1.MeshVrtcPntIdx,
-                                 lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
-            
         if iplot>2:
             # Show only points composing the quadrangles:
             kk = mjt.ShowTQMesh( QUADS1.PointXY[:,0], QUADS1.PointXY[:,1], cfig=fdir+'/fig03a_QUADS1_'+cfbase1+'.png',
@@ -492,59 +363,11 @@ if __name__ == '__main__':
 
 
 
-    del TRIAS, QUADS1, QUADS2
+    del QUADS1, QUADS2
 
     print('\n --- Over!\n')
     
-    exit(0)
-    
 
-    #if lExportCloudPoints:
-    #    # To be save in a NC file:
-    #    zPxy[:,:,jr] = xPxy2[:,:]
-    #    for jb in range(nbP):
-    #        [zx,zy] = xPxy2[jb,:]
-    #        (idx,) = np.where( (np.round(zXY[:,0,jr],6) == round(zx,6)) & (np.round(zXY[:,1,jr],6) == round(zy,6)) )
-    #        if len(idx)!=1:
-    #            print('ERROR: `len(idx)!=1` !'); exit(0)
-    #        zPgc[jb,:,jr] =  zGC[idx[0],:,jr]
-    #        zpid[jb]      = vIDs[idx[0]]
-    #        zmask[jb,jr]  = zmsk[idx[0],jr]
-    #        ztime[jb,jr]  =  ztim[idx[0],jr]
-
-
-    #if lExportCloudPoints:
-    #    cf_nc_out = str.replace( cf_nc_in, '.nc', '_postQG.nc' )
-    #
-    #    zYkm = np.zeros( (Nrec,nbP) )
-    #    zXkm = np.zeros( (Nrec,nbP) )
-    #    zlat = np.zeros( (Nrec,nbP) )
-    #    zlon = np.zeros( (Nrec,nbP) )
-    #
-    #    zYkm[:,:] = zPxy[:,1,:].T
-    #    zXkm[:,:] = zPxy[:,0,:].T
-    #    zlat[:,:] = zPgc[:,1,:].T
-    #    zlon[:,:] = zPgc[:,0,:].T
-    #
-    #    print('   * saving '+cf_nc_out)
-    #
-    #    kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, zpid, zYkm, zXkm, zlat, zlon, mask=zmask.T,
-    #                               xtime=ztime.T, fillVal=mjt.FillValue, corigin=corigin )
-    #    if iplot>0:
-    #        # Ploting what we saved in NC file:
-    #        for jr in range(Nrec):
-    #            cfig = str.replace( cf_nc_out, '.nc', '_postQG'+'_rec%3.3i'%(jr)+'.png' )
-    #            cfig = str.replace( cfig , './nc', fdir )
-    #            kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfig,
-    #                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
-    #
-
-    
-
-    
-
-                
-        
     
     
 
