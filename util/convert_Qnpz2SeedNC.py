@@ -15,7 +15,7 @@ import mojito as mjt
 from mojito import config as cfg
 
 idebug = 0
-iplot  = 1
+iplot  = 1 ; lShowIDs=True ; zoom=5
 
 #================================================================================================
 
@@ -56,9 +56,6 @@ if __name__ == '__main__':
     
 
     
-    #cdate = QUADin.date
-    
-
     
     ztim = QUADin.PointTime
     zIDs = QUADin.PointIDs
@@ -69,12 +66,22 @@ if __name__ == '__main__':
 
     print('   =>',Np,'points and',Nq,'Quads!\n      * Mean date: '+cdate)
 
+
+    if iplot>0:
+        # Show the quads:
+        vrngX = mjt.roundAxisRange( QUADin.PointXY[:,0], rndKM=50. )
+        vrngY = mjt.roundAxisRange( QUADin.PointXY[:,1], rndKM=50. )    
+        kk = mjt.ShowTQMesh( QUADin.PointXY[:,0], QUADin.PointXY[:,1], cfig='QUADin_as_read.png',
+                             ppntIDs=QUADin.PointIDs, QuadMesh=QUADin.MeshVrtcPntIdx, qIDs=QUADin.QuadIDs,
+                             lGeoCoor=False, zoom=zoom, rangeX=vrngX, rangeY=vrngY, lShowIDs=lShowIDs )
+
+    
     # Geographic coordinates:
     zPGC = mjt.CartNPSkm2Geo1D( zPXY, convArray='F' )
 
     if iplot>0:
         kf = mjt.ShowBuoysMap( idate, zPGC[:,0], zPGC[:,1], pvIDs=[], cfig='buoys_Q2NC.png', nmproj='CentralArctic', cnmfig=None,
-                               ms=5, ralpha=0.5, lShowDate=True, zoom=1., title=None )
+                               ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
 
     
     ##############################
@@ -86,28 +93,20 @@ if __name__ == '__main__':
     print('   * Saving file: '+cf_nc_out+' (only 1 record!)')
     kk = mjt.ncSaveCloudBuoys( cf_nc_out, [ idate ], zIDs, zPXY[:,0], zPXY[:,1], zPGC[:,0], zPGC[:,1],
                                        xtime=ztim, fillVal=mjt.FillValue, corigin='RGPS' )
-    #mask=xmsk,
 
 
+
+    # Now! We have a cloud of points read (saved) in the netCDF file that has all the points involved in the definition
+    # of the quads we need.
+    # We want to use the this cloud of point, together with the quads pattern known in the Quad file we use to reconstruct
+    # exactly the same quads!!!
+
+    xPxy2, vTime2, xQpnts2, vPids2, vQnam2, vQIDs2  = mjt.RecycleQuads( zPXY[:,:], ztim, zIDs, QUADin )
+
+
+    kk = mjt.ShowTQMesh( xPxy2[:,0], xPxy2[:,1], cfig='QUAD_RECONSTRUCTED.png',
+                         ppntIDs=vPids2, QuadMesh=xQpnts2, qIDs=vQIDs2,
+                         lGeoCoor=False, zoom=zoom, rangeX=vrngX, rangeY=vrngY, lShowIDs=lShowIDs )
+
+    #ppntIDs=vPids2, QuadMesh=QUADin.MeshVrtcPntIdx, qIDs=QUADin.QuadIDs,
     
-
-    # Masking:
-    #xXkm = np.ma.masked_where( xmsk==0, xXkm )
-    #xYkm = np.ma.masked_where( xmsk==0, xYkm )
-    
-    #cout_root = 'SELECTION_RGPS_S'+'%3.3i'%(jS)+'_dt'+cdtbin_h
-
-
-    # GENERATION OF COMPREHENSIVE NETCDF FILE:
-    #  * 1 file per batch
-    #  * for the time variable inside netCDF, we chose the mean time accross buoys in the bin used aka `vtim`
-    #  * for the file name we chose the time bin bounds of scanned period
-    #cdt1, cdt2 = split(':',mjt.epoch2clock(VT[0,1]))[0] , split(':',mjt.epoch2clock(VT[-1,2]))[0]  ; # keeps at the hour precision...
-    #cdt1, cdt2 = str.replace( cdt1, '-', '') , str.replace( cdt2, '-', '')
-    #cdt1, cdt2 = str.replace( cdt1, '_', 'h') , str.replace( cdt2, '_', 'h')
-
-
-
-
-    #cf_nc_out = './nc/'+cout_root+'_'+cdt1+'_'+cdt2+'.nc'
-
