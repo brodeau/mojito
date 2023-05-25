@@ -73,5 +73,4 @@ for ff in ${list_seed_qnpz}; do
 
 done
 
-exit
-rm -f *.png
+wait

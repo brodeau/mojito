@@ -3,9 +3,10 @@
 YEAR="1997"
 
 SITRCK_DIR="${HOME}/DEV/sitrack"
-MOJITO_DIR="${HOME}/DEV/mojito"
 
 . ../TEST_rgps/conf.bash
+
+
 
 NEMO_CONF="NANUK4"
 LIST_NEMO_EXP="BBM2302 EVP2302"
@@ -17,8 +18,11 @@ XTRA_SFX_SI3=""
 
 ISEED_BASE='selection' ; # 'selection' or 'quads' => will seed based on one or the other
 
-
 NJPAR=4 ; # number of jobs we can launch in //
+
+export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
+#export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
+
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
@@ -54,8 +58,6 @@ esac
 echo " * MIND: mode = ${MODE} !"
 sleep 1
 
-#export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
-export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
 
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
 
