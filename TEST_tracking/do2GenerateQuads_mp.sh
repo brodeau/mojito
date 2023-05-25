@@ -2,7 +2,8 @@
 
 . ./conf.bash
 
-EXE1="python3 -u ${MOJITO_DIR}/generate_quad_mesh.py"
+EXE="python3 -u ${MOJITO_DIR}/generate_quad_mesh.py"
+EXE2="python3 -u ${MOJITO_DIR}/generate_quad_rccl.py"
 
 NSS=72 ; # Because we save every hourly time-steps in the netCDF files
 
@@ -26,6 +27,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     echo " => ${nbf} files => ${nbf} batches!"
 
     if [ "${ISEED_BASE}" = "quads" ]; then
+        EXE=${EXE2}
         # Populating npz files to get Quads identification from:        
         list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${cxtraRES}${XTRASFX}.npz`
         # need to keep only the first occurence of each:
@@ -42,11 +44,18 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         if [ ${nbq} -ne ${nbf} ]; then
             echo "ERROR: that is not the same number as nc files!!!"; exit
         fi
-    fi
-    exit
-    
-    for ff in ${list_nc}; do
 
+        list_seed_qnpz=( ${list_seed_qnpz} )
+        
+    fi
+
+
+    icpt=0
+    for ff in ${list_nc}; do
+        
+        if [ "${ISEED_BASE}" = "quads" ]; then fnpz=${list_seed_qnpz[${icpt}]}; fi
+
+        
         if [ "${LIST_RD_SS}" = "" ]; then
             if [ -f ${ff} ]; then
                 fb=`basename ${ff}`; echo; echo " *** Doing file ${fb}"
@@ -60,7 +69,11 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 lstrec="0,$((Nr-1))"
                 flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                 ijob=$((ijob+1))
-                CMD="${EXE1} ${ff} ${lstrec} ${RESKM} ${MODE}"
+                if [ "${ISEED_BASE}" = "quads" ]; then
+                    CMD="${EXE} ${ff} ${lstrec} ${fnpz} ${RESKM} ${MODE}"
+                else
+                    CMD="${EXE} ${ff} ${lstrec} ${RESKM} ${MODE}"
+                fi
                 echo "    ==> will launch:"; echo "     ${CMD}"; echo
                 ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
                 echo
@@ -84,7 +97,11 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                     lstrec="0,$((Nr-1))"
                     flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                     ijob=$((ijob+1))
-                    CMD="${EXE1} ${fn} ${lstrec} ${RESKM} ${MODE} ${rdss}"
+                    if [ "${ISEED_BASE}" = "quads" ]; then
+                        CMD="${EXE} ${ff} ${lstrec} ${fnpz} ${RESKM} ${MODE} ${rdss}"
+                    else
+                        CMD="${EXE} ${fn} ${lstrec} ${RESKM} ${MODE} ${rdss}"
+                    fi
                     echo "    ==> will launch:"; echo "     ${CMD}"; echo
                     ${CMD} 1>"./logs/out_${flog}.out" 2>"./logs/err_${flog}.err" &
                     echo
@@ -96,8 +113,8 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             done
         fi
 
-
-
+        icpt=`expr ${icpt} + 1`
+        
     done
 
 done
