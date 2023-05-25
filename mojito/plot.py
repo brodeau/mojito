@@ -45,7 +45,7 @@ vsporg = [0., 0., 1., 1.]
 col_bg = '#041a4d'
 
 
-msPoints = 8  ; # size  of markers for points aka vertices...
+msPoints = 2  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
@@ -432,7 +432,7 @@ def ShowQuads( pQuads, cfig='mesh_quad_map.png', rangeX=None, rangeY=None ):
 
 def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[], qnames=[], TriMesh=[],
                 pX_Q=[], pY_Q=[], QuadMesh=[], lGeoCoor=True, zoom=1, cProj='NPS',
-                rangeX=None, rangeY=None ):
+                rangeX=None, rangeY=None, lShowIDs=True ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ###
@@ -479,27 +479,28 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
         ax.set_extent([-180, 180, 65, 90], ProjPC) ; # Alwasy PlateCaree here !!!
         ax.add_feature(cftr.LAND, color='0.5', zorder=70)
         # Showing points:
-        plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
+        plt.plot( pX, pY, '.', ms=int(msPoints*zoom), color=clPoints, zorder=200, transform=ProjPC) ; #, alpha=0.5)  ; # Alwasy PlateCaree here !!!
     else:
         ddx = dx*Ly/Lx
         ax  = plt.axes([1.25*ddx/Lx, 1.25*dy/Ly, (Lx-2*ddx)/Lx, (Ly-2*dy)/Ly], facecolor='0.75')
         plt.axis([ xA,xB , yA,yB ])
         # Showing points:
-        plt.plot( pX, pY, '.', ms=msPoints, color=clPoints, zorder=200 )
+        plt.plot( pX, pY, '.', ms=int(msPoints*zoom), color=clPoints, zorder=200 )
 
     # Adding triangles:
     if len(TriMesh)>0:
         (nbT,_) = np.shape(TriMesh); # Number of triangles
         if lGeoCoor:
-            plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50, transform=ProjPC)
+            plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=0.5*zoom, zorder=50, transform=ProjPC)
         else:
-            plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=2*zrat, zorder=50)
+            plt.triplot(pX, pY, TriMesh, color=col_red, linestyle='-', lw=0.5*zoom, zorder=50)
 
         # Indicate triangle # in its center:
-        for jT in range(nbT):
-            vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle
-            rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
-            ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=rsz_annot, zorder=60)
+        if lShowIDs:
+            for jT in range(nbT):
+                vids  = TriMesh[jT,:] ; # the IDs of the 3 points that constitute our triangle
+                rmLon, rmLat = np.mean( pX[vids] ), np.mean( pY[vids] ) ; # Lon,Lat at center of triangle
+                ax.annotate(str(jT), (rmLon, rmLat), color=col_red, fontweight='normal', size=rsz_annot, zorder=60)
 
     # Adding quadrangles:
     if len(QuadMesh)>0:
@@ -512,20 +513,20 @@ def ShowTQMesh( pX, pY, cfig='mesh_quad_map.png', pnames=[], ppntIDs=[], qIDs=[]
             else:
                 vx, vy = pX[vids], pY[vids]
             vX, vY = np.concatenate([vx[:], vx[0:1]]), np.concatenate([vy[:],vy[0:1]])  ; # need to make an overlap to close the line
-            plt.plot(vX,vY, col_blu, lw=3*zrat, zorder=100)
+            plt.plot(vX,vY, col_blu, lw=0.7*zoom, zorder=100)
             plt.fill_between(vX, vY, fc=col_blu, zorder=150, alpha=0.4)
-            if len(qIDs)>0:
+            if lShowIDs and len(qIDs)>0:
                 # Indicate quadrangle # in its center:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
                 ax.annotate(qIDs[jQ], (rmLon, rmLat), color='w', fontweight='bold', size=rsz_annot, zorder=160)
-            if len(qnames)>0:
+            if lShowIDs and len(qnames)>0:
                 rmLon, rmLat = np.mean( vx ), np.mean( vy ) ; # Lon,Lat at center of triangle
                 ax.annotate(qnames[jQ], (rmLon, rmLat), color='b', size=0.6*rsz_annot, zorder=165)
 
-    if len(pnames)>0:
+    if lShowIDs and len(pnames)>0:
         for jP in range(nbP):
             ax.annotate(pnames[jP], (pX[jP], pY[jP]), color=clPNames, fontweight='bold', size=rsz_annot, zorder=500)
-    if len(ppntIDs)>0:
+    if lShowIDs and len(ppntIDs)>0:
         for jP in range(nbP):
             ax.annotate(str(ppntIDs[jP]), (pX[jP], pY[jP]), color='k', fontweight='bold', size=0.75*rsz_annot, zorder=520)
 
