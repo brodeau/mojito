@@ -10,8 +10,7 @@ XTRASFX=""
 
 EXE="python3 -u ${SITRCK_DIR}/si3_part_tracker.py"
 
-# 1/ populate the proper NC files to seed from:
-echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
+
 cxtraRES=""
 if [ "${LIST_RD_SS}" = "" ]; then
     cxtraRES="_${RESKM}km"
@@ -19,12 +18,33 @@ else
     cr1=`echo ${LIST_RD_SS} | cut -d' ' -f1` ; # premiere resolution `rd_ss` !!!
     cxtraRES="_${cr1}-${RESKM}km"
 fi
-
-
 echo " RESKM = ${RESKM}"
 echo " cxtraRES = ${cxtraRES}"
 
-list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+
+# 1/ populate the proper NC files to seed from:
+
+if [ "${ISEED_BASE}" = "selection" ]; then
+    echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
+    list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+
+elif [ "${ISEED_BASE}" = "quads" ]; then
+
+    echo " * Will get RGPS seeding info in: ./nc for RESKM = ${RESKM}"
+    #list_seed_nc=`\ls ./nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+    list_seed_nc=`\ls ./nc/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+
+    
+    echo "Boo!"
+    #exit
+else
+    echo " Unknown value for ISEED_BASE: ${ISEED_BASE}"
+    exit
+fi
+
+
+
+
 
 nbf=`echo ${list_seed_nc} | wc -w`
 
@@ -42,7 +62,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     FSI3IN="${DIR_FSI3IN}/${NEMO_CONF}_ICE-${NEMO_EXP}_1h_${SI3DATE1}_${SI3DATE2}_icemod${XTRA_SFX_SI3}.nc4"
 
     for fnc in ${list_seed_nc}; do
-        
+
         if [ "${LIST_RD_SS}" = "" ]; then
             # -i FSI3 -m FMMM -s FSDG [-k KREC] [-e DEND]
             CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc}" ; # with nc file for init seed...
@@ -55,7 +75,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 echo "Waiting! (ijob = ${ijob})...."
                 wait; echo; echo
             fi
-        else            
+        else
             for rdss in ${LIST_RD_SS}; do
                 fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
                 CMD="${EXE} ${FSI3IN} ${FNMM} ${fnd}" ; # with nc file for init seed...
@@ -71,7 +91,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         fi
 
     done
-    
+
 done
 
 wait
