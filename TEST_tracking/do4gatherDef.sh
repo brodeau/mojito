@@ -1,6 +1,5 @@
 #!/bin/bash
 
-. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 EXE="${MOJITO_DIR}/gatherDef.py"

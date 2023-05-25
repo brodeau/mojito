@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Deformation only
-. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 EXE="${MOJITO_DIR}/deformation.py"

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 
@@ -29,20 +28,13 @@ if [ "${ISEED_BASE}" = "selection" ]; then
     list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
 
 elif [ "${ISEED_BASE}" = "quads" ]; then
-
     echo " * Will get RGPS seeding info in: ./nc for RESKM = ${RESKM}"
-    #list_seed_nc=`\ls ./nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
     list_seed_nc=`\ls ./nc/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
-
     
-    echo "Boo!"
-    #exit
 else
     echo " Unknown value for ISEED_BASE: ${ISEED_BASE}"
     exit
 fi
-
-
 
 
 

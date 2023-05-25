@@ -1,6 +1,5 @@
 #!/bin/bash
 
-. ../TEST_rgps/conf.bash ; # Get the resolulion "RESKM" !
 . ./conf.bash
 
 EXE="python3 -u /home/laurent/DEV/mojito/util/convert_Qnpz2SeedNC.py"
