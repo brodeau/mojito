@@ -796,6 +796,23 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
 
 
+############################
+def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., paxes=[0.025, 0.85, 0.29, 0.018], cunit='???' ):
+        axCB = pltH.axes( paxes )        
+        if field=='div':
+            cxtnd = 'both'
+            df = 0.05
+        else:
+            cxtnd = 'max'
+            df = 0.02
+        vcbt = np.round(np.arange(fmin,fmax+df,df),3)
+        cb_labs = np.array( vcbt , dtype='U16')
+        cb_labs[(cb_labs=='0.0')] = '0'
+        clb = mpl.colorbar.ColorbarBase(ax=axCB, ticks=vcbt, cmap=pcm, norm=pcn, orientation='horizontal', extend=cxtnd )
+        clb.ax.set_xticklabels(cb_labs)
+        clb.set_label(cunit, **cfont_clb)
+        return 0
+
 
 def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
                           pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', idate=None ):
@@ -858,18 +875,123 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
         ax.annotate(title, xy=LocTitle, xycoords='figure fraction', **cfont_ttl) ; #ha='center'
     if idate:
         ax.annotate(epoch2clock(idate, precision='D'), xy=(LocTitle[0]+0.1,LocTitle[1]-0.03), xycoords='figure fraction', **cfont_clock) ; #ha='center'
+
     if unit:
         # => triggers the colorbar
-        #ax2 = plt.axes([0.48, 0.08, 0.48, 0.02])
-        ax2 = plt.axes([0.025, 0.85, 0.29, 0.018])
-        clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
-        clb.set_label(unit, **cfont_clb)
+        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, paxes=[0.025, 0.85, 0.29, 0.018], cunit=unit )
+    
+    print('     ===> saving figure: '+cfig)
+    plt.savefig(cfig)
+    plt.close(1)
+    return 0
+
+
+def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3, zoom=1,
+                               cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div',
+                               pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title1=None, unit=r'days$^{-1}$', idate=None,
+                               title2=None, title3=None ):
+    '''
+    ### Show points, triangle, and quad meshes on the map!
+    ### => each quadrangle is filled with the appropriate color from colormap !!!
+    ###
+    ###
+    ###  * p4X1, p4Y1: for each quad the coordinates of the 4 vertices!
+    ###
+    ###  * lGeoCoor: True   => we expect degrees for `p4X1,p4Y1` => geographic (lon,lat) coordinates !
+    ###           False  => we expect km or m for `p4X1,p4Y1` => cartesian coordinates !
+    ###
+    ###     Specify p4X1_Q & p4Y1_Q when plotting QuadMesh when IDs are not those of the
+    ###     traingle world!
+    '''
+    from .util import ConvertCartesianNPSkm2Geo
+
+    (nQ1,) = np.shape(pF1)
+    if np.shape(p4X1)!=(nQ1,4) or np.shape(p4Y1)!=(nQ1,4):
+        print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X1` or/and `p4Y1`!'); exit(0)
+    (nQ2,) = np.shape(pF2)
+    if np.shape(p4X2)!=(nQ2,4) or np.shape(p4Y2)!=(nQ2,4):
+        print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X2` or/and `p4Y2`!'); exit(0)
+    (nQ3,) = np.shape(pF3)
+    if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
+        print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
+
+    kk = initStyle(fntzoom=2.*zoom)
+
+    zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
+    zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )
+    zlat3, zlon3 = ConvertCartesianNPSkm2Geo( p4Y3, p4X3 )
+
+    # Colormap:
+    if   cwhat=='shr':
+        cm = plt.cm.get_cmap('viridis')
+    elif   cwhat=='tot':
+        #cm = plt.cm.get_cmap('inferno')
+        #cm = plt.cm.get_cmap('cividis')
+        cm = plt.cm.get_cmap('Greys')
+    elif   cwhat=='UMc':
+        cm = plt.cm.get_cmap('plasma')
+    else:
+        cm = plt.cm.get_cmap('RdBu')
+    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
+    
+    _, NP = _SelectArcticProjExtent_( nmproj )
+
+    PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
+                   resolution=NP[7], area_thresh=1000., projection=NP[8], \
+                   lat_0=NP[4], lon_0=NP[5], epsg=None)
+
+    LTtl = (0.5,1.02)
+    
+    fig = plt.figure(num=1, figsize=(zoom*18.5,zoom*7), dpi=None, facecolor='w', edgecolor='k')
+
+    zyf = 0.11
+
+    dxL, xw = 0.03, 0.29
+    
+    ax1  = plt.axes([0.03,zyf,xw,0.9], facecolor='w')
+    x1,y1 = PROJ(zlon1,zlat1)
+    for jQ in range(nQ1):
+        if not np.isnan(pF1[jQ]):
+            znorm = cn(pF1[jQ])
+            colrgb = cm(znorm)
+            plt.fill( x1[jQ,:], y1[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
+    _AdjustMapArctic_( nmproj, PROJ )
+    if title1:
+        ax1.annotate(title1, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
+
+    
+    ax2  = plt.axes([1./3.+dxL,zyf,xw,0.9], facecolor='w')
+    x2,y2 = PROJ(zlon2,zlat2)
+    for jQ in range(nQ2):
+        if not np.isnan(pF2[jQ]):
+            znorm = cn(pF2[jQ])
+            colrgb = cm(znorm)
+            plt.fill( x2[jQ,:], y2[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
+    _AdjustMapArctic_( nmproj, PROJ )
+    if title2:
+        ax2.annotate(title2, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
+
+    ax3  = plt.axes([2./3.+dxL,zyf,xw,0.9], facecolor='w')
+    x3,y3 = PROJ(zlon3,zlat3)
+    for jQ in range(nQ3):
+        if not np.isnan(pF3[jQ]):
+            znorm = cn(pF3[jQ])
+            colrgb = cm(znorm)
+            plt.fill( x3[jQ,:], y3[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
+    _AdjustMapArctic_( nmproj, PROJ )
+    if title3:
+        ax3.annotate(title3, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
+
+    if unit:
+        # => triggers the colorbar
+        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, paxes=[0.2, 0.09, 0.6, 0.03], cunit=unit )
         
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
     plt.close(1)
     return 0
 
+###################################################################
 
 
 
@@ -1423,12 +1545,6 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
         plt.close(1)
         print(' * [plot3ScalingDef()]: created figure '+cfig)
-
-
-
-
-
-
     
     return 0
 
@@ -1436,112 +1552,6 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 
-def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3, zoom=1,
-                               cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div',
-                               pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title1=None, unit=r'days$^{-1}$', idate=None,
-                               title2=None, title3=None ):
-    '''
-    ### Show points, triangle, and quad meshes on the map!
-    ### => each quadrangle is filled with the appropriate color from colormap !!!
-    ###
-    ###
-    ###  * p4X1, p4Y1: for each quad the coordinates of the 4 vertices!
-    ###
-    ###  * lGeoCoor: True   => we expect degrees for `p4X1,p4Y1` => geographic (lon,lat) coordinates !
-    ###           False  => we expect km or m for `p4X1,p4Y1` => cartesian coordinates !
-    ###
-    ###     Specify p4X1_Q & p4Y1_Q when plotting QuadMesh when IDs are not those of the
-    ###     traingle world!
-    '''
-    from .util import ConvertCartesianNPSkm2Geo
-
-    (nQ1,) = np.shape(pF1)
-    if np.shape(p4X1)!=(nQ1,4) or np.shape(p4Y1)!=(nQ1,4):
-        print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X1` or/and `p4Y1`!'); exit(0)
-    (nQ2,) = np.shape(pF2)
-    if np.shape(p4X2)!=(nQ2,4) or np.shape(p4Y2)!=(nQ2,4):
-        print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X2` or/and `p4Y2`!'); exit(0)
-    (nQ3,) = np.shape(pF3)
-    if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
-        print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
-
-    kk = initStyle(fntzoom=2.*zoom)
-
-    zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
-    zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )
-    zlat3, zlon3 = ConvertCartesianNPSkm2Geo( p4Y3, p4X3 )
-
-    # Colormap:
-    if   cwhat=='shr':
-        cm = plt.cm.get_cmap('viridis')
-    elif   cwhat=='tot':
-        #cm = plt.cm.get_cmap('inferno')
-        #cm = plt.cm.get_cmap('cividis')
-        cm = plt.cm.get_cmap('Greys')
-    elif   cwhat=='UMc':
-        cm = plt.cm.get_cmap('plasma')
-    else:
-        cm = plt.cm.get_cmap('RdBu')
-    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
-    
-    _, NP = _SelectArcticProjExtent_( nmproj )
-
-    PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
-                   resolution=NP[7], area_thresh=1000., projection=NP[8], \
-                   lat_0=NP[4], lon_0=NP[5], epsg=None)
-
-    LTtl = (0.5,1.02)
-    
-    fig = plt.figure(num=1, figsize=(zoom*18.5,zoom*7), dpi=None, facecolor='w', edgecolor='k')
-
-    zyf = 0.11
-
-    dxL, xw = 0.03, 0.29
-    
-    ax1  = plt.axes([0.03,zyf,xw,0.9], facecolor='w')
-    x1,y1 = PROJ(zlon1,zlat1)
-    for jQ in range(nQ1):
-        if not np.isnan(pF1[jQ]):
-            znorm = cn(pF1[jQ])
-            colrgb = cm(znorm)
-            plt.fill( x1[jQ,:], y1[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-    _AdjustMapArctic_( nmproj, PROJ )
-    if title1:
-        ax1.annotate(title1, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-
-    
-    ax2  = plt.axes([1./3.+dxL,zyf,xw,0.9], facecolor='w')
-    x2,y2 = PROJ(zlon2,zlat2)
-    for jQ in range(nQ2):
-        if not np.isnan(pF2[jQ]):
-            znorm = cn(pF2[jQ])
-            colrgb = cm(znorm)
-            plt.fill( x2[jQ,:], y2[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-    _AdjustMapArctic_( nmproj, PROJ )
-    if title2:
-        ax2.annotate(title2, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-
-    ax3  = plt.axes([2./3.+dxL,zyf,xw,0.9], facecolor='w')
-    x3,y3 = PROJ(zlon3,zlat3)
-    for jQ in range(nQ3):
-        if not np.isnan(pF3[jQ]):
-            znorm = cn(pF3[jQ])
-            colrgb = cm(znorm)
-            plt.fill( x3[jQ,:], y3[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
-    _AdjustMapArctic_( nmproj, PROJ )
-    if title3:
-        ax3.annotate(title3, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-
-    if unit:
-        # => triggers the colorbar
-        axCB = plt.axes([0.2, 0.09, 0.6, 0.03])
-        clb = mpl.colorbar.ColorbarBase(ax=axCB, cmap=cm, norm=cn, orientation='horizontal', extend='both')
-        clb.set_label(unit, **cfont_clb)
-        
-    print('     ===> saving figure: '+cfig)
-    plt.savefig(cfig)
-    plt.close(1)
-    return 0
 
 
 
