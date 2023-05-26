@@ -60,26 +60,13 @@ if __name__ == '__main__':
         cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
 
-
-
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin
     cfnm    = corigin
 
-    #if corigin == 'RGPS':
-    #    quality_mode = 'rgps'
-    #elif split('_',corigin)[0] == 'NEMO-SI3':
-    #    quality_mode = 'model'
-    #else:
-    #    print('ERROR: data origin "'+corigin+'" is unknown !!! => Fix me!!!')
-    #    exit(0)
-
     k1 = cfg.initialize(                mode=quality_mode )
     k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
-
-
     print(' *** Min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
-
     if not cfg.lc_accurate_time:
         print(' *** Time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
@@ -111,8 +98,10 @@ if __name__ == '__main__':
     cfnm += '_'+cr1+str(reskm)+'km'
     #print('LOLO: cfnm =',cfnm); exit(0)
 
-    print('\n *** Number of points in the two records:', QUA1.nP, QUA2.nP)
-    print('\n *** Number of quads in the two records:' , QUA1.nQ, QUA2.nQ)
+    nP1,nQ1, nP2,nQ2 = QUA1.nP,QUA1.nQ, QUA2.nP,QUA2.nQ
+    
+    print('\n *** Number of points in the two files/records:', nP1, nP2)
+    print('\n *** Number of quads in the two files/records:' , nQ1, nQ2)
 
     if  cdtbin=='_NoBin':
         dtbin = 0
@@ -120,23 +109,26 @@ if __name__ == '__main__':
         dtbin = int(cdtbin[3:])*3600
         print('\n *** width of time bin used in RGPS =',dtbin/3600,'hours!')
 
-
-
     if cfg.lc_accurate_time:
         figSfx='_tbuoy.png'
     else:
         figSfx='_tglob.png'
 
-    # The Quads we retain, i.e. those who exist in both snapshots:
-    vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
-    nQ = len(vnm) ; # also = len(vidx*)
 
-    znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
-    nQ2 = len(znm)
-    if nQ!=nQ2 or np.sum(zidx1-vidx1)!=0 or np.sum(zidx2-vidx2)!=0:
-        print('ERROR: we do not get the same info based on Quad names and Quad Ids !!!')
-        exit(0)
+    if nQ1 == nQ2:
+        print('\n *** Great! Both files have the same number of Quads!!!')
+        nQ = nQ1
+    else:
+        print('\n [WARNING]: the 2 files/records do not have the same number of Quads!!!')
+        # The Quads we retain, i.e. those who exist in both snapshots:
+        vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
+        nQ = len(vnm) ; # also = len(vidx*)
 
+        znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
+        nQ2 = len(znm)
+        if nQ!=nQ2 or np.sum(zidx1-vidx1)!=0 or np.sum(zidx2-vidx2)!=0:
+            print('ERROR: we do not get the same info based on Quad names and Quad Ids !!!')
+            exit(0)
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 
@@ -146,7 +138,9 @@ if __name__ == '__main__':
     zdT = zTime2-zTime1
     #
     if np.any(zdT==0.):
-        print('\n WARNING: time for some buoys is the same in the 2 records!')
+        print('\n [ERROR]: time for some buoys is the same in the 2 records!')
+        # => this should be fixed at the quad generation level!!! No here!!!
+        sys.exit(0)
         (idxKeep,) = np.where( (zdT[:,0]>0.) & (zdT[:,1]>0.) & (zdT[:,2]>0.) & (zdT[:,3]>0.) )
         idxKeep = np.array( idxKeep , dtype=int )
         zshr2nQn = len(idxKeep)
@@ -158,6 +152,8 @@ if __name__ == '__main__':
     del zTime1, zTime2, zdT
 
 
+    # Okay, no we can start the real shit...
+    
     # Coordinates of the 4 points of quadrangles for the 2 consecutive records:
     zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #  km !
     zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !
@@ -228,26 +224,27 @@ if __name__ == '__main__':
     del zshr2
 
     # Non-realistic / error extreme values in computed deformation:
-    ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
-    if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
-        # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
-        (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
-        #
-        nDn = len(idxKeep)
-        if nDn < nD:
-            print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
-            zdiv = zdiv[idxKeep]
-            zshr = zshr[idxKeep]
-            ztot = ztot[idxKeep]
-            zXc  =  zXc[idxKeep]
-            zYc  =  zYc[idxKeep]
-            zAq  =  zAq[idxKeep]
-            nD   = nDn
-            if iplot>0:
-                zX = zX[idxKeep,:]
-                zY = zY[idxKeep,:]
-        del idxKeep
-    del ztotdm1
+    if quality_mode=='rgps':
+        ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
+        if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
+            # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
+            (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
+            #
+            nDn = len(idxKeep)
+            if nDn < nD:
+                print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
+                zdiv = zdiv[idxKeep]
+                zshr = zshr[idxKeep]
+                ztot = ztot[idxKeep]
+                zXc  =  zXc[idxKeep]
+                zYc  =  zYc[idxKeep]
+                zAq  =  zAq[idxKeep]
+                nD   = nDn
+                if iplot>0:
+                    zX = zX[idxKeep,:]
+                    zY = zY[idxKeep,:]
+            del idxKeep
+        del ztotdm1
     
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,
