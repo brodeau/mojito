@@ -75,7 +75,7 @@ def initStyle( fntzoom=1., color_top='k' ):
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(13.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(10.*fntzoom), 'color':color_top }
-    cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
+    cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'light', 'fontsize':int(6.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     #
     return 0
@@ -879,7 +879,9 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     if unit:
         # => triggers the colorbar
         kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, paxes=[0.025, 0.85, 0.29, 0.018], cunit=unit )
-    
+
+    ax.annotate('N. cells = '+str(nQ), xy=(LocTitle[0],LocTitle[1]-0.2), xycoords='figure fraction', **cfont_mrkr);#lili
+        
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
     plt.close(1)
