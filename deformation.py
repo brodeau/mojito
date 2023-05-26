@@ -133,6 +133,8 @@ if __name__ == '__main__':
 
 
     # Now for some weird reasons time of a given buoy can be the same in the 2 quads:
+    if nQ1 == nQ2:
+        vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
     zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
     zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
     zdT = zTime2-zTime1
