@@ -849,7 +849,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
-        cm = plt.cm.get_cmap('RdBu')
+        cm = plt.cm.get_cmap('RdBu_r')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
 
     LocTitle, NP = _SelectArcticProjExtent_( nmproj )
@@ -931,7 +931,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
-        cm = plt.cm.get_cmap('RdBu')
+        cm = plt.cm.get_cmap('RdBu_r')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
     
     _, NP = _SelectArcticProjExtent_( nmproj )
