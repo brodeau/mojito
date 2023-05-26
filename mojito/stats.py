@@ -8,6 +8,7 @@
 import numpy as np
 #from re import split
 #import mojito   as mjt
+from .util import epoch2clock as e2c
 
 idebug=1
 #iplot=1
@@ -129,4 +130,140 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
         return nPok, zPDF, np.array(zXclean)
     else:
         return nPok, zPDF
+
+
+
+
+
+def Construct90P( ifile, vdates_batch, pdates, pdef, Nmin=1000  ):
+    '''
+        * ifile: number of the file treated
+        
+    '''
+    lmaskArrays = True
+    (nbF,) = np.shape(vdates_batch)
+    
+    Z90P = np.zeros( nbF )
+    zdat = np.zeros( nbF, dtype=int )
+    imsk = np.zeros( nbF, dtype='i1' )
+
+    zdates, zdef = pdates.copy(), pdef.copy()
+
+    # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+    from mojito import config as cfg
+    kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
+    print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean all data!!!')        
+    (idxKeep,) = np.where(pdef>cfg.rc_tot_min)
+    zdef = pdef[idxKeep]
+    zdates = pdates[idxKeep]
+
+    
+    ic = 0
+    for jd in vdates_batch:
+        print('\n *** file #'+str(ifile)+''+e2c(jd))
+
+        (idxDate,) = np.where( zdates == jd )
+        nV = len(idxDate)
+        print('         => '+str(nV)+' deformation for this date....')
+                
+        if nV>=Nmin:
+            # sample size must be large enough
+            ztmp = zdef[idxDate]
+            #print('LOLO: ztmp[-5:]=',ztmp[-5:])
+            #zmax = np.max(ztmp)
+            #ztmp[:] = ztmp[:]/zmax ; # Normalize with highest value            
+            #Z90P[ic] = np.nanpercentile(ztmp, 90, 'median_unbiased')
+            Z90P[ic] = np.percentile(ztmp, 90)
+            #Z90P[ic] = Z90P[ic]*zmax ; # de-normalize!
+            zdat[ic] =  jd
+            imsk[ic] = 1
+            
+        ic+=1
+
+    if lmaskArrays:
+        Z90Pm = np.ma.masked_where(imsk!=1, Z90P)
+        zdatm = np.ma.masked_where(imsk!=1, zdat)
+    
+        zt = np.ma.MaskedArray.compressed( zdatm )
+        zx = zt[1:] - zt[:-1]
+        if np.any(zx<=0):
+            print('ERROR [Construct90P]: `zdatm` is not increasing!'); exit(0)
+        print('')        
+        return zt, np.ma.MaskedArray.compressed( Z90Pm )
+    else:
+        (idxM,) = np.where(imsk==0)
+        Z90P[idxM] = 0.
+
+        return zdat, Z90P
+
+
+
+
+
+def Construct90P_old( ifile, vdates_batch, pdates, pdef, Nmin=1000 ):
+    '''
+        * ifile: number of the file treated
+        
+    '''
+    lmaskArrays = True
+    (nbF,) = np.shape(vdates_batch)
+    
+    Z90P = np.zeros( nbF )
+    zdat = np.zeros( nbF, dtype=int )
+    imsk = np.zeros( nbF, dtype='i1' )
+
+    zdates, zdef = pdates.copy(), pdef.copy()
+
+    ic = 0
+    for jd in vdates_batch:
+        print('\n *** file #'+str(ifile)+''+e2c(jd))
+
+        (idxDate,) = np.where( zdates == jd )
+        nV = len(idxDate)
+        print('         => '+str(nV)+' deformation for this date....')
+        
+        ztmp = zdef[idxDate]
+        zdfw = np.sort(ztmp) ; # Sorted in increasing order!
+        #for rr in zdfw:
+        #    print(rr)
+        #exit(0)
+        
+        if zdfw.shape != (nV,):
+            print('ERROR [Construct90P_old()]: problem #1'); exit(0)
+
+        ri90 = 0.9*float(nV)
+        i90f = int( floor( ri90 ) ) - 1   ; # `-1` because C-indexing...
+        rw = ri90 - float(i90f)           ; # weight for interpolation
+
+        if nV>=Nmin and i90f<nV-2:
+            # sample size must be large enough
+            # and: otherwize we are too close to the end of the series, this probably a bad batch!
+            z90 = (1.-rw)*zdfw[i90f] + rw*zdfw[i90f+1]
+            
+            Z90P[ic] = z90
+            zdat[ic] =  jd
+            imsk[ic] = 1
+            if z90>=Nmin:
+                imsk[ic] = 1            
+            #print('         => z90 =', z90, '(mask =',imsk[ic],')')
+            
+        ic+=1
+
+    if lmaskArrays:
+        Z90Pm = np.ma.masked_where(imsk!=1, Z90P)
+        zdatm = np.ma.masked_where(imsk!=1, zdat)
+    
+        zt = np.ma.MaskedArray.compressed( zdatm )
+        zx = zt[1:] - zt[:-1]
+        if np.any(zx<=0):
+            print('ERROR [Construct90P_old]: `zdatm` is not increasing!'); exit(0)
+        print('')        
+        return zt, np.ma.MaskedArray.compressed( Z90Pm )
+    else:
+        (idxM,) = np.where(imsk==0)
+        Z90P[idxM] = 0.
+
+        return zdat, Z90P
+
+    
 
