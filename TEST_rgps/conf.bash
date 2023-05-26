@@ -24,8 +24,8 @@ case ${host} in
         DATE1="${YEAR}0101" ; DATE2="${YEAR}0331"
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
-        DT_BINS_H=72 ;  RESKM=10
+        DT_BINS_H=6 ;  RESKM=10 ; MODE='rgps'
+        #DT_BINS_H=72 ;  RESKM=10 ; MODE='rgps'
         #
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20

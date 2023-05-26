@@ -67,7 +67,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         fQ1=${lst[0]}
                         fQ2=${lst[1]}
                         echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                        flog="def__`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`"
+                        flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
                         ijob=$((ijob+1))
                         CMD="${EXE} ${fQ1} ${fQ2} 0 ${MODE}"
                         echo "  ==> ${CMD}"; echo
@@ -91,7 +91,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             fQ1=${lst[0]}
                             fQ2=${lst[1]}
                             echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                            flog="def__`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`"
+                            flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
                             ijob=$((ijob+1))
                             CMD="${EXE} ${fQ1} ${fQ2} 0"
                             echo "  ==> ${CMD}"; echo

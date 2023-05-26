@@ -113,7 +113,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
             # When lose, average scale is 10.33 km with a standard deviation of ~1km!
-            rc_Qarea_min, rc_Qarea_max = 9.83*9.83, 10.83*10.83 ; # 10.33 +- 0.5
+            #rc_Qarea_min, rc_Qarea_max = 9.33*9.33, 11.33*11.33 ; # 10.33 +- 1
+            rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2
         elif mode=='xlose':
             rc_tolQuadA = 10
             #rc_Qarea_min, rc_Qarea_max = 5*5, 18*18
