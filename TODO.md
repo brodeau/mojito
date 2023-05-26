@@ -1,3 +1,7 @@
+* control where deformations are cleaned (tiny values) when doing P90
+
+* control `ZDiv<-zmin_div` in mkpdf.py !!!!
+
 
 * check why NANs in qud generation logs about stat on quads!!!
 
