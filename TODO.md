@@ -1,6 +1,12 @@
+
 * Trouver le bug du `S038` dans le cas RGPS / 10km / mode=rgps du moment (quadrillage dans les def, sortie de quadgener est ok!)
 
 * refaire les PDFs de base pour 10km (min area max and min for quads, take +1 -1 km2 at 10km!) pour RGPS et modele (avec la nouvelle method seeding / quads!!! pour le modele)
+
+* control where deformations are cleaned (tiny values) when doing P90
+
+* control `ZDiv<-zmin_div` in mkpdf.py !!!!
+
 
 * check why NANs in qud generation logs about stat on quads!!!
 
