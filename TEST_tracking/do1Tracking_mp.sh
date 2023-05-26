@@ -60,8 +60,8 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc}" ; # with nc file for init seed...
             echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
             #exit;#lolo
-            clog="tracking__`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
-            ${CMD} 1>./logs/${clog}.out 2>./logs/${clog}.err &
+            flog="tracking__`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
+            ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
             ijob=$((ijob+1))
             if [ $((ijob%NJPAR)) -eq 0 ]; then
                 echo "Waiting! (ijob = ${ijob})...."
@@ -72,8 +72,8 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
                 CMD="${EXE} ${FSI3IN} ${FNMM} ${fnd}" ; # with nc file for init seed...
                 echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
-                clog="tracking__`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
-                ${CMD} 1>./logs/${clog}.out 2>./logs/${clog}.err &
+                flog="tracking__`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
+                ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
                 ijob=$((ijob+1))
                 if [ $((ijob%NJPAR)) -eq 0 ]; then
                     echo "Waiting! (ijob = ${ijob})...."

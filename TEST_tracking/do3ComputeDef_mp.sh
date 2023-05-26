@@ -67,11 +67,11 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         fQ1=${lst[0]}
                         fQ2=${lst[1]}
                         echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                        flog=`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                        flog="def__`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`"
                         ijob=$((ijob+1))
                         CMD="${EXE} ${fQ1} ${fQ2} 0 ${MODE}"
                         echo "  ==> ${CMD}"; echo
-                        ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                        ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                         echo; echo
                         if [ $((ijob%NJPAR)) -eq 0 ]; then
                             echo "Waiting! (ijob = ${ijob})...."
@@ -91,11 +91,11 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             fQ1=${lst[0]}
                             fQ2=${lst[1]}
                             echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                            flog=`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                            flog="def__`basename ${fQ1}`; flog=`echo ${flog} | sed -e s/".npz"/""/g`"
                             ijob=$((ijob+1))
                             CMD="${EXE} ${fQ1} ${fQ2} 0"
                             echo "  ==> ${CMD}"; echo
-                            ${CMD} 1>logs/out_${flog}.out 2>logs/err_${flog}.err &
+                            ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                             echo; echo
                             if [ $((ijob%NJPAR)) -eq 0 ]; then
                                 echo "Waiting! (ijob = ${ijob})...."
