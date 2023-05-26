@@ -135,7 +135,7 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 
 
 
-def Construct90P( ifile, vdates_batch, pdates, pdef, Nmin=1000  ):
+def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000  ):
     '''
         * ifile: number of the file treated
         
@@ -173,7 +173,7 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, Nmin=1000  ):
             #zmax = np.max(ztmp)
             #ztmp[:] = ztmp[:]/zmax ; # Normalize with highest value            
             #Z90P[ic] = np.nanpercentile(ztmp, 90, 'median_unbiased')
-            Z90P[ic] = np.percentile(ztmp, 90)
+            Z90P[ic] = np.percentile(ztmp, pp)
             #Z90P[ic] = Z90P[ic]*zmax ; # de-normalize!
             zdat[ic] =  jd
             imsk[ic] = 1

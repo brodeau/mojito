@@ -15,15 +15,17 @@ idebug=1
 iplot=1
 izoom=3
 
-lPlotClouds = True
+lPlotClouds = False
 lPlotPDFs   = False
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
-
+zP=98
 
 if __name__ == '__main__':
 
+    ldo1 = True
+    
     Narg = len(argv)
     if not Narg in [2,3,4]:
         print('Usage: '+argv[0]+' <file_deformation_gatherd.npz> (<file_deformation_gatherd.npz>) (<file_deformation_gatherd.npz>)')
@@ -135,12 +137,18 @@ if __name__ == '__main__':
             idxD  = np.where(ZDEF3>0.)
             ZDEF3 = ZDEF3[idxD]
             Zdat3 = Zdat3[idxD]
-                        
+
+
+    if ldo3:
+        print(' * Number of points for '+mjt.vorig[0]+', '+mjt.vorig[1]+', '+mjt.vorig[2]+' =',len(ZDEF1),len(ZDEF2),len(ZDEF3))
+
+
+            
     if lPlotClouds:
         k0 = mjt.PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
 
 
-        
+    # DEBUG:
     if cfield=='shear' and lPlotPDFs and ldo3:
         max_shr = 1.5 ; # day^-1
         zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1
@@ -172,29 +180,29 @@ if __name__ == '__main__':
             kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1,precision='D')+'.png',
                                 origin=mjt.vorig[0], title='Shear', period=e2c(kd1),
                                 ppdf2=PDF2, Np2=nP2, origin2=mjt.vorig[1], ppdf3=PDF3, Np3=nP3, origin3=mjt.vorig[2] )
-
+    #DEBUG.
             
 
 
 
-    VDAT1, V90P1 = mjt.Construct90P(1, VDTB1, Zdat1, ZDEF1, Nmin=Nmin )
+    VDAT1, V90P1 = mjt.Construct90P(1, VDTB1, Zdat1, ZDEF1, pp=zP, Nmin=Nmin )
     
     if ldo3:
         if lPlotClouds:
             k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
             k0 = mjt.PlotCloud( 3, Zdat3, ZDEF3, field=cfield, figname='./figs/Cloud_'+corigin3+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-        cfig = 'fig_series_P90_RGPS-BBM-aEVP_'+cfield+'.png'        
-        VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, Nmin=Nmin )
-        VDAT3, V90P3 = mjt.Construct90P(3, VDTB3, Zdat3, ZDEF3, Nmin=Nmin )
+        cfig = 'fig_series_P90_RGPS-BBM-aEVP_'+cfield+'_P'+str(zP)+'.png'        
+        VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin )
+        VDAT3, V90P3 = mjt.Construct90P(3, VDTB3, Zdat3, ZDEF3, pp=zP, Nmin=Nmin )
 
-        kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.08), dy=0.01 )
+        kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.25), dy=0.05 )
         
     elif ldo2:
         if lPlotClouds:
             k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-        cfig = 'fig_series_P90_RGPS-BBM'+cfield+'.png'        
-        VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, Nmin=Nmin  )
+        cfig = 'fig_series_P90_RGPS-BBM'+cfield+'_P'+str(zP)+'.png'        
+        VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin  )
     
     else:
-        cfig = 'fig_series_P90_RGPS'+cfield+'.png'        
+        cfig = 'fig_series_P90_RGPS'+cfield+'_P'+str(zP)+'.png'        
         kk= mjt.PlotP90Series( VDAT1, V90P1, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
