@@ -4,7 +4,6 @@
 
 from sys import argv, exit
 from os import path, mkdir
-#from glob import glob
 import numpy as np
 from re import split
 import mojito   as mjt
@@ -17,7 +16,7 @@ iplot=1
 izoom=3
 
 lPlotClouds = True
-lPlotPDFs = False
+lPlotPDFs   = True
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
@@ -273,12 +272,11 @@ def PlotCloud( ki, xdate, xdef, field=None, dt_days=3,
     
     kk = mjt.initStyle( fntzoom=1.5*zoom )
         
-    fig = plt.figure(num = 1, figsize=(zoom*12,zoom*7), facecolor='w', edgecolor='k')
+    fig = plt.figure(num = 1, figsize=(zoom*20,zoom*7), facecolor='w', edgecolor='k')
     ax  = plt.axes([0.07, 0.18, 0.9, 0.75])
     
-    #plt.plot(VX1, V1, 'o-', color=vcol[0], linewidth=vlw[0], markersize=6, alpha=0.9,     label=vorg[0], zorder=10)
-    #plt.scatter( xdate, xdef, marker=',', alpha=0.3, s=1 )
-    plt.scatter( VX, xdef, marker=',', c=vcol[ki-1], alpha=0.3, s=1 )
+    #plt.scatter( VX, xdef, marker=',', c=vcol[ki-1], alpha=0.3, s=1, linewidths=0, edgecolors='r' )
+    plt.scatter( VX, xdef, marker='o', c=vcol[ki-1], alpha=0.2, s=2, linewidths=0, edgecolors='r' )
     #, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, *, edgecolors=None, plotnonfinite=False, data=None, **kwargs)
     # , s=None, c=None
 
@@ -299,7 +297,7 @@ def PlotCloud( ki, xdate, xdef, field=None, dt_days=3,
     #plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
 
     print(' *** Saving figure',figname)
-    plt.savefig( figname )
+    plt.savefig( figname, dpi=300 )
     plt.close(1)
     return 0
 
