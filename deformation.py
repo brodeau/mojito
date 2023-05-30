@@ -2,6 +2,15 @@
 # -*- Mode: Python; coding: utf-8; indent-tabs-mode: nil; tab-width: 4 -*-
 ##################################################################
 
+'''
+    # The present script should only compute deformations, and nothing else!
+    # As such, it is not expected to do any selection of what deformations 
+    # are acceptable or not! => should be done elsewhere
+
+'''
+
+
+
 from sys import argv, exit
 from os import path, mkdir, makedirs
 import numpy as np
@@ -69,7 +78,6 @@ if __name__ == '__main__':
     print(' *** Min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
     if not cfg.lc_accurate_time:
         print(' *** Time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
-
 
     # Some info from npz file name: #fixme: too much dependency on file name...
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
@@ -226,27 +234,27 @@ if __name__ == '__main__':
     del zshr2
 
     # Non-realistic / error extreme values in computed deformation:
-    if quality_mode=='rgps':
-        ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
-        if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
-            # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
-            (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
-            #
-            nDn = len(idxKeep)
-            if nDn < nD:
-                print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
-                zdiv = zdiv[idxKeep]
-                zshr = zshr[idxKeep]
-                ztot = ztot[idxKeep]
-                zXc  =  zXc[idxKeep]
-                zYc  =  zYc[idxKeep]
-                zAq  =  zAq[idxKeep]
-                nD   = nDn
-                if iplot>0:
-                    zX = zX[idxKeep,:]
-                    zY = zY[idxKeep,:]
-            del idxKeep
-        del ztotdm1
+    #if quality_mode=='rgps':
+    #    ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
+    #    if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
+    #        # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
+    #        (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
+    #        #
+    #        nDn = len(idxKeep)
+    #        if nDn < nD:
+    #            print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
+    #            zdiv = zdiv[idxKeep]
+    #            zshr = zshr[idxKeep]
+    #            ztot = ztot[idxKeep]
+    #            zXc  =  zXc[idxKeep]
+    #            zYc  =  zYc[idxKeep]
+    #            zAq  =  zAq[idxKeep]
+    #            nD   = nDn
+    #            if iplot>0:
+    #                zX = zX[idxKeep,:]
+    #                zY = zY[idxKeep,:]
+    #        del idxKeep
+    #    del ztotdm1
     
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,
