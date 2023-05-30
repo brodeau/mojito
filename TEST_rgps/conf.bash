@@ -12,6 +12,7 @@ LIST_RD_SS=""
 LIST_MINDC=""
 RESKM=10
 MODE='rgps'
+DEF_EXPORT=''
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
@@ -54,8 +55,8 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         FILIN="RGPS_${YEAR}LIGHT.nc4"
         #DT_BINS_H=6 ;         DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10
-        #DT_BINS_H=6 ;         DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=40
-        DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR P90!
+        DT_BINS_H=6 ;         DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='rgps' ; DEF_EXPORT='E'
+        #DT_BINS_H=$((3*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0115"; RESKM=10 ; MODE='xlose' ; # FOR P90!
         #DT_BINS_H=$((5*24)) ; DATE1="${YEAR}0101" ; DATE2="${YEAR}0123"; RESKM=10 ; MODE='xlose' ; # FOR MAPS!!!
         #
         ;;

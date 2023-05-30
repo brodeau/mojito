@@ -15,19 +15,23 @@ def chck4f( cf ):
         exit(0)
 
 
-def epoch2clock( it, precision='s' ):
+def epoch2clock( it, precision='s', frmt='default' ):
     from datetime import datetime as dt
     from datetime import timezone
     #
+    frmtdflt = '%Y-%m-%d'
+    if frmt=='nodash':
+        frmtdflt = '%Y%m%d'
+    #
     it = int(it)
     if   precision=='s':
-        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d_%H:%M:%S")
+        ct = dt.fromtimestamp(it, timezone.utc).strftime(frmtdflt+"_%H:%M:%S")
     elif precision=='m':
-        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d_%H:%M")
+        ct = dt.fromtimestamp(it, timezone.utc).strftime(frmtdflt+"_%H:%M")
     elif precision=='h':
-        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d_%H")
+        ct = dt.fromtimestamp(it, timezone.utc).strftime(frmtdflt+"_%H")
     elif precision=='D':
-        ct = dt.fromtimestamp(it, timezone.utc).strftime("%Y-%m-%d")
+        ct = dt.fromtimestamp(it, timezone.utc).strftime(frmtdflt+"")
     else:
         print('ERROR [epoch2clock]: unknown precision "'+precision+'" !')
         exit(0)

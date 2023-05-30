@@ -18,22 +18,52 @@ from scipy.spatial import Delaunay
 
 import mojito   as mjt
 from mojito import config as cfg
-
-idebug=0
+from mojito.util import epoch2clock as e2c
+idebug=1
 
 iplot=1 ; NameArcticProj='SmallArctic'
 zoom=2
 
+lExportNC4Seed = False ; # Triggers the saving of the "mojito" netCDF and npz files that can be used to seed in `sitrack` the
+#                       # points that define the quads for which a deformation was computed, and save a npz file containaing the
+#                       # Quad class to allow for reconstruction of the same quads...
+
+
+# Fixme: only 1 existing for whole mojito !!!
+def BuildQuadVertIdx( pNewQdPntIDs, pNewPntIDs ):
+    '''
+       * pNewQdPntIDs: [nQ,4]
+       * pNewPntIDs:   [nP]
+    '''
+    (nQ,n4) = np.shape(pNewQdPntIDs)
+    if n4!=4:
+        print('ERROR [BuildQuadVertIdx()]: `n4!=4` !!!'); exit(0)
+    zNewQdVrtIdx = np.zeros((nQ,4), dtype=int)
+    for jq in range(nQ):
+        for jk in range(4):
+            zID = pNewQdPntIDs[jq,jk]
+            (idxP,) = np.where(pNewPntIDs==zID)
+            if len(idxP)!=1:
+                print('ERROR [BuildQuadVertIdx()]: `len(idxP)!=1`'); exit(0)                
+            zNewQdVrtIdx[jq,jk] = idxP[0]
+    #
+    return zNewQdVrtIdx
+
+
+
 if __name__ == '__main__':
 
 
-    if not len(argv) in [5]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <mode (rgps,model,xlose)>')
+    if not len(argv) in [5,6]:
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <mode (rgps,model,xlose)> (<E:[export Quad info]>)')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
     time_dev_max= float(argv[3])
     quality_mode = argv[4]
+
+    if len(argv)==6:
+        lExportNC4Seed = (argv[5] in ['E','e'] )
 
     ik = cfg.controlModeName( path.basename(__file__), quality_mode )
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
@@ -47,8 +77,8 @@ if __name__ == '__main__':
     rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
 
     itimeC = int( 0.5*(rTm1+rTm2) )
-    ctimeC = mjt.epoch2clock(itimeC)
-    print('\n *** Deformations will be calculated at: '+ctimeC+'\n')
+    ctimeC = e2c(itimeC)
+    print('\n *** Deformations will be calculated at about: '+ctimeC+'\n')
     rdt = rTm2 - rTm1
 
     vclck = split('_',ctimeC)
@@ -61,20 +91,22 @@ if __name__ == '__main__':
         exit(0)
     print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
 
+
+    makedirs( './npz', exist_ok=True )    
     if iplot>0:
         cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
 
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin
-    cfnm    = corigin
-
+    
     k1 = cfg.initialize(                mode=quality_mode )
     k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
     print(' *** Min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
     if not cfg.lc_accurate_time:
         print(' *** Time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
+        
     # Some info from npz file name: #fixme: too much dependency on file name...
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
     if corigin == 'RGPS':
@@ -97,10 +129,9 @@ if __name__ == '__main__':
     else:
         print('     => realisation with `rd_ss` =',cc1[0],'km !!!')
 
-    cfnm += '_'+cbatch+cdtbin
-    cfnm += '_'+cclck
+    cfnm0 = corigin+'_'+cbatch+cdtbin
+    cfnm  = cfnm0+'_'+cclck
     cfnm += '_'+cr1+str(reskm)+'km'
-    #print('LOLO: cfnm =',cfnm); exit(0)
 
     nP1,nQ1, nP2,nQ2 = QUA1.nP,QUA1.nQ, QUA2.nP,QUA2.nQ
     
@@ -125,12 +156,12 @@ if __name__ == '__main__':
     else:
         print('\n [WARNING]: the 2 files/records do not have the same number of Quads!!!')
         # The Quads we retain, i.e. those who exist in both snapshots:
-        vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
+        vnm, idxK1, idxK2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
         nQ = len(vnm) ; # also = len(vidx*)
 
         znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
         nQ2 = len(znm)
-        if nQ!=nQ2 or np.sum(zidx1-vidx1)!=0 or np.sum(zidx2-vidx2)!=0:
+        if nQ!=nQ2 or np.sum(zidx1-idxK1)!=0 or np.sum(zidx2-idxK2)!=0:
             print('ERROR: we do not get the same info based on Quad names and Quad Ids !!!')
             exit(0)
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
@@ -138,11 +169,11 @@ if __name__ == '__main__':
 
     # Now for some weird reasons time of a given buoy can be the same in the 2 quads:
     if nQ1 == nQ2:
-        vnm, vidx1, vidx2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
-    zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
-    zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
+        vnm, idxK1, idxK2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
+    #else: => see block above
+    zTime1 = QUA1.MeshVrtcPntTime()[idxK1,:]
+    zTime2 = QUA2.MeshVrtcPntTime()[idxK2,:]
     zdT = zTime2-zTime1
-    #
     if np.any(zdT==0.):
         print('\n [ERROR]: time for some buoys is the same in the 2 records!')
         # => this should be fixed at the quad generation level!!! No here!!!
@@ -151,34 +182,35 @@ if __name__ == '__main__':
         idxKeep = np.array( idxKeep , dtype=int )
         zshr2nQn = len(idxKeep)
         print('   ==> '+str(nQ-nQn)+' quads /'+str(nQ)+' disregarded because they have the same time in both record !')
-        vidx1 = vidx1[idxKeep]
-        vidx2 = vidx2[idxKeep]
+        idxK1 = idxK1[idxKeep]
+        idxK2 = idxK2[idxKeep]
         nQ = nQn
-    #
     del zTime1, zTime2, zdT
 
 
     # Okay, no we can start the real shit...
     
     # Coordinates of the 4 points of quadrangles for the 2 consecutive records:
-    zXY1 = QUA1.MeshPointXY[vidx1,:,:].copy() ; #  km !
-    zXY2 = QUA2.MeshPointXY[vidx2,:,:].copy() ; #  km !
+    zXY1 = QUA1.MeshPointXY[idxK1,:,:].copy() ; #  km !
+    zXY2 = QUA2.MeshPointXY[idxK2,:,:].copy() ; #  km !
 
     # Computation of partial derivative of velocity vector constructed from the 2 consecutive positions:
     if cfg.lc_accurate_time:
         # Time of poins of the 4 points of quadrangles for the 2 consecutive records:
-        zTime1 = QUA1.MeshVrtcPntTime()[vidx1,:]
-        zTime2 = QUA2.MeshVrtcPntTime()[vidx2,:]
+        zTime1 = QUA1.MeshVrtcPntTime()[idxK1,:]
+        zTime2 = QUA2.MeshVrtcPntTime()[idxK2,:]
         #
-        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
+        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( 1, zXY1, zXY2, QUA1.area()[idxK1], QUA2.area()[idxK2],
                                                               xtime1=zTime1, xtime2=zTime2, iverbose=idebug )
         # => having rdt=1 will yield fuck-up fields if used, and must not be used!
 
     else:
 
-        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[vidx1], QUA2.area()[vidx2],
+        zX, zY, zU, zV, zdUdxy, zdVdxy, zAq = mjt.PDVfromPos( rdt, zXY1, zXY2, QUA1.area()[idxK1], QUA2.area()[idxK2],
                                                               iverbose=idebug )
 
+    del zXY1, zXY2
+    
     # zX, zY => positions  of the 4 vertices at center of time interval!
     # zU, zV => velocities of the 4 vertices at center of time interval!
     #   zAq  => Quad area used in the estimation of `zdUdxy, zdVdxy` !
@@ -232,6 +264,7 @@ if __name__ == '__main__':
     # Non-realistic / error extreme values in computed deformation:
     if quality_mode=='rgps':
         ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
+        
         if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
             # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
             (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
@@ -249,14 +282,74 @@ if __name__ == '__main__':
                 if iplot>0:
                     zX = zX[idxKeep,:]
                     zY = zY[idxKeep,:]
-            del idxKeep
+            #del idxKeep
         del ztotdm1
+
     
-    # Saving data:
+    # Save the deformation data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,
-                         Xc=zXc, Yc=zYc, X4=zX, Y4=zY, divergence=zdiv, shear=zshr, total=ztot, quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
+                         Xc=zXc, Yc=zYc, X4=zX, Y4=zY, divergence=zdiv, shear=zshr, total=ztot,
+                         quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
 
+    # Save the "mojito" netCDF and npz Quad class files that can be used to seed in `sitrack` for only the quads that had a reasonable deformation
+    # and reconstruct the same quads
+    if lExportNC4Seed:
+        # Last-man standing quad indices:
+        idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
+        if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
+            print('ERROR: fuck-up #0'); exit(0)
+        zQPIDs1, zQPIDs2 = QUA1.MeshVrtcPntIDs()[idxQ1,:].copy(), QUA2.MeshVrtcPntIDs()[idxQ2,:].copy()
+        zPIDs1, zPIDs2 = np.unique( zQPIDs1 ), np.unique( zQPIDs2 )
+        if any(zPIDs2-zPIDs1!=0):
+            print('ERROR: fuck-up #1'); exit(0)
+        zIDs1, idxP1, _ =np.intersect1d( zPIDs1, QUA1.PointIDs[:], return_indices=True )
+        zIDs2, idxP2, _ =np.intersect1d( zPIDs2, QUA2.PointIDs[:], return_indices=True )
+        if any(zIDs2-zIDs1!=0):
+            print('ERROR: fuck-up #2'); exit(0)
+        if any(zIDs1-zPIDs1!=0) or any(zIDs1-zPIDs2!=0):
+            print('ERROR: fuck-up #3'); exit(0)
+        #
+        # So from here, idxQ and idxP are the way to acces what remains in initial class quad
+        Nrec, Np, Nq = 2, len(zIDs1), nD
+        zPt1, zPt2 = QUA1.PointTime[idxP1].copy(), QUA2.PointTime[idxP2].copy()        
+        vtim = np.array([ np.mean(zPt1), np.mean(zPt2) ], dtype=int) ; # Fill `vtim` with mean date at each record:
+        xtim = np.array([ zPt1, zPt2 ], dtype=int)        
+        zPXY1, zPXY2 = QUA1.PointXY[idxP1].copy(), QUA2.PointXY[idxP2].copy()
+        zPGC1, zPGC2 = mjt.CartNPSkm2Geo1D( zPXY1, convArray='F' ), mjt.CartNPSkm2Geo1D( zPXY2, convArray='F' )        
+        zPXY, zPGC = np.array([ zPXY1, zPXY2]), np.array([ zPGC1, zPGC2])
+
+
+        cdt1 = e2c(vtim[0], precision='D', frmt='nodash')
+        cfnm1  = cfnm0+'_'+cdt1+'_'+cr1+str(reskm)+'km'
+        cfnm2  = cfnm0+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
+        
+        # Building the class for the remaining quads to save them:
+        cf_npz_out = './npz/QUADSofDEF_'+cfnm1+'.npz'
+
+        # lili / lolo fuck-up:
+        zNewMVidx1 = BuildQuadVertIdx( zQPIDs1, zIDs1 )
+        #zNewMVidx1 = BuildQuadVertIdx( zQPIDs1, QUA1.PointIDs[idxP1] )
+        QR1 = mjt.Quadrangle( zPXY1, zNewMVidx1, zIDs1, zPt1, QUA1.QuadNames[idxQ1], origin='RGPS', reskm_nmnl=reskm )
+        #del 
+        mjt.SaveClassPolygon( cf_npz_out, QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )
+        if idebug>0 and iplot>0:
+            zNewMVidx2 = BuildQuadVertIdx( zQPIDs2, zIDs2 )
+            QR2 = mjt.Quadrangle( zPXY2, zNewMVidx2, zIDs2, zPt2, QUA2.QuadNames[idxQ2], origin='RGPS', reskm_nmnl=reskm )
+        #
+        del zPXY1, zPXY2, zPGC1, zPGC2, zPt1, zPt2        
+
+        makedirs( './nc', exist_ok=True )    
+        cf_nc_out = './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc'
+        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, zIDs1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
+                                   xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
+
+        del zPGC, xtim
+        print('\n *** All info necessary to seed the points and reconstruct the Quads involved in computed deformation cells is saved!')
+        print('         => that is '+str(Nq)+' Quads constructed on '+str(Np)+' points.\n')
+
+
+    
     # Some plots:
     if iplot>0:
 
@@ -280,6 +373,24 @@ if __name__ == '__main__':
                                   pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo, idate=itimeC )
 
+
+        if lExportNC4Seed and idebug>0:
+            vrngX = mjt.roundAxisRange( QR1.PointXY[:,0], rndKM=50. )
+            vrngY = mjt.roundAxisRange( QR1.PointXY[:,1], rndKM=50. )
+            #
+            cfig_root = 'Boo'
+            jr=0
+            kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1], cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
+                                 ppntIDs=zIDs1, QuadMesh=QR1.MeshVrtcPntIdx, qIDs=QR1.QuadIDs,
+                                 lGeoCoor=False, zoom=4, rangeX=vrngX, rangeY=vrngY, lShowIDs=True )
+            jr=1
+            kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1], cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
+                                 ppntIDs=zIDs2, QuadMesh=QR2.MeshVrtcPntIdx, qIDs=QR2.QuadIDs,
+                                 lGeoCoor=False, zoom=4, rangeX=vrngX, rangeY=vrngY, lShowIDs=True )
+            
+
+
+        
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
         mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',
