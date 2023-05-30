@@ -1,6 +1,9 @@
 
 * Maintenant que "le netoyage des valeurs exteme" est retire de `deformation.py`, etre sur que tout ce qui utilise les deformations pour faire des stats applique le netoyage des valeurs exteme! En particulier le scaling (PDFs fait!)
 
+ * Le pb, c que dans tous les cas, le tracking se base sur ce qu'il y a dans les fichiers quads `Q*.npz` qui eux n'ont pas l'info des quads qui vont disparaitre
+   parce-que valeurs extremes de deformation => trouver un fix!!!!
+
 * refaire les PDFs de base pour 10km (min area max and min for quads, take +1 -1 km2 at 10km!) pour RGPS et modele (avec la nouvelle method seeding / quads!!! pour le modele)
 
 * control where deformations are cleaned (tiny values) when doing P90
