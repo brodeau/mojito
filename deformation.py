@@ -9,8 +9,6 @@
 
 '''
 
-
-
 from sys import argv, exit
 from os import path, mkdir, makedirs
 import numpy as np
@@ -37,9 +35,7 @@ if __name__ == '__main__':
     time_dev_max= float(argv[3])
     quality_mode = argv[4]
 
-    if not quality_mode  in ['thorough','model','rgps','xlose']:
-        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
-
+    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
 
     # Reading the quad meshes in both npz files:
@@ -234,27 +230,27 @@ if __name__ == '__main__':
     del zshr2
 
     # Non-realistic / error extreme values in computed deformation:
-    #if quality_mode=='rgps':
-    #    ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
-    #    if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
-    #        # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
-    #        (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
-    #        #
-    #        nDn = len(idxKeep)
-    #        if nDn < nD:
-    #            print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate!')
-    #            zdiv = zdiv[idxKeep]
-    #            zshr = zshr[idxKeep]
-    #            ztot = ztot[idxKeep]
-    #            zXc  =  zXc[idxKeep]
-    #            zYc  =  zYc[idxKeep]
-    #            zAq  =  zAq[idxKeep]
-    #            nD   = nDn
-    #            if iplot>0:
-    #                zX = zX[idxKeep,:]
-    #                zY = zY[idxKeep,:]
-    #        del idxKeep
-    #    del ztotdm1
+    if quality_mode=='rgps':
+        ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
+        if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
+            # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
+            (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
+            #
+            nDn = len(idxKeep)
+            if nDn < nD:
+                print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate! (because mode='+quality_mode+')')
+                zdiv = zdiv[idxKeep]
+                zshr = zshr[idxKeep]
+                ztot = ztot[idxKeep]
+                zXc  =  zXc[idxKeep]
+                zYc  =  zYc[idxKeep]
+                zAq  =  zAq[idxKeep]
+                nD   = nDn
+                if iplot>0:
+                    zX = zX[idxKeep,:]
+                    zY = zY[idxKeep,:]
+            del idxKeep
+        del ztotdm1
     
     # Saving data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,

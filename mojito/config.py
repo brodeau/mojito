@@ -4,12 +4,12 @@
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
 
-known_modes = ['thorough','model','rgps','xlose']
+known_modes = ['thorough','model','rgps','xlose','rgps_map']
 
 
-def _check_mode_( caller, mode ):
+def controlModeName( caller, mode ):
     if not mode in known_modes:
-        print('ERROR [config.'+caller+'()]: unknow mode: '+mode+'!')
+        print('ERROR [config.controlModeName::'+caller+']: unknow mode: '+mode+'!')
         exit(0)
     return 0
     
@@ -25,7 +25,7 @@ def initialize( mode='model' ):
     global lc_accurate_time
     global data_dir, fdist2coast_nc, nc_MinDistFromLand
     
-    lk = _check_mode_( 'initialize', mode )
+    lk = controlModeName( 'initialize', mode )
 
     rc_day2sec = 24*3600
 
@@ -52,7 +52,7 @@ def initialize( mode='model' ):
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-    elif mode=='rgps':        
+    elif mode in ['rgps','rgps_map']:        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
@@ -86,7 +86,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     
     irk = int(res_km)
 
-    lk = _check_mode_( 'updateConfig4Scale', mode )
+    lk = controlModeName( 'updateConfig4Scale', mode )
     
     rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
@@ -118,13 +118,14 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
-            # When lose, average scale is 10.33 km with a standard deviation of ~1km!
-            #rc_Qarea_min, rc_Qarea_max = 9.33*9.33, 11.33*11.33 ; # 10.33 +- 1
-            rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2
+            rc_tolQuadA = 2            
+            rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
+        elif mode=='rgps_map':
+            rc_tolQuadA = 5
+            rc_Qarea_min, rc_Qarea_max = 7.5*7.5,12.5*12.5
         elif mode=='xlose':
             rc_tolQuadA = 10
-            #rc_Qarea_min, rc_Qarea_max = 5*5, 18*18
-            rc_Qarea_min, rc_Qarea_max = 7.5*7.5,12.5*12.5
+            rc_Qarea_min, rc_Qarea_max = 5*5, 15*15
         else:
             rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
         #
@@ -136,9 +137,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-1, 5.e-1, 5.e-1
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
-        elif mode=='rgps':
+        elif mode in ['rgps','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 19.*19., 21.*21.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
@@ -151,7 +151,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         if mode=='model':            
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
-        elif mode=='rgps':
+        elif mode in ['rgps','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 38.*38., 42.*42.
             #rc_div_max, rc_shr_max, rc_tot_max = 0.4, 0.4, 0.4 ; # day^-1 ; => supresses irrealistically large values
         else:
@@ -165,7 +165,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
-        elif mode=='rgps':
+        elif mode in ['rgps','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 76.*76., 84.*84.
             #rc_div_max, rc_shr_max, rc_tot_max = 0.2, 0.2, 0.2 ; # day^-1 ; => supresses irrealistically large values
         else:
@@ -179,7 +179,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 7.5e-2, 7.5e-2, 7.5e-2
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
-        elif mode=='rgps':
+        elif mode in ['rgps','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 152.*152., 168.*168.
             #rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1 ; # day^-1 ; => supresses irrealistically large values
         else:
@@ -193,7 +193,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-2, 5.e-2, 5.e-2
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
-        elif mode=='rgps':            
+        elif mode in ['rgps','rgps_map']:            
             rc_Qarea_min, rc_Qarea_max = 304.*304., 336.*336
             #rc_div_max, rc_shr_max, rc_tot_max = 6.e-2, 6.e-2, 6.e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
@@ -207,7 +207,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.5e-2, 2.5e-2, 2.5e-2
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
-        elif mode=='rgps':            
+        elif mode in ['rgps','rgps_map']:            
             rc_Qarea_min, rc_Qarea_max = 608.*608., 672.*672.
             rc_div_max, rc_shr_max, rc_tot_max = 3.e-2, 3.e-2, 3.e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
@@ -230,7 +230,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     #       excess `t_dev_cancel` seconds !
     rc_t_dev_cancel = 60
 
-    if mode == 'rgps':
+    if mode in ['rgps','rgps_map']:
         if   res_km>=70. and res_km<150.:
             rc_t_dev_cancel =  3.*3600
         elif   res_km>=150. and res_km<300.:

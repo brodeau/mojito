@@ -19,7 +19,7 @@ izoom = 1.5
 
 NameArcticProj='SmallArctic'
 
-quality_mode = 'rgps'
+quality_mode = 'rgps_map'
 
 if __name__ == '__main__':
 
@@ -35,6 +35,7 @@ if __name__ == '__main__':
     if not cv_in in ['divergence','shear','total']:
         print('ERROR: wrong deformation variable:', cv_in, '!!!'); exit(0)
 
+    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
     k1 = cfg.initialize( mode=quality_mode )
         
     mjt.chck4f(cf_in)

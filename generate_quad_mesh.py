@@ -108,10 +108,8 @@ if __name__ == '__main__':
     creskm = argv[3]
     reskm = int(creskm)
     quality_mode = argv[4]
+    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
 
-    if not quality_mode  in ['thorough','model','rgps','xlose']:
-        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
-    
     if len(argv)==6:
         crd_ss = argv[5]
 

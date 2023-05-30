@@ -46,8 +46,7 @@ if __name__ == '__main__':
     cf_div_in    = argv[1]
     
     quality_mode = argv[2]
-    if not quality_mode  in ['thorough','model','rgps','xlose']:
-        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
+    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
     
     cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
     cf_tot_in = str.replace( cf_div_in, 'DIV', 'TOT' )

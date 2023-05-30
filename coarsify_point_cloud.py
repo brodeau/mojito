@@ -35,23 +35,21 @@ if __name__ == '__main__':
     rd_tc = None
     
     if not len(argv) in [4,5,6]:
-        print('Usage: '+argv[0]+' <origin:rgps/model> <file_mojito.nc> <res_km> (<rd_ss_km>) (<min_dist_coast>)')
+        print('Usage: '+argv[0]+' <mode:rgps/model> <file_mojito.nc> <res_km> (<rd_ss_km>) (<min_dist_coast>)')
         exit(0)
 
     # Idea remove all the buoys closer to land than `rd_ss_km` km !!!
     # => this way avoids big quadrangles attached to coastal regions
     # => better for randomizing...    
 
-    corigin  = argv[1]
+    quality_mode  = argv[1]
     cf_nc_in = argv[2]
     creskm = argv[3]
     reskm = float(creskm)
 
-    if not corigin in ['rgps','model']:
-        print('ERROR: unknown origin! => '+corigin); exit(0)
-    
+    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
 
-    kk = cfg.initialize( mode=corigin )
+    kk = cfg.initialize( mode=quality_mode )
         
     ldss = ( len(argv)==5 or len(argv)==6 ); # a `rd_ss` is provided!
     ldtc =   len(argv)==6 ; # a minimum distance to coast is provided
@@ -59,7 +57,7 @@ if __name__ == '__main__':
     if ldss:
         rd_ss = float(argv[4])
     else:
-        kl = cfg.updateConfig4Scale( int(reskm), mode=corigin )
+        kl = cfg.updateConfig4Scale( int(reskm), mode=quality_mode )
         rd_ss = cfg.rc_d_ss
         
     if ldtc:        

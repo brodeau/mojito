@@ -44,9 +44,8 @@ if __name__ == '__main__':
     cdate2   =     argv[3]
     idtbin_h = int(argv[4])
     quality_mode = argv[5]
-    
-    if not quality_mode  in ['thorough','model','rgps','xlose']:
-        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
+
+    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
 
     ####################################################################################################
 
