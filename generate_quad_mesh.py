@@ -442,8 +442,8 @@ if __name__ == '__main__':
             xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _ = mjt.KeepSpcfdQuads( idxQk, xPxy1, vPids1, vTime1, xQpnts1, vQnam1 )
             ifix+=1
 
-
     
+                
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
     if ifix>0:
         QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )        
@@ -452,6 +452,10 @@ if __name__ == '__main__':
     del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
     del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2
 
+
+    if QUADS1.nP!=nbP or QUADS1.nQ!=nbQ or QUADS2.nP!=nbP or QUADS2.nQ!=nbQ:
+        print('ERROR: problem in the final number of quads and points!!!'); exit(0)    
+    print('\n *** Finally, we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')  
     
     k1 = _QuadStat_( 0, QUADS1 )
     k2 = _QuadStat_( 1, QUADS2 )
