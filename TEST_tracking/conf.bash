@@ -20,8 +20,8 @@ ISEED_BASE='selection' ; # 'selection' or 'quads' => will seed based on one or t
 
 NJPAR=4 ; # number of jobs we can launch in //
 
-export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
-#export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
+#export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
+export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
 
 
 host=`hostname | cut -d '.' -f2`
