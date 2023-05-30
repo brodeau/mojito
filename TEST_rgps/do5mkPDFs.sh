@@ -20,7 +20,7 @@ if [ ${nbh} -ne 1 ]; then
 fi
 
 
-CMD="${EXE} ${fdiv}"
+CMD="${EXE} ${fdiv} ${MODE}"
 echo "  ==> ${CMD}"; echo
 ${CMD}
 echo; echo

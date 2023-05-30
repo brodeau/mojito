@@ -998,7 +998,122 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
 
 
-def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=None,
+#def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=None,
+#               title=None, period=None, origin=None,
+#               ppdf2=[], Np2=None, origin2=None,
+#               ppdf3=[], Np3=None, origin3=None ):
+#    '''
+#      * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
+#      * pbinc: vector of the center of the bins (x-axis), size = nB
+#      * ppdf:  the PDF, same size as `pbinc`, size = nB
+#    '''
+#    from math import ceil
+#
+#    (nB,) = np.shape(ppdf)
+#    if len(pbinc) != nB:
+#        print('\n *** ERROR ['+caller+'/LogScaling]: wrong size for `pbinc`!'); exit(0)
+#    if len(pbinb) != nB+1:
+#        print('\n *** ERROR ['+caller+'/LogScaling]: wrong size for `pbinb`!'); exit(0)
+#
+#    rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
+#
+#    l_comp2 = ( np.shape(ppdf2)==(nB,) )
+#    l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
+#
+#    
+#    # For figure axes:
+#    xlog_min, xlog_max = 2.75e-3, 0.5
+#    ylog_min,ylog_max = 5.e-3, 3.5e2
+#    rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
+#    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
+#    lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
+#
+#    if reskm:
+#        if reskm>30 and reskm<70:
+#            ylog_min = 3.e-2
+#            xlog_max = 0.2
+#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
+#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
+#            rycut_tiny =3.e-2
+#        if reskm>=70 and reskm<120:
+#            ylog_min = 5.e-2
+#            xlog_max = 0.15
+#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+#            rycut_tiny =0.5e-1
+#        elif reskm>=120 and reskm<240:
+#            ylog_min = 1.e-1
+#            xlog_max = 0.1
+#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+#            rycut_tiny =1.e-1
+#        elif reskm>=240 and reskm<480:
+#            ylog_min = 0.8e-1
+#            xlog_max = 0.1
+#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+#            rycut_tiny =0.7e-1
+#        elif reskm>=480 and reskm<700:
+#            ylog_min = 0.8
+#            xlog_max = 0.1
+#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+#            rycut_tiny =0.7
+#
+#        if reskm>30:
+#            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
+#    ki = FigInitStyle()
+#
+#    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
+#    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
+#    if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
+#    clbl = origin
+#    if Np and origin:
+#        clbl = origin+' (N = '+str(Np)+')'
+#    plt.loglog(pbinc[:], ppdf[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label=clbl, zorder=5)
+#    if l_comp2:
+#        clbl = origin2
+#        if Np2 and origin2:
+#            origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
+#            clbl = origin2+' (N = '+str(Np2)+')'
+#        if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+#        plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=clbl, zorder=10)
+#        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+#    if l_comp3:
+#        clbl = origin3
+#        if Np3 and origin3:
+#            origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
+#            clbl = origin3+' (N = '+str(Np3)+')'
+#        if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+#        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
+#        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+#    # X-axis:
+#    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+#    ax.set_xlim(xlog_min, xlog_max)
+#    ax.set_xticks(rxlabs)
+#    ax.set_xticklabels(cxlabs)
+#    #plt.tick_params(axis='x', which='minor')
+#    #from matplotlib.ticker import FormatStrFormatter
+#    #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
+#    # Y-axis:
+#    plt.ylabel('PDF', color='k')
+#    ax.set_ylim(ylog_min, ylog_max)
+#    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+#    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+#    if Np and not (l_comp2 or l_comp3):
+#        ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
+#    if period:
+#        ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
+#    if title:
+#        ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
+#    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+#    plt.close(1)
+#    print(' * [LogScaling()]: created figure '+cfig)
+#    return 0
+
+
+
+def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
                title=None, period=None, origin=None,
                ppdf2=[], Np2=None, origin2=None,
                ppdf3=[], Np3=None, origin3=None ):
@@ -1008,141 +1123,8 @@ def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', 
       * ppdf:  the PDF, same size as `pbinc`, size = nB
     '''
     from math import ceil
-
-    (nB,) = np.shape(ppdf)
-    if len(pbinc) != nB:
-        print('\n *** ERROR ['+caller+'/LogScaling]: wrong size for `pbinc`!'); exit(0)
-    if len(pbinb) != nB+1:
-        print('\n *** ERROR ['+caller+'/LogScaling]: wrong size for `pbinb`!'); exit(0)
-
-    rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
-
-    l_comp2 = ( np.shape(ppdf2)==(nB,) )
-    l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
-
-    # For figure axes:
-    xlog_min, xlog_max = 2.75e-3, 0.5
-    ylog_min,ylog_max = 5.e-3, 3.5e2
-    rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
-    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
-    lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
-
-    if reskm:
-        if reskm>30 and reskm<70:
-            ylog_min = 3.e-2
-            xlog_max = 0.2
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
-            rycut_tiny =3.e-2
-        if reskm>=70 and reskm<120:
-            ylog_min = 5.e-2
-            xlog_max = 0.15
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =0.5e-1
-        elif reskm>=120 and reskm<240:
-            ylog_min = 1.e-1
-            xlog_max = 0.1
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =1.e-1
-        elif reskm>=240 and reskm<480:
-            ylog_min = 0.8e-1
-            xlog_max = 0.1
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =0.7e-1
-        elif reskm>=480 and reskm<700:
-            ylog_min = 0.8
-            xlog_max = 0.1
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =0.7
-
-        if reskm>30:
-            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-
-    ki = FigInitStyle()
-
-    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
-    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
-
-    if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
-
-    clbl = origin
-    if Np and origin:
-        clbl = origin+' (N = '+str(Np)+')'
-
-    plt.loglog(pbinc[:], ppdf[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label=clbl, zorder=5)
-
-    if l_comp2:
-        clbl = origin2
-        if Np2 and origin2:
-            origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
-            clbl = origin2+' (N = '+str(Np2)+')'
-        if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-        plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=clbl, zorder=10)
-        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-
-    if l_comp3:
-        clbl = origin3
-        if Np3 and origin3:
-            origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
-            clbl = origin3+' (N = '+str(Np3)+')'
-        if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
-        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-
-    # X-axis:
-    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
-    ax.set_xlim(xlog_min, xlog_max)
-    ax.set_xticks(rxlabs)
-    ax.set_xticklabels(cxlabs)
-    #plt.tick_params(axis='x', which='minor')
-    #from matplotlib.ticker import FormatStrFormatter
-    #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
-
-    # Y-axis:
-    plt.ylabel('PDF', color='k')
-    ax.set_ylim(ylog_min, ylog_max)
-
-    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
-    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
-
-    if Np and not (l_comp2 or l_comp3):
-        ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
-    if period:
-        ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
-    if title:
-        ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
-
-    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
-    plt.close(1)
-    print(' * [LogScaling()]: created figure '+cfig)
-    return 0
-
-
-
-
-
-
-
-
-
-
-
-
-def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=None,
-               title=None, period=None, origin=None,
-               ppdf2=[], Np2=None, origin2=None,
-               ppdf3=[], Np3=None, origin3=None ):
-    '''
-      * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
-      * pbinc: vector of the center of the bins (x-axis), size = nB
-      * ppdf:  the PDF, same size as `pbinc`, size = nB
-    '''
-    from math import ceil
-
+    from mojito import config as cfg
+    
     (nB,) = np.shape(ppdf)
     if len(pbinc) != nB:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinc`!'); exit(0)
@@ -1154,47 +1136,52 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     l_comp2 = ( np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
 
+    print('WARNING [LogPDFdef]: setup for nominal resolution of '+str(reskm)+' km !!!')
+    
+    k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
+    if name=="Divergence":
+        xlog_min, xlog_max = cfg.rc_div_min_pdf, cfg.rc_div_max_pdf
+    elif name=="Shear":
+        xlog_min, xlog_max = cfg.rc_shr_min_pdf, cfg.rc_shr_max_pdf
+    elif name=="Total":
+        xlog_min, xlog_max = cfg.rc_tot_min_pdf, cfg.rc_tot_max_pdf
+    else:
+        xlog_min, xlog_max = cfg.rc_shr_min_pdf, cfg.rc_shr_max_pdf
+    
     # For figure axes:
-    xlog_min, xlog_max = 2.75e-3, 0.5
     ylog_min,ylog_max = 5.e-3, 3.5e2
     rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
     cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
     lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
 
-    if reskm:
-        if reskm>30 and reskm<70:
-            ylog_min = 3.e-2
-            xlog_max = 0.2
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
-            rycut_tiny =3.e-2
-        if reskm>=70 and reskm<120:
-            ylog_min = 5.e-2
-            xlog_max = 0.15
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =0.5e-1
-        elif reskm>=120 and reskm<240:
-            ylog_min = 1.e-1
-            xlog_max = 0.1
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =1.e-1
-        elif reskm>=240 and reskm<480:
-            ylog_min = 0.8e-1
-            xlog_max = 0.1
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =0.7e-1
-        elif reskm>=480 and reskm<700:
-            ylog_min = 0.8
-            xlog_max = 0.1
-            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-            rycut_tiny =0.7
+    if reskm>30 and reskm<70:
+        ylog_min = 3.e-2
+        rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
+        cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
+        rycut_tiny =3.e-2
+    if reskm>=70 and reskm<120:
+        ylog_min = 5.e-2
+        rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+        cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+        rycut_tiny =0.5e-1
+    elif reskm>=120 and reskm<240:
+        ylog_min = 1.e-1
+        rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+        cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+        rycut_tiny =1.e-1
+    elif reskm>=240 and reskm<480:
+        ylog_min = 0.8e-1
+        rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+        cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+        rycut_tiny =0.7e-1
+    elif reskm>=480 and reskm<700:
+        ylog_min = 0.8
+        rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
+        cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
+        rycut_tiny =0.7
 
-        if reskm>30:
-            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
+    if reskm>30:
+        lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
 
     ki = FigInitStyle()
 

@@ -1,5 +1,5 @@
 
-* Trouver le bug du `S038` dans le cas RGPS / 10km / mode=rgps du moment (quadrillage dans les def, sortie de quadgener est ok!)
+* Maintenant que "le netoyage des valeurs exteme" est retire de `deformation.py`, etre sur que tout ce qui utilise les deformations pour faire des stats applique le netoyage des valeurs exteme! En particulier le scaling (PDFs fait!)
 
 * refaire les PDFs de base pour 10km (min area max and min for quads, take +1 -1 km2 at 10km!) pour RGPS et modele (avec la nouvelle method seeding / quads!!! pour le modele)
 

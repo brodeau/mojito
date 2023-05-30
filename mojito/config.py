@@ -82,6 +82,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
     global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig
+    global rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf, rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf
     
     irk = int(res_km)
 
@@ -92,21 +93,26 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
 
     rc_d_ss = 6. ; # default radius for subsampling the cloud of points [km]
 
-    # Extremas for figures only:
-    rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
+
     # Extremas for deformations, in [day^-1]:
     rc_div_max, rc_shr_max, rc_tot_max = 1., 1., 1.
-
-
     if mode in ['rgps']:
-        # Because noisy at tiny deformation!!!        
-        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5    ; # based on scatter plot of scaling        
+        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5    ; # # Because noisy at tiny deformation!!! Based on scatter plot of scaling        
     else:
         rc_div_min, rc_shr_min, rc_tot_min = 1.e-15, 1.e-15, 1.e-15 ; # for deformation generation
+
+    # Extremas for deformations for PDFs only:
+    rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
+    rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf =  8.e-5, 8.e-5, 8.e-5
+    
+    # Extremas for deformations for figures only:
+    rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
     
     if   irk==10:
         rc_d_ss = 6.
         rc_tolQuadA = 2
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.003, 0.003, 0.003
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  0.1, 0.1, 0.1
         if mode in ['thorough','model']:            
             #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
@@ -125,6 +131,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     elif irk==20:
         rc_d_ss = 15.
         rc_tolQuadA = 4
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.001, 0.001, 0.001
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-1, 5.e-1, 5.e-1
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
@@ -137,6 +145,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     elif irk==40:
         rc_d_ss = 34.5
         rc_tolQuadA = 8
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 5.e-4, 5.e-4, 5.e-4
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.e-1, 2.e-1, 2.e-1
         if mode=='model':            
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
@@ -150,6 +160,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     elif irk==80:
         rc_d_ss = 74.75
         rc_tolQuadA = 16
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-4, 1.e-4, 1.e-4
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.15, 0.15, 0.15
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
@@ -162,6 +174,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     elif irk==160:
         rc_d_ss = 156.
         rc_tolQuadA = 32
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 7.5e-2, 7.5e-2, 7.5e-2
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
@@ -174,6 +188,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     elif irk==320:
         rc_d_ss = 315.6
         rc_tolQuadA = 64
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-2, 5.e-2, 5.e-2
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
@@ -186,6 +202,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     elif irk==640:
         rc_d_ss = 636.
         rc_tolQuadA = 128
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.5e-2, 2.5e-2, 2.5e-2
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656

@@ -8,6 +8,7 @@ from os import path, mkdir
 import numpy as np
  #from re import split
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug=1
 iplot=1
@@ -38,11 +39,16 @@ if __name__ == '__main__':
     #    print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
     #    print('   or: '+argv[0]+' <directory_input_npz_files> <file_prefix>')
     #    exit(0)
-    if not len(argv) in [2]:
-        print('Usage: '+argv[0]+' <file_divergence.npz>')
+    if not len(argv) in [3]:
+        print('Usage: '+argv[0]+' <file_divergence.npz> <mode (rgps,model,xlose)>')
         exit(0)
 
-    cf_div_in = argv[1]
+    cf_div_in    = argv[1]
+    
+    quality_mode = argv[2]
+    if not quality_mode  in ['thorough','model','rgps','xlose']:
+        print('ERROR => unknow mode: '+mode+'!') ; exit(0)
+    
     cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
     cf_tot_in = str.replace( cf_div_in, 'DIV', 'TOT' )
 
@@ -92,28 +98,25 @@ if __name__ == '__main__':
     corigin = corig1
     cperiod = cperd1
 
+
+    # Minimum deformation values acceptable:
+    k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
+    zmin_div, zmin_shr, zmin_tot = cfg.rc_div_min, cfg.rc_shr_min, cfg.rc_tot_min ; # day^-1 ; mainly because RGPS is noisy around 0! We do not want have the zero on the PDF...
+    
     # For large scales, we must increase the size of bins:
-    zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1 ; RGPS is noisy around 0! We do not want have the zero on the PDF...
-    if   reskm >= 15. and reskm < 35.:
-        zmin_div, zmin_shr, zmin_tot = 0.001, 0.001, 0.001
-    elif   reskm >= 35. and reskm < 50.:
-        zmin_div, zmin_shr, zmin_tot = 5.e-4, 5.e-4, 5.e-4
+    if   reskm >= 35. and reskm < 50.:
         wVbin_min = 1.5*wVbin_min        
         rfexp_bin = rfexp_bin*1.2
     elif reskm >= 50. and reskm < 100.:
-        zmin_div, zmin_shr, zmin_tot = 1.e-4, 1.e-4, 1.e-4
         wVbin_min = 2.*wVbin_min
         rfexp_bin = rfexp_bin*1.5
     elif reskm >= 100. and reskm < 200.:
-        zmin_div, zmin_shr, zmin_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 4.*wVbin_min
         rfexp_bin = rfexp_bin*2.
     elif reskm >= 200. and reskm < 400.:
-        zmin_div, zmin_shr, zmin_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 6.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     elif reskm >= 400. and reskm < 700.:
-        zmin_div, zmin_shr, zmin_tot = 1.e-5, 1.e-5, 1.e-5
         wVbin_min = 8.*wVbin_min
         rfexp_bin = rfexp_bin*2.5
     if reskm >= 35.:
