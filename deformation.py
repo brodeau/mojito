@@ -29,26 +29,6 @@ lExportNC4Seed = False ; # Triggers the saving of the "mojito" netCDF and npz fi
 #                       # Quad class to allow for reconstruction of the same quads...
 
 
-# Fixme: only 1 existing for whole mojito !!!
-def BuildQuadVertIdx( pNewQdPntIDs, pNewPntIDs ):
-    '''
-       * pNewQdPntIDs: [nQ,4]
-       * pNewPntIDs:   [nP]
-    '''
-    (nQ,n4) = np.shape(pNewQdPntIDs)
-    if n4!=4:
-        print('ERROR [BuildQuadVertIdx()]: `n4!=4` !!!'); exit(0)
-    zNewQdVrtIdx = np.zeros((nQ,4), dtype=int)
-    for jq in range(nQ):
-        for jk in range(4):
-            zID = pNewQdPntIDs[jq,jk]
-            (idxP,) = np.where(pNewPntIDs==zID)
-            if len(idxP)!=1:
-                print('ERROR [BuildQuadVertIdx()]: `len(idxP)!=1`'); exit(0)                
-            zNewQdVrtIdx[jq,jk] = idxP[0]
-    #
-    return zNewQdVrtIdx
-
 
 
 if __name__ == '__main__':
@@ -149,16 +129,16 @@ if __name__ == '__main__':
     else:
         figSfx='_tglob.png'
 
-
+    
+    vnm, idxK1, idxK2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
+        
     if nQ1 == nQ2:
         print('\n *** Great! Both files have the same number of Quads!!!')
         nQ = nQ1
     else:
         print('\n [WARNING]: the 2 files/records do not have the same number of Quads!!!')
-        # The Quads we retain, i.e. those who exist in both snapshots:
-        vnm, idxK1, idxK2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
+        # The Quads we retain, i.e. those who exist in both snapshots:        
         nQ = len(vnm) ; # also = len(vidx*)
-
         znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
         nQ2 = len(znm)
         if nQ!=nQ2 or np.sum(zidx1-idxK1)!=0 or np.sum(zidx2-idxK2)!=0:
@@ -168,9 +148,6 @@ if __name__ == '__main__':
 
 
     # Now for some weird reasons time of a given buoy can be the same in the 2 quads:
-    if nQ1 == nQ2:
-        vnm, idxK1, idxK2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
-    #else: => see block above
     zTime1 = QUA1.MeshVrtcPntTime()[idxK1,:]
     zTime2 = QUA2.MeshVrtcPntTime()[idxK2,:]
     zdT = zTime2-zTime1
@@ -178,13 +155,13 @@ if __name__ == '__main__':
         print('\n [ERROR]: time for some buoys is the same in the 2 records!')
         # => this should be fixed at the quad generation level!!! No here!!!
         sys.exit(0)
-        (idxKeep,) = np.where( (zdT[:,0]>0.) & (zdT[:,1]>0.) & (zdT[:,2]>0.) & (zdT[:,3]>0.) )
-        idxKeep = np.array( idxKeep , dtype=int )
-        zshr2nQn = len(idxKeep)
-        print('   ==> '+str(nQ-nQn)+' quads /'+str(nQ)+' disregarded because they have the same time in both record !')
-        idxK1 = idxK1[idxKeep]
-        idxK2 = idxK2[idxKeep]
-        nQ = nQn
+        #(idxKeep,) = np.where( (zdT[:,0]>0.) & (zdT[:,1]>0.) & (zdT[:,2]>0.) & (zdT[:,3]>0.) )
+        #idxKeep = np.array( idxKeep , dtype=int )
+        #zshr2nQn = len(idxKeep)
+        #print('   ==> '+str(nQ-nQn)+' quads /'+str(nQ)+' disregarded because they have the same time in both record !')
+        #idxK1 = idxK1[idxKeep]
+        #idxK2 = idxK2[idxKeep]
+        #nQ = nQn
     del zTime1, zTime2, zdT
 
 
@@ -298,52 +275,34 @@ if __name__ == '__main__':
         # Last-man standing quad indices:
         idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
         if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
-            print('ERROR: fuck-up #0'); exit(0)
-        zQPIDs1, zQPIDs2 = QUA1.MeshVrtcPntIDs()[idxQ1,:].copy(), QUA2.MeshVrtcPntIDs()[idxQ2,:].copy()
-        zPIDs1, zPIDs2 = np.unique( zQPIDs1 ), np.unique( zQPIDs2 )
-        if any(zPIDs2-zPIDs1!=0):
             print('ERROR: fuck-up #1'); exit(0)
-        zIDs1, idxP1, _ =np.intersect1d( zPIDs1, QUA1.PointIDs[:], return_indices=True )
-        zIDs2, idxP2, _ =np.intersect1d( zPIDs2, QUA2.PointIDs[:], return_indices=True )
-        if any(zIDs2-zIDs1!=0):
+
+        zPXY1, zPids1, zTime1, zQpnts1, zQnam1, idxPkeep1 = mjt.KeepSpcfdQuads( idxQ1, QUA1.PointXY, QUA1.PointIDs, QUA1.PointTime, QUA1.MeshVrtcPntIdx, QUA1.QuadNames )
+        zPXY2, zPids2, zTime2, zQpnts2, zQnam2, idxPkeep2 = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
+        if any(zPids2-zPids1!=0):
             print('ERROR: fuck-up #2'); exit(0)
-        if any(zIDs1-zPIDs1!=0) or any(zIDs1-zPIDs2!=0):
-            print('ERROR: fuck-up #3'); exit(0)
-        #
-        # So from here, idxQ and idxP are the way to acces what remains in initial class quad
-        Nrec, Np, Nq = 2, len(zIDs1), nD
-        zPt1, zPt2 = QUA1.PointTime[idxP1].copy(), QUA2.PointTime[idxP2].copy()        
-        vtim = np.array([ np.mean(zPt1), np.mean(zPt2) ], dtype=int) ; # Fill `vtim` with mean date at each record:
-        xtim = np.array([ zPt1, zPt2 ], dtype=int)        
-        zPXY1, zPXY2 = QUA1.PointXY[idxP1].copy(), QUA2.PointXY[idxP2].copy()
+
+        # Building the class for the remaining quads to save them:
+        QR1 = mjt.Quadrangle( zPXY1, zQpnts1, zPids1, zTime1, zQnam1, origin='RGPS', reskm_nmnl=reskm )
+        if idebug>0 and iplot>0:
+            QR2 = mjt.Quadrangle( zPXY2, zQpnts2, zPids2, zTime2, zQnam2, origin='RGPS', reskm_nmnl=reskm )
+
+        Nrec, Np, Nq = 2, len(zPids1), nD
+        vtim = np.array([ np.mean(zTime1), np.mean(zTime2) ], dtype=int) ; # Fill `vtim` with mean date at each record:
+        xtim = np.array([ zTime1, zTime2 ], dtype=int)        
         zPGC1, zPGC2 = mjt.CartNPSkm2Geo1D( zPXY1, convArray='F' ), mjt.CartNPSkm2Geo1D( zPXY2, convArray='F' )        
         zPXY, zPGC = np.array([ zPXY1, zPXY2]), np.array([ zPGC1, zPGC2])
-
+        del zPGC1, zPGC2
 
         cdt1 = e2c(vtim[0], precision='D', frmt='nodash')
         cfnm1  = cfnm0+'_'+cdt1+'_'+cr1+str(reskm)+'km'
         cfnm2  = cfnm0+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
         
-        # Building the class for the remaining quads to save them:
-        cf_npz_out = './npz/QUADSofDEF_'+cfnm1+'.npz'
-
-        # lili / lolo fuck-up:
-        zNewMVidx1 = BuildQuadVertIdx( zQPIDs1, zIDs1 )
-        #zNewMVidx1 = BuildQuadVertIdx( zQPIDs1, QUA1.PointIDs[idxP1] )
-        QR1 = mjt.Quadrangle( zPXY1, zNewMVidx1, zIDs1, zPt1, QUA1.QuadNames[idxQ1], origin='RGPS', reskm_nmnl=reskm )
-        #del 
-        mjt.SaveClassPolygon( cf_npz_out, QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )
-        if idebug>0 and iplot>0:
-            zNewMVidx2 = BuildQuadVertIdx( zQPIDs2, zIDs2 )
-            QR2 = mjt.Quadrangle( zPXY2, zNewMVidx2, zIDs2, zPt2, QUA2.QuadNames[idxQ2], origin='RGPS', reskm_nmnl=reskm )
-        #
-        del zPXY1, zPXY2, zPGC1, zPGC2, zPt1, zPt2        
+        mjt.SaveClassPolygon( './npz/QUADSofDEF_'+cfnm1+'.npz', QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )
 
         makedirs( './nc', exist_ok=True )    
-        cf_nc_out = './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc'
-        kk = mjt.ncSaveCloudBuoys( cf_nc_out, vtim, zIDs1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
+        kk = mjt.ncSaveCloudBuoys( './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc', vtim, zPids1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
                                    xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
-
         del zPGC, xtim
         print('\n *** All info necessary to seed the points and reconstruct the Quads involved in computed deformation cells is saved!')
         print('         => that is '+str(Nq)+' Quads constructed on '+str(Np)+' points.\n')
@@ -378,14 +337,13 @@ if __name__ == '__main__':
             vrngX = mjt.roundAxisRange( QR1.PointXY[:,0], rndKM=50. )
             vrngY = mjt.roundAxisRange( QR1.PointXY[:,1], rndKM=50. )
             #
-            cfig_root = 'Boo'
             jr=0
             kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1], cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
-                                 ppntIDs=zIDs1, QuadMesh=QR1.MeshVrtcPntIdx, qIDs=QR1.QuadIDs,
+                                 ppntIDs=zPids1, QuadMesh=QR1.MeshVrtcPntIdx, qIDs=QR1.QuadIDs,
                                  lGeoCoor=False, zoom=4, rangeX=vrngX, rangeY=vrngY, lShowIDs=True )
             jr=1
             kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1], cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
-                                 ppntIDs=zIDs2, QuadMesh=QR2.MeshVrtcPntIdx, qIDs=QR2.QuadIDs,
+                                 ppntIDs=zPids2, QuadMesh=QR2.MeshVrtcPntIdx, qIDs=QR2.QuadIDs,
                                  lGeoCoor=False, zoom=4, rangeX=vrngX, rangeY=vrngY, lShowIDs=True )
             
 
