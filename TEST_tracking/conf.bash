@@ -43,7 +43,7 @@ case ${host} in
         export DATA_DIR="/data"
         #
         NJPAR=30
-        ISEED_BASE='quads'
+        ISEED_BASE='defs'
         #
         # For maps:
         #LIST_NEMO_EXP="BBM00"

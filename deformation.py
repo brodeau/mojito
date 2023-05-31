@@ -19,8 +19,8 @@ from scipy.spatial import Delaunay
 import mojito   as mjt
 from mojito import config as cfg
 from mojito.util import epoch2clock as e2c
-idebug=1
 
+idebug=0
 iplot=1 ; NameArcticProj='SmallArctic'
 zoom=2
 

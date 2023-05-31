@@ -27,7 +27,7 @@ case ${host} in
         MODE='rgps'
         #
         # 10km:
-        DT_BINS_H=6 ;  RESKM=10
+        DT_BINS_H=6 ;  RESKM=10 ; DEF_EXPORT='E'
         #DT_BINS_H=72 ;  RESKM=10
         #
         # 20km:
