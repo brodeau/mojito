@@ -22,7 +22,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     fi
 
 
-    CMD="${EXE} ${fdiv}"
+    CMD="${EXE} ${fdiv} ${MODE}"
     echo "  ==> ${CMD}"; echo
     ${CMD}
     echo; echo

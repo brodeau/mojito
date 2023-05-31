@@ -26,17 +26,24 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     nbf=`echo ${list_nc} | wc -w`
     echo " => ${nbf} files => ${nbf} batches!"
 
-    if [ "${ISEED_BASE}" = "quads" ]; then
+    if [ "${ISEED_BASE}" = "quads" ] || [ "${ISEED_BASE}" = "defs" ]; then
+        lRCCL=true
         EXE=${EXE2}
-        # Populating npz files to get Quads identification from:        
-        list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${cxtraRES}${XTRASFX}.npz`
-        # need to keep only the first occurence of each:
-        lnew="" ; icpt=0
-        for ff in ${list_seed_qnpz}; do
-            if [ $((icpt%2)) -eq 0 ]; then lnew+="${ff} "; fi
-            icpt=$((icpt+1))
-        done
-        list_seed_qnpz=${lnew}
+        # Populating npz files to get Quads identification from:
+        if [ "${ISEED_BASE}" = "quads" ]; then
+            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${cxtraRES}${XTRASFX}.npz`
+            # need to keep only the first occurence of each:
+            lnew="" ; icpt=0
+            for ff in ${list_seed_qnpz}; do
+                if [ $((icpt%2)) -eq 0 ]; then lnew+="${ff} "; fi
+                icpt=$((icpt+1))
+            done
+            list_seed_qnpz=${lnew}
+
+        elif [ "${ISEED_BASE}" = "defs" ]; then
+            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/QUADSofDEF_RGPS_S???_dt${DT_BINS_H}_${YEAR}????${cxtraRES}${XTRASFX}.npz`
+        fi
+        #
         nbq=`echo ${list_seed_qnpz} | wc -w`
         echo " *** We have ${nbq} npz files to identify quadrangles:"
         echo ${list_seed_qnpz}
@@ -46,16 +53,14 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         fi
 
         list_seed_qnpz=( ${list_seed_qnpz} )
-        
     fi
 
 
     icpt=0
     for ff in ${list_nc}; do
-        
-        if [ "${ISEED_BASE}" = "quads" ]; then fnpz=${list_seed_qnpz[${icpt}]}; fi
 
-        
+        if ${lRCCL}; then fnpz=${list_seed_qnpz[${icpt}]}; fi
+
         if [ "${LIST_RD_SS}" = "" ]; then
             if [ -f ${ff} ]; then
                 fb=`basename ${ff}`; echo; echo " *** Doing file ${fb}"
@@ -69,7 +74,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 lstrec="0,$((Nr-1))"
                 flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                 ijob=$((ijob+1))
-                if [ "${ISEED_BASE}" = "quads" ]; then
+                if ${lRCCL}; then
                     CMD="${EXE} ${ff} ${lstrec} ${fnpz} ${RESKM} ${MODE}"
                 else
                     CMD="${EXE} ${ff} ${lstrec} ${RESKM} ${MODE}"
@@ -97,7 +102,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                     lstrec="0,$((Nr-1))"
                     flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                     ijob=$((ijob+1))
-                    if [ "${ISEED_BASE}" = "quads" ]; then
+                    if ${lRCCL}; then
                         CMD="${EXE} ${ff} ${lstrec} ${fnpz} ${RESKM} ${MODE} ${rdss}"
                     else
                         CMD="${EXE} ${fn} ${lstrec} ${RESKM} ${MODE} ${rdss}"
@@ -114,7 +119,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         fi
 
         icpt=`expr ${icpt} + 1`
-        
+
     done
 
 done
