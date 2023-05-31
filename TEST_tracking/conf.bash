@@ -18,8 +18,6 @@ XTRA_SFX_SI3=""
 
 ISEED_BASE='selection' ; # 'selection' or 'quads' or 'defs' => will seed based on one or the other
 
-NJPAR=4 ; # number of jobs we can launch in //
-
 #export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
 export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
 
@@ -35,14 +33,13 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
-        #
-        NJPAR=4       
+        LIST_NEMO_EXP="BBM00"
+        ISEED_BASE='defs'; # use remaining Quads of deformation...
         #
         ;;
     "frazilo")
         export DATA_DIR="/data"
         #
-        NJPAR=30
         ISEED_BASE='defs'
         #
         # For maps:
