@@ -9,6 +9,7 @@ mkdir -p logs
 
 if [ "${ISEED_BASE}" != "quads" ]; then
     echo "There is no need to call me since ISEED_BASE is not 'quads' !!!"
+    exit
 fi
 
 

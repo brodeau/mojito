@@ -50,8 +50,14 @@ if __name__ == '__main__':
 
     # Reading the quad meshes in both npz files:
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
-    QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
+    nP1,nQ1 = QUA1.nP,QUA1.nQ
+    print('        =>  '+str(nQ1)+' Quads constructed on '+str(nP1)+' points.')
+    
+    QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )    
+    nP2,nQ2 = QUA2.nP,QUA2.nQ
+    print('        =>  '+str(nQ2)+' Quads constructed on '+str(nP2)+' points.')
 
+    
     # Debug have a look at the times of all points and get the actual mean time for each file:
     rTm1, rStD1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
     rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
@@ -113,10 +119,6 @@ if __name__ == '__main__':
     cfnm  = cfnm0+'_'+cclck
     cfnm += '_'+cr1+str(reskm)+'km'
 
-    nP1,nQ1, nP2,nQ2 = QUA1.nP,QUA1.nQ, QUA2.nP,QUA2.nQ
-    
-    print('\n *** Number of points in the two files/records:', nP1, nP2)
-    print('\n *** Number of quads in the two files/records:' , nQ1, nQ2)
 
     if  cdtbin=='_NoBin':
         dtbin = 0
@@ -155,13 +157,6 @@ if __name__ == '__main__':
         print('\n [ERROR]: time for some buoys is the same in the 2 records!')
         # => this should be fixed at the quad generation level!!! No here!!!
         sys.exit(0)
-        #(idxKeep,) = np.where( (zdT[:,0]>0.) & (zdT[:,1]>0.) & (zdT[:,2]>0.) & (zdT[:,3]>0.) )
-        #idxKeep = np.array( idxKeep , dtype=int )
-        #zshr2nQn = len(idxKeep)
-        #print('   ==> '+str(nQ-nQn)+' quads /'+str(nQ)+' disregarded because they have the same time in both record !')
-        #idxK1 = idxK1[idxKeep]
-        #idxK2 = idxK2[idxKeep]
-        #nQ = nQn
     del zTime1, zTime2, zdT
 
 
@@ -248,7 +243,7 @@ if __name__ == '__main__':
             #
             nDn = len(idxKeep)
             if nDn < nD:
-                print('\n *** EXCLUDING '+str(nD-nDn)+' points because of excessively small deformation rate! (because mode='+quality_mode+')')
+                print('\n *** EXCLUDING '+str(nD-nDn)+' deformation points (quads) because of excessively small deformation rate! (because mode='+quality_mode+')')
                 zdiv = zdiv[idxKeep]
                 zshr = zshr[idxKeep]
                 ztot = ztot[idxKeep]
@@ -261,7 +256,8 @@ if __name__ == '__main__':
                     zY = zY[idxKeep,:]
             #del idxKeep
         del ztotdm1
-
+        #
+        print('        =>  '+str(nD)+' Quads left.')
     
     # Save the deformation data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,

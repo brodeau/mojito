@@ -31,6 +31,10 @@ elif [ "${ISEED_BASE}" = "quads" ]; then
     echo " * Will get RGPS seeding info in: ./nc for RESKM = ${RESKM}"
     list_seed_nc=`\ls ./nc/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
     
+elif [ "${ISEED_BASE}" = "defs" ]; then
+    echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
+    list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_S???_dt${DT_BINS_H}_${YEAR}????_${YEAR}????${cxtraRES}${XTRASFX}.nc`
+    
 else
     echo " Unknown value for ISEED_BASE: ${ISEED_BASE}"
     exit

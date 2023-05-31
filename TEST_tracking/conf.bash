@@ -16,7 +16,7 @@ export SI3DATE2="${YEAR}0331"
 
 XTRA_SFX_SI3=""
 
-ISEED_BASE='selection' ; # 'selection' or 'quads' => will seed based on one or the other
+ISEED_BASE='selection' ; # 'selection' or 'quads' or 'defs' => will seed based on one or the other
 
 NJPAR=4 ; # number of jobs we can launch in //
 
@@ -30,7 +30,8 @@ case ${host} in
         export DATA_DIR="/MEDIA/data"
         XTRA_SFX_SI3="_LIGHT480"
         LIST_NEMO_EXP="BBM00"
-        ISEED_BASE='quads'
+        #ISEED_BASE='quads'
+        ISEED_BASE='defs'; # use remaining Quads of deformation...
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
