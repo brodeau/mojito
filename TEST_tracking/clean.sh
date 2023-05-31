@@ -3,7 +3,7 @@
 . ./conf.bash
 
 if [ "$1" = "1" ]; then
-    rm -f figs/tracking/*${NEMO_EXP}*
+    rm -rf figs/tracking/*
     rm -f ./nc/NEMO-SI3_NANUK4_${NEMO_EXP}_tracking_S???_dt*_*km.nc
 
 elif [ "$1" = "2" ]; then
