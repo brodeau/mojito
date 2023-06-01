@@ -33,6 +33,7 @@ case ${host} in
         ;;
     "mcp-oceannext-01")
         export DATA_DIR="/data/gcm_setup"
+        XTRA_SFX_SI3="_LIGHT480"
         LIST_NEMO_EXP="BBM00"
         ISEED_BASE='defs'; # use remaining Quads of deformation...
         #
