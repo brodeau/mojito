@@ -7,6 +7,9 @@
         idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
         NameError: name 'idxKeep' is not defined
 
+* Aussi, nombre non egal de deformations entre rgps et tracking, alors que devrait, genre 22000 contre 21000, trouver les batchs qui ne sont pas les memes, et voir quel est le probleme (peut etre bouee qui disparait ca plus trop de glace dans le modele????)
+
+
 
 * Maintenant que "le netoyage des valeurs exteme" est retire de `deformation.py`, etre sur que tout ce qui utilise les deformations pour faire des stats applique le netoyage des valeurs exteme! En particulier le scaling (PDFs fait!)
 
