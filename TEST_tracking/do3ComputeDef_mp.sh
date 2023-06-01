@@ -5,6 +5,9 @@
 
 EXE="${MOJITO_DIR}/deformation.py"
 
+
+MAX_T_DEV=7200 ; # 2 hours
+
 mkdir -p ./logs
 
 ijob=0
@@ -69,7 +72,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
                         flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
                         ijob=$((ijob+1))
-                        CMD="${EXE} ${fQ1} ${fQ2} 0 model"
+                        CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} model"
                         echo "  ==> ${CMD}"; echo
                         ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                         echo; echo
@@ -93,7 +96,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
                             flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
                             ijob=$((ijob+1))
-                            CMD="${EXE} ${fQ1} ${fQ2} 0 model"
+                            CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} model"
                             echo "  ==> ${CMD}"; echo
                             ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                             echo; echo
