@@ -41,10 +41,7 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        ISEED_BASE='defs'
-        #
-        # For maps:
-        #LIST_NEMO_EXP="BBM00"
+        LIST_NEMO_EXP="BBM00" ; ISEED_BASE='defs' ; # For maps
         #LIST_NEMO_EXP="BBM2302"
         #LIST_NEMO_EXP="EVP2302"
         #
