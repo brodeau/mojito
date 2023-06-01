@@ -6,7 +6,8 @@
 EXE="${MOJITO_DIR}/deformation.py"
 
 
-MAX_T_DEV=7200 ; # 2 hours
+#MAX_T_DEV=7200 ; # 2 hours
+MAX_T_DEV=$((DT_BINS_H*3600)) ; # like RGPS !!!
 
 mkdir -p ./logs
 

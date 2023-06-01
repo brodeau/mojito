@@ -1,4 +1,13 @@
 
+
+* Fixer, dans `deformation.py`:
+
+        Traceback (most recent call last):
+        File "/home/laurent/DEV/mojito/deformation.py", line 272, in <module>
+        idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
+        NameError: name 'idxKeep' is not defined
+
+
 * Maintenant que "le netoyage des valeurs exteme" est retire de `deformation.py`, etre sur que tout ce qui utilise les deformations pour faire des stats applique le netoyage des valeurs exteme! En particulier le scaling (PDFs fait!)
 
  * Le pb, c que dans tous les cas, le tracking se base sur ce qu'il y a dans les fichiers quads `Q*.npz` qui eux n'ont pas l'info des quads qui vont disparaitre
