@@ -139,7 +139,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         elif mode in ['rgps','rgps_map']:
-            #rc_Qarea_min, rc_Qarea_max = 19.*19., 21.*21.
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
@@ -154,7 +153,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
         elif mode in ['rgps','rgps_map']:
-            #rc_Qarea_min, rc_Qarea_max = 38.*38., 42.*42.
             rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45

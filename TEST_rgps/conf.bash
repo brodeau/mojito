@@ -27,13 +27,13 @@ case ${host} in
         MODE='rgps' ; DEF_EXPORT='E'
         #
         # 10km:
-        DT_BINS_H=6 ;  RESKM=10
+        #DT_BINS_H=6 ;  RESKM=10
         #
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20
         #
         # 40km:
-        #DT_BINS_H=6 ; RESKM=40
+        DT_BINS_H=6 ; RESKM=40
         #
         # 80km:
         #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 75 78"
