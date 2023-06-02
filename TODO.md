@@ -1,5 +1,7 @@
 
 
+* `TEST_tracking`: the quad generation always take the same sub-samp resolution ex: 150-160! Fix this!
+
 * Fixer, dans `deformation.py`:
 
         Traceback (most recent call last):

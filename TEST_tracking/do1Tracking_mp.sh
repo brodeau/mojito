@@ -74,7 +74,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         else
             for rdss in ${LIST_RD_SS}; do
                 fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
-                CMD="${EXE} ${FSI3IN} ${FNMM} ${fnd}" ; # with nc file for init seed...
+                CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnd}" ; # with nc file for init seed...
                 echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
                 flog="tracking__`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
                 ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
