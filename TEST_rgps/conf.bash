@@ -36,11 +36,11 @@ case ${host} in
         #DT_BINS_H=6 ; RESKM=40
         #
         # 80km:
-        DT_BINS_H=6 ;  RESKM=80
-        #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 75 78"
+        #DT_BINS_H=6 ;  RESKM=80
+        ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 75 78"
         #
         # 160km: in decreasing order of quality:
-        #DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165" ; #ok!
+        DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165" ; #ok!
         #
         # 320km:        
         #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 285 290 295 300 305 310 313  315  317 320 325 330 335 340 345 350"

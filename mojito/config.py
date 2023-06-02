@@ -180,8 +180,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
         elif mode in ['rgps','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 152.*152., 168.*168.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.1, 0.1, 0.1 ; # day^-1 ; => supresses irrealistically large values
+            #rc_Qarea_min, rc_Qarea_max = 152.*152., 168.*168.
+            rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #
