@@ -89,21 +89,22 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             fi
         else
             for rdss in ${LIST_RD_SS}; do
-                fn=`echo ${ff} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
+                #fn=`echo ${ff} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"` ; # hour can be different!
+                fn=`echo ${ff} | cut -d'_' -f1-7`
+                fn=`basename ${fn}`
+                fn=`\ls ./nc/${fn}_*_${rdss}-${RESKM}km.nc`
+                if [ `echo ${fn} | wc -w` -ne 1 ]; then
+                    echo "ERROR: less or more than 1 candidate for fn !!!"; exit
+                fi                
+                fnpzR=`echo ${fnpz} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
+                #
                 if [ -f ${fn} ]; then
                     fb=`basename ${fn}`; echo; echo " *** Doing file ${fb}"
-                    ## Number of records inside netCDF file:
-                    #Nr=`ncdump -h ${fn} | grep 'time\ =\ UNLIMITED' | cut -d'(' -f2 | cut -d' ' -f1`
-                    #echo "   => it has ${Nr} time records"
-                    #if [ ${Nr} -le 65 ] || [ $((Nr/NSS)) -gt 1 ]; then
-                    #    echo "  ==> bad! Presently we expect ABOUT $((NSS+1)) records!"; exit
-                    #fi
-                    #lstrec="0,$((Nr-1))"
                     lstrec="0,1"
                     flog="quadgener_`echo ${fb} | sed -e s/'.nc'/''/g | sed -e s/"NEMO-SI3_${NEMO_CONF}_"/""/g`_${RESKM}km"
                     ijob=$((ijob+1))
                     if ${lRCCL}; then
-                        CMD="${EXE} ${ff} ${lstrec} ${fnpz} ${RESKM} ${MODE} ${rdss}"
+                        CMD="${EXE} ${fn} ${lstrec} ${fnpzR} ${RESKM} ${MODE} ${rdss}"
                     else
                         CMD="${EXE} ${fn} ${lstrec} ${RESKM} ${MODE} ${rdss}"
                     fi
@@ -114,6 +115,8 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         echo "Waiting! (ijob = ${ijob})...."
                         wait; echo; echo
                     fi
+                else
+                    echo "ERROR: file ${fn} is missing!!!"; exit
                 fi
             done
         fi

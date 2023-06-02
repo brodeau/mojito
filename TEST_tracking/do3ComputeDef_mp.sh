@@ -23,7 +23,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     fi
 
     # Populating the batches available:
-    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${csf}.npz`
+    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
 
     echo "${listQ}"
 
@@ -45,7 +45,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     for cbtch in ${list_btch}; do
 
         #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-        list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${csf}.npz`
+        list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
         nbf=`echo ${list} | wc -w`
 
         echo " *** Number of files for Batch ${cbtch} = ${nbf}"
@@ -63,7 +63,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             echo
 
             if [ "${LIST_RD_SS}" == "" ]; then
-                lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????-??h??${csf}.npz 2>/dev/null` )
+                lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
                 if [ "${lst}" != "" ]; then
                     nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                     #
@@ -87,7 +87,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
                 for rdss in ${LIST_RD_SS}; do
                     #
-                    lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????-??h??_${rdss}-${RESKM}km.npz 2>/dev/null` )
+                    lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null` )
                     if [ "${lst}" != "" ]; then
                         nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                         #

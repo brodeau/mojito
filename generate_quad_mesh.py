@@ -24,7 +24,7 @@ from mojito.util import epoch2clock as e2c
 
 idebug = 0
 
-iplot = 0 ; # Create figures to see what we are doing...
+iplot = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 5
 
@@ -35,7 +35,7 @@ mode_ctl_vrtc = 'maxdiff'
 
 
 def _formDate_( idate ):
-    cdate = str.replace( e2c(idate, precision='m'), '-', '')
+    cdate = str.replace( e2c(idate, precision='D'), '-', '')
     cdate = str.replace( cdate, '_', '-')
     cdate = str.replace( cdate, ':', 'h')
     return cdate

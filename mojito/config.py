@@ -148,7 +148,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_tolQuadA = 8
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 5.e-4, 5.e-4, 5.e-4
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.e-1, 2.e-1, 2.e-1
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 0.5e-1, 0.5e-1, 0.5e-1
         if mode=='model':            
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.

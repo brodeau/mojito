@@ -8,7 +8,8 @@ if [ "$1" = "1" ]; then
     rm -f ./logs/tracking__*
 
 elif [ "$1" = "2" ]; then
-    rm -f ./figs/quadgener/* npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/*_SELECTION_RGPS_S*.err
+    rm -rf ./figs/quadgener
+    rm -f npz/[TQ]-mesh_*.npz logs/*_SELECTION_RGPS_S*.out logs/*_SELECTION_RGPS_S*.err
 
 elif [ "$1" = "3" ]; then
     rm -rf figs/deformation/*

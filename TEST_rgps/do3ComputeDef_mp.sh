@@ -18,7 +18,7 @@ if [ "${LIST_RD_SS}" != "" ]; then
 fi
 
 # Populating the batches available:
-listQ=`\ls npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${csf}.npz`
+listQ=`\ls npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
 
 echo "${listQ}"
 
@@ -43,7 +43,7 @@ echo
 for cbtch in ${list_btch}; do
 
     #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-    list=`\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${csf}.npz 2>/dev/null`
+    list=`\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz 2>/dev/null`
     if [ "${list}" != "" ]; then
 
         nbf=`echo ${list} | wc -w`
@@ -65,7 +65,7 @@ for cbtch in ${list_btch}; do
             echo
 
             if [ "${LIST_RD_SS}" = "" ]; then
-                lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????-??h??${csf}.npz 2>/dev/null` )
+                lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
                 if [ "${list}" != "" ]; then
                     nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                     #
@@ -95,7 +95,7 @@ for cbtch in ${list_btch}; do
             else
                 #
                 for rdss in ${LIST_RD_SS}; do
-                    lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????-??h??_${rdss}-${RESKM}km.npz 2>/dev/null` )
+                    lst=( `\ls npz/Q-mesh_RGPS_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null` )
                     if [ "${list}" != "" ]; then
                         nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                         #
