@@ -36,13 +36,13 @@ for RESKM in ${VRESKM[*]}; do
 
             echo "EXP, exp = ${EXP}, ${exp}"
 
-            if [ "${exp}" == "rgps" ]; then
-                cdt=dt${DT_BINS_H}
-            else
-                cdt=dt0
-            fi
+            #if [ "${exp}" == "rgps" ]; then
+            cdt=dt${DT_BINS_H}
+            #else
+            #    cdt=dt0
+            #fi
 
-            ff=`find -L ./${exp} -name PDF_*${EXP}*_${cdt}_${RESKM}km_*_${cf}.npz 2>/dev/null`
+            ff=`find -L ./${exp} -name "PDF_*${EXP}*_${cdt}_${RESKM}km_*_${cf}.npz" 2>/dev/null`
 
 
             echo " *** ff = ${ff}"
