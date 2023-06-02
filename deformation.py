@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
 
     if not len(argv) in [5,6]:
-        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <mode (rgps,model,xlose)> (<E:[export Quad info]>)')
+        print('Usage: '+argv[0]+' <file_Q_mesh_N1.npz> <file_Q_mesh_N2.npz> <time_dev_from_mean_allowed (s)> <mode (rgps,model,xlose)> (<E:[export{ Quad info]>)')
         exit(0)
     cf_Q1 = argv[1]
     cf_Q2 = argv[2]
@@ -318,7 +318,8 @@ if __name__ == '__main__':
         cdt1 = e2c(vtim[0], precision='D', frmt='nodash')
         cfnm1  = cfnm0+'_'+cdt1+'_'+cr1+str(reskm)+'km'
         cfnm2  = cfnm0+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
-        
+
+        k1 = mjt.QuadStat( 0, QR1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )        
         mjt.SaveClassPolygon( './npz/QUADSofDEF_'+cfnm1+'.npz', QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )
 
         makedirs( './nc', exist_ok=True )    

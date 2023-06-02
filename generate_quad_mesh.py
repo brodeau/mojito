@@ -421,8 +421,8 @@ if __name__ == '__main__':
         print('ERROR: problem in the final number of quads and points!!!'); exit(0)    
     print('\n *** Finally, we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')  
     
-    k1 = mjt.QuadStat( 0, QUADS1 )
-    k2 = mjt.QuadStat( 1, QUADS2 )
+    k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
+    k2 = mjt.QuadStat( 1, QUADS2, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
     
     # Save the quadrangular mesh info:
     mjt.SaveClassPolygon( cf_npzQ1, QUADS1, ctype='Q', origin=corigin, reskm_nmnl=reskm )

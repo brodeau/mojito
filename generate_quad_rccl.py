@@ -239,7 +239,7 @@ if __name__ == '__main__':
                              ppntIDs=QUADS1.PointIDs, QuadMesh=QUADS1.MeshVrtcPntIdx, qIDs=QUADS1.QuadIDs,
                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
-    k1 = mjt.QuadStat( 0, QUADS1 )
+    k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
         
     #######################################################################################################
 
@@ -289,11 +289,11 @@ if __name__ == '__main__':
     if ifix>0:
         print('WARNING: fixing (updating) QUADS1 !!!')
         QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )
-        k1 = mjt.QuadStat( 0, QUADS1 )
+        k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
         
     QUADS2     = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
     print('      => "QUADS2" constructed! :)\n')
-    k2 = mjt.QuadStat( 1, QUADS2 )
+    k2 = mjt.QuadStat( 1, QUADS2, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
     
     del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
     del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2
