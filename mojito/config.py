@@ -118,8 +118,9 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
         elif mode=='rgps':
-            rc_tolQuadA = 2            
-            rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
+            rc_tolQuadA = 2
+            rc_Qarea_min, rc_Qarea_max = 9.33*9.33, 11.33*11.33 ; # 10.33 +- 1 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
+            #rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
         elif mode=='rgps_map':
             rc_tolQuadA = 5
             rc_Qarea_min, rc_Qarea_max = 7.5*7.5,12.5*12.5
@@ -134,11 +135,12 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_tolQuadA = 4
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.001, 0.001, 0.001
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-1, 5.e-1, 5.e-1
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         elif mode in ['rgps','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 19.*19., 21.*21.
+            #rc_Qarea_min, rc_Qarea_max = 19.*19., 21.*21.
+            rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
@@ -152,8 +154,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
         elif mode in ['rgps','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 38.*38., 42.*42.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.4, 0.4, 0.4 ; # day^-1 ; => supresses irrealistically large values
+            #rc_Qarea_min, rc_Qarea_max = 38.*38., 42.*42.
+            rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         #
