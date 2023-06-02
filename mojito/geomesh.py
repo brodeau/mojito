@@ -803,4 +803,35 @@ def ShrinkArrays( pmask, pNam, pIDs, pGC, pXY, ptime, recAxis=2 ):
 
 
 
+def QuadStat( kr, QD ):
 
+    # Some info about the spatial scales of quadrangles:
+    print('\n *** About quadrangles at record #'+str(kr)+':')
+    zsides = QD.lengths()
+    zareas = QD.area()
+
+    if np.any(zareas<=0):
+        print('ERROR [QuadStat()]: there are quads with a negative area :(')
+        (idxFU,) = np.where( zareas<0 )
+        print('  ==> '+str(len(idxFU))+' of such quads!')
+        exit(0)
+    
+    if np.isnan(zareas).any():
+        print('ERROR [QuadStat()]: there are "NANs" in `zarea`!!!!'); exit(0)
+    zscale = np.sqrt(zareas)
+    rl_average_side = np.mean(zsides)
+    rl_average_scal = np.mean(zscale)
+    rl_stdev_scal   = mjt.StdDev(rl_average_scal, zscale)
+    rl_average_area = np.mean(zareas)
+    print('  Quads @ rec '+str(kr)+' ==> scale: mean, StDev, min, max =',round(rl_average_scal,3), round(rl_stdev_scal,2),
+          round(np.min(zscale),2), round(np.max(zscale),3),' km')
+    print('  Quads @ rec '+str(kr)+' ==> average side length is '+str(round(rl_average_side,3))+' km')
+    print('  Quads @ rec '+str(kr)+' ==> average area is '+str(round(rl_average_area,1))+' km^2')
+    del zareas, zsides, zscale
+    zdev = abs(rl_average_scal-reskm)
+    if zdev > cfg.rc_tolQuadA:
+        print(' ERROR [QuadStat()]: the mean scale is too different from the '+creskm
+              +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(cfg.rc_tolQuadA)+'km)')
+        exit(0)
+    #
+    return 0

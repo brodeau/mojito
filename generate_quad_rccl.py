@@ -58,41 +58,6 @@ def _init4rec_( kr, pRec, pdate, cdt0, cfs, crkm, css ):
 
 
 
-def _QuadStat_( kr, QD ):
-
-    # Some info about the spatial scales of quadrangles:
-    print('\n *** About quadrangles at record #'+str(kr)+':')
-    zsides = QD.lengths()
-    zareas = QD.area()
-
-    if np.any(zareas<=0):
-        print('ERROR: there are quads with a negative area :(')
-        (idxFU,) = np.where( zareas<0 )
-        print('  ==> '+str(len(idxFU))+' of such quads!')
-        exit(0)
-    
-    if np.isnan(zareas).any():
-        print('ERROR: there are "NANs" in `zarea`!!!!'); exit(0)
-    zscale = np.sqrt(zareas)
-    rl_average_side = np.mean(zsides)
-    rl_average_scal = np.mean(zscale)
-    rl_stdev_scal   = mjt.StdDev(rl_average_scal, zscale)
-    rl_average_area = np.mean(zareas)
-    print('  Quads @ rec '+str(kr)+' ==> scale: mean, StDev, min, max =',round(rl_average_scal,3), round(rl_stdev_scal,2),
-          round(np.min(zscale),2), round(np.max(zscale),3),' km')
-    print('  Quads @ rec '+str(kr)+' ==> average side length is '+str(round(rl_average_side,3))+' km')
-    print('  Quads @ rec '+str(kr)+' ==> average area is '+str(round(rl_average_area,1))+' km^2')
-    del zareas, zsides, zscale
-    zdev = abs(rl_average_scal-reskm)
-    if zdev > cfg.rc_tolQuadA:
-        print(' ERROR: the mean scale is too different from the '+creskm
-              +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(cfg.rc_tolQuadA)+'km)')
-        exit(0)
-    #
-    return 0
-
-    
-
 
 if __name__ == '__main__':    
     
@@ -274,7 +239,7 @@ if __name__ == '__main__':
                              ppntIDs=QUADS1.PointIDs, QuadMesh=QUADS1.MeshVrtcPntIdx, qIDs=QUADS1.QuadIDs,
                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
-    k1 = _QuadStat_( 0, QUADS1 )
+    k1 = mjt.QuadStat( 0, QUADS1 )
         
     #######################################################################################################
 
@@ -324,11 +289,11 @@ if __name__ == '__main__':
     if ifix>0:
         print('WARNING: fixing (updating) QUADS1 !!!')
         QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )
-        k1 = _QuadStat_( 0, QUADS1 )
+        k1 = mjt.QuadStat( 0, QUADS1 )
         
     QUADS2     = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
     print('      => "QUADS2" constructed! :)\n')
-    k2 = _QuadStat_( 1, QUADS2 )
+    k2 = mjt.QuadStat( 1, QUADS2 )
     
     del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
     del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2
