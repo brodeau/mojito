@@ -264,7 +264,10 @@ if __name__ == '__main__':
                 if iplot>0:
                     zX = zX[idxKeep,:]
                     zY = zY[idxKeep,:]
-            #del idxKeep
+        else:
+            print('\n *** Great! No extreme deformation values were found!')
+            idxKeep = np.arange(nD, dtype=int)
+            
         del ztotdm1
         #
         print('        =>  '+str(nD)+' Quads left.')
@@ -279,30 +282,15 @@ if __name__ == '__main__':
     # and reconstruct the same quads
     if lExportNC4Seed:
 
-        if lNeedClean:    
-            # Last-man standing quad indices:
-            idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
-            if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
-                print('ERROR: fuck-up #1'); exit(0)
-    
-            zPXY1, zPids1, zTime1, zQpnts1, zQnam1, _ = mjt.KeepSpcfdQuads( idxQ1, QUA1.PointXY, QUA1.PointIDs, QUA1.PointTime, QUA1.MeshVrtcPntIdx, QUA1.QuadNames )
-            zPXY2, zPids2, zTime2, zQpnts2, zQnam2, _ = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
-            if any(zPids2-zPids1!=0):
-                print('ERROR: fuck-up #2'); exit(0)
+        # Last-man standing quad indices:
+        idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
+        if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
+            print('ERROR: fuck-up #1'); exit(0)
 
-        else:
-            # No quads were canceled due to unrealistic deformations
-            #  => first, need to select points involved in idxK1 and idxK2, => idxP1, idxP2
-            z1pids, z2pids   = np.unique( QUA1.MeshVrtcPntIDs()[idxK1] ), np.unique( QUA2.MeshVrtcPntIDs()[idxK2] ) ; # point IDs left with `idxK*` quad selections
-            zPids1, idxP1, _ = np.intersect1d( QUA1.PointIDs, z1pids, assume_unique=True, return_indices=True ) ; # retain only indices of `QUA1.PointIDs` that exist in `z1pids`
-            zPids2, idxP2, _ = np.intersect1d( QUA2.PointIDs, z2pids, assume_unique=True, return_indices=True )
-            #
-            zPXY1, zPXY2     = QUA1.PointXY[idxP1],   QUA2.PointXY[idxP2]
-            zTime1,zTime2    = QUA1.PointTime[idxP1], QUA2.PointTime[idxP2]
-            zQpnts1,zQpnts2  = QUA1.MeshVrtcPntIdx[idxK1], QUA2.MeshVrtcPntIdx[idxK2]
-            zQnam1,zQnam2    = QUA1.QuadNames[idxK1], QUA2.QuadNames[idxK2]
-            #
-        ### if lNeedClean
+        zPXY1, zPids1, zTime1, zQpnts1, zQnam1, _ = mjt.KeepSpcfdQuads( idxQ1, QUA1.PointXY, QUA1.PointIDs, QUA1.PointTime, QUA1.MeshVrtcPntIdx, QUA1.QuadNames )
+        zPXY2, zPids2, zTime2, zQpnts2, zQnam2, _ = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
+        if any(zPids2-zPids1!=0):
+            print('ERROR: fuck-up #2'); exit(0)
         
         QR1 = mjt.Quadrangle( zPXY1, zQpnts1, zPids1, zTime1, zQnam1, origin='RGPS', reskm_nmnl=reskm )
         if idebug>0 and iplot>0:

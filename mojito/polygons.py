@@ -471,7 +471,8 @@ def KeepSpcfdQuads( kidxQ2Keep, pPxy, pPids, pTime, pQpnts, pQnam ):
     '''
     (nQo,_) = np.shape(pQpnts)
     (nQn,)  = np.shape(kidxQ2Keep)
-    if nQn>=nQo or nQn<1:
+    #if nQn>=nQo or nQn<1:
+    if nQn>nQo or nQn<1:
         print('ERROR [KeepSpcfdQuads]: `nQn>=nQo or nQn<1`'); exit(0)
     #
     zQpnts = np.zeros((nQn,4),dtype=int)
