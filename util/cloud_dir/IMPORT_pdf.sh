@@ -52,7 +52,8 @@ for EXP in ${lst_exps}; do
     #echo "LOLO: cw = ${cw}"
     
     if [ "${cw}" != "rgps" ]; then
-        csfx="si3"
+        #csfx="si3"
+        csfx="tracking"
     fi
         
     dir=${DIR_TRCK_REMOTE}
