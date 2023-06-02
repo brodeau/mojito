@@ -61,11 +61,11 @@ def _init4rec_( kr, pRec, pdate, cdt0, cfs, crkm, css ):
 def _QuadStat_( kr, QD ):
 
     # Some info about the spatial scales of quadrangles:
-    print('\n *** About quadrangles at record #'+str(kr+1)+':')
+    print('\n *** About quadrangles at record #'+str(kr)+':')
     zsides = QD.lengths()
     zareas = QD.area()
 
-    if np.any(zareas<0):
+    if np.any(zareas<=0):
         print('ERROR: there are quads with a negative area :(')
         (idxFU,) = np.where( zareas<0 )
         print('  ==> '+str(len(idxFU))+' of such quads!')
@@ -274,6 +274,8 @@ if __name__ == '__main__':
                              ppntIDs=QUADS1.PointIDs, QuadMesh=QUADS1.MeshVrtcPntIdx, qIDs=QUADS1.QuadIDs,
                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
+    k1 = _QuadStat_( 0, QUADS1 )
+        
     #######################################################################################################
 
     ##############
@@ -293,44 +295,43 @@ if __name__ == '__main__':
     
     # Fix #1: possible that some quads that were ok at the first record have become twisted (with a negative area) now
     # at the second record:
-    nbQo,nbPo = nbQ,nbP
-    zQcoor = np.array( [ xPxy2[xQpnts2[jQ,:],:] for jQ in range(nbQ) ])
-    zareas = mjt.QuadsAreas( zQcoor )
-    if np.any(zareas < 0.):
-        print('WARNING: some quads have become twisted (negative area) in the second record (recycling)!')
-        (idxFU,) = np.where(zareas < 0.)
-        nFU = len(idxFU)
-        print('       => '+str(nFU)+' of such quads...')
-        print('       => calling `CancelQuadNegArea()` !')
+    for ii in range(2):
+        nbQo,nbPo = nbQ,nbP
+        zQcoor = np.array( [ xPxy2[xQpnts2[jQ,:],:] for jQ in range(nbQ) ])
+        zareas = mjt.QuadsAreas( zQcoor )
+        if np.any(zareas <= 0.):
+            print('WARNING: some quads have become twisted (negative area) in the second record (recycling)!')
+            (idxFU,) = np.where(zareas < 0.)
+            nFU = len(idxFU)
+            print('       => '+str(nFU)+' of such quads...')
+            print('       => calling `CancelQuadNegArea()` !')
+            #
+            xPxy2, vPids2, vTime2, xQpnts2, vQnam2, idxQk, idxPk = mjt.CancelQuadNegArea( xPxy2, vPids2, vTime2, xQpnts2, vQnam2 )
+            #
+            (nbP,_), (nbQ,_) = np.shape(xPxy2), np.shape(xQpnts2)
+            if nbQo-nbQ != nFU:
+                print('ERROR: `nbQo-nbQ != nFU` (Areas) !'); exit(0)
+            #
+            print('    * '+str(nbQo-nbQ)+' quads in second records had to be supressed because of negative area!!!')
+            print('       => cancelling the same quads at 1st record as well!')
+            xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _ = mjt.KeepSpcfdQuads( idxQk, xPxy1, vPids1, vTime1, xQpnts1, vQnam1 )
+            ifix+=1
         #
-        xPxy2, vPids2, vTime2, xQpnts2, vQnam2, idxQk, idxPk = mjt.CancelQuadNegArea( xPxy2, vPids2, vTime2, xQpnts2, vQnam2 )
-        #
-        (nbP,_), (nbQ,_) = np.shape(xPxy2), np.shape(xQpnts2)
-        if nbQo-nbQ != nFU:
-            print('ERROR: `nbQo-nbQ != nFU` (Areas) !'); exit(0)
-        #
-        print('    * '+str(nbQo-nbQ)+' quads in second records had to be supressed because of negative area!!!')
-        print('       => cancelling the same quads at 1st record as well!')
-        xPxy1, vPids1, vTime1, xQpnts1, vQnam1, _ = mjt.KeepSpcfdQuads( idxQk, xPxy1, vPids1, vTime1, xQpnts1, vQnam1 )
-        ifix+=1
-    #
-    del zQcoor, zareas
+        del zQcoor, zareas
         
     
     # Conversion to the `Quadrangle` class (+ we change IDs from triangle world [0:nT] to that of quad world [0:nQ]):
     if ifix>0:
         print('WARNING: fixing (updating) QUADS1 !!!')
-        QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )        
+        QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )
+        k1 = _QuadStat_( 0, QUADS1 )
+        
     QUADS2     = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
     print('      => "QUADS2" constructed! :)\n')
+    k2 = _QuadStat_( 1, QUADS2 )
     
     del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
     del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2
-
-
-    
-    k1 = _QuadStat_( 0, QUADS1 )
-    k2 = _QuadStat_( 1, QUADS2 )
     
     # Save the quadrangular mesh info:
     mjt.SaveClassPolygon( cf_npzQ1, QUADS1, ctype='Q', origin=corigin, reskm_nmnl=reskm )
