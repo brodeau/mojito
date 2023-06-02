@@ -20,6 +20,7 @@ elif [ "$1" = "3" ]; then
     rm -rf figs/deformation
     rm -f npz/DEFORMATIONS_* logs/def_*
     rm -f nc/PointsOfQuadsOfDEF_*.nc npz/QUADSofDEF_*
+    rm -f npz/QUADSofDEF_*
     
 elif [ "$1" = "4" ]; then
     rm -f npz/def_*

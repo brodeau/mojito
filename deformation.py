@@ -233,11 +233,21 @@ if __name__ == '__main__':
     ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
     del zshr2
 
+
+    #idxKeep = np.arange(nD,dtype=int) ; # default we keep everything
+    #print(idxKeep[::10])
+    #exit(0);#lili
+
+    lNeedClean = False
+
+    
     # Non-realistic / error extreme values in computed deformation:
     if quality_mode=='rgps':
         ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
+
+        lNeedClean = np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) )
         
-        if np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) ):
+        if lNeedClean:
             # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
             (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
             #
@@ -268,21 +278,36 @@ if __name__ == '__main__':
     # Save the "mojito" netCDF and npz Quad class files that can be used to seed in `sitrack` for only the quads that had a reasonable deformation
     # and reconstruct the same quads
     if lExportNC4Seed:
-        # Last-man standing quad indices:
-        idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
-        if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
-            print('ERROR: fuck-up #1'); exit(0)
 
-        zPXY1, zPids1, zTime1, zQpnts1, zQnam1, idxPkeep1 = mjt.KeepSpcfdQuads( idxQ1, QUA1.PointXY, QUA1.PointIDs, QUA1.PointTime, QUA1.MeshVrtcPntIdx, QUA1.QuadNames )
-        zPXY2, zPids2, zTime2, zQpnts2, zQnam2, idxPkeep2 = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
-        if any(zPids2-zPids1!=0):
-            print('ERROR: fuck-up #2'); exit(0)
+        if lNeedClean:    
+            # Last-man standing quad indices:
+            idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
+            if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
+                print('ERROR: fuck-up #1'); exit(0)
+    
+            zPXY1, zPids1, zTime1, zQpnts1, zQnam1, _ = mjt.KeepSpcfdQuads( idxQ1, QUA1.PointXY, QUA1.PointIDs, QUA1.PointTime, QUA1.MeshVrtcPntIdx, QUA1.QuadNames )
+            zPXY2, zPids2, zTime2, zQpnts2, zQnam2, _ = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
+            if any(zPids2-zPids1!=0):
+                print('ERROR: fuck-up #2'); exit(0)
 
-        # Building the class for the remaining quads to save them:
+        else:
+            # No quads were canceled due to unrealistic deformations
+            #  => first, need to select points involved in idxK1 and idxK2, => idxP1, idxP2
+            z1pids, z2pids   = np.unique( QUA1.MeshVrtcPntIDs()[idxK1] ), np.unique( QUA2.MeshVrtcPntIDs()[idxK2] ) ; # point IDs left with `idxK*` quad selections
+            zPids1, idxP1, _ = np.intersect1d( QUA1.PointIDs, z1pids, assume_unique=True, return_indices=True ) ; # retain only indices of `QUA1.PointIDs` that exist in `z1pids`
+            zPids2, idxP2, _ = np.intersect1d( QUA2.PointIDs, z2pids, assume_unique=True, return_indices=True )
+            #
+            zPXY1, zPXY2     = QUA1.PointXY[idxP1],   QUA2.PointXY[idxP2]
+            zTime1,zTime2    = QUA1.PointTime[idxP1], QUA2.PointTime[idxP2]
+            zQpnts1,zQpnts2  = QUA1.MeshVrtcPntIdx[idxK1], QUA2.MeshVrtcPntIdx[idxK2]
+            zQnam1,zQnam2    = QUA1.QuadNames[idxK1], QUA2.QuadNames[idxK2]
+            #
+        ### if lNeedClean
+        
         QR1 = mjt.Quadrangle( zPXY1, zQpnts1, zPids1, zTime1, zQnam1, origin='RGPS', reskm_nmnl=reskm )
         if idebug>0 and iplot>0:
             QR2 = mjt.Quadrangle( zPXY2, zQpnts2, zPids2, zTime2, zQnam2, origin='RGPS', reskm_nmnl=reskm )
-
+                
         Nrec, Np, Nq = 2, len(zPids1), nD
         vtim = np.array([ np.mean(zTime1), np.mean(zTime2) ], dtype=int) ; # Fill `vtim` with mean date at each record:
         xtim = np.array([ zTime1, zTime2 ], dtype=int)        
@@ -302,7 +327,6 @@ if __name__ == '__main__':
         del zPGC, xtim
         print('\n *** All info necessary to seed the points and reconstruct the Quads involved in computed deformation cells is saved!')
         print('         => that is '+str(Nq)+' Quads constructed on '+str(Np)+' points.\n')
-
 
     
     # Some plots:
