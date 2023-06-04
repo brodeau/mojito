@@ -234,11 +234,11 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
 
     if mode in ['rgps','rgps_map']:
         if   res_km>=70. and res_km<150.:
-            rc_t_dev_cancel =  1800
-            #rc_t_dev_cancel =  3.*3600
+            #rc_t_dev_cancel =  1800
+            rc_t_dev_cancel =  3.*3600
         elif   res_km>=150. and res_km<300.:
-            rc_t_dev_cancel =  3600   ; #lolo? For now, doesn't make a big diff appart from less def values...
-            #rc_t_dev_cancel =  6*3600   ; #ok
+            #rc_t_dev_cancel =  3600   ; #lolo? For now, doesn't make a big diff appart from less def values...
+            rc_t_dev_cancel =  6*3600   ; #ok
             #rc_t_dev_cancel =  12*3600   ; #lolo?
             #rc_t_dev_cancel =  24*3600   ; #lolo?
         elif res_km>=300. and res_km<600.:
