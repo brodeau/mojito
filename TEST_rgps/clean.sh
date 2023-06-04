@@ -31,7 +31,7 @@ elif [ "$1" = "5" ]; then
 elif [ "$1" = "all" ]; then
     rm -f *.out *.err *~ \#*
     rm -rf figs logs nc
-    rm -f npz/PDF_* npz/DEFORMATIONS_* npz/[QT]-mesh* npz/def_*
+    rm -f npz/PDF_* npz/DEFORMATIONS_* npz/[QT]-mesh* npz/def_* npz/QUADSofDEF_*
 
 elif [ "$1" = "less" ]; then
     rm -f *.out *.err *~ \#*

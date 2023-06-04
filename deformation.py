@@ -21,7 +21,7 @@ from mojito import config as cfg
 from mojito.util import epoch2clock as e2c
 
 idebug=0
-iplot=1 ; NameArcticProj='SmallArctic'
+iplot=0 ; NameArcticProj='SmallArctic'
 zoom=2
 
 lExportNC4Seed = False ; # Triggers the saving of the "mojito" netCDF and npz files that can be used to seed in `sitrack` the
