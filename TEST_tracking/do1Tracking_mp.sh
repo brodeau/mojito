@@ -30,11 +30,11 @@ if [ "${ISEED_BASE}" = "selection" ]; then
 elif [ "${ISEED_BASE}" = "quads" ]; then
     echo " * Will get RGPS seeding info in: ./nc for RESKM = ${RESKM}"
     list_seed_nc=`\ls ./nc/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
-    
+
 elif [ "${ISEED_BASE}" = "defs" ]; then
     echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
     list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_S???_dt${DT_BINS_H}_${YEAR}????_${YEAR}????${cxtraRES}${XTRASFX}.nc`
-    
+
 else
     echo " Unknown value for ISEED_BASE: ${ISEED_BASE}"
     exit
@@ -74,14 +74,19 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         else
             for rdss in ${LIST_RD_SS}; do
                 fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
-                CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnd}" ; # with nc file for init seed...
-                echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
-                flog="tracking__`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
-                ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
-                ijob=$((ijob+1))
-                if [ $((ijob%NJPAR)) -eq 0 ]; then
-                    echo "Waiting! (ijob = ${ijob})...."
-                    wait; echo; echo
+                if [ -f ${fnd} ]; then
+
+                    CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnd}" ; # with nc file for init seed...
+                    echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
+                    flog="tracking__`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
+                    ${CMD} 1>./logs/${flog}.out 2>./logs/${flog}.err &
+                    ijob=$((ijob+1))
+                    if [ $((ijob%NJPAR)) -eq 0 ]; then
+                        echo "Waiting! (ijob = ${ijob})...."
+                        wait; echo; echo
+                    fi
+                else
+                    echo; echo" WARNING: could not find file: ${fnd}"; echo
                 fi
             done
         fi
