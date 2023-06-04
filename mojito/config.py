@@ -140,6 +140,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         elif mode in ['rgps','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
+            #rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
@@ -154,6 +155,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
         elif mode in ['rgps','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
+            #rc_div_max, rc_shr_max, rc_tot_max = 0.35, 0.35, 0.35 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         #
@@ -232,7 +234,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
 
     if mode in ['rgps','rgps_map']:
         if   res_km>=70. and res_km<150.:
-            rc_t_dev_cancel =  3.*3600
+            rc_t_dev_cancel =  1800
+            #rc_t_dev_cancel =  3.*3600
         elif   res_km>=150. and res_km<300.:
             rc_t_dev_cancel =  3600   ; #lolo? For now, doesn't make a big diff appart from less def values...
             #rc_t_dev_cancel =  6*3600   ; #ok
