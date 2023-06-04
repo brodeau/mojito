@@ -22,9 +22,11 @@ ijob=0
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
     # Populating nc files we can use:
+    echo "LOLO: nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc"
+    #exit
     list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
     nbf=`echo ${list_nc} | wc -w`
-    echo " => ${nbf} files => ${nbf} batches!"
+    echo " => ${nbf} nc files => ${nbf} batches!"
 
     if [ "${ISEED_BASE}" = "quads" ] || [ "${ISEED_BASE}" = "defs" ]; then
         lRCCL=true
