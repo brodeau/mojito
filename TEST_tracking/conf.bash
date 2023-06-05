@@ -21,6 +21,11 @@ ISEED_BASE='selection' ; # 'selection' or 'quads' or 'defs' => will seed based o
 #export DIRIN_PREPARED_RGPS="/home/laurent/tmp/MOJITO/TEST_rgps"
 export DIRIN_PREPARED_RGPS="${MOJITO_DIR}/TEST_rgps"
 
+
+if [ "${MODE}" = "rgps" ]; then
+    MODE="rgps_track"
+fi
+
 host=`hostname | cut -d '.' -f2`
 case ${host} in
     "merlat")
