@@ -48,46 +48,57 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
         nbf=`echo ${list} | wc -w`
 
-        echo " *** Number of files for Batch ${cbtch} = ${nbf}"
+        echo " *** Number of files for Batch ${cbtch} with suffix ${csf}.npz = ${nbf}"
 
-        list_date_ref=""
-        for ff in ${list}; do
-            date_ref=`echo ${ff} | cut -d_ -f7`
-            list_date_ref+=" ${date_ref}"
-        done
-        list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
+        #list_date_ref=""
+        #for ff in ${list}; do
+        #    date_ref=`echo ${ff} | cut -d_ -f7`
+        #    list_date_ref+=" ${date_ref}"
+        #done
+        #list_date_ref=$(echo ${list_date_ref} | tr ' ' '\n' | sort -nu) ; # unique and sorted !
 
-        echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
+        #echo; echo " *** List of reference dates for Batch${cbtch}:"; echo "${list_date_ref}"; echo
 
-        for dr in ${list_date_ref}; do
-            echo
+        #exit
 
-            if [ "${LIST_RD_SS}" == "" ]; then
-                lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
-                if [ "${lst}" != "" ]; then
-                    nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
-                    #
-                    if [ ${nf} -eq 2 ]; then
-                        fQ1=${lst[0]}
-                        fQ2=${lst[1]}
-                        echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                        flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
-                        ijob=$((ijob+1))
-                        CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
-                        echo "  ==> ${CMD}"; echo
-                        ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
-                        echo; echo
-                        if [ $((ijob%NJPAR)) -eq 0 ]; then
-                            echo "Waiting! (ijob = ${ijob})...."
-                            wait; echo; echo
-                        fi
+
+
+        #for dr in ${list_date_ref}; do
+        #    echo
+
+        if [ "${LIST_RD_SS}" == "" ]; then
+            echo "FIXME !!!"; exit
+
+            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
+            if [ "${lst}" != "" ]; then
+                nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+                #
+                if [ ${nf} -eq 2 ]; then
+                    fQ1=${lst[0]}
+                    fQ2=${lst[1]}
+                    echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                    flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                    ijob=$((ijob+1))
+                    CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
+                    echo "  ==> ${CMD}"; echo
+                    ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
+                    echo; echo
+                    if [ $((ijob%NJPAR)) -eq 0 ]; then
+                        echo "Waiting! (ijob = ${ijob})...."
+                        wait; echo; echo
                     fi
                 fi
-            else
+            fi
+        else
 
-                for rdss in ${LIST_RD_SS}; do
-                    #
-                    lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null` )
+            for rdss in ${LIST_RD_SS}; do
+                #
+                clst=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null`
+                if [ "${clst}" != "" ]; then
+                    lst=( ${clst} )
+                    nbf=`echo ${lst[*]} | wc -w`
+                    if [ ${nbf} -ne 2 ]; then echo "ERROR: we do not have 2 files!!!! => ${lst[*]}"; exit; fi
+
                     if [ "${lst}" != "" ]; then
                         nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                         #
@@ -98,7 +109,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
                             ijob=$((ijob+1))
                             CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
-                            echo "  ==> ${CMD}"; echo
+                            echo "  ==> ${CMD}"; echo ; #exit;#lolo
                             ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                             echo; echo
                             if [ $((ijob%NJPAR)) -eq 0 ]; then
@@ -107,12 +118,16 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             fi
                         fi
                     fi
+                else
+                    echo "WARNING: No files found for: Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${rdss}-${RESKM}km.npz !"
+                    echo
+                fi
 
-                done
+            done
 
-            fi
+        fi
 
-        done
+        #done
 
     done
 

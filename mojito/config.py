@@ -50,13 +50,17 @@ def initialize( mode='model' ):
     
     if mode in ['thorough','model']:
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 140
+        rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-    elif mode in ['rgps','rgps_map']:        
+    elif mode in ['rgps']:        
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 140
+        rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
-    elif mode=='xlose':
+    elif mode in ['rgps_map']:        
+        rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 150.
+        rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+    elif mode in ['xlose']:
         rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
         rc_dRatio_max = 1. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
@@ -123,7 +127,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             #rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
         elif mode=='rgps_map':
             rc_tolQuadA = 5
-            rc_Qarea_min, rc_Qarea_max = 7.5*7.5,12.5*12.5
+            rc_Qarea_min, rc_Qarea_max = 6.*6.,14.*14.
         elif mode=='xlose':
             rc_tolQuadA = 10
             rc_Qarea_min, rc_Qarea_max = 5*5, 15*15

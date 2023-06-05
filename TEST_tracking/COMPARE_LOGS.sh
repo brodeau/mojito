@@ -28,7 +28,7 @@ while [ ${jb} -le ${Nb} ]; do
 
     for rskm in ${LIST_RD_SS}; do
 
-        echo "  ==> ${rskm} km"
+        echo "  ==> BATCH ${sb} / ${rskm}-${RESKM}km"
 
         fdef1=`\ls ${dir1}/npz/DEFORMATIONS_${cnm1}_${sb}_dt72_1997*_${rskm}-${RESKM}km.npz 2>/dev/null`
         nbf1=`echo ${fdef1} | wc -w`
@@ -42,7 +42,9 @@ while [ ${jb} -le ${Nb} ]; do
             echo "PROBLEM: file for ${cnm1} is missing while that of ${cnm2} is here!!!"; exit
         fi
 
-
+        if [ "${fdef2}" = "" ] && [ ${nbf1} -eq 1 ] && [ -f ${fdef1} ]; then
+            echo "PROBLEM: file for ${cnm2} is missing while that of ${cnm1} is here!!!"; exit
+        fi
         
         if [ ${nbf1} -ne ${nbf2} ]; then
             echo "PROBLEM: not same files!!!"; exit
@@ -50,6 +52,23 @@ while [ ${jb} -le ${Nb} ]; do
 
 
 
+        if [ ${nbf1} -gt 1 ] || [ ${nbf2} -gt 1 ]; then
+            echo "ERROR: too many files: ${nbf1} , ${nbf2}"; exit
+        fi
+
+
+        if [ ${nbf1} -eq 1 ]; then
+            nP1=`${MOJITO_DIR}/util/get_number_of_defs.py ${fdef1}`
+            nP2=`${MOJITO_DIR}/util/get_number_of_defs.py ${fdef2}`
+
+
+            echo " Nb. of deformations in each file: ${nP1}, ${nP2}"
+
+            if [ ${nP1} -ne ${nP2} ]; then
+                echo "PROBLEM: not same number of deformtion points!!!"; exit
+            fi
+
+        fi
         
 
         

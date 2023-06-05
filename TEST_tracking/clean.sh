@@ -13,10 +13,10 @@ elif [ "$1" = "2" ]; then
 
 elif [ "$1" = "3" ]; then
     rm -rf figs/deformation/*
-    rm -f npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out
+    rm -f npz/DEFORMATIONS_* logs/err_Q-mesh_*.err logs/out_Q-mesh_*.out logs/def__*
     
 elif [ "$1" = "4" ]; then
-    rm -f npz/def_*
+    rm -f npz/def_*  logs/def__*
     
 elif [ "$1" = "5" ]; then
     rm -f npz/PDF_*.npz figs/*PDF_*.*
