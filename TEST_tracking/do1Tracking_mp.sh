@@ -59,6 +59,13 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
     for fnc in ${list_seed_nc}; do
 
+        echo; echo " *** Based on file ${fnc} !"
+        SB=`basename ${fnc} | cut -d'_' -f 3`
+        if [ "`echo ${SB} | cut -c1-1`" != "S" ]; then
+            echo " ERROR: SB does not seem to get the batch string!"; exit
+        fi
+        echo "      ==> batch is: ${SB}"; echo
+        
         if [ "${LIST_RD_SS}" = "" ]; then
             # -i FSI3 -m FMMM -s FSDG [-k KREC] [-e DEND]
             CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc}" ; # with nc file for init seed...
@@ -71,11 +78,18 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 echo "Waiting! (ijob = ${ijob})...."
                 wait; echo; echo
             fi
+            
         else
+            
             for rdss in ${LIST_RD_SS}; do
-                fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
-                if [ -f ${fnd} ]; then
-
+                if [ "${ISEED_BASE}" = "defs" ]; then
+                    fnd=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_${YEAR}????_${YEAR}????_${rdss}-${RESKM}km${XTRASFX}.nc 2>/dev/null`
+                    if [ `echo ${fnd} | wc -w` -gt 1 ]; then echo "ERROR: more than 1 candidate for fnd !!!"; echo "  ==> ${fnd}"; exit; fi
+                else
+                    fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
+                fi
+                #
+                if [ "${fnd}" != "" ] && [ -f ${fnd} ]; then
                     CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnd}" ; # with nc file for init seed...
                     echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
                     flog="tracking__`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
@@ -86,7 +100,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         wait; echo; echo
                     fi
                 else
-                    echo; echo" WARNING: could not find file: ${fnd}"; echo
+                    echo; echo "WARNING: could not find file: ${fnd}"; echo
                 fi
             done
         fi
