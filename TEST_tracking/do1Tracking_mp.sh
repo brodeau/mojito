@@ -64,7 +64,11 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         if [ "`echo ${SB} | cut -c1-1`" != "S" ]; then
             echo " ERROR: SB does not seem to get the batch string!"; exit
         fi
-        echo "      ==> batch is: ${SB}"; echo
+        lfb=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_${YEAR}*_${YEAR}*${RESKM}km${XTRASFX}.nc`
+        nfb=`echo ${lfb} | wc -w`
+        echo "      ==> batch is: ${SB}, the ${nfb} files to use:"        
+        for fx in ${lfb}; do echo "   -- ${fx}"; done
+        echo
         
         if [ "${LIST_RD_SS}" = "" ]; then
             # -i FSI3 -m FMMM -s FSDG [-k KREC] [-e DEND]

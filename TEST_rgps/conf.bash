@@ -3,6 +3,7 @@
 YEAR="1997"
 
 MOJITO_DIR="${HOME}/DEV/mojito"
+
 DT_BINS_H=12  ; # width of a bin for time sampling [hours] 
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0430"
@@ -37,7 +38,7 @@ case ${host} in
         #
         # 80km:
         ##DT_BINS_H=6 ;  RESKM=80
-        DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 78" ; # ok !
+        #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 78" ; # ok !
         ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 75 78"
         ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="70 75 80"
         #
@@ -45,7 +46,7 @@ case ${host} in
         #DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165 170" ; #ok!
         #
         # 320km:        
-        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 285 290 295 300 305 310 313  315  317 320 325 330 335 340 345 350"
+        DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="280 285 290 295 300 305 310 313  315  317 320 325 330 335 340 345 350"
         #
         # 640km:
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="570 580 590 600 610 615 620 625 630 633 635 637 640 645 650 655 660     670 680 690 700" ; #WINNA!

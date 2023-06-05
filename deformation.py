@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     vclck = split('_',ctimeC)
     chh, cmm = split(':',vclck[1])[0], split(':',vclck[1])[1]
-    cclck = str.replace( vclck[0],'-','')+'-'+chh+'h'+cmm
+    cclck = e2c(itimeC, precision='D', frmt='nodash') ; #str.replace( vclck[0],'-','')+'-'+chh+'h'+cmm
 
     reskm, reskm2 = QUA1.reskm_nmnl, QUA2.reskm_nmnl
     if reskm != reskm2:
