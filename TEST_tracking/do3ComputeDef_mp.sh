@@ -67,27 +67,28 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         #    echo
 
         if [ "${LIST_RD_SS}" == "" ]; then
-            echo "FIXME !!!"; exit
-
-            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
-            if [ "${lst}" != "" ]; then
-                nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
+            clst=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz 2>/dev/null`
+            if [ "${clst}" != "" ]; then
+                lst=( ${clst} )
+                nbf=`echo ${lst[*]} | wc -w`
+                if [ ${nbf} -ne 2 ]; then echo "ERROR: we do not have 2 files!!!! => ${lst[*]}"; exit; fi
                 #
-                if [ ${nf} -eq 2 ]; then
-                    fQ1=${lst[0]}
-                    fQ2=${lst[1]}
-                    echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                    flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
-                    ijob=$((ijob+1))
-                    CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
-                    echo "  ==> ${CMD}"; echo
-                    ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
-                    echo; echo
-                    if [ $((ijob%NJPAR)) -eq 0 ]; then
-                        echo "Waiting! (ijob = ${ijob})...."
-                        wait; echo; echo
-                    fi
+                fQ1=${lst[0]}
+                fQ2=${lst[1]}
+                echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                ijob=$((ijob+1))
+                CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
+                echo "  ==> ${CMD}"; echo
+                ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
+                echo; echo
+                if [ $((ijob%NJPAR)) -eq 0 ]; then
+                    echo "Waiting! (ijob = ${ijob})...."
+                    wait; echo; echo
                 fi
+            else
+                echo "WARNING: No files found for: Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${rdss}-${RESKM}km.npz !"
+                echo                
             fi
         else
 
@@ -100,22 +101,18 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                     if [ ${nbf} -ne 2 ]; then echo "ERROR: we do not have 2 files!!!! => ${lst[*]}"; exit; fi
 
                     if [ "${lst}" != "" ]; then
-                        nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
-                        #
-                        if [ ${nf} -eq 2 ]; then
-                            fQ1=${lst[0]}
-                            fQ2=${lst[1]}
-                            echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
-                            flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
-                            ijob=$((ijob+1))
-                            CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
-                            echo "  ==> ${CMD}"; echo ; #exit;#lolo
-                            ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
-                            echo; echo
-                            if [ $((ijob%NJPAR)) -eq 0 ]; then
-                                echo "Waiting! (ijob = ${ijob})...."
-                                wait; echo; echo
-                            fi
+                        fQ1=${lst[0]}
+                        fQ2=${lst[1]}
+                        echo " ==> will use:"; echo " * ${fQ1}"; echo " * ${fQ2}"
+                        flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
+                        ijob=$((ijob+1))
+                        CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
+                        echo "  ==> ${CMD}"; echo ; #exit;#lolo
+                        ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
+                        echo; echo
+                        if [ $((ijob%NJPAR)) -eq 0 ]; then
+                            echo "Waiting! (ijob = ${ijob})...."
+                            wait; echo; echo
                         fi
                     fi
                 else
