@@ -3,12 +3,13 @@
 . ./conf.bash
 
 
-if [ "$1" = "" ]; then
-    echo "USAGE: $0 <Nb. batches>"
+if [ "$2" = "" ]; then
+    echo "USAGE: $0 <first> <Nb. batches>"
     exit
 fi
 
-Nb=${1}
+istart=${1}
+Nb=${2}
 
 #dir1=`pwd`
 dir1="." ; cnm1="NEMO-SI3_NANUK4_BBM2302"
@@ -16,7 +17,7 @@ dir2="../TEST_rgps" ; cnm2="RGPS"
 
 
 
-jb=0
+jb=${istart}
 
 while [ ${jb} -le ${Nb} ]; do
 
