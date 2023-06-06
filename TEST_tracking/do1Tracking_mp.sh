@@ -104,7 +104,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         wait; echo; echo
                     fi
                 else
-                    echo; echo "WARNING: could not find file: ${fnd}"; echo
+                    echo; echo "WARNING: could not find file for res ${rdss}-${RESKM}km of batch ${SB} !"; echo
                 fi
             done
         fi

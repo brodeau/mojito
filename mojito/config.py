@@ -144,7 +144,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         elif mode in ['rgps','rgps_track','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
+            rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
@@ -201,6 +201,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
         elif mode in ['rgps','rgps_track','rgps_map']:            
             rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
+            #rc_Qarea_min, rc_Qarea_max = 300.*300., 340.*340
             #rc_div_max, rc_shr_max, rc_tot_max = 6.e-2, 6.e-2, 6.e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
