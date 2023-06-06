@@ -926,11 +926,9 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     # Colormap:
     if   cwhat=='shr':
-        cm = plt.cm.get_cmap('viridis')
+        cm = plt.cm.get_cmap('plasma_r')
     elif   cwhat=='tot':
-        #cm = plt.cm.get_cmap('inferno')
-        #cm = plt.cm.get_cmap('cividis')
-        cm = plt.cm.get_cmap('Greys')
+        cm = plt.cm.get_cmap('viridis')
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
@@ -1292,7 +1290,7 @@ def _quadratic_fit_(x, y):
 
 
 def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
-                    cfig='Scaling.png' ):
+                    cfig='Scaling.png', lAddPowerLawFit=False ):
     '''
     '''
     xlog_min, xlog_max = 7.5 , 800.
@@ -1323,13 +1321,14 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
 
 
     # Fit power-law to points:
-    jo = 0
-    zvx = np.array( [ 2.**k for k in range(3,11) ] )
-    (idxKeep,) = np.where(pscales[:,jo]<600)
-    [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
-    
-    plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
-                color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
+    if lAddPowerLawFit:
+        jo = 0
+        zvx = np.array( [ 2.**k for k in range(3,11) ] )
+        (idxKeep,) = np.where(pscales[:,jo]<600)
+        [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
+        
+        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
+                    color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
         
         
     #X-axis:
@@ -1357,7 +1356,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
 
 
 
-def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', lAddPowerLawFit=True,
+def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', lAddPowerLawFit=False,
                      lAddNumberPoints=False, cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=0 ):
     '''
         According to Fiffure's taste...
