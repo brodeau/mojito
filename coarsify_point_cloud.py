@@ -178,7 +178,7 @@ if __name__ == '__main__':
         print('    * which is original record '+str(jr)+' => date =',cdats)
 
 
-        if corigin=='RGPS' and reskm>300 and l_intermediate_randomization_big_scales:
+        if ldss and corigin=='RGPS' and reskm>300 and l_intermediate_randomization_big_scales:
             #
             # We do it in a 2-stage fashion introcuding noise
             # A/ to something betwee 8 and 30 km:

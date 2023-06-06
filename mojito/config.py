@@ -239,25 +239,31 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
 
     if mode in ['rgps','rgps_track','rgps_map']:
 
-        if res_km < 18:
-            rc_t_dev_cancel = 60
-        else:
-            rc_t_dev_cancel = 3*24*3600
+        #if res_km < 18:
+        #    rc_t_dev_cancel = 60
+        #else:
+        #    rc_t_dev_cancel = 3*24*3600
             
-        if 1==2:
-            if   res_km>=70. and res_km<150.:
+        if 1==1:
+            if   res_km>=15. and res_km<35.:
+                rc_t_dev_cancel =  600
+            elif   res_km>=35. and res_km<45.:
+                rc_t_dev_cancel =  1200
+                #
+            elif   res_km>=70. and res_km<150.:
                 #rc_t_dev_cancel =  1800
-                #rc_t_dev_cancel =  3600
+                rc_t_dev_cancel =  3600
                 #rc_t_dev_cancel =  3.*3600
-                rc_t_dev_cancel =  6.*3600 ; # ok!
+                #rc_t_dev_cancel =  6.*3600 ; # ok!
             elif res_km>=150. and res_km<300.:
-                #rc_t_dev_cancel =  3600   ; #lolo? For now, doesn't make a big diff appart from less def values...
-                rc_t_dev_cancel =  6*3600   ; #ok
+                rc_t_dev_cancel =  2*3600
+                #rc_t_dev_cancel =  6*3600   ; #ok
                 #rc_t_dev_cancel =  12*3600   ; #lolo?
                 #rc_t_dev_cancel =  24*3600   ; #lolo?
             elif res_km>=300. and res_km<600.:
+                rc_t_dev_cancel =  4*3600
                 #rc_t_dev_cancel =  12*3600 ; #???
-                rc_t_dev_cancel =  24*3600 ; #ok! seems like the acceptable shit! 20230520
+                #rc_t_dev_cancel =  24*3600 ; #ok! seems like the acceptable shit! 20230520
             elif res_km>=600.:
                 #rc_t_dev_cancel = 24*3600
                 rc_t_dev_cancel = 36*3600 ; # ok!

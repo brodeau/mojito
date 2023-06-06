@@ -29,24 +29,30 @@ case ${host} in
         #
         # 10km:
         #DT_BINS_H=6 ;  RESKM=10
-        DT_BINS_H=72 ;  RESKM=10
+        #DT_BINS_H=72 ;  RESKM=10
         #
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20
+        #DT_BINS_H=72 ;  RESKM=20
         #
         # 40km:
         #DT_BINS_H=6 ; RESKM=40
+        #DT_BINS_H=72 ;  RESKM=40
         #
         # 80km:
+        #DT_BINS_H=72 ;  RESKM=80 
+        #
         ##DT_BINS_H=6 ;  RESKM=80
         #DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 78" ; # ok !
         ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="72 75 78"
         ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="70 75 80"
         #
         # 160km: in decreasing order of quality:
+        #DT_BINS_H=72 ;  RESKM=160 
         #DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165 170" ; #ok!
         #
-        # 320km:        
+        # 320km:
+        DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="300 305 310  315  320 325 330"
         #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="275 285 290 295 300 305 310  315  320 325 330 335 340 345 355" ; # ok!
         #
         # 640km:
