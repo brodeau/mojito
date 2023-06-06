@@ -801,13 +801,14 @@ def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., paxes=[0.025, 0.85
         axCB = pltH.axes( paxes )        
         if field=='div':
             cxtnd = 'both'
-            df = 0.05
+            df = 0.025
         else:
             cxtnd = 'max'
-            df = 0.02
+            df = 0.01
         vcbt = np.round(np.arange(fmin,fmax+df,df),3)
         cb_labs = np.array( vcbt , dtype='U16')
-        cb_labs[(cb_labs=='0.0')] = '0'
+        cb_labs[(cb_labs=='0.0')]  = '0'
+        cb_labs[(cb_labs=='-0.0')] = '0'
         clb = mpl.colorbar.ColorbarBase(ax=axCB, ticks=vcbt, cmap=pcm, norm=pcn, orientation='horizontal', extend=cxtnd )
         clb.ax.set_xticklabels(cb_labs)
         clb.set_label(cunit, **cfont_clb)
