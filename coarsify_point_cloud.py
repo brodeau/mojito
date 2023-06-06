@@ -143,7 +143,8 @@ if __name__ == '__main__':
             elif corigin=='RGPS' and reskm>300:
                 from random import random
                 zrnd = 2*random() - 1 ; # Between -1 and 1
-                rDmin =  125. - 25.*zrnd                    
+                rDmin =  150. - 50.*zrnd
+                print('    LOLO: rDmin =',rDmin)
             #
             #
             if rDmin>101.:

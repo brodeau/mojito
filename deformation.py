@@ -242,7 +242,7 @@ if __name__ == '__main__':
 
     
     # Non-realistic / error extreme values in computed deformation:
-    if quality_mode in ['rgps','rgps_map']:
+    if quality_mode in ['rgps','rgps_map','rgps_track']:
         ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
 
         lNeedClean = np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) )
