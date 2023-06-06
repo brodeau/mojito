@@ -215,7 +215,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
         elif mode in ['rgps','rgps_track','rgps_map']:            
             rc_Qarea_min, rc_Qarea_max = 576.*576., 704.*704.
-            rc_div_max, rc_shr_max, rc_tot_max = 2.4e-2, 2.4e-2, 2.4e-2 ; # day^-1 ; => supresses irrealistically large values
+            rc_div_max, rc_shr_max, rc_tot_max = 3.e-2, 3.e-2, 3.e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
         #
@@ -234,30 +234,35 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     #    a quadrangle can involve points that are too distant from one another in terms of time
     #    => we disregard any quadrangles which standard deviation of the time of the 4 positions
     #       excess `t_dev_cancel` seconds !
+    
     rc_t_dev_cancel = 60
 
     if mode in ['rgps','rgps_track','rgps_map']:
-        if   res_km>=70. and res_km<150.:
-            #rc_t_dev_cancel =  1800
-            #rc_t_dev_cancel =  3600
-            #rc_t_dev_cancel =  3.*3600
-            rc_t_dev_cancel =  6.*3600 ; # ok!
-        elif res_km>=150. and res_km<300.:
-            #rc_t_dev_cancel =  3600   ; #lolo? For now, doesn't make a big diff appart from less def values...
-            rc_t_dev_cancel =  6*3600   ; #ok
-            #rc_t_dev_cancel =  12*3600   ; #lolo?
-            #rc_t_dev_cancel =  24*3600   ; #lolo?
-        elif res_km>=300. and res_km<600.:
-            #rc_t_dev_cancel =  12*3600 ; #???
-            rc_t_dev_cancel =  24*3600 ; #ok! seems like the acceptable shit! 20230520
-        elif res_km>=600.:
-            #rc_t_dev_cancel = 6*3600
-            #rc_t_dev_cancel = 9*3600
-            #rc_t_dev_cancel = 12*3600
-            #rc_t_dev_cancel = 24*3600 ; # ok
-            rc_t_dev_cancel = 36*3600 ; # lolo?
-            #rc_t_dev_cancel = 48*3600 ; #lolo?
-            #
+
+        if res_km < 18:
+            rc_t_dev_cancel = 60
+        else:
+            rc_t_dev_cancel = 3*24*3600
+            
+        if 1==2:
+            if   res_km>=70. and res_km<150.:
+                #rc_t_dev_cancel =  1800
+                #rc_t_dev_cancel =  3600
+                #rc_t_dev_cancel =  3.*3600
+                rc_t_dev_cancel =  6.*3600 ; # ok!
+            elif res_km>=150. and res_km<300.:
+                #rc_t_dev_cancel =  3600   ; #lolo? For now, doesn't make a big diff appart from less def values...
+                rc_t_dev_cancel =  6*3600   ; #ok
+                #rc_t_dev_cancel =  12*3600   ; #lolo?
+                #rc_t_dev_cancel =  24*3600   ; #lolo?
+            elif res_km>=300. and res_km<600.:
+                #rc_t_dev_cancel =  12*3600 ; #???
+                rc_t_dev_cancel =  24*3600 ; #ok! seems like the acceptable shit! 20230520
+            elif res_km>=600.:
+                #rc_t_dev_cancel = 24*3600
+                rc_t_dev_cancel = 36*3600 ; # ok!
+                #
+                
     if rc_t_dev_cancel > 60:
         if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
 
