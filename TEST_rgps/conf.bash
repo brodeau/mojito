@@ -48,12 +48,14 @@ case ${host} in
         ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="70 75 80"
         #
         # 160km: in decreasing order of quality:
-        #DT_BINS_H=72 ;  RESKM=160 
-        #DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165 170" ; #ok!
+        #DT_BINS_H=72 ;  RESKM=160 ; LIST_RD_SS="145 155 165" ; #  ok! :D
+        ##DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165 170" ; #ok!
         #
         # 320km:
-        DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="300 305 310  315  320 325 330"
-        #DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="275 285 290 295 300 305 310  315  320 325 330 335 340 345 355" ; # ok!
+        DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="290     300 305 310  315  320 325 330    340" ; # best       
+        #DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="290     300 305 310  315  320 325 330 335 340" ; # ok   
+        #DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="290 295 300 305 310  315  320 325 330 335 340"
+        ##DT_BINS_H=$((24*3)) ;  RESKM=320; LIST_RD_SS="275 285 290 295 300 305 310  315  320 325 330 335 340 345 355" ; # ok!
         #
         # 640km:
         #DT_BINS_H=$((24*3)) ; RESKM=640 ; LIST_RD_SS="570 580 590 600 610 615 620 625 630 633 635 637 640 645 650 655 660     670 680 690 700"

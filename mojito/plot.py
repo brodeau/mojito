@@ -556,9 +556,9 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
 
     # Colormap:
     if   cwhat=='shr':
-        cm = plt.cm.get_cmap('viridis')
+        cm = plt.cm.get_cmap('plasma_r')
     elif   cwhat=='tot':
-        cm = plt.cm.get_cmap('inferno')
+        cm = plt.cm.get_cmap('viridis')
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
@@ -752,9 +752,9 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
     # Colormap:
     if   cwhat=='shr':
-        cm = plt.cm.get_cmap('viridis')
+        cm = plt.cm.get_cmap('plasma_r')
     elif   cwhat=='tot':
-        cm = plt.cm.get_cmap('inferno')
+        cm = plt.cm.get_cmap('viridis')
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
@@ -842,11 +842,11 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     # Colormap:
     if   cwhat=='shr':
-        cm = plt.cm.get_cmap('viridis')
+        cm = plt.cm.get_cmap('plasma_r')
     elif   cwhat=='tot':
         #cm = plt.cm.get_cmap('inferno')
         #cm = plt.cm.get_cmap('cividis')
-        cm = plt.cm.get_cmap('Greys')
+        cm = plt.cm.get_cmap('viridis')
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
