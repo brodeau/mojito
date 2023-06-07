@@ -52,6 +52,7 @@ case ${host} in
         ##DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165 170" ; #ok!
         #
         # 320km:
+        #DT_BINS_H=72 ;  RESKM=320
         DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="290     300 305 310  315  320 325 330    340" ; # best       
         #DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="290     300 305 310  315  320 325 330 335 340" ; # ok   
         #DT_BINS_H=72 ;  RESKM=320 ; LIST_RD_SS="290 295 300 305 310  315  320 325 330 335 340"
