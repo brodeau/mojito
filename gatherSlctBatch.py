@@ -72,23 +72,22 @@ if __name__ == '__main__':
     kk = cfg.initialize()
 
     if not len(argv) in [6]:
-        print('Usage: '+argv[0]+' <directory_input_npz_files> <batch.N> <dtbin_h> <creskm> <string_id_origin>')
+        print('Usage: '+argv[0]+' <directory_input_npz_files> <SXXX> <dtbin_h> <creskm> <string_id_origin>')
         exit(0)
 
     cd_in  = argv[1]
-    kbatch = argv[2]
+    cbatch = argv[2]
     cdtbin = argv[3]
     creskm = argv[4]
     cidorg = argv[5]
 
-    sbatch = 'S%3.3i'%(int(kbatch))
+    #cbatch = 'S%3.3i'%(int(kbatch))
 
 
 
-    print(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_'+creskm+'km.npz')
-    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
+    print(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_'+creskm+'km.npz')
+    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
 
-        
     # Polpulating deformation files available:
     nbF = len(listnpz)
     print('\n *** We found '+str(nbF)+' deformation files into '+cd_in+' !')
@@ -100,9 +99,8 @@ if __name__ == '__main__':
 
 
     kf = 0
-    for cf in listnpz:
-
-        css   = split( '-', split( '_', split('\.',cf)[0] )[-1] )[0]
+    for cf in listnpz:        
+        css   = split( '-', split( '_', split('\.',path.basename(cf))[0] )[-1] )[0]
         vsubRes[kf] = int(css)
         csskm = css+'km'
 
