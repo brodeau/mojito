@@ -5,6 +5,7 @@
 . ./conf.bash
 
 EXE="python3 -u ${MOJITO_DIR}/deformation.py"
+EXE2="python3 -u ${MOJITO_DIR}/gatherSlctBatch.py"
 
 mkdir -p ./logs
 
@@ -40,6 +41,8 @@ echo; echo
 echo " *** ${RESKM} km ***"
 echo
 
+
+
 for cbtch in ${list_btch}; do
 
     #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
@@ -47,7 +50,6 @@ for cbtch in ${list_btch}; do
     if [ "${list}" != "" ]; then
 
         nbf=`echo ${list} | wc -w`
-
         echo " *** Number of files for Batch ${cbtch} = ${nbf}"
 
         list_date_ref=""
@@ -75,16 +77,16 @@ for cbtch in ${list_btch}; do
                         cdt1=`echo ${fQ1} | cut -d_ -f5`; cdt2=`echo ${fQ2} | cut -d_ -f5`
 
                         flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
-                        ijob=$((ijob+1))
                         #
                         if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600)) ${MODE} ${DEF_EXPORT}" 
+                            CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600)) ${MODE} ${DEF_EXPORT}"
                         else
                             CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/15)) ${MODE} ${DEF_EXPORT}"
                         fi
                         echo "  ==> ${CMD}"; echo
                         ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                         echo; echo
+                        ijob=$((ijob+1))
                         if [ $((ijob%NJPAR)) -eq 0 ]; then
                             echo "Waiting! (ijob = ${ijob})...."
                             wait; echo; echo
@@ -131,5 +133,31 @@ for cbtch in ${list_btch}; do
     fi
 
 done
+
+
+
+if [ "${LIST_RD_SS}" != "" ]; then
+
+    for cbtch in ${list_btch}; do
+
+
+
+        CMD="${EXE2} ./npz ${cbtch} dt${DT_BINS_H} ${RESKM} RGPS"
+
+        flog="gatherSlctBatch_${cbtch}_dt${DT_BINS_H}_${RESKM}"
+
+        echo "  ==> ${CMD}"; echo
+        ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
+        echo; echo
+        ijob=$((ijob+1))
+        if [ $((ijob%NJPAR)) -eq 0 ]; then
+            echo "Waiting! (ijob = ${ijob})...."
+            wait; echo; echo
+        fi
+
+    done
+
+
+fi
 
 wait

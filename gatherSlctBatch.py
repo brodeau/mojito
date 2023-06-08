@@ -35,16 +35,18 @@ def lIntersect2Quads( pQxy1, pQxy2 ):
     zP1 = Polygon( [ (pQxy1[i,0],pQxy1[i,1]) for i in range(4) ] )
     zP2 = Polygon( [ (pQxy2[i,0],pQxy2[i,1]) for i in range(4) ] )
     #
-    return zP1.intersects(zP2)
+    return zP1.intersects(zP2), zP1.intersection(zP2).area
 
 
 
-def lOverlapAnyOtherQuad( pQxy, pMQ,  iverbose=0 ):
+def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, iverbose=0 ):
     '''
        * pQxy: cartesian coordinates of 1 quad, shape = (4,2)
        * pMQ:  cartesian coordinates of a groupd of quads, shape = (nq,4,2)
 
        => will return true if the quad `pQxy` overlaps partially (or completely) at least 1 quad of `pMQ` !
+          ==> to be considered an overlap the intersection area of the 2 quads must be > 0.3*(scale*scale)
+
     '''
     from shapely.geometry import Polygon
     #
@@ -56,13 +58,19 @@ def lOverlapAnyOtherQuad( pQxy, pMQ,  iverbose=0 ):
         print('ERROR [lOverlapAnyOtherQuad()]: wrong shape for `pMQ` !'); exit(0)
     if iverbose>0: print(' *** [lOverlapAnyOtherQuad()]: we have',nq,'quads to test against...')
     #
-    li = False
-    for jq in range(nq):
-        li = lIntersect2Quads( pQxy, pMQ[jq,:,:] )
-        if li:
-            break
+    znmnl_area = float(scale*scale)
     #
-    return li
+    lovrlp = False
+    for jq in range(nq):
+        li, zAi = lIntersect2Quads( pQxy, pMQ[jq,:,:] )
+        if li:
+            if zAi<0.:
+                print('ERROR [lOverlapAnyOtherQuad()]: negative intersection area!'); exit(0)
+            if zAi/znmnl_area > 0.3:
+                lovrlp = True
+                break
+    #
+    return lovrlp
 
 
 
@@ -177,7 +185,7 @@ if __name__ == '__main__':
             idxQ2K = []
             for jQ in range(nQ):
                 zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
-                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:] ):
+                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm ):
                     print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
                     zInUseXY[knxt,:,:] = zQxy[:,:]
                     zmsk[knxt] = 1

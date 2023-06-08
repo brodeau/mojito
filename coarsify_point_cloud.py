@@ -24,6 +24,7 @@ iplot  = 1 ; # Create figures to see what we are doing...
 
 rzoom_fig = 2
 
+l_varying_dist2coast = False
 l_intermediate_randomization_big_scales = True
 
 if __name__ == '__main__':
@@ -134,10 +135,12 @@ if __name__ == '__main__':
     
         cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
     
-    
-        ### Too close to land for a given scale???
-        rDmin = 100.
-        if ldss:
+
+        
+        if l_varying_dist2coast and ldss:
+
+            rDmin = 100.
+            
             if   ldtc:
                 rDmin = rd_tc
             elif corigin=='RGPS' and reskm>300:
@@ -163,7 +166,12 @@ if __name__ == '__main__':
                     print('\n *** Exiting because no enough points alive left!')
                     exit(0)
             
-        
+        ### if l_varying_dist2coast and ldss
+
+
+
+
+                    
         # We must call the coarsening function only for first record !
         # => following records are just the same coarsened buoys...
         

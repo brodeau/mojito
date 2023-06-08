@@ -19,9 +19,11 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 if __name__ == '__main__':
 
     kk = cfg.initialize()
+
+    cslct = ''
     
-    if not len(argv) in [5]:
-        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin>')
+    if not len(argv) in [5,6]:
+        print('Usage: '+argv[0]+' <directory_input_npz_files> <dtbin_h> <creskm> <string_id_origin> (<S>)')
         exit(0)    
 
     cd_in  = argv[1]
@@ -29,27 +31,31 @@ if __name__ == '__main__':
     creskm = argv[3]
     cidorg = argv[4]
 
-    #print('listing: '+cd_in+'/'+cprefixIn+'*'+cidorg+'*+cdtbin+'*_'+creskm+'km.npz')
-    listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_'+creskm+'km.npz') )
-    listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_*-'+creskm+'km.npz') )
+    if len(argv)==6:
+        if argv[5]=='S':
+            listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_SLCT'+creskm+'km.npz') )
+        else:
+            print('ERROR: argument 6 can only be "S"!!!'); exit(0)
 
-    if len(listnpz1)>0 and len(listnpz2)>0:
-        print('ERROR: we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!'); exit(0)
-    if len(listnpz2)>0:
-        lrlstKM = True
-        listnpz = listnpz2
     else:
-        lrlstKM = False
-        listnpz = listnpz1
+        listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_'+creskm+'km.npz') )
+        listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_*-'+creskm+'km.npz') )
+    
+        if len(listnpz1)>0 and len(listnpz2)>0:
+            print('ERROR: we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!'); exit(0)
+        if len(listnpz2)>0:
+            lrlstKM = True
+            listnpz = listnpz2
+        else:
+            lrlstKM = False
+            listnpz = listnpz1
         
-    
-    #exit(0)
-    
+                    
     # Polpulating deformation files available:    
     nbFiles = len(listnpz)
     print('\n *** We found '+str(nbFiles)+' deformation files into '+cd_in+' !')
     print('      => files to gather into a single one:',listnpz,'\n')
-    
+
     kBatchName  = np.zeros(nbFiles, dtype='U4')
     kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
     kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file    
