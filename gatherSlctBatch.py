@@ -16,6 +16,57 @@ iplot=1
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
+
+def lIntersect2Quads( pQxy1, pQxy2 ):
+    '''
+       * pQxy1: cartesian coordinates of a quad, shape = (4,2)
+       * pQxy2: cartesian coordinates of another quad, shape = (4,2)
+
+       => will return true if the 2 quads intersect each other 
+    '''
+    from shapely.geometry import Polygon
+    #
+    (n4,n2) = np.shape(pQxy1)
+    if n4!=4 or n2!=2:
+        print('ERROR [lIntersect2Quads()]: wrong shape for `pQxy1` !'); exit(0)
+    if np.shape(pQxy2) != (n4,n2):
+        print('ERROR [lIntersect2Quads()]: wrong shape for `pQxy2` !'); exit(0)
+    #
+    zP1 = Polygon( [ (pQxy1[i,0],pQxy1[i,1]) for i in range(4) ] )
+    zP2 = Polygon( [ (pQxy2[i,0],pQxy2[i,1]) for i in range(4) ] )
+    #
+    return zP1.intersects(zP2)
+    
+
+    
+def lOverlapAnyOtherQuad( pQxy, pMQ,  iverbose=0 ):
+    '''
+       * pQxy: cartesian coordinates of 1 quad, shape = (4,2)
+       * pMQ:  cartesian coordinates of a groupd of quads, shape = (nq,4,2)
+
+       => will return true if the quad `pQxy` overlaps partially (or completely) at least 1 quad of `pMQ` !
+    '''
+    from shapely.geometry import Polygon
+    #
+    (n4,n2) = np.shape(pQxy)
+    if n4!=4 or n2!=2:
+        print('ERROR [lOverlapAnyOtherQuad()]: wrong shape for `pQxy` !'); exit(0)
+    (nq,n4,n2) = np.shape(pMQ)
+    if n4!=4 or n2!=2:
+        print('ERROR [lOverlapAnyOtherQuad()]: wrong shape for `pMQ` !'); exit(0)
+    if iverbose>0: print(' *** [lOverlapAnyOtherQuad()]: we have',nq,'quads to test against...')
+    #
+    li = False
+    for jq in range(nq):
+        li = lIntersect2Quads( pQxy, pMQ[jq,:,:] )
+        if li:
+            break
+    #   
+    return li
+
+
+
+
 if __name__ == '__main__':
 
     kk = cfg.initialize()
@@ -44,7 +95,7 @@ if __name__ == '__main__':
         lrlstKM = True
         listnpz = listnpz2
     else:
-        lrlstKM = False
+        lrlstKM = FalsenbF
         listnpz = listnpz1
         
     
@@ -71,7 +122,11 @@ if __name__ == '__main__':
         kNbPoints[kf] = nPnts
         kf+=1
 
-    
+
+    # Indices of files we keep a the end:
+    idxF2K   = [] ; # indices of files we keep a the end.
+    idxF_Q2K = [] ; # for each retained file, the indices of quads to retain
+        
     # Winner:
     kw = np.argmax(kNbPoints)
     Nmax = kNbPoints[kw]
@@ -84,26 +139,87 @@ if __name__ == '__main__':
         kw = idxmax[ki]
     Nmax = kNbPoints[kw]
     print(' *** Winner is at index:',kw,'(',Nmax,'points),',vsubRes[kw],'km,',nn,'files with this number of points.')
-
-
+    #
+    idxF2K.append(kw)
+    idxQ2K = np.arange(Nmax, dtype=int)
+    idxF_Q2K.append( idxQ2K )
+    print('LOLO: quad indices to keep in this file:',idxQ2K)
+    #exit(0)
+    
 
     # The "in use" quads coordinates array:
-    nQmaxF = nbF*Nmax ; # the ever max number of quads we expect in a single file, final version of `nQmaxF` will have less points...    
+    nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...    
     zInUseXY = np.zeros((nQmaxF,4,2)) - 9999.
     zmsk     = np.zeros( nQmaxF , dtype='i1' )
     
     # 1/ Save all the quads of winner:
-    with np.load(listnpz[kw]) as data:
-        #    zInUseXY = data[
-        #zX4 = data['X4']
-        #zY4 = data['Y4']
-        #print('shape zX4 =',np.shape(zX4))
+    cf = listnpz[kw]
+    print(' *** will keep all the quads found in file:',cf)
+    with np.load(cf) as data:
         zInUseXY[0:Nmax,:,0], zInUseXY[0:Nmax,:,1] = data['X4'], data['Y4']
+        zmsk[0:Nmax] = 1
+    #
+    knxt = Nmax
+    print('')
 
-    #print(zX4)
-        
+
+    print(' Shape of zInUseXY =',np.shape(zInUseXY))
     
+        
+    kf = 0
+    for ff in listnpz:
+        
+        if kf != kw:
+            
+            cf = listnpz[kf]
+            print('\n *** Getting the quads found in file:',cf)
+            with np.load(cf) as data:
+                zX4, zY4 = data['X4'], data['Y4']
+            #
+            (nQ,_) = np.shape(zX4)
+            print('     ==>',nQ,'quads...')
 
+            icpt = 0
+            idxQ2K = []
+            for jQ in range(nQ):
+                zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
+                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:] ):
+                    print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
+                    zInUseXY[knxt,:,:] = zQxy[:,:]
+                    zmsk[knxt] = 1
+                    if icpt==0:
+                        idxF2K.append(kf) ; # at least 1 quad selected, we keep this file!
+                    idxQ2K.append(jQ)
+                    icpt += 1
+                    knxt += 1
+                else:
+                    print('       * quad #',jQ,' did not make it...')
+
+            idxQ2K = np.array(idxQ2K, dtype=int)
+            (nQslctd,) = np.shape(idxQ2K)
+            if nQslctd>0:
+                # we found at least 1 quad to keep:
+                print('     => '+str(nQslctd)+' quads selected!' )
+                idxF_Q2K.append( idxQ2K )
+            
+        ### if kf != kw
+        kf += 1
+            
+    ### for ff in listnpz
+
+    idxF2K = np.array( idxF2K, dtype=int )
+    
+    Nf = np.sum(zmsk)
+
+    print('\n\n At the end we selected '+str(Nf)+' quads!')
+
+    print('  ==> retained files and indices of quads to keep:')
+
+    jf = 0
+    for cf in listnpz[idxF2K]:
+        print('    - '+cf+' => indices of quads to keep:',idxF_Q2K[jf])
+
+        jf += 1
         
     #zX4 = np.array(zX4)
     #print(np.shape(zX4))
