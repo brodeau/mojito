@@ -22,7 +22,7 @@ def lIntersect2Quads( pQxy1, pQxy2 ):
        * pQxy1: cartesian coordinates of a quad, shape = (4,2)
        * pQxy2: cartesian coordinates of another quad, shape = (4,2)
 
-       => will return true if the 2 quads intersect each other 
+       => will return true if the 2 quads intersect each other
     '''
     from shapely.geometry import Polygon
     #
@@ -36,9 +36,9 @@ def lIntersect2Quads( pQxy1, pQxy2 ):
     zP2 = Polygon( [ (pQxy2[i,0],pQxy2[i,1]) for i in range(4) ] )
     #
     return zP1.intersects(zP2)
-    
 
-    
+
+
 def lOverlapAnyOtherQuad( pQxy, pMQ,  iverbose=0 ):
     '''
        * pQxy: cartesian coordinates of 1 quad, shape = (4,2)
@@ -61,7 +61,7 @@ def lOverlapAnyOtherQuad( pQxy, pMQ,  iverbose=0 ):
         li = lIntersect2Quads( pQxy, pMQ[jq,:,:] )
         if li:
             break
-    #   
+    #
     return li
 
 
@@ -70,21 +70,21 @@ def lOverlapAnyOtherQuad( pQxy, pMQ,  iverbose=0 ):
 if __name__ == '__main__':
 
     kk = cfg.initialize()
-    
+
     if not len(argv) in [6]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <batch.N> <dtbin_h> <creskm> <string_id_origin>')
-        exit(0)    
+        exit(0)
 
     cd_in  = argv[1]
     kbatch = argv[2]
     cdtbin = argv[3]
     creskm = argv[4]
     cidorg = argv[5]
-    
+
     sbatch = 'S%3.3i'%(int(kbatch))
 
-    
-    
+
+
     print(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_'+creskm+'km.npz')
     listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_'+creskm+'km.npz') )
     listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
@@ -97,9 +97,9 @@ if __name__ == '__main__':
     else:
         lrlstKM = FalsenbF
         listnpz = listnpz1
-        
-    
-    # Polpulating deformation files available:    
+
+
+    # Polpulating deformation files available:
     nbF = len(listnpz)
     print('\n *** We found '+str(nbF)+' deformation files into '+cd_in+' !')
     print('      => files to gather into a single one:',listnpz,'\n')
@@ -108,14 +108,14 @@ if __name__ == '__main__':
     kNbPoints = np.zeros(nbF, dtype=int ) ; # number of points in file
     vsubRes   = np.zeros(nbF, dtype=int ) ; # coarsifying resolution
 
-    
+
     kf = 0
     for ff in listnpz:
 
         css   = split( '-', split( '_', split('\.',ff)[0] )[-1] )[0]
         vsubRes[kf] = int(css)
         csskm = css+'km'
-        
+
         with np.load(ff) as data:
             nPnts =      data['Npoints']
         print('\n  # File: '+ff+' ('+csskm+') => '+str(nPnts)+' deformation quads!')
@@ -126,12 +126,12 @@ if __name__ == '__main__':
     # Indices of files we keep a the end:
     idxF2K   = [] ; # indices of files we keep a the end.
     idxF_Q2K = [] ; # for each retained file, the indices of quads to retain
-        
+
     # Winner:
     kw = np.argmax(kNbPoints)
     Nmax = kNbPoints[kw]
     (idxmax,) = np.where(kNbPoints==Nmax)
-    nn = len(idxmax)    
+    nn = len(idxmax)
     # Takes the one the closest to the reference resolution
     if nn>1:
         ki = np.argmin( np.abs(vsubRes[idxmax] - int(creskm)) )
@@ -143,15 +143,13 @@ if __name__ == '__main__':
     idxF2K.append(kw)
     idxQ2K = np.arange(Nmax, dtype=int)
     idxF_Q2K.append( idxQ2K )
-    print('LOLO: quad indices to keep in this file:',idxQ2K)
-    #exit(0)
-    
+
 
     # The "in use" quads coordinates array:
-    nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...    
+    nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...
     zInUseXY = np.zeros((nQmaxF,4,2)) - 9999.
     zmsk     = np.zeros( nQmaxF , dtype='i1' )
-    
+
     # 1/ Save all the quads of winner:
     cf = listnpz[kw]
     print(' *** will keep all the quads found in file:',cf)
@@ -164,13 +162,13 @@ if __name__ == '__main__':
 
 
     print(' Shape of zInUseXY =',np.shape(zInUseXY))
-    
-        
+
+
     kf = 0
     for ff in listnpz:
-        
+
         if kf != kw:
-            
+
             cf = listnpz[kf]
             print('\n *** Getting the quads found in file:',cf)
             with np.load(cf) as data:
@@ -201,37 +199,70 @@ if __name__ == '__main__':
                 # we found at least 1 quad to keep:
                 print('     => '+str(nQslctd)+' quads selected!' )
                 idxF_Q2K.append( idxQ2K )
-            
+
         ### if kf != kw
         kf += 1
-            
+
     ### for ff in listnpz
 
     idxF2K = np.array( idxF2K, dtype=int )
-    
-    Nf = np.sum(zmsk)
 
-    print('\n\n At the end we selected '+str(Nf)+' quads!')
+    nQtot = np.sum(zmsk)
 
-    print('  ==> retained files and indices of quads to keep:')
 
+
+    print('\n\n   ### SUMMARY ###\n    At the end we selected '+str(nQtot)+' quads!')
+    print('     ==> retained files and indices of quads to keep:')
     jf = 0
+    qcpt = 0
     for cf in listnpz[idxF2K]:
-        print('    - '+cf+' => indices of quads to keep:',idxF_Q2K[jf])
-
+        print('    - '+cf+' ('+str(vsubRes[idxF2K[jf]])+'km) => indices of quads to keep:',idxF_Q2K[jf])
+        qcpt += len(idxF_Q2K[jf])
         jf += 1
-        
+    print('')
+
+    if qcpt != nQtot:
+        print('ERROR: something went wrong! `qcpt != nQtot`'); exit(0)
+    
     #zX4 = np.array(zX4)
     #print(np.shape(zX4))
-    
+
     exit(0)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    # Save the deformation data:
+    #cfout = './npz/DEFORMATIONS_'+cfnm+'.npz'
+    cfout = 'TEST.npz'
     
+    np.savez_compressed( cfout, time=itimeC, date=ctimeC, Npoints=nD,
+                         Xc=zXc, Yc=zYc, X4=zX, Y4=zY, divergence=zdiv, shear=zshr, total=ztot,
+                         quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
+
+
+
+    ######
+
+
+
+
+
+
     kBatchName  = np.zeros(nbF, dtype='U4')
     kiDate      = np.zeros(nbF, dtype=int ) ; # date in epoch time at which deformations were calculated
-    kNbPoints   = np.zeros(nbF, dtype=int ) ; # number of points in file    
-    
+    kNbPoints   = np.zeros(nbF, dtype=int ) ; # number of points in file
+
     list_date = []
     kf = 0
     for ff in listnpz:
@@ -249,24 +280,24 @@ if __name__ == '__main__':
 
         cdateh = split('-',vf[-2])[0]
         list_date.append(split('h',cdateh)[0])
-        
+
         kBatchName[kf] = vf[-4]
-    
+
         kiDate[kf] = rdate
         kNbPoints[kf] = nPnts
-    
+
         print('   * Batch: '+kBatchName[kf] )
         print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
         print('   * Nb. of points = ',kNbPoints[kf] )
 
         kf = kf+1
-    
+
     print('\n')
 
     nP = np.sum(kNbPoints)
     print('  ==> Total number of points:', nP)
     print('  ==> list of dates:', list_date[:])
-    
+
     cdt1, cdt2 = list_date[0],list_date[-1]
     cperiod = cdt1+'-'+cdt2
 
@@ -275,18 +306,18 @@ if __name__ == '__main__':
     if cdtbin!='nemoTsi3_NoBin':
         dtbin=int(cdtbin)
         cinfobin = '_dt'+cdtbin
-        
+
     if str(reskm) != creskm:
         print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
         exit(0)
-    
-    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
+
+    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear
     Zshr = np.zeros(nP)
     ZDiv = np.zeros(nP)
     Ztot = np.zeros(nP)
     ZAqd = np.zeros(nP)
     Zdat = np.zeros(nP,dtype=int)
-    
+
     jP = 0 ; # Counter from 0 to nP-1
     kf = 0 ; # Counter for files, 0 to nbF-1
     for ff in listnpz:
@@ -308,10 +339,10 @@ if __name__ == '__main__':
 
     del zdiv, zshr, ztot, za
 
-    
-    cfroot = corigin+cinfobin+'_'+str(reskm)+'km_'+cperiod   
 
-    
+    cfroot = corigin+cinfobin+'_'+str(reskm)+'km_'+cperiod
+
+
     # Save it for the scaling and PDFs to come ...
     print(' *** Saving: '+cd_in+'/def_SHR_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
