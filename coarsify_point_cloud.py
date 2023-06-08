@@ -188,6 +188,7 @@ if __name__ == '__main__':
 
         if ldss and corigin=='RGPS' and reskm>300 and l_intermediate_randomization_big_scales:
             #
+            from random import random
             # We do it in a 2-stage fashion introcuding noise
             # A/ to something betwee 8 and 30 km:
             zrnd = 2*random() - 1 ; # Between -1 and +1

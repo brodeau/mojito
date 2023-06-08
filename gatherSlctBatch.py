@@ -39,13 +39,13 @@ def lIntersect2Quads( pQxy1, pQxy2 ):
 
 
 
-def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, iverbose=0 ):
+def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, frac_overlap=0.1, iverbose=0 ):
     '''
        * pQxy: cartesian coordinates of 1 quad, shape = (4,2)
        * pMQ:  cartesian coordinates of a groupd of quads, shape = (nq,4,2)
 
        => will return true if the quad `pQxy` overlaps partially (or completely) at least 1 quad of `pMQ` !
-          ==> to be considered an overlap the intersection area of the 2 quads must be > 0.3*(scale*scale)
+          ==> to be considered an overlap the intersection area of the 2 quads must be > frac_overlap*(scale*scale)
 
     '''
     from shapely.geometry import Polygon
@@ -66,7 +66,7 @@ def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, iverbose=0 ):
         if li:
             if zAi<0.:
                 print('ERROR [lOverlapAnyOtherQuad()]: negative intersection area!'); exit(0)
-            if zAi/znmnl_area > 0.3:
+            if zAi/znmnl_area > frac_overlap:
                 lovrlp = True
                 break
     #
@@ -185,7 +185,7 @@ if __name__ == '__main__':
             idxQ2K = []
             for jQ in range(nQ):
                 zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
-                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm ):
+                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=0.05 ):
                     print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
                     zInUseXY[knxt,:,:] = zQxy[:,:]
                     zmsk[knxt] = 1
