@@ -110,15 +110,18 @@ if __name__ == '__main__':
 
 
     kf = 0
-    for ff in listnpz:
+    for cf in listnpz:
 
-        css   = split( '-', split( '_', split('\.',ff)[0] )[-1] )[0]
+        css   = split( '-', split( '_', split('\.',cf)[0] )[-1] )[0]
         vsubRes[kf] = int(css)
         csskm = css+'km'
 
-        with np.load(ff) as data:
+        with np.load(cf) as data:
             nPnts =      data['Npoints']
-        print('\n  # File: '+ff+' ('+csskm+') => '+str(nPnts)+' deformation quads!')
+            if kf==0:
+                corigin = data['origin']
+                reskm = data['reskm_nmnl']
+        print('\n  # File: '+cf+' ('+csskm+') => '+str(nPnts)+' deformation quads!')
         kNbPoints[kf] = nPnts
         kf+=1
 
@@ -165,7 +168,7 @@ if __name__ == '__main__':
 
 
     kf = 0
-    for ff in listnpz:
+    for cf in listnpz:
 
         if kf != kw:
 
@@ -203,7 +206,7 @@ if __name__ == '__main__':
         ### if kf != kw
         kf += 1
 
-    ### for ff in listnpz
+    ### for cf in listnpz
 
     idxF2K = np.array( idxF2K, dtype=int )
 
@@ -227,6 +230,52 @@ if __name__ == '__main__':
     #zX4 = np.array(zX4)
     #print(np.shape(zX4))
 
+
+
+    # Allocation for the arrays we will save in the new npz file
+    zXc, zYc = np.zeros(nQtot)    , np.zeros(nQtot)
+    zX4, zY4 = np.zeros((nQtot,4)), np.zeros((nQtot,4))
+    zdiv, zshr, ztot = np.zeros(nQtot), np.zeros(nQtot), np.zeros(nQtot)
+    zAq = np.zeros(nQtot)
+
+    jf = 0
+    jq = 0
+    for cf in listnpz[idxF2K]:
+        #print('    - '+cf+' ('+str(vsubRes[idxF2K[jf]])+'km) => indices of quads to keep:',idxF_Q2K[jf])
+        ikeep = idxF_Q2K[jf]
+        nQr = len(ikeep)
+        jqe = jq+nQr
+        #
+        with np.load(cf) as data:
+            zXc[jq:jqe] = data['Xc'][ikeep]
+            zYc[jq:jqe] = data['Yc'][ikeep]
+            zX4[jq:jqe,:] = data['X4'][ikeep,:]
+            zY4[jq:jqe,:] = data['Y4'][ikeep,:]
+            zdiv[jq:jqe] = data['divergence'][ikeep]
+            zshr[jq:jqe] = data['shear'][ikeep]
+            ztot[jq:jqe] = data['total'][ikeep]
+            zAq[jq:jqe] = data['quadArea'][ikeep]
+            #
+            if jf==0:
+                itimeC = data['time']
+                ctimeC = data['date']
+        #        
+        jf += 1
+        jq = jqe
+    ### cf in listnpz[idxF2K]
+    print('')
+
+
+    # Save the deformation data:
+    #cfout = './npz/DEFORMATIONS_'+cfnm+'.npz'
+    cfout = 'TEST.npz'
+    
+    np.savez_compressed( cfout, time=itimeC, date=ctimeC, Npoints=nQtot,
+                         Xc=zXc, Yc=zYc, X4=zX4, Y4=zY4, divergence=zdiv, shear=zshr, total=ztot,
+                         quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
+
+
+    
     exit(0)
 
 
@@ -242,13 +291,6 @@ if __name__ == '__main__':
 
 
 
-    # Save the deformation data:
-    #cfout = './npz/DEFORMATIONS_'+cfnm+'.npz'
-    cfout = 'TEST.npz'
-    
-    np.savez_compressed( cfout, time=itimeC, date=ctimeC, Npoints=nD,
-                         Xc=zXc, Yc=zYc, X4=zX, Y4=zY, divergence=zdiv, shear=zshr, total=ztot,
-                         quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
 
 
 
@@ -265,16 +307,16 @@ if __name__ == '__main__':
 
     list_date = []
     kf = 0
-    for ff in listnpz:
-        print('\n  # File: '+ff)
+    for cf in listnpz:
+        print('\n  # File: '+cf)
 
-        with np.load(ff) as data:
+        with np.load(cf) as data:
             rdate = int( data['time'] )
             nPnts =      data['Npoints']
             if kf==0:
                 corigin = str(data['origin'])
                 reskm   = int(data['reskm_nmnl'])
-        fb = path.basename(ff)
+        fb = path.basename(cf)
         vf = split('_',fb)
 
 
@@ -320,9 +362,9 @@ if __name__ == '__main__':
 
     jP = 0 ; # Counter from 0 to nP-1
     kf = 0 ; # Counter for files, 0 to nbF-1
-    for ff in listnpz:
+    for cf in listnpz:
         jPe = jP + kNbPoints[kf]
-        with np.load(ff) as data:
+        with np.load(cf) as data:
             zdiv  =      data['divergence']
             zshr  =      data['shear']
             ztot  =      data['total']
