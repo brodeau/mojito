@@ -3,7 +3,7 @@
 ##################################################################
 
 from sys import argv, exit
-from os import path, mkdir
+from os import path, makedirs
 from glob import glob
 import numpy as np
 from re import split
@@ -12,7 +12,7 @@ import mojito   as mjt
 from mojito import config as cfg
 
 idebug=1
-iplot=1
+iplot=1 ; NameArcticProj='SmallArctic'
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
@@ -86,19 +86,9 @@ if __name__ == '__main__':
 
 
     print(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_'+creskm+'km.npz')
-    listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_'+creskm+'km.npz') )
-    listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
+    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+sbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
 
-    if len(listnpz1)>0 and len(listnpz2)>0:
-        print('ERROR: we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!'); exit(0)
-    if len(listnpz2)>0:
-        lrlstKM = True
-        listnpz = listnpz2
-    else:
-        lrlstKM = FalsenbF
-        listnpz = listnpz1
-
-
+        
     # Polpulating deformation files available:
     nbF = len(listnpz)
     print('\n *** We found '+str(nbF)+' deformation files into '+cd_in+' !')
@@ -119,7 +109,7 @@ if __name__ == '__main__':
         with np.load(cf) as data:
             nPnts =      data['Npoints']
             if kf==0:
-                corigin = data['origin']
+                corigin = str(data['origin'])
                 reskm = data['reskm_nmnl']
         print('\n  # File: '+cf+' ('+csskm+') => '+str(nPnts)+' deformation quads!')
         kNbPoints[kf] = nPnts
@@ -148,6 +138,11 @@ if __name__ == '__main__':
     idxF_Q2K.append( idxQ2K )
 
 
+    if str(reskm) != creskm:
+        print('ERROR: `str(reskm) != creskm` !'); exit(0)
+
+    cf_keep = str.replace( listnpz[kw], '_'+str(vsubRes[kw])+'-'+creskm, '_SLCT'+creskm)
+    
     # The "in use" quads coordinates array:
     nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...
     zInUseXY = np.zeros((nQmaxF,4,2)) - 9999.
@@ -226,7 +221,7 @@ if __name__ == '__main__':
 
     if qcpt != nQtot:
         print('ERROR: something went wrong! `qcpt != nQtot`'); exit(0)
-    
+
     #zX4 = np.array(zX4)
     #print(np.shape(zX4))
 
@@ -259,7 +254,7 @@ if __name__ == '__main__':
             if jf==0:
                 itimeC = data['time']
                 ctimeC = data['date']
-        #        
+        #
         jf += 1
         jq = jqe
     ### cf in listnpz[idxF2K]
@@ -267,15 +262,63 @@ if __name__ == '__main__':
 
 
     # Save the deformation data:
-    #cfout = './npz/DEFORMATIONS_'+cfnm+'.npz'
-    cfout = 'TEST.npz'
-    
-    np.savez_compressed( cfout, time=itimeC, date=ctimeC, Npoints=nQtot,
+
+    print('\n *** Saving new file: '+cf_keep)
+    np.savez_compressed( cf_keep, time=itimeC, date=ctimeC, Npoints=nQtot,
                          Xc=zXc, Yc=zYc, X4=zX4, Y4=zY4, divergence=zdiv, shear=zshr, total=ztot,
                          quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
-
+    print('')
 
     
+
+    # Some plots:
+    if iplot>0:
+
+        cfnm = str.replace( path.basename(cf_keep), 'DEFORMATIONS_', '')
+        cfnm = str.replace( cfnm, '.npz', '')
+        
+        zoom = 1
+        
+        k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
+
+        cresinfo = '('+str(reskm)+' km)'
+        
+        cfdir = './figs/deformation/'+str(reskm)+'km'
+        makedirs( cfdir, exist_ok=True )
+
+        if corigin != 'RGPS':
+            corigin = str.replace( corigin,'NEMO-','')
+            corigin = str.replace( corigin,'_NANUK4_','-')
+            
+        cresinfo = '('+str(reskm)+' km)'
+
+        nmproj=NameArcticProj
+
+
+        zrx = [ np.min(zX4)-25. , np.max(zX4)+25. ]
+        zry = [ np.min(zY4)-25. , np.max(zY4)+25. ]
+
+        
+        # Filled quads projected on the Arctic map:
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence.png', nmproj=NameArcticProj, cwhat='div',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': divergence '+str(cresinfo), idate=itimeC )
+
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear.png',      nmproj=NameArcticProj, cwhat='shr',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': shear '+cresinfo, idate=itimeC )
+
+
+        cix = ''
+        cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
+
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png',      nmproj=NameArcticProj, cwhat='tot',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': total deformation '+cresinfo, idate=itimeC )
+
+
+
+
     exit(0)
 
 
