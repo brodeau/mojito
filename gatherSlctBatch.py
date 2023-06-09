@@ -16,6 +16,7 @@ iplot=1 ; NameArcticProj='SmallArctic'
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
+lExportCloud = False
 
 def lIntersect2Quads( pQxy1, pQxy2 ):
     '''
@@ -92,15 +93,25 @@ if __name__ == '__main__':
     #cbatch = 'S%3.3i'%(int(kbatch))
 
 
-
-    print(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_'+creskm+'km.npz')
-    listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
-
+    # Populating files and ordering them according to SS resolution:
+    
+    listnpz = np.array( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
+    ccr = [ split('_',path.basename(cf))[-1] for cf in listnpz ] ; # list of resolution suffixes... (for odering)
+    listnpz = listnpz[np.argsort(ccr)]
     # Polpulating deformation files available:
     nbF = len(listnpz)
     print('\n *** We found '+str(nbF)+' deformation files into '+cd_in+' !')
     print('      => files to gather into a single one:',listnpz,'\n')
+    
+    if lExportCloud:
+        # nc/PointsOfQuadsOfDEF_RGPS_S006_dt72_19970119_19970122_275-320km.nc        
+        listnc = np.array( glob('./nc/PointsOfQuadsOfDEF_'+cidorg+'_'+cbatch+'_'+cdtbin+'_*_*-'+creskm+'km.nc')  )
+        ccr = [ split('_',path.basename(cf))[-1] for cf in listnc ] ; # list of resolution suffixes... (for odering)
+        listnc = listnc[np.argsort(ccr)]
+        if len(listnc) != nbF:
+            print('ERROR: `len(listnc) != nbF`')
 
+    
     # First, populate the number of deformation quadrangles in each file:
     kNbPoints = np.zeros(nbF, dtype=int ) ; # number of points in file
     vsubRes   = np.zeros(nbF, dtype=int ) ; # coarsifying resolution
@@ -275,6 +286,50 @@ if __name__ == '__main__':
                          quadArea=zAq, origin=corigin, reskm_nmnl=reskm )
     print('')
 
+
+
+    if lExportCloud:
+        jf = 0
+        jq = 0
+        for cf in listnc[idxF2K]:
+            print('    - '+cf+' ('+str(vsubRes[idxF2K[jf]])+'km)'); # => indices of quads to keep:',idxF_Q2K[jf])
+            ikeep = idxF_Q2K[jf]
+            nQr = len(ikeep)
+            jqe = jq+nQr
+            #
+            idate, zIDs, zGC, zXY, ztim = mjt.LoadNCdataMJT( cf, krec=0, lGetTimePos=True, convention='F' )
+
+            print('shape zXY =>',np.shape(zXY))
+
+            # Coordinates associated to the Quads we keep
+            z4x = zX4[jq:jqe,:]
+            z4y = zY4[jq:jqe,:]
+
+            print('shape z4x =>',np.shape(z4x))
+
+            # FINISH ME !!!
+            exit(0)
+
+            
+            #
+            jf += 1
+            jq = jqe
+        ### cf in listnpz[idxF2K]
+        print('')
+
+
+        #makedirs( './nc', exist_ok=True )    
+        #kk = mjt.ncSaveCloudBuoys( './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc', vtim, zPids1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
+        #                           xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
+
+
+
+        
+        exit(0)
+        
+
+
+
     
 
     # Some plots:
@@ -318,138 +373,7 @@ if __name__ == '__main__':
         cix = ''
         cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
 
-        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png',      nmproj=NameArcticProj, cwhat='tot',
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
                                   pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo, idate=itimeC )
-
-
-
-
-    exit(0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ######
-
-
-
-
-
-
-    kBatchName  = np.zeros(nbF, dtype='U4')
-    kiDate      = np.zeros(nbF, dtype=int ) ; # date in epoch time at which deformations were calculated
-    kNbPoints   = np.zeros(nbF, dtype=int ) ; # number of points in file
-
-    list_date = []
-    kf = 0
-    for cf in listnpz:
-        print('\n  # File: '+cf)
-
-        with np.load(cf) as data:
-            rdate = int( data['time'] )
-            nPnts =      data['Npoints']
-            if kf==0:
-                corigin = str(data['origin'])
-                reskm   = int(data['reskm_nmnl'])
-        fb = path.basename(cf)
-        vf = split('_',fb)
-
-
-        cdateh = split('-',vf[-2])[0]
-        list_date.append(split('h',cdateh)[0])
-
-        kBatchName[kf] = vf[-4]
-
-        kiDate[kf] = rdate
-        kNbPoints[kf] = nPnts
-
-        print('   * Batch: '+kBatchName[kf] )
-        print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
-        print('   * Nb. of points = ',kNbPoints[kf] )
-
-        kf = kf+1
-
-    print('\n')
-
-    nP = np.sum(kNbPoints)
-    print('  ==> Total number of points:', nP)
-    print('  ==> list of dates:', list_date[:])
-
-    cdt1, cdt2 = list_date[0],list_date[-1]
-    cperiod = cdt1+'-'+cdt2
-
-    dtbin=0
-    cinfobin = ''
-    if cdtbin!='nemoTsi3_NoBin':
-        dtbin=int(cdtbin)
-        cinfobin = '_dt'+cdtbin
-
-    if str(reskm) != creskm:
-        print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
-        exit(0)
-
-    # Now that we know the total number of points we can allocate and fill arrays for divergence and shear
-    Zshr = np.zeros(nP)
-    ZDiv = np.zeros(nP)
-    Ztot = np.zeros(nP)
-    ZAqd = np.zeros(nP)
-    Zdat = np.zeros(nP,dtype=int)
-
-    jP = 0 ; # Counter from 0 to nP-1
-    kf = 0 ; # Counter for files, 0 to nbF-1
-    for cf in listnpz:
-        jPe = jP + kNbPoints[kf]
-        with np.load(cf) as data:
-            zdiv  =      data['divergence']
-            zshr  =      data['shear']
-            ztot  =      data['total']
-            za    =      data['quadArea']
-        #kf
-        ZDiv[jP:jPe] = cfg.rc_day2sec*zdiv ; # day^-1
-        Zshr[jP:jPe] = cfg.rc_day2sec*zshr ; # day^-1
-        Ztot[jP:jPe] = cfg.rc_day2sec*ztot ; # day^-1
-        ZAqd[jP:jPe] =     za     ; # km^2
-        Zdat[jP:jPe] =  kiDate[kf]
-        #
-        jP = jPe
-        kf = kf+1
-
-    del zdiv, zshr, ztot, za
-
-
-    cfroot = corigin+cinfobin+'_'+str(reskm)+'km_'+cperiod
-
-
-    # Save it for the scaling and PDFs to come ...
-    print(' *** Saving: '+cd_in+'/def_SHR_'+cfroot+'.npz')
-    np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
-                         Nbatch=nbF, dates_batch=kiDate,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
-                         Np=nP, xshr=Zshr, quadArea=ZAqd, dates_point=Zdat )
-
-    print(' *** Saving: '+cd_in+'/def_DIV_'+cfroot+'.npz')
-    np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
-                         Nbatch=nbF, dates_batch=kiDate,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
-                         Np=nP, xdiv=ZDiv, quadArea=ZAqd, dates_point=Zdat )
-
-    print(' *** Saving: '+cd_in+'/def_TOT_'+cfroot+'.npz')
-    np.savez_compressed( cd_in+'/def_TOT_'+cfroot+'.npz', name='shear', origin=corigin,
-                         Nbatch=nbF, dates_batch=kiDate,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
-                         Np=nP, xtot=Ztot, quadArea=ZAqd, dates_point=Zdat )
 

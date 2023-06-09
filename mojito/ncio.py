@@ -457,7 +457,7 @@ def LoadNCdataMJT( cfile, krec=-1, lmask=False, lGetTimePos=False, convention='C
                 zCcoor[:,:,jt] = np.array([  zx[jt,:],  zy[jt,:]]).T
                 
     if convention=='F':
-        zmsk = zmsk.T
+        if lmask: zmsk = zmsk.T
         if lGetTimePos:
             ztpos = ztpos.T
                 
