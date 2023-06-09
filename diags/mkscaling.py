@@ -209,14 +209,14 @@ if __name__ == '__main__':
     Naxis = 0
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, cfig=cfroot+'.png',
-                              lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis )
+    kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, lAddPowerLawFit=True,
+                              cfig=cfroot+'.png', lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis,  )
 
     # Separate: 
     cfroot = './figs/0scaling_'+cfield+'_q1_mean_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.png', lAddPowerLawFit=True )
     cfroot = './figs/0scaling_'+cfield+'_q2_variance_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.png', lAddPowerLawFit=True )
     cfroot = './figs/0scaling_'+cfield+'_q3_skewness_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.png' )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.png', lAddPowerLawFit=True )
     

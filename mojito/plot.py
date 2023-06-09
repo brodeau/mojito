@@ -1324,7 +1324,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     if lAddPowerLawFit:
         jo = 0
         zvx = np.array( [ 2.**k for k in range(3,11) ] )
-        (idxKeep,) = np.where(pscales[:,jo]<600)
+        (idxKeep,) = np.where(pscales[:,jo]<900)
         [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
         
         plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
@@ -1362,7 +1362,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         According to Fiffure's taste...
     '''
     xlog_min, xlog_max = 7.5 , 1.e3
-    ylog_min,ylog_max  =  0.7e-6, 0.3e-1
+    ylog_min,ylog_max  =  0.5e-6, 0.3e-1
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
@@ -1390,7 +1390,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         zAB = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
         for jo in range(No):
             for jq in range(3):
-                (idxKeep,) = np.where(pscales[:,jo]<600)
+                (idxKeep,) = np.where(pscales[:,jo]<900)
                 zAB[:,jo,jq] = _linear_fit_loglog_(pscales[idxKeep,jo], pMQ[idxKeep,jo,jq])
 
 
