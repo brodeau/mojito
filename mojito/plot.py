@@ -1324,7 +1324,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     if lAddPowerLawFit:
         jo = 0
         zvx = np.array( [ 2.**k for k in range(3,11) ] )
-        (idxKeep,) = np.where(pscales[:,jo]<900)
+        (idxKeep,) = np.where(pscales[:,jo]<600)
         [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
         
         plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
@@ -1357,7 +1357,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
 
 
 def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', lAddPowerLawFit=False,
-                     lAddNumberPoints=False, cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=0 ):
+                     lAddNumberPoints=False, cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=None ):
     '''
         According to Fiffure's taste...
     '''
@@ -1390,7 +1390,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         zAB = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
         for jo in range(No):
             for jq in range(3):
-                (idxKeep,) = np.where(pscales[:,jo]<900)
+                (idxKeep,) = np.where(pscales[:,jo]<600)
                 zAB[:,jo,jq] = _linear_fit_loglog_(pscales[idxKeep,jo], pMQ[idxKeep,jo,jq])
 
 
@@ -1484,9 +1484,14 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
     if lAddCloud:
-        for jo in range(No):
+        if Naxis>=0:
+            jo = Naxis
             plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
                         color=vcolor[jo], label=None, alpha=0.25, zorder=5 )
+        else:
+            for jo in range(No):
+                plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+                            color=vcolor[jo], label=None, alpha=0.25, zorder=5 )
 
     for js in range(Ns):
         for jo in range(No):

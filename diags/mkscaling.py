@@ -11,7 +11,8 @@ import mojito   as mjt
 from mojito import config as cfg
 
 idebug=1
-iplot=1
+#iplot=1 ; Naxis = None
+iplot=1 ; Naxis = 0
 
 lAdaptMinDef = False
 
@@ -206,7 +207,7 @@ if __name__ == '__main__':
     xXQ = np.ma.masked_where(xXQ<-9000., xXQ)
 
 
-    Naxis = 0
+
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, lAddPowerLawFit=True,
