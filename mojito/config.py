@@ -53,7 +53,6 @@ def initialize( mode='model' ):
         rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
     elif mode in ['rgps','rgps_track']:        
-        #rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_min =  50.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
@@ -264,7 +263,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             elif res_km>=300. and res_km<600.:
                 rc_t_dev_cancel =  12*3600 ; #ok
             elif res_km>=600.:
-                rc_t_dev_cancel = 24*3600
+                rc_t_dev_cancel = 24*3600 ; #ok
                 
     if rc_t_dev_cancel > 60:
         if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
