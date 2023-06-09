@@ -14,6 +14,7 @@ LIST_MINDC=""
 RESKM=10
 MODE='rgps'
 DEF_EXPORT=''
+export USE_S=''
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
@@ -48,15 +49,16 @@ case ${host} in
         ##DT_BINS_H=6 ;  RESKM=80 ; LIST_RD_SS="70 75 80"
         #
         # 160km: in decreasing order of quality:
-        #DT_BINS_H=72 ;  RESKM=160 ; LIST_RD_SS="145 155 165" ; #  ok! :D
-        ##DT_BINS_H=6 ;  RESKM=160 ; LIST_RD_SS="145 150 155 160 165 170" ; #ok!
+        #DT_BINS_H=72 ;  RESKM=160 ; LIST_RD_SS="145 155 165" ; export USE_S='' ; #  ok! :D
+        #DT_BINS_H=72 ;  RESKM=160 ; LIST_RD_SS="135 140 145 150   155   160 165 170 175 180" ; export USE_S="S"
         #
         # 320km:
-        # So far best is with: frac_overlap=0.05 and rc_t_dev_cancel =  12*3600        :
-        #DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="265 270 275 280 285 290 295 300 305 310 313  315  317 320 325 330 335 340 345 350 355 360 365 370"
+        #DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="270 280 285 290 295 300 305 310   315   320 325 330 335 340 345 350 355 360 370"; export USE_S="S"
+        #DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="270 275 280 285 290 295 300 305 310   315   320 325 330 335 340 345 350 355 360"; export USE_S="S"
+        DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
         #
         # 640km:
-        DT_BINS_H=72 ; RESKM=640 ; LIST_RD_SS="540 550 560 570 580 590 600 610 615 620 625 630 633 635 637 640 645 650 655 660 670 680 690 700 710 720 730 740"; #yes!!!
+        #DT_BINS_H=72 ; RESKM=640 ; LIST_RD_SS="540 550 560 570 580 590 600 610 615 620 625 630 635 640 645 650 655 660 670 680 690 700 710 720 730 740"; export USE_S="S"
         #
         ;;        
     "merlat")

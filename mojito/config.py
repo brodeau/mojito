@@ -144,7 +144,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
         elif mode in ['rgps','rgps_track','rgps_map']:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
-            rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
+            #rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
@@ -186,7 +186,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
         elif mode in ['rgps','rgps_track','rgps_map']:
-            #rc_Qarea_min, rc_Qarea_max = 152.*152., 168.*168.
             rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
@@ -201,7 +200,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
         elif mode in ['rgps','rgps_track','rgps_map']:            
             rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
-            #rc_div_max, rc_shr_max, rc_tot_max = 6.e-2, 6.e-2, 6.e-2 ; # day^-1 ; => supresses irrealistically large values
+            #rc_div_max, rc_shr_max, rc_tot_max = 4.5e-2, 4.5e-2, 4.5e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
         #
@@ -256,14 +255,13 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
                 #rc_t_dev_cancel =  3.*3600
                 #rc_t_dev_cancel =  6.*3600 ; # ok!
             elif res_km>=150. and res_km<300.:
-                rc_t_dev_cancel =  2*3600
-                #rc_t_dev_cancel =  6*3600   ; #ok
-                #rc_t_dev_cancel =  12*3600   ; #lolo?
-                #rc_t_dev_cancel =  24*3600   ; #lolo?
+                #rc_t_dev_cancel =  2*3600 ;
+                #rc_t_dev_cancel =  6*3600  ; #ok
+                rc_t_dev_cancel =  9*3600  ; # ok
             elif res_km>=300. and res_km<600.:
-                rc_t_dev_cancel =  12*3600 ; #ok
+                rc_t_dev_cancel =  24*3600 ; #ok
             elif res_km>=600.:
-                rc_t_dev_cancel = 24*3600 ; #ok
+                rc_t_dev_cancel = 48*3600 ; # yes!
                 
     if rc_t_dev_cancel > 60:
         if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')

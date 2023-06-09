@@ -25,7 +25,7 @@ iplot  = 1 ; # Create figures to see what we are doing...
 rzoom_fig = 2
 
 l_varying_dist2coast = False
-l_intermediate_randomization_big_scales = True
+l_intermediate_randomization_big_scales = False
 
 if __name__ == '__main__':
 
@@ -186,7 +186,7 @@ if __name__ == '__main__':
         print('    * which is original record '+str(jr)+' => date =',cdats)
 
 
-        if ldss and corigin=='RGPS' and reskm>300 and l_intermediate_randomization_big_scales:
+        if ldss and corigin=='RGPS' and reskm>100 and l_intermediate_randomization_big_scales:
             #
             from random import random
             # We do it in a 2-stage fashion introcuding noise
@@ -201,6 +201,7 @@ if __name__ == '__main__':
             del NbPss0, zXYss0, idxKeep0, idxKeep2
             #
         else:
+            
             print('\n *** Applying spatial sub-sampling with radius: '+str(round(rd_ss,2))+'km for record jr=',jr)
             NbPss, zXYss, idxKeep = mjt.SubSampCloud( rd_ss, zXY[:,:,jr] )
     

@@ -18,6 +18,10 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 lExportCloud = False
 
+#FracOverlap = 0.05
+#FracOverlap = 0.2 ; # for 320km ?
+FracOverlap = 0.7 ; # for 320km ? #best
+
 def lIntersect2Quads( pQxy1, pQxy2 ):
     '''
        * pQxy1: cartesian coordinates of a quad, shape = (4,2)
@@ -196,7 +200,7 @@ if __name__ == '__main__':
             idxQ2K = []
             for jQ in range(nQ):
                 zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
-                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=0.05 ):
+                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=FracOverlap ):
                     print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
                     zInUseXY[knxt,:,:] = zQxy[:,:]
                     zmsk[knxt] = 1

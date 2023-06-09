@@ -136,9 +136,9 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
 
     fi ; # if [ "$1" != "2" ]
-
-    if [ "${LIST_RD_SS}" != "" ]; then
-
+    
+    if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
+        
         for cbtch in ${list_btch}; do
 
 
