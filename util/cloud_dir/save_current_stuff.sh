@@ -1,23 +1,39 @@
 #!/bin/bash
 
-if [ "${2}" = "" ]; then
-    echo "USAGE: ${0} <orig> <scale>"
+. conf.bash
+
+if [ "${1}" = "" ]; then
+    echo "USAGE: ${0} <scale> (<orig>)"
     exit
 fi
 
-corig="${1}"
-cscal="${2}"
+cscal="${1}"
 
-
-if [ ! -d ./${corig} ]; then
-    echo "ERROR: no directory named ./${corig} !"; exit
+iorig=0
+if [ "${2}" != "" ]; then
+    iorig=1
+    corig="${2}"
+else
+    lst_exps=`echo ${EXPS} | sed -e s/','/' '/g`
+    corig="${lst_exps,,}"
 fi
 
-echo " Orig and scale: ${corig} ${cscal}"
+echo; echo " ORIGS: ${corig}"; echo
 
 
+for cc in ${corig}; do
 
+    echo; echo " *** ${cc}"
 
-rm -f ./bak/${corig}/*_${cscal}km*
+    if [ ! -d ./${cc} ]; then
+        echo "ERROR: no directory named ./${cc} !"; exit
+    fi
 
-rsync -avP ${corig}/*_${cscal}km* ./bak/${corig}/
+    echo " Orig and scale: ${cc} ${cscal}"
+    
+    rm -f ./bak/${cc}/*_${cscal}km*
+
+    rsync -avP ${cc}/*_${cscal}km* ./bak/${cc}/
+
+    echo
+done
