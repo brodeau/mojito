@@ -41,8 +41,10 @@ def initialize( mode='model' ):
     lc_drop_overlap = False ; # Because this is done in Quad generation...
     rc_Dtol_km = 6. # tolerance distance in km below which we cancel 1 of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
     #               # Should be same as `rc_d_ss` for 10km as in "updateConfig4Scale()"
-    
+
+    #lolo:
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
+    #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
     # Selection of appropriate quadrangles:
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
@@ -51,19 +53,19 @@ def initialize( mode='model' ):
     if mode in ['thorough','model']:
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140.
-        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
     elif mode in ['rgps','rgps_track']:        
-        rc_Qang_min =  50.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_min =  50. ;#lolo ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140.
-        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
     elif mode in ['rgps_map']:        
         rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 150.
-        rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
     elif mode in ['xlose']:
         rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
-        rc_dRatio_max = 1. ; # value that `max(h1/h2,h2/h1)-1` should not overshoot! h1 being the "height" and "width" of the quadrangle
+        rc_dRatio_max = 1. ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
         rc_dev_dt_Nmnl = 24*3600 ; # max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
 
     data_dir = environ.get('DATA_DIR')
@@ -259,6 +261,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
                 #rc_t_dev_cancel =  6*3600  ; #ok
                 rc_t_dev_cancel =  9*3600  ; # ok
             elif res_km>=300. and res_km<600.:
+                #rc_t_dev_cancel =  18*3600 ; #ok
                 rc_t_dev_cancel =  24*3600 ; #ok
             elif res_km>=600.:
                 rc_t_dev_cancel = 48*3600 ; # yes!

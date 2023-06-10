@@ -43,8 +43,9 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        #LIST_NEMO_EXP="BBM2302" ; ISEED_BASE='defs' ; # For scaling
-        LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For maps
+        LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="BBM2304" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For maps
         #
         ;;
     *)

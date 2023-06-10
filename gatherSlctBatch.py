@@ -18,9 +18,9 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 lExportCloud = False
 
-#FracOverlap = 0.05
+FracOverlap = 0.05
 #FracOverlap = 0.2 ; # for 320km ?
-FracOverlap = 0.7 ; # for 320km ? #best
+#FracOverlap = 0.7 ; # for 320km ? #best
 
 def lIntersect2Quads( pQxy1, pQxy2 ):
     '''
