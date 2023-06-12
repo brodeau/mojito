@@ -228,7 +228,9 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
 
     
     if ltalk: print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', np.sqrt([rc_Qarea_min, rc_Qarea_max]))
-    if ltalk: print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2 (+-',zdA_tol,'km)')
+    if ltalk:
+        print('              => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
+        if mode in ['rgps','rgps_track']: print('                                   (+-',zdA_tol,'km)')
 
     #############################
 
