@@ -18,9 +18,6 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 lExportCloud = False
 
-FracOverlap = 0.05
-#FracOverlap = 0.2 ; # for 320km ?
-#FracOverlap = 0.7 ; # for 320km ? #best
 
 def lIntersect2Quads( pQxy1, pQxy2 ):
     '''
@@ -82,7 +79,7 @@ def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, frac_overlap=0.1, iverbose=0 ):
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize()
+    
 
     if not len(argv) in [6]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <SXXX> <dtbin_h> <creskm> <string_id_origin>')
@@ -95,10 +92,11 @@ if __name__ == '__main__':
     cidorg = argv[5]
 
     #cbatch = 'S%3.3i'%(int(kbatch))
+    k1 = cfg.initialize()
+    k2 = cfg.updateConfig4Scale( int(creskm), mode='rgps' )
+    print('\n *** IMPORTANT: `rcFracOverlapOK` to be used for '+str(creskm)+':', cfg.rcFracOverlapOK, '\n')
 
-
-    # Populating files and ordering them according to SS resolution:
-    
+    # Populating files and ordering them according to SS resolution:    
     listnpz = np.array( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
     ccr = [ split('_',path.basename(cf))[-1] for cf in listnpz ] ; # list of resolution suffixes... (for odering)
     listnpz = listnpz[np.argsort(ccr)]
@@ -135,7 +133,6 @@ if __name__ == '__main__':
         print('\n  # File: '+cf+' ('+csskm+') => '+str(nPnts)+' deformation quads!')
         kNbPoints[kf] = nPnts
         kf+=1
-
 
     # Indices of files we keep a the end:
     idxF2K   = [] ; # indices of files we keep a the end.
@@ -200,7 +197,7 @@ if __name__ == '__main__':
             idxQ2K = []
             for jQ in range(nQ):
                 zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
-                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=FracOverlap ):
+                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=cfg.rcFracOverlapOK ):
                     print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
                     zInUseXY[knxt,:,:] = zQxy[:,:]
                     zmsk[knxt] = 1
@@ -344,8 +341,11 @@ if __name__ == '__main__':
         
         zoom = 1
         
-        k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
+        
+        
+        
 
+        
         cresinfo = '('+str(reskm)+' km)'
         
         cfdir = './figs/deformation/'+str(reskm)+'km'

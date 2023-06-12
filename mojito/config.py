@@ -84,7 +84,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     '''
     import numpy as np
     #
-    global ivc_KnownScales, rc_d_ss
+    global ivc_KnownScales, rc_d_ss, rcFracOverlapOK
     global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
     global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig
@@ -100,6 +100,9 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     rc_d_ss = 6. ; # default radius for subsampling the cloud of points [km]
 
 
+    rcFracOverlapOK = 0.05 ; # when multi-realisation of coarsening (`rd_ss`) tells how much the two quadrangles from 2 different realisations can overlap (area),
+    #                        # as a fraction of the nominal areas (=`reskm*reskm`)
+    
     # Extremas for deformations, in [day^-1]:
     rc_div_max, rc_shr_max, rc_tot_max = 1., 1., 1.
     if mode in ['rgps']:
@@ -194,6 +197,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==320:
         rc_d_ss = 315.6
+        rcFracOverlapOK = 0.25
         rc_tolQuadA = 64
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
