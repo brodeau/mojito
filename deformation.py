@@ -261,9 +261,8 @@ if __name__ == '__main__':
                 zYc  =  zYc[idxKeep]
                 zAq  =  zAq[idxKeep]
                 nD   = nDn
-                if iplot>0:
-                    zX = zX[idxKeep,:]
-                    zY = zY[idxKeep,:]
+                zX   = zX[idxKeep,:]
+                zY   = zY[idxKeep,:]
         else:
             print('\n *** Great! No extreme deformation values were found!')
             idxKeep = np.arange(nD, dtype=int)
