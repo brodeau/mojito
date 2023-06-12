@@ -192,7 +192,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_maxDevMeanAreaQuads = 64
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 5.e-2, 5.e-2, 5.e-2, 0.005
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 5.e-2, 5.e-2, 5.e-2, 0.01
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
         else:
@@ -262,8 +262,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             elif res_km>=150. and res_km<300.:
                 rc_t_dev_cancel =  9*3600  ; # ok
             elif res_km>=300. and res_km<600.:
-                #rc_t_dev_cancel =  18*3600 ; #ok
-                rc_t_dev_cancel =  24*3600 ; #ok
+                rc_t_dev_cancel =  18*3600 ; #ok
             elif res_km>=600.:
                 rc_t_dev_cancel = 48*3600 ; # yes!
                 
