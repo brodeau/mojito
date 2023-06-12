@@ -18,9 +18,6 @@ cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
 lExportCloud = False
 
-FracOverlap = 0.05
-#FracOverlap = 0.2 ; # for 320km ?
-#FracOverlap = 0.7 ; # for 320km ? #best
 
 def lIntersect2Quads( pQxy1, pQxy2 ):
     '''
@@ -82,7 +79,7 @@ def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, frac_overlap=0.1, iverbose=0 ):
 
 if __name__ == '__main__':
 
-    kk = cfg.initialize()
+    
 
     if not len(argv) in [6]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <SXXX> <dtbin_h> <creskm> <string_id_origin>')
@@ -95,10 +92,11 @@ if __name__ == '__main__':
     cidorg = argv[5]
 
     #cbatch = 'S%3.3i'%(int(kbatch))
+    k1 = cfg.initialize()
+    k2 = cfg.updateConfig4Scale( int(creskm), mode='rgps' )
+    print('\n *** IMPORTANT: `rcFracOverlapOK` to be used for '+str(creskm)+':', cfg.rcFracOverlapOK, '\n')
 
-
-    # Populating files and ordering them according to SS resolution:
-    
+    # Populating files and ordering them according to SS resolution:    
     listnpz = np.array( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
     ccr = [ split('_',path.basename(cf))[-1] for cf in listnpz ] ; # list of resolution suffixes... (for odering)
     listnpz = listnpz[np.argsort(ccr)]
@@ -120,7 +118,6 @@ if __name__ == '__main__':
     kNbPoints = np.zeros(nbF, dtype=int ) ; # number of points in file
     vsubRes   = np.zeros(nbF, dtype=int ) ; # coarsifying resolution
 
-
     kf = 0
     for cf in listnpz:        
         css   = split( '-', split( '_', split('\.',path.basename(cf))[0] )[-1] )[0]
@@ -135,7 +132,6 @@ if __name__ == '__main__':
         print('\n  # File: '+cf+' ('+csskm+') => '+str(nPnts)+' deformation quads!')
         kNbPoints[kf] = nPnts
         kf+=1
-
 
     # Indices of files we keep a the end:
     idxF2K   = [] ; # indices of files we keep a the end.
@@ -200,7 +196,7 @@ if __name__ == '__main__':
             idxQ2K = []
             for jQ in range(nQ):
                 zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
-                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=FracOverlap ):
+                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=cfg.rcFracOverlapOK ):
                     print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
                     zInUseXY[knxt,:,:] = zQxy[:,:]
                     zmsk[knxt] = 1
@@ -344,8 +340,11 @@ if __name__ == '__main__':
         
         zoom = 1
         
-        k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
+        
+        
+        
 
+        
         cresinfo = '('+str(reskm)+' km)'
         
         cfdir = './figs/deformation/'+str(reskm)+'km'
@@ -366,11 +365,11 @@ if __name__ == '__main__':
         
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence.png', nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+str(cresinfo), idate=itimeC )
 
         mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear.png',      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo, idate=itimeC )
 
 
@@ -378,6 +377,6 @@ if __name__ == '__main__':
         cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
 
         mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo, idate=itimeC )
 

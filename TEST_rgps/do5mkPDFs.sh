@@ -4,10 +4,7 @@
 
 EXE="${MOJITO_DIR}/diags/mkpdfs.py"
 
-
-
-
-fdiv=`\ls npz/def_DIV_RGPS_dt${DT_BINS_H}_${RESKM}km_${YEAR}????-${YEAR}????.npz`
+fdiv=`\ls npz/def_DIV_RGPS_dt${DT_BINS_H}_${RESKM}km_199[67]????-199[67]????.npz`
 
 nbh=`echo ${fdiv} | wc -w`
 if [ ${nbh} -ne 1 ]; then

@@ -797,14 +797,17 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
 
 
 ############################
-def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., paxes=[0.025, 0.85, 0.29, 0.018], cunit='???' ):
+def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., df=None, paxes=[0.025, 0.85, 0.29, 0.018], cunit='???' ):
         axCB = pltH.axes( paxes )        
         if field=='div':
             cxtnd = 'both'
-            df = 0.025
+            if not df:
+                df = 0.025
+            else:
+                df = 2.*df
         else:
             cxtnd = 'max'
-            df = 0.01
+            if not df: df = 0.01
         vcbt = np.round(np.arange(fmin,fmax+df,df),3)
         cb_labs = np.array( vcbt , dtype='U16')
         cb_labs[(cb_labs=='0.0')]  = '0'
@@ -816,7 +819,7 @@ def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., paxes=[0.025, 0.85
 
 
 def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
-                          pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', idate=None ):
+                          pFmin=-1., pFmax=1., pdF=None, rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', idate=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ### => each quadrangle is filled with the appropriate color from colormap !!!
@@ -879,7 +882,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     if unit:
         # => triggers the colorbar
-        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, paxes=[0.025, 0.85, 0.29, 0.018], cunit=unit )
+        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.025, 0.85, 0.29, 0.018], cunit=unit )
 
     ax.annotate('N. cells = '+str(nQ), xy=(LocTitle[0],LocTitle[1]-0.2), xycoords='figure fraction', **cfont_mrkr);#lili
         
@@ -891,7 +894,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
 def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3, zoom=1,
                                cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div',
-                               pFmin=-1., pFmax=1., rangeX=None, rangeY=None, title1=None, unit=r'days$^{-1}$', idate=None,
+                               pFmin=-1., pFmax=1., pdF=None, rangeX=None, rangeY=None, title1=None, unit=r'days$^{-1}$', idate=None,
                                title2=None, title3=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
@@ -985,7 +988,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     if unit:
         # => triggers the colorbar
-        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, paxes=[0.2, 0.09, 0.6, 0.03], cunit=unit )
+        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.2, 0.09, 0.6, 0.03], cunit=unit )
         
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
