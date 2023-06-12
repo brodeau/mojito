@@ -118,7 +118,6 @@ if __name__ == '__main__':
     kNbPoints = np.zeros(nbF, dtype=int ) ; # number of points in file
     vsubRes   = np.zeros(nbF, dtype=int ) ; # coarsifying resolution
 
-
     kf = 0
     for cf in listnpz:        
         css   = split( '-', split( '_', split('\.',path.basename(cf))[0] )[-1] )[0]
