@@ -21,10 +21,6 @@ DIR_NPZ="npz"
 #fi
 
 
-#DIR_RGPS_REMOTE="/home/laurent/DEV/mojito"
-#DIR_TRCK_REMOTE="/home/laurent/tmp/MOJITO"
-DIR_TRCK_REMOTE="/home/laurent/DEV/mojito"
-
 
 # /home/laurent/tmp/MOJITO/TEST_tracking
 

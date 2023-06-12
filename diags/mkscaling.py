@@ -12,7 +12,7 @@ from mojito import config as cfg
 
 idebug=1
 #iplot=1 ; Naxis = None
-iplot=1 ; Naxis = 1
+iplot=1 ; Naxis = 0
 
 lAdaptMinDef = False
 
