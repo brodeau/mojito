@@ -175,10 +175,11 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==160:
         rc_d_ss = 156.
+        rcFracOverlapOK = 0.1
         rc_maxDevMeanAreaQuads = 32
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 7.5e-2, 7.5e-2, 7.5e-2, 0.005
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 7.5e-2, 7.5e-2, 7.5e-2, 0.02
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
         else:
