@@ -39,12 +39,10 @@ def initialize( mode='model' ):
     rc_dev_dt_Nmnl = 6*3600    ; # RGPS: max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
     
     lc_drop_overlap = False ; # Because this is done in Quad generation...
-    rc_Dtol_km = 6. # tolerance distance in km below which we cancel 1 of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
+    rc_Dtol_km = 5. # (if lc_drop_overlap) tolerance distance in km below which we cancel 1 of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
     #               # Should be same as `rc_d_ss` for 10km as in "updateConfig4Scale()"
 
-    #lolo:
     lc_accurate_time=True ; # use the exact time at each vertices of the quadrangles when computing deformations
-    #lc_accurate_time=False ; # use the exact time at each vertices of the quadrangles when computing deformations
 
     # Selection of appropriate quadrangles:
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
@@ -116,7 +114,12 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     
     # Extremas for deformations for figures only:
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  1., 1., 1.,0.1
-            
+
+
+    if mode=='rgps_map' and irk>10:
+        print('ERROR [updateConfig4Scale]: "mode=rgps_map" is only meant to be used at 10km !!!')
+        exit(0)
+    
     if   irk==10:
         rc_d_ss = 5.5
         rcFracOverlapOK = 1.e-9
@@ -164,7 +167,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_maxDevMeanAreaQuads = 16
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-4, 1.e-4, 1.e-4
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.15, 0.15, 0.15
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.01
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.025
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
         else:
