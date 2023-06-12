@@ -20,12 +20,12 @@ fi
 
 
 # Populating nc files we can use:
-list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${csf}.nc`
+list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_199[67]????h??_199[67]????h??${csf}.nc`
 
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} batches!"
-
 echo; echo ${list_nc}; echo
+
 
 for ff in ${list_nc}; do
 

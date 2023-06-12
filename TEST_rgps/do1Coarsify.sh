@@ -18,9 +18,8 @@ if [ "${LIST_RD_SS}" != "" ]; then
 fi
 
 
-
 # Populating nc files we can use:
-list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??.nc`
+list_nc=`\ls nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_199[67]????h??_199[67]????h??.nc`
 nbf=`echo ${list_nc} | wc -w`
 echo " => ${nbf} files => ${nbf} batches!"
 
