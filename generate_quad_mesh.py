@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     zA_ideal = reskm*reskm ; # ideal Area of quadrangles to build!
     
-    #print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
+    #print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_maxDevMeanAreaQuads,'km')
     print('\n *** Max time deviation accepted across vertices of a Quad: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
     print('\n *** Will only retain quadrangles with an area comprised between '
           +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(zA_ideal)+'km^2')
@@ -421,8 +421,8 @@ if __name__ == '__main__':
         print('ERROR: problem in the final number of quads and points!!!'); exit(0)    
     print('\n *** Finally, we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')  
     
-    k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
-    k2 = mjt.QuadStat( 1, QUADS2, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
+    k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
+    k2 = mjt.QuadStat( 1, QUADS2, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
     
     # Save the quadrangular mesh info:
     mjt.SaveClassPolygon( cf_npzQ1, QUADS1, ctype='Q', origin=corigin, reskm_nmnl=reskm )

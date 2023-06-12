@@ -55,12 +55,12 @@ def initialize( mode='model' ):
         rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
     elif mode in ['rgps','rgps_track']:        
-        rc_Qang_min =  50. ;#lolo ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
     elif mode in ['rgps_map']:        
-        rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 150.
+        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 160.
         rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
     elif mode in ['xlose']:
         rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
@@ -85,16 +85,16 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     import numpy as np
     #
     global ivc_KnownScales, rc_d_ss, rcFracOverlapOK
-    global rc_Qarea_min, rc_Qarea_max, rc_tolQuadA, rc_t_dev_cancel
+    global rc_Qarea_min, rc_Qarea_max, rc_maxDevMeanAreaQuads, rc_t_dev_cancel
     global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
-    global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig
+    global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig
     global rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf, rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf
     
     irk = int(res_km)
 
     lk = controlModeName( 'updateConfig4Scale', mode )
     
-    rc_tolQuadA = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
+    rc_maxDevMeanAreaQuads = 3. * res_km/20. ; # +- tolerance in [km] on the MEAN scale of quadrangles in a batch
     #                               #    to accept a given scale. Ex: average scale of quadrangle = 15.9 km is accepted for 15 km !!
 
     rc_d_ss = 6. ; # default radius for subsampling the cloud of points [km]
@@ -115,112 +115,92 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf =  8.e-5, 8.e-5, 8.e-5
     
     # Extremas for deformations for figures only:
-    rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  1., 1., 1.
-    
+    rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  1., 1., 1.,0.1
+            
     if   irk==10:
-        rc_d_ss = 6.
-        rc_tolQuadA = 2
+        rc_d_ss = 5.5
+        rcFracOverlapOK = 1.e-9
+        rc_maxDevMeanAreaQuads = 2        
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.003, 0.003, 0.003
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig =  0.12, 0.12, 0.12
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  0.12, 0.12, 0.12, 0.05
         if mode in ['thorough','model']:            
-            #rc_Qarea_min, rc_Qarea_max = 9.875*9.875, 10.125*10.125
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
-        elif mode in ['rgps','rgps_track']:
-            rc_tolQuadA = 2
-            rc_Qarea_min, rc_Qarea_max = 9.33*9.33, 11.33*11.33 ; # 10.33 +- 1 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
-            #rc_Qarea_min, rc_Qarea_max = 8.33*8.33, 12.33*12.33 ; # 10.33 +- 2 (`xlose` => average scale = 10.33km with a stdev of ~1km!)
         elif mode=='rgps_map':
-            rc_tolQuadA = 5
+            rc_maxDevMeanAreaQuads = 5
             rc_Qarea_min, rc_Qarea_max = 6.*6.,14.*14.
         elif mode=='xlose':
-            rc_tolQuadA = 10
+            rc_maxDevMeanAreaQuads = 10
             rc_Qarea_min, rc_Qarea_max = 5*5, 15*15
         else:
             rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
         #
     elif irk==20:
         rc_d_ss = 15.
-        rc_tolQuadA = 4
+        rcFracOverlapOK = 1.e-9
+        rc_maxDevMeanAreaQuads = 4
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.001, 0.001, 0.001
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.025
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
-        elif mode in ['rgps','rgps_track','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.7, 0.7, 0.7 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
         #
     elif irk==40:
         rc_d_ss = 34.5
-        rc_tolQuadA = 8
+        rc_maxDevMeanAreaQuads = 8
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 5.e-4, 5.e-4, 5.e-4
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 0.5e-1, 0.5e-1, 0.5e-1
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 0.5e-1, 0.5e-1, 0.5e-1, 0.01
         if mode=='model':            
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
             rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
-        elif mode in ['rgps','rgps_track','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 36.*36., 44.*44.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.35, 0.35, 0.35 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
         #
     elif irk==80:
         rc_d_ss = 74.75
-        rc_tolQuadA = 16
+        rc_maxDevMeanAreaQuads = 16
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-4, 1.e-4, 1.e-4
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.15, 0.15, 0.15
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 1.e-1, 1.e-1, 1.e-1
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.01
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
-        elif mode in ['rgps','rgps_track','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 72.*72., 88.*88.
-            #rc_div_max, rc_shr_max, rc_tot_max = 0.2, 0.2, 0.2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
         #
     elif irk==160:
         rc_d_ss = 156.
-        rc_tolQuadA = 32
+        rc_maxDevMeanAreaQuads = 32
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 7.5e-2, 7.5e-2, 7.5e-2
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 7.5e-2, 7.5e-2, 7.5e-2, 0.005
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
-        elif mode in ['rgps','rgps_track','rgps_map']:
-            rc_Qarea_min, rc_Qarea_max = 144.*144., 176.*176.
         else:
             rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
         #
     elif irk==320:
         rc_d_ss = 315.6
         rcFracOverlapOK = 0.25
-        rc_tolQuadA = 64
+        rc_maxDevMeanAreaQuads = 64
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 5.e-2, 5.e-2, 5.e-2
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 5.e-2, 5.e-2, 5.e-2, 0.005
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
-        elif mode in ['rgps','rgps_track','rgps_map']:            
-            rc_Qarea_min, rc_Qarea_max = 288.*288., 352.*352
-            #rc_div_max, rc_shr_max, rc_tot_max = 4.5e-2, 4.5e-2, 4.5e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
         #
     elif irk==640:
         rc_d_ss = 636.
-        rc_tolQuadA = 128
+        rc_maxDevMeanAreaQuads = 128
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig = 2.5e-2, 2.5e-2, 2.5e-2
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 2.5e-2, 2.5e-2, 2.5e-2, 0.0025
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
-        elif mode in ['rgps','rgps_track','rgps_map']:            
-            rc_Qarea_min, rc_Qarea_max = 576.*576., 704.*704.
-            #rc_div_max, rc_shr_max, rc_tot_max = 3.e-2, 3.e-2, 3.e-2 ; # day^-1 ; => supresses irrealistically large values
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
         #
@@ -228,8 +208,23 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
     
+    if mode in ['rgps','rgps_track']:
+        from math import log2
+        # scales = np.array([2**i * 10 for i in range(7)])
+        # i      = np.array([ log2(rr/10) for rr in scales ])
+        zdA_exp = 2.2
+        zxp = int(log2(irk/10))
+        zdA_tol = round( zdA_exp**zxp, 1 )
+        rc_maxDevMeanAreaQuads = zdA_tol ; # this is lose 
+        zrk = float(irk)
+        if irk==10:
+            zrk = 10.25
+        ilw, iuw = zrk-zdA_tol , zrk+zdA_tol        
+        rc_Qarea_min, rc_Qarea_max = ilw*ilw, iuw*iuw
+
+    
     if ltalk: print(' *** [updateConfig4Scale](): upper and lower bound for scale "'+str(res_km)+' km":', np.sqrt([rc_Qarea_min, rc_Qarea_max]))
-    if ltalk: print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2')
+    if ltalk: print('                             => rc_Qarea_min, Qarea_Nom, rc_Qarea_max =',rc_Qarea_min, res_km*res_km, rc_Qarea_max,'km^2 (+-',zdA_tol,'km)')
 
     #############################
 

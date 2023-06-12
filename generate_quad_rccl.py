@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     zA_ideal = reskm*reskm ; # ideal Area of quadrangles to build!
     
-    #print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_tolQuadA,'km')
+    #print('\n *** Allowed deviation from '+creskm+' km for the MEAN scale of constructed quads (i.e. `sqrt(mean(Quad_areas))`) = ',cfg.rc_maxDevMeanAreaQuads,'km')
     print('\n *** Max time deviation accepted across vertices of a Quad: `rc_t_dev_cancel` =',cfg.rc_t_dev_cancel,'s')
     print('\n *** Will only retain quadrangles with an area comprised between '
           +str(round(cfg.rc_Qarea_min,1))+' km^2 and '+str(round(cfg.rc_Qarea_max,1))+' km^2, Nominal='+str(zA_ideal)+'km^2')
@@ -239,7 +239,7 @@ if __name__ == '__main__':
                              ppntIDs=QUADS1.PointIDs, QuadMesh=QUADS1.MeshVrtcPntIdx, qIDs=QUADS1.QuadIDs,
                              lGeoCoor=False, zoom=rzoom_fig, rangeX=vrngX, rangeY=vrngY )
 
-    k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
+    k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
         
     #######################################################################################################
 
@@ -289,11 +289,11 @@ if __name__ == '__main__':
     if ifix>0:
         print('WARNING: fixing (updating) QUADS1 !!!')
         QUADS1 = mjt.Quadrangle( xPxy1, xQpnts1, vPids1, vTime1, vQnam1, date=cdats, origin=corigin, reskm_nmnl=reskm )
-        k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
+        k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
         
     QUADS2     = mjt.Quadrangle( xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs=vQIDs2, date=cdats, origin=corigin, reskm_nmnl=reskm )
     print('      => "QUADS2" constructed! :)\n')
-    k2 = mjt.QuadStat( 1, QUADS2, resolkm=reskm, tolArea=cfg.rc_tolQuadA )
+    k2 = mjt.QuadStat( 1, QUADS2, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
     
     del xPxy1, xQpnts1, vPids1, vTime1, vQnam1
     del xPxy2, xQpnts2, vPids2, vTime2, vQnam2, vQIDs2

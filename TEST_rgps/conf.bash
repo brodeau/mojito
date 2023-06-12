@@ -31,18 +31,21 @@ case ${host} in
         # 10km:
         #DT_BINS_H=6 ;  RESKM=10
         #DT_BINS_H=72 ;  RESKM=10
+        DT_BINS_H=72 ;  RESKM=10 ; LIST_RD_SS="5 6 7" ; export USE_S="S"
         #
         # 20km:
         #DT_BINS_H=6 ;  RESKM=20
         #DT_BINS_H=72 ;  RESKM=20
+        #DT_BINS_H=72 ;  RESKM=20 ; LIST_RD_SS="13 15 17" ; export USE_S="S"
         #
         # 40km:
         #DT_BINS_H=6 ; RESKM=40
-        #DT_BINS_H=72 ;  RESKM=40
+        #DT_BINS_H=72 ;  RESKM=40 ; LIST_RD_SS="30 35 40" ; export USE_S="S"
+        #DT_BINS_H=72 ;  RESKM=40 ; LIST_RD_SS="32 35 38" ; export USE_S="S"
         #
         # 80km:
-        #DT_BINS_H=72 ;  RESKM=80
-        DT_BINS_H=72 ;  RESKM=80 ; LIST_RD_SS="70 75 80 85" 
+        ##DT_BINS_H=72 ;  RESKM=80
+        #DT_BINS_H=72 ;  RESKM=80 ; LIST_RD_SS="70 75 80 85" ; export USE_S="S"
         #
         # 160km: in decreasing order of quality:
         #DT_BINS_H=72 ;  RESKM=160 ; LIST_RD_SS="145 155 165" ; export USE_S='' ; #  ok! :D

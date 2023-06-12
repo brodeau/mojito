@@ -21,7 +21,7 @@ from mojito import config as cfg
 from mojito.util import epoch2clock as e2c
 
 idebug=0
-iplot=1 ; NameArcticProj='SmallArctic'
+iplot=0 ; NameArcticProj='SmallArctic'
 zoom=2
 
 lExportNC4Seed = False ; # Triggers the saving of the "mojito" netCDF and npz files that can be used to seed in `sitrack` the
@@ -307,7 +307,7 @@ if __name__ == '__main__':
         cfnm1  = cfnm0+'_'+cdt1+'_'+cr1+str(reskm)+'km'
         cfnm2  = cfnm0+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
 
-        k1 = mjt.QuadStat( 0, QR1, resolkm=reskm, tolArea=cfg.rc_tolQuadA )        
+        k1 = mjt.QuadStat( 0, QR1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )        
         mjt.SaveClassPolygon( './npz/QUADSofDEF_'+cfnm1+'.npz', QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )
 
         makedirs( './nc', exist_ok=True )    
@@ -331,11 +331,11 @@ if __name__ == '__main__':
 
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo, idate=itimeC )
 
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo, idate=itimeC )
 
 
@@ -343,7 +343,7 @@ if __name__ == '__main__':
         cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
 
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig,  zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo, idate=itimeC )
 
 
