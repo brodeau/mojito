@@ -801,7 +801,10 @@ def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., df=None, paxes=[0.
         axCB = pltH.axes( paxes )        
         if field=='div':
             cxtnd = 'both'
-            if not df: df = 0.025
+            if not df:
+                df = 0.025
+            else:
+                df = 0.5*df
         else:
             cxtnd = 'max'
             if not df: df = 0.01
