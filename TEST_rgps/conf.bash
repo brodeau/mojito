@@ -101,12 +101,12 @@ case ${host} in
         #RESKM=80 ; LIST_RD_SS="66 69 72 75 78 81 84 87 90" ; USE_S="S"; #ok
         #
         # 160km: in decreasing order of quality:
-        RESKM=160 ; LIST_RD_SS="144 148 152 156 160 164" ; USE_S="S"
+        #RESKM=160 ; LIST_RD_SS="144 148 152 156 160 164" ; USE_S="S"
         #
         # 320km:
         ##DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="260 270 280 285 290 295 300 305 310   315   320 325 330 335 340 345 350 355 360 370 380"; export USE_S="S"
         ####DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="270 275 280 285 290 295 300 305 310   315   320 325 330 335 340 345 350 355 360"; export USE_S="S"
-        #DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
+        DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
         # => add more at hihger scales????
         #
         # 640km:
