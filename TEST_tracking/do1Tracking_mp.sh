@@ -2,7 +2,6 @@
 
 . ./conf.bash
 
-
 XTRASFX=""
 #XTRASFX="_postQG"
 
