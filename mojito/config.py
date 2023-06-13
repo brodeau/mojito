@@ -114,7 +114,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_Qang_max = 140.
         rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
         #
-        if irk==640:
+        if irk in [320,640]:
             rc_Qang_min =  20. ; # minimum angle tolerable in a quadrangle [degree]
         #
     elif mode in ['rgps_map']:        
