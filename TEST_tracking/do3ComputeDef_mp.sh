@@ -25,7 +25,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     fi
 
     # Populating the batches available:
-    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
+    listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_S???_dt${DT_BINS_H}_199?????t0_199?????${csf}.npz`
 
     echo "${listQ}"
 
@@ -50,7 +50,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         for cbtch in ${list_btch}; do
 
             #  Q-mesh_RGPS_S000_19970104t0_19970104.npz
-            list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz`
+            list=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_199?????t0_199?????${csf}.npz`
             nbf=`echo ${list} | wc -w`
 
             echo " *** Number of files for Batch ${cbtch} with suffix ${csf}.npz = ${nbf}"
@@ -72,7 +72,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             #    echo
 
             if [ "${LIST_RD_SS}" == "" ]; then
-                clst=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????${csf}.npz 2>/dev/null`
+                clst=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_199?????t0_199?????${csf}.npz 2>/dev/null`
                 if [ "${clst}" != "" ]; then
                     lst=( ${clst} )
                     nbf=`echo ${lst[*]} | wc -w`
@@ -92,14 +92,14 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                         wait; echo; echo
                     fi
                 else
-                    echo "WARNING: No files found for: Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${rdss}-${RESKM}km.npz !"
+                    echo "WARNING: No files found for: Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_199?????t0_199?????_${rdss}-${RESKM}km.npz !"
                     echo
                 fi
             else
 
                 for rdss in ${LIST_RD_SS}; do
                     #
-                    clst=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null`
+                    clst=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_199?????t0_199?????_${rdss}-${RESKM}km.npz 2>/dev/null`
                     if [ "${clst}" != "" ]; then
                         lst=( ${clst} )
                         nbf=`echo ${lst[*]} | wc -w`
@@ -121,7 +121,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             fi
                         fi
                     else
-                        echo "WARNING: No files found for: Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_${YEAR}????t0_${YEAR}????_${rdss}-${RESKM}km.npz !"
+                        echo "WARNING: No files found for: Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_${cbtch}_dt${DT_BINS_H}_199?????t0_199?????_${rdss}-${RESKM}km.npz !"
                         echo
                     fi
 
