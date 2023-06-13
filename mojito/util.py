@@ -3,16 +3,19 @@
 #
 ##################################################################
 
-from sys import exit
+from sys import exit, stderr
 #from os import path ; #, mkdir
 import numpy as np
 
 
+def printEE( cmsg ):
+    print('\n * ERROR '+cmsg, file=stderr)
+    exit(0)
+
 def chck4f( cf ):
     from os.path import exists
     if not exists(cf):
-        print(' ERROR [chck4f()]: file '+cf+' does not exist!')
-        exit(0)
+        printEE('[chck4f()]: file '+cf+' does not exist!')
 
 
 def epoch2clock( it, precision='s', frmt='default' ):
@@ -33,8 +36,7 @@ def epoch2clock( it, precision='s', frmt='default' ):
     elif precision=='D':
         ct = dt.fromtimestamp(it, timezone.utc).strftime(frmtdflt+"")
     else:
-        print('ERROR [epoch2clock]: unknown precision "'+precision+'" !')
-        exit(0)
+        printEE('[epoch2clock]: unknown precision "'+precision+'" !')
     return str(ct)
 
 
@@ -54,7 +56,7 @@ def clock2epoch( cdate, precision='s', cfrmt='advanced' ):
     elif cfrmt=='basic':
         it = dt.strptime(cdate, "%Y%m%d_%H:%M:%S").replace(tzinfo=timezone.utc)
     else:
-        print('ERROR [clock2epoch()]: format "'+cfrmt+'" is unknown!'); exit(0)
+        printEE('[clock2epoch()]: format "'+cfrmt+'" is unknown!')
         
     return int(it.timestamp())
 
@@ -314,8 +316,7 @@ def IndXYClones( pXY, rmask_val=-999. ):
     '''
     (_,nc) = np.shape(pXY)
     if (nc !=2 ):
-        print('ERROR [IndXYClones]: second dimmension of pXY must be 2! (coordinates)')
-        exit(0)
+        printEE('[IndXYClones]: second dimmension of pXY must be 2! (coordinates)')
 
     # Row indices that exclude masked points:
     (IXvalid,_) = np.where( pXY != [rmask_val,rmask_val] )
@@ -343,8 +344,7 @@ def GetRidOfXYClones( pXY, rmask_val=-999. ):
     '''
     (_,nc) = np.shape(pXY)
     if (nc !=2 ):
-        print('ERROR [GetRidOfXYClones]: second dimmension of pXY must be 2! (coordinates)')
-        exit(0)
+        printEE('[GetRidOfXYClones]: second dimmension of pXY must be 2! (coordinates)')
 
     # Row indices that select masked points:
     (IXmaskd,_) = np.where( pXY == [rmask_val,rmask_val] )
@@ -367,15 +367,13 @@ def SubSampCloud( rd_km, pCoor,  convArray='F' ):
     '''
     from gudhi import subsampling as sbspl
     #
-    cerr = 'ERROR [util.SubSampCloud()]: '
+    cerr = '[util.SubSampCloud()]: '
     # Sanity check of input:
     if rd_km <= 0. or rd_km > 2000:
-        print(cerr+'silly value for `rd_km`:',rd_km)
-        exit(0)
+        printEE(cerr+'silly value for `rd_km`:',rd_km)
     (Nb0,n2) = np.shape(pCoor)
     if (n2 != 2 ):
-        print(cerr+'second dimmension of `pCoor` must be 2 !')
-        exit(0)
+        printEE(cerr+'second dimmension of `pCoor` must be 2 !')
 
 
     if   convArray=='F':
@@ -383,7 +381,7 @@ def SubSampCloud( rd_km, pCoor,  convArray='F' ):
     elif convArray=='C':
         zXY = np.array( [ pCoor[:,1], pCoor[:,0] ] ).T
     else:
-        print(cerr+'`convArray` can only be "F" or "C"!'); exit(0)
+        printEE(cerr+'`convArray` can only be "F" or "C"!')
         
     zCoor = np.array( sbspl.sparsify_point_set( zXY, min_squared_dist=rd_km*rd_km ) )
     (Nb,_) = np.shape(zCoor)
@@ -420,8 +418,7 @@ def Geo2CartNPSkm1D( pcoorG, lat0=70., lon0=-45. ):
     #
     (_,n2) = np.shape(pcoorG)
     if n2!=2:
-        print(' ERROR [Geo2CartNPSkm1D()]: input array `pcoorG` has a wrong a shape!')
-        exit(0)
+        printEE('[Geo2CartNPSkm1D()]: input array `pcoorG` has a wrong a shape!')
     
     crs_src = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
     crs_trg = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
@@ -440,7 +437,7 @@ def CartNPSkm2Geo1D( pcoorC, lat0=70., lon0=-45.,  convArray='C' ):
     #
     (_,n2) = np.shape(pcoorC)
     if n2!=2:
-        print(' ERROR [CartNPSkm2Geo1D()]: input array `pcoorC` has a wrong a shape!'); exit(0)    
+        printEE('[CartNPSkm2Geo1D()]: input array `pcoorC` has a wrong a shape!')    
     #
     crs_src = NorthPolarStereo(central_longitude=lon0, true_scale_latitude=lat0) ; # that's (lon,lat) to (x,y) RGPS ! (info from Anton)
     crs_trg = PlateCarree() ;                                                   # this geographic coordinates (lat,lon)
@@ -452,7 +449,7 @@ def CartNPSkm2Geo1D( pcoorC, lat0=70., lon0=-45.,  convArray='C' ):
         zGC = np.array( crs_trg.transform_points(crs_src, 1000.*pcoorC[:,0], 1000.*pcoorC[:,1]) )
         zGC = zGC[:,:2] ; # cause 2nd dim is of size 3...
     else:
-        print(' ERROR [CartNPSkm2Geo1D()]: `convArray` can only be "C" or "F"!'); exit(0)
+        printEE('[CartNPSkm2Geo1D()]: `convArray` can only be "C" or "F"!')
     #
     return zGC
 
@@ -515,8 +512,8 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
         print('\n *** In file #'+str(kF)+':')
     #
     if len(np.shape(QD.PointTime))>1:
-        print('ERROR [CheckTimeConsistencyQuads()]: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime))
-        exit(0)
+        printEE('[CheckTimeConsistencyQuads()]: wrong shape for time array of Quad! (should be 1D!) => ',np.shape(QD.PointTime))
+    #
     if iverbose>0: print('     (time_dev_from_mean_allowed =', time_dev_from_mean_allowed/60.,' minutes)' )
     #for zt in QD.PointTime:  print(epoch2clock(zt)); #lolo
     rTmean = np.mean(QD.PointTime)
@@ -528,7 +525,7 @@ def CheckTimeConsistencyQuads( kF, QD, time_dev_from_mean_allowed, iverbose=0 ):
     if iverbose>0: print('     ==> furthest point is '+str(round(zdt,2))+' minutes away from mean!')
     #
     if np.any(zadiff>time_dev_from_mean_allowed):
-        print('ERROR [CheckTimeConsistencyQuads()]: some points read in file #'+str(kF)+' are too far (in time) from mean time!')
+        print('[CheckTimeConsistencyQuads()]: some points read in file #'+str(kF)+' are too far (in time) from mean time!')
         print('                                     => max allowed deviation =',time_dev_from_mean_allowed/3600,'hours')
         (idxFU,) = np.where(zadiff>time_dev_from_mean_allowed)
         dmaxFU = np.max(zadiff[idxFU])
@@ -568,7 +565,8 @@ def CancelTooClose( krec, rdkm, plat, plon, pmsk, NbPass=2, iverbose=0 ):
             if zbmask[jb] == 1:
                 vdist = Haversine( zlat[jb], zlon[jb], zlat, zlon ) ; # estimates of distances (km) with all other buoy at this same time record:
                 #                        
-                if vdist[jb] != 0.: print(' PROBLEM: distance with yourself should be 0!'); exit(0)
+                if vdist[jb] != 0.:
+                    printEE('[CancelTooClose()]: distance with yourself should be 0!')
                 vdist[jb] = 9999.     ; # need to mask itself (distance = 0!)
                 rdmin = np.min(vdist)
                 if iverbose>2: print('    ==> closest neighbor buoy is at '+str(round(rdmin,2))+' km !')

@@ -834,7 +834,7 @@ def QuadStat( kr, QD, resolkm=None, tolArea=None ):
     if resolkm and tolArea:
         zdev = abs(rl_average_scal-resolkm)
         if zdev > tolArea:
-            print(' ERROR [QuadStat()]: the mean scale is too different from the '+cresolkm
+            print(' ERROR [QuadStat()]: the mean scale is too different from the '+str(resolkm)
                   +'km expected!!! (dev.=',round(zdev,2),' tol. = '+str(tolArea)+'km)')
             exit(0)
     #
