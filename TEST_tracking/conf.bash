@@ -9,8 +9,8 @@ SITRCK_DIR="${HOME}/DEV/sitrack"
 NEMO_CONF="NANUK4"
 LIST_NEMO_EXP="BBM2304 EVP2304"
 
-export SI3DATE1="${YEAR}0101"
-export SI3DATE2="${YEAR}0331"
+export SI3DATE1="19961215"
+export SI3DATE2="19970420"
 
 XTRA_SFX_SI3=""
 
@@ -43,7 +43,7 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For scaling
+        LIST_NEMO_EXP="BBM2305" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2304" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For maps
         #
@@ -60,4 +60,3 @@ echo; echo " * MIND: mode = ${MODE} !"; echo
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
 
 mkdir -p ./figs ./npz
-
