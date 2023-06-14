@@ -49,8 +49,8 @@ if __name__ == '__main__':
 
     ####################################################################################################
 
-    kk = cfg.initialize( mode=quality_mode)
-    
+    kk = cfg.initialize( mode=quality_mode )
+ 
     dt_bin_sec =   float(idtbin_h*3600) ; # bin width for time scanning in [s], aka time increment while
     #                                     # scanning for valid etime intervals
     
@@ -147,7 +147,6 @@ if __name__ == '__main__':
             NBinBtch  = 0  ; # number of buoys in the batch
             iBcnl_CR  = 0  ; # counter for buoys excluded because of consecutive records...
             iBcnl_DC  = 0  ; # counter for buoys excluded because of excessive proximity to coastline
-            IDXofStr  = [] ; # keeps memory of buoys that are already been included, but only at the batch level
 
             if Nok >= cfg.nc_min_buoys_in_batch:
 
@@ -162,29 +161,23 @@ if __name__ == '__main__':
 
                     jID = vIDs0[jidx]
 
-                    #lolo:
-                    #if jidx in IDXtakenG:
-                    #    print('WOW! `jidx in IDXtakenG` !!!'); exit(0) ; #fixme
-                    ##if not jidx in IDXtakenG:
-
                     nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, devdtNom=cfg.rc_dev_dt_Nmnl )
-
-                    #lolo:
-                    #if nbRecOK==0:
-                    #    IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
-                    #    #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
 
                     # * nbRecOK : number of valid consecutive records for this buoy
                     # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy, including the present
                     #              `jidx` index at first position !
 
                     if nbRecOK == 2:
-                        # We want the buoy to be located at least `cfg.nc_MinDistFromLand` km off the coast
-                        it1 = idx0VUCR[0]    ; # initial position for the buoy
-                        rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                        if rd_ini > cfg.nc_MinDistFromLand:
-                            IDXofStr.append(idx0VUCR[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
-                            #
+                        #
+                        lOkDC = True
+                        if cfg.lc_cancelShore:
+                            # We want the buoy to be located at least `cfg.nc_MinDistFromLand` km off the coast
+                            it1 = idx0VUCR[0]    ; # initial position for the buoy
+                            rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
+                            lOkDC = ( rd_ini > cfg.nc_MinDistFromLand )
+                            del it1, rd_ini
+                        #
+                        if lOkDC:
                             NBinBtch += 1   ; # this is another valid buoy for this batch
                             Xmsk[ibatch,jb] = 1                ; # flag for valid point
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
@@ -198,14 +191,19 @@ if __name__ == '__main__':
                     #
                     ### if nbRecOK == 2
                 ### for jidx in idxOK
+                
                 if Nok-NBinBtch != iBcnl_CR+iBcnl_DC:
                     print('ERROR: `ok-NBinBtch != iBcnl_CR+iBcnl_DC` !!!',Nok-NBinBtch, iBcnl_CR+iBcnl_DC)
                     exit(0)
                 #
                 print('  *** '+str(Nok-NBinBtch)+' buoys were canceled:')
-                print('         => '+str(iBcnl_CR)+' for not having a reasonable upcomming position in time!')
-                print('         => '+str(iBcnl_DC)+' for being excessively close to land! (d < '
-                      +str(int(cfg.nc_MinDistFromLand))+'km)')
+                print('         => '+str(iBcnl_CR)+' for not having a reasonable upcomming position in time! (criterion = 3h +-'
+                      +str(int(cfg.rc_dev_dt_Nmnl/3600))+' h)')
+                if cfg.lc_cancelShore:
+                    print('         => '+str(iBcnl_DC)+' for being excessively close to land! (d < '
+                          +str(int(cfg.nc_MinDistFromLand))+'km)')
+                else:
+                    print('  *** Distance to coast is not a cause for concern as `lc_cancelShore==False` !')
 
 
                 if NBinBtch >= cfg.nc_min_buoys_in_batch:

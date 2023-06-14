@@ -9,7 +9,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
     echo; echo
 
-    fdiv=`\ls npz/def_DIV_NEMO-SI3_NANUK4_${NEMO_EXP}_dt${DT_BINS_H}_${RESKM}km_${YEAR}????-${YEAR}????.npz`
+    fdiv=`\ls npz/def_DIV_NEMO-SI3_NANUK4_${NEMO_EXP}_dt${DT_BINS_H}_${RESKM}km_199?????-199?????.npz`
 
     nbh=`echo ${fdiv} | wc -w`
     if [ ${nbh} -ne 1 ]; then

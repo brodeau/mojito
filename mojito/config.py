@@ -18,12 +18,13 @@ def initialize( mode='model' ):
     '''
     '''
     from os import environ
-    #
+    #    
     global rc_day2sec, nc_min_buoys_in_batch, nc_forced_batch_length, nc_min_cnsctv, rc_dev_dt_Nmnl, nc_min_buoys_in_batch
+    global data_dir
     global lc_drop_overlap, rc_Dtol_km
-    global rc_Tang_min, rc_Tang_max, rc_Qang_min, rc_Qang_max, rc_dRatio_max
-    global lc_accurate_time
-    global data_dir, fdist2coast_nc, nc_MinDistFromLand
+    global rc_Tang_min, rc_Tang_max
+    global lc_accurate_time    
+    global lc_cancelShore, fdist2coast_nc, nc_MinDistFromLand
     
     lk = controlModeName( 'initialize', mode )
 
@@ -31,12 +32,17 @@ def initialize( mode='model' ):
 
     nc_min_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
 
+    lc_cancelShore      = True
     nc_MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
+    if mode in ['rgps_map']:
+        lc_cancelShore = False
     
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
     nc_min_cnsctv = 2          ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
 
     rc_dev_dt_Nmnl = 6*3600    ; # RGPS: max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
+    if mode in ['xlose']:
+        rc_dev_dt_Nmnl = 24*3600 ; # max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
     
     lc_drop_overlap = False ; # Because this is done in Quad generation...
     rc_Dtol_km = 5. # (if lc_drop_overlap) tolerance distance in km below which we cancel 1 of the 2 buoys! => for both `l_drop_tooclose` & `lc_drop_overlap`
@@ -48,23 +54,6 @@ def initialize( mode='model' ):
     rc_Tang_min =   5. ; # minimum angle tolerable in a triangle [degree]
     rc_Tang_max = 160. ; # maximum angle tolerable in a triangle [degree]
     
-    if mode in ['thorough','model']:
-        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 140.
-        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
-    elif mode in ['rgps','rgps_track']:        
-        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 140.
-        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
-    elif mode in ['rgps_map']:        
-        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 160.
-        rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
-    elif mode in ['xlose']:
-        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
-        rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
-        rc_dRatio_max = 1. ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
-        rc_dev_dt_Nmnl = 24*3600 ; # max. allowed dev. from the nominal `dt0_RGPS` (~ 3 days) between 2 consecutive records of buoy [s]
 
     data_dir = environ.get('DATA_DIR')
     if data_dir==None:
@@ -72,6 +61,13 @@ def initialize( mode='model' ):
 
     fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
 
+
+
+
+
+
+
+    
     return 0
 
 
@@ -83,6 +79,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     import numpy as np
     #
     global ivc_KnownScales, rc_d_ss, rcFracOverlapOK
+    global rc_Qang_min, rc_Qang_max, rc_dRatio_max
     global rc_Qarea_min, rc_Qarea_max, rc_maxDevMeanAreaQuads, rc_t_dev_cancel
     global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
     global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig
@@ -116,6 +113,38 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  1., 1., 1.,0.1
 
 
+
+
+    if mode in ['thorough','model']:
+        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 140.
+        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
+        #
+    elif mode in ['rgps','rgps_track']:        
+        rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 140.
+        rc_dRatio_max = 0.5 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
+        #
+        if irk in [640]:
+            rc_Qang_min =  20. ; # minimum angle tolerable in a quadrangle [degree]
+        #
+    elif mode in ['rgps_map']:        
+        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 160.
+        rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
+    elif mode in ['xlose']:
+        rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
+        rc_dRatio_max = 1. ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
+
+
+
+
+
+
+
+
+    
     if mode=='rgps_map' and irk>10:
         print('ERROR [updateConfig4Scale]: "mode=rgps_map" is only meant to be used at 10km !!!')
         exit(0)
@@ -200,10 +229,11 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==640:
         rc_d_ss = 636.
+        rcFracOverlapOK = 0.4
         rc_maxDevMeanAreaQuads = 128
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 2.5e-2, 2.5e-2, 2.5e-2, 0.002
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 2.5e-2, 2.5e-2, 2.5e-2, 0.01
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
         else:
@@ -245,26 +275,18 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     rc_t_dev_cancel = 60
 
     if mode in ['rgps','rgps_track','rgps_map']:
-
-        #if res_km < 18:
-        #    rc_t_dev_cancel = 60
-        #else:
-        #    rc_t_dev_cancel = 3*24*3600
-            
-        if 1==1:
-            if   res_km>=15. and res_km<35.:
-                rc_t_dev_cancel =  600
-            elif   res_km>=35. and res_km<45.:
-                rc_t_dev_cancel =  1200
-                #
-            elif   res_km>=70. and res_km<150.:
-                rc_t_dev_cancel =  3600 ; #ok
-            elif res_km>=150. and res_km<300.:
-                rc_t_dev_cancel =  9*3600  ; #ok
-            elif res_km>=300. and res_km<600.:
-                rc_t_dev_cancel =  18*3600 ; #ok
-            elif res_km>=600.:
-                rc_t_dev_cancel = 48*3600 ; #???
+        if   res_km>=15. and res_km<35.:
+            rc_t_dev_cancel =  600
+        elif   res_km>=35. and res_km<45.:
+            rc_t_dev_cancel =  1200
+        elif   res_km>=70. and res_km<150.:
+            rc_t_dev_cancel =  3600 ; #ok
+        elif res_km>=150. and res_km<300.:
+            rc_t_dev_cancel =  9*3600  ; #ok
+        elif res_km>=300. and res_km<600.:
+            rc_t_dev_cancel =  18*3600 ; #ok
+        elif res_km>=600.:
+            rc_t_dev_cancel = 24*3600 ; #ok...
                 
     if rc_t_dev_cancel > 60:
         if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')

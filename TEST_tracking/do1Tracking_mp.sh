@@ -2,7 +2,6 @@
 
 . ./conf.bash
 
-
 XTRASFX=""
 #XTRASFX="_postQG"
 
@@ -25,15 +24,15 @@ echo " cxtraRES = ${cxtraRES}"
 
 if [ "${ISEED_BASE}" = "selection" ]; then
     echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
-    list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+    list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/SELECTION_RGPS_S???_dt${DT_BINS_H}_199?????h??_199?????h??${cxtraRES}${XTRASFX}.nc`
 
 elif [ "${ISEED_BASE}" = "quads" ]; then
     echo " * Will get RGPS seeding info in: ./nc for RESKM = ${RESKM}"
-    list_seed_nc=`\ls ./nc/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
+    list_seed_nc=`\ls ./nc/Q-mesh_RGPS_S???_dt${DT_BINS_H}_199?????h??_199?????h??${cxtraRES}${XTRASFX}.nc`
 
 elif [ "${ISEED_BASE}" = "defs" ]; then
     echo " * Will get RGPS seeding info in: ${DIRIN_PREPARED_RGPS}/nc for RESKM = ${RESKM}"
-    list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_S???_dt${DT_BINS_H}_${YEAR}????_${YEAR}????${cxtraRES}${XTRASFX}.nc`
+    list_seed_nc=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_S???_dt${DT_BINS_H}_199?????_199?????${cxtraRES}${XTRASFX}.nc`
 
 else
     echo " Unknown value for ISEED_BASE: ${ISEED_BASE}"
@@ -64,7 +63,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         if [ "`echo ${SB} | cut -c1-1`" != "S" ]; then
             echo " ERROR: SB does not seem to get the batch string!"; exit
         fi
-        lfb=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_${YEAR}*_${YEAR}*${RESKM}km${XTRASFX}.nc`
+        lfb=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_199?*_199?*${RESKM}km${XTRASFX}.nc`
         nfb=`echo ${lfb} | wc -w`
         echo "      ==> batch is: ${SB}, the ${nfb} files to use:"        
         for fx in ${lfb}; do echo "   -- ${fx}"; done
@@ -87,7 +86,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             
             for rdss in ${LIST_RD_SS}; do
                 if [ "${ISEED_BASE}" = "defs" ]; then
-                    fnd=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_${YEAR}????_${YEAR}????_${rdss}-${RESKM}km${XTRASFX}.nc 2>/dev/null`
+                    fnd=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_199?????_199?????_${rdss}-${RESKM}km${XTRASFX}.nc 2>/dev/null`
                     if [ `echo ${fnd} | wc -w` -gt 1 ]; then echo "ERROR: more than 1 candidate for fnd !!!"; echo "  ==> ${fnd}"; exit; fi
                 else
                     fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`

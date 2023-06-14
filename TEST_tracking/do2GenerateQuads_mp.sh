@@ -22,9 +22,9 @@ ijob=0
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
     # Populating nc files we can use:
-    echo "LOLO: nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc"
+    echo "LOLO: nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_S???_dt${DT_BINS_H}_199[67]????h??_199[67]????h??${cxtraRES}.nc"
     #exit
-    list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}.nc`
+    list_nc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_S???_dt${DT_BINS_H}_199[67]????h??_199[67]????h??${cxtraRES}.nc`
     nbf=`echo ${list_nc} | wc -w`
     echo " => ${nbf} nc files => ${nbf} batches!"
 
@@ -33,7 +33,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         EXE=${EXE2}
         # Populating npz files to get Quads identification from:
         if [ "${ISEED_BASE}" = "quads" ]; then
-            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${cxtraRES}${XTRASFX}.npz`
+            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_199[67]????-??h??t0_199[67]????-??h??${cxtraRES}${XTRASFX}.npz`
             # need to keep only the first occurence of each:
             lnew="" ; icpt=0
             for ff in ${list_seed_qnpz}; do
@@ -43,7 +43,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             list_seed_qnpz=${lnew}
 
         elif [ "${ISEED_BASE}" = "defs" ]; then
-            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/QUADSofDEF_RGPS_S???_dt${DT_BINS_H}_${YEAR}????${cxtraRES}${XTRASFX}.npz`
+            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/QUADSofDEF_RGPS_S???_dt${DT_BINS_H}_199[67]????${cxtraRES}${XTRASFX}.npz`
         fi
         #
         nbq=`echo ${list_seed_qnpz} | wc -w`
@@ -101,8 +101,8 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
             for rdss in ${LIST_RD_SS}; do
                 #
                 if [ "${ISEED_BASE}" = "defs" ]; then
-                    fnc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_${SB}_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??_${rdss}-${RESKM}km.nc 2>/dev/null`
-                    fnp=`\ls ${DIRIN_PREPARED_RGPS}/npz/QUADSofDEF_RGPS_${SB}_dt${DT_BINS_H}_${YEAR}????_${rdss}-${RESKM}km.npz 2>/dev/null`
+                    fnc=`\ls nc/NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_tracking12_${SB}_dt${DT_BINS_H}_199[67]????h??_199[67]????h??_${rdss}-${RESKM}km.nc 2>/dev/null`
+                    fnp=`\ls ${DIRIN_PREPARED_RGPS}/npz/QUADSofDEF_RGPS_${SB}_dt${DT_BINS_H}_199[67]????_${rdss}-${RESKM}km.npz 2>/dev/null`
                 else
                     fnc=`echo ${ff} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
                     fnp=`echo ${fnpz} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
