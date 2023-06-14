@@ -1487,7 +1487,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
     #
     if lAddCloud:
-        if Naxis>=0:
+        if Naxis:
             jo = Naxis
             plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
                         color=vcolor[jo], label=None, alpha=0.25, zorder=5 )
@@ -1501,7 +1501,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
             ax.annotate( str(vNbPoints[js,jo]) , xy=(pscales[js,0],(1.-jo*0.2)*1.5*ylog_min), ha='center', xycoords='data', **cflabN )
     #
-    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+    plt.savefig(cfig, dpi=300, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [plot3ScalingDef()]: created figure '+cfig)
 
