@@ -198,7 +198,7 @@ if __name__ == '__main__':
                 #
                 print('  *** '+str(Nok-NBinBtch)+' buoys were canceled:')
                 print('         => '+str(iBcnl_CR)+' for not having a reasonable upcomming position in time! (criterion = 3h +-'
-                      +str(rc_dev_dt_Nmnl/3600)+' h)')
+                      +str(int(cfg.rc_dev_dt_Nmnl/3600))+' h)')
                 if cfg.lc_cancelShore:
                     print('         => '+str(iBcnl_DC)+' for being excessively close to land! (d < '
                           +str(int(cfg.nc_MinDistFromLand))+'km)')
