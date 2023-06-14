@@ -100,7 +100,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     
     # Extremas for deformations, in [day^-1]:
     rc_div_max, rc_shr_max, rc_tot_max = 1., 1., 1.
-    if mode in ['rgps']:
+    if mode in ['rgps','rgps_track']:
         rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5    ; # # Because noisy at tiny deformation!!! Based on scatter plot of scaling        
     else:
         rc_div_min, rc_shr_min, rc_tot_min = 1.e-15, 1.e-15, 1.e-15 ; # for deformation generation
@@ -181,6 +181,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==40:
         rc_d_ss = 34.5
+        rcFracOverlapOK = 0.05
         rc_maxDevMeanAreaQuads = 8
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 5.e-4, 5.e-4, 5.e-4
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
