@@ -147,7 +147,6 @@ if __name__ == '__main__':
             NBinBtch  = 0  ; # number of buoys in the batch
             iBcnl_CR  = 0  ; # counter for buoys excluded because of consecutive records...
             iBcnl_DC  = 0  ; # counter for buoys excluded because of excessive proximity to coastline
-            #IDXofStr  = [] ; # keeps memory of buoys that are already been included, but only at the batch level
 
             if Nok >= cfg.nc_min_buoys_in_batch:
 
@@ -209,8 +208,11 @@ if __name__ == '__main__':
                 #
                 print('  *** '+str(Nok-NBinBtch)+' buoys were canceled:')
                 print('         => '+str(iBcnl_CR)+' for not having a reasonable upcomming position in time!')
-                print('         => '+str(iBcnl_DC)+' for being excessively close to land! (d < '
-                      +str(int(cfg.nc_MinDistFromLand))+'km)')
+                if cfg.lc_cancelShore:
+                    print('         => '+str(iBcnl_DC)+' for being excessively close to land! (d < '
+                          +str(int(cfg.nc_MinDistFromLand))+'km)')
+                else:
+                    print('  *** Distance to coast is not a cause for concern as `lc_cancelShore==False` !')
 
 
                 if NBinBtch >= cfg.nc_min_buoys_in_batch:
