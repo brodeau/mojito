@@ -88,13 +88,13 @@ case ${host} in
         #
         # 10km:
         #DT_BINS_H=6 ;  RESKM=10
-        #DT_BINS_H=72 ;  RESKM=10; LIST_RD_SS="5 6 7" ; USE_S="S"
+        RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
         #
         # 20km:
-        #RESKM=20 ; LIST_RD_SS="14 15 16" ; USE_S="S"
+        #RESKM=20 ; LIST_RD_SS="13 14 15 16 17" ; USE_S="S"
         #
         # 40km:
-        #RESKM=40 ; LIST_RD_SS="31 33 35 37 39" ; USE_S="S"
+        #RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
         #
         # 80km:
         #RESKM=80 ; LIST_RD_SS="66 69 72 75 78 81 84" ; USE_S="S"; #ok
@@ -106,7 +106,7 @@ case ${host} in
         # 320km:
         ##DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="260 270 280 285 290 295 300 305 310   315   320 325 330 335 340 345 350 355 360 370 380"; export USE_S="S"
         ####DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="270 275 280 285 290 295 300 305 310   315   320 325 330 335 340 345 350 355 360"; export USE_S="S"
-        DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
+        #DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
         # => add more at hihger scales????
         #
         # 640km:
