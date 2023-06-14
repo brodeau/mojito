@@ -264,26 +264,18 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     rc_t_dev_cancel = 60
 
     if mode in ['rgps','rgps_track','rgps_map']:
-
-        #if res_km < 18:
-        #    rc_t_dev_cancel = 60
-        #else:
-        #    rc_t_dev_cancel = 3*24*3600
-            
-        if 1==1:
-            if   res_km>=15. and res_km<35.:
-                rc_t_dev_cancel =  600
-            elif   res_km>=35. and res_km<45.:
-                rc_t_dev_cancel =  1200
-                #
-            elif   res_km>=70. and res_km<150.:
-                rc_t_dev_cancel =  3600 ; #ok
-            elif res_km>=150. and res_km<300.:
-                rc_t_dev_cancel =  9*3600  ; #ok
-            elif res_km>=300. and res_km<600.:
-                rc_t_dev_cancel =  18*3600 ; #ok
-            elif res_km>=600.:
-                rc_t_dev_cancel = 24*3600 ; #ok...
+        if   res_km>=15. and res_km<35.:
+            rc_t_dev_cancel =  600
+        elif   res_km>=35. and res_km<45.:
+            rc_t_dev_cancel =  1200
+        elif   res_km>=70. and res_km<150.:
+            rc_t_dev_cancel =  3600 ; #ok
+        elif res_km>=150. and res_km<300.:
+            rc_t_dev_cancel =  9*3600  ; #ok
+        elif res_km>=300. and res_km<600.:
+            rc_t_dev_cancel =  18*3600 ; #ok
+        elif res_km>=600.:
+            rc_t_dev_cancel = 24*3600 ; #ok...
                 
     if rc_t_dev_cancel > 60:
         if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
