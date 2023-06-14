@@ -178,7 +178,7 @@ if __name__ == '__main__':
                     # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy, including the present
                     #              `jidx` index at first position !
 
-                    if nbRecOK == 2:
+                    if mjt.lc_cancelShore and nbRecOK == 2:
                         # We want the buoy to be located at least `cfg.nc_MinDistFromLand` km off the coast
                         it1 = idx0VUCR[0]    ; # initial position for the buoy
                         rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )

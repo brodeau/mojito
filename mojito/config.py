@@ -18,12 +18,13 @@ def initialize( mode='model' ):
     '''
     '''
     from os import environ
-    #
+    #    
     global rc_day2sec, nc_min_buoys_in_batch, nc_forced_batch_length, nc_min_cnsctv, rc_dev_dt_Nmnl, nc_min_buoys_in_batch
+    global data_dir
     global lc_drop_overlap, rc_Dtol_km
     global rc_Tang_min, rc_Tang_max
-    global lc_accurate_time
-    global data_dir, fdist2coast_nc, nc_MinDistFromLand
+    global lc_accurate_time    
+    global lc_cancelShore, fdist2coast_nc, nc_MinDistFromLand
     
     lk = controlModeName( 'initialize', mode )
 
@@ -31,7 +32,10 @@ def initialize( mode='model' ):
 
     nc_min_buoys_in_batch = 10 ; # minimum number of buoys for considering a batch a batch!
 
+    lc_cancelShore      = True
     nc_MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
+    if mode in ['rgps_map']:
+        lc_cancelShore = False
     
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
     nc_min_cnsctv = 2          ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    
@@ -57,6 +61,13 @@ def initialize( mode='model' ):
 
     fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
 
+
+
+
+
+
+
+    
     return 0
 
 
