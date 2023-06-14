@@ -161,17 +161,7 @@ if __name__ == '__main__':
 
                     jID = vIDs0[jidx]
 
-                    #lolo:
-                    #if jidx in IDXtakenG:
-                    #    print('WOW! `jidx in IDXtakenG` !!!'); exit(0) ; #fixme
-                    ##if not jidx in IDXtakenG:
-
                     nbRecOK, idx0VUCR = mjt.ValidUpComingRecord( rTa, jidx, vtime0, vIDs0, devdtNom=cfg.rc_dev_dt_Nmnl )
-
-                    #lolo:
-                    #if nbRecOK==0:
-                    #    IDXtakenG.append(jidx) ; # cancel jidx, it's the position of a mono-record buoy
-                    #    #fixme: we should cancel this buoy GLOBALLY when nbRecOK==0, it's a mono-record buoy in the whole period of interest
 
                     # * nbRecOK : number of valid consecutive records for this buoy
                     # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy, including the present
