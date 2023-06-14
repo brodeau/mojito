@@ -147,7 +147,7 @@ if __name__ == '__main__':
             NBinBtch  = 0  ; # number of buoys in the batch
             iBcnl_CR  = 0  ; # counter for buoys excluded because of consecutive records...
             iBcnl_DC  = 0  ; # counter for buoys excluded because of excessive proximity to coastline
-            IDXofStr  = [] ; # keeps memory of buoys that are already been included, but only at the batch level
+            #IDXofStr  = [] ; # keeps memory of buoys that are already been included, but only at the batch level
 
             if Nok >= cfg.nc_min_buoys_in_batch:
 
@@ -178,13 +178,17 @@ if __name__ == '__main__':
                     # * idx0VUCR : array of location indices (in the raw data arrays) for these valid records of this buoy, including the present
                     #              `jidx` index at first position !
 
-                    if cfg.lc_cancelShore and nbRecOK == 2:
-                        # We want the buoy to be located at least `cfg.nc_MinDistFromLand` km off the coast
-                        it1 = idx0VUCR[0]    ; # initial position for the buoy
-                        rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
-                        if rd_ini > cfg.nc_MinDistFromLand:
-                            IDXofStr.append(idx0VUCR[0]) ; # store point not to be used again. 0 because the 2nd record can be re-used!
-                            #
+                    if nbRecOK == 2:
+                        #
+                        lOkDC = True
+                        if cfg.lc_cancelShore:
+                            # We want the buoy to be located at least `cfg.nc_MinDistFromLand` km off the coast
+                            it1 = idx0VUCR[0]    ; # initial position for the buoy
+                            rd_ini = mjt.Dist2Coast( vlon0[it1], vlat0[it1], vlon_dist, vlat_dist, xdist )
+                            lOkDC = ( rd_ini > cfg.nc_MinDistFromLand )
+                            del it1, rd_ini
+                        #
+                        if lOkDC:
                             NBinBtch += 1   ; # this is another valid buoy for this batch
                             Xmsk[ibatch,jb] = 1                ; # flag for valid point
                             XIDs[ibatch,jb] = jID              ; # keeps memory of select buoy
@@ -198,6 +202,7 @@ if __name__ == '__main__':
                     #
                     ### if nbRecOK == 2
                 ### for jidx in idxOK
+                
                 if Nok-NBinBtch != iBcnl_CR+iBcnl_DC:
                     print('ERROR: `ok-NBinBtch != iBcnl_CR+iBcnl_DC` !!!',Nok-NBinBtch, iBcnl_CR+iBcnl_DC)
                     exit(0)
