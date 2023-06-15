@@ -51,9 +51,14 @@ clPNames = 'w' ; # color for city/point annotations
 
 vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
-vlwdth = [ 8  ,   5    ,    4   ,    4   ,  4  ]
+vlwdth = [ 9  ,   6    ,    6   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
-vfills = [ 'none','full','none','none','none']
+#
+vmrk   = ['o','s','*','s','d']
+vmrksz = [12,12,14,12,12]
+vmrkfs = ['none','none','full','none','none']
+
+
 
 def FigInitStyle( fntzoom=1., color_top='k' ):
     #
@@ -884,7 +889,7 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
         # => triggers the colorbar
         kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.025, 0.85, 0.29, 0.018], cunit=unit )
 
-    ax.annotate('N. cells = '+str(nQ), xy=(LocTitle[0],LocTitle[1]-0.2), xycoords='figure fraction', **cfont_mrkr);#lili
+    ax.annotate('N. cells = '+str(nQ), xy=(LocTitle[0],LocTitle[1]-0.2), xycoords='figure fraction', **cfont_mrkr)
         
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
@@ -1185,7 +1190,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if reskm>30:
         lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
 
-    ki = FigInitStyle()
+    ki = FigInitStyle( fntzoom=2 )
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
@@ -1195,25 +1200,33 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     clbl = origin
     if Np and origin:
         clbl = origin+' (N = '+str(Np)+')'
-
-    plt.loglog(pbinc[:], ppdf[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label=clbl, zorder=5)
+    #lili
+    jo = 0
+    plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
+               linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
 
     if l_comp2:
-        clbl = origin2
+        jo = 1
+        #clbl = origin2
         if Np2 and origin2:
             origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
             clbl = origin2+' (N = '+str(Np2)+')'
         if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-        plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=clbl, zorder=10)
+        #
+        plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
+                   linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-
+        
     if l_comp3:
+        jo=2
         clbl = origin3
         if Np3 and origin3:
             origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
             clbl = origin3+' (N = '+str(Np3)+')'
         if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
+        #
+        plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
+                   linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
@@ -1319,7 +1332,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pF[:,jo], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+        plt.loglog( pscales[:,jo], pF[:,jo], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                     color=vcolor[jo], label=pcOrig[jo], zorder=5 )
 
 
@@ -1330,7 +1343,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
         (idxKeep,) = np.where(pscales[:,jo]<300)
         [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
         
-        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle='none',
+        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle=vmrkfs[jo],
                     color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
         
         
@@ -1416,11 +1429,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if lAddPowerLawFit:
             zlw = 0             # 
             cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=pcOrig[jo]+cxtralab, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
         
     # Add power-law to points:
@@ -1428,10 +1441,10 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         for jo in range(No):
             for jq in range(3):
                 #[zA,zE] = zAB[:,jo,jq]
-                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                 #            color=vcolor[jo], label=None, zorder=5 )
                 [zA,zB] = zAB[:,jo,jq]
-                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                             color=vcolor[jo], label=None, zorder=5 )
         
     #X-axis:
@@ -1474,7 +1487,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=12, linestyle='-', linewidth=vlwdth[jo], fillstyle='none',
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=vmrksz[jo], linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                     color=vcolor[jo], label=None, zorder=50 )
                     #color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
@@ -1489,11 +1502,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     if lAddCloud:
         if Naxis:
             jo = Naxis
-            plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+            plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle=vmrkfs[jo],
                         color=vcolor[jo], label=None, alpha=0.25, zorder=5 )
         else:
             for jo in range(No):
-                plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle='none',
+                plt.loglog( pXS[:,:,jo], pXQ[:,:,jo,0], 'o', markersize=1, linestyle='none', fillstyle=vmrkfs[jo],
                             color=vcolor[jo], label=None, alpha=0.25, zorder=5 )
 
     for js in range(Ns):
@@ -1525,7 +1538,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             zzx = np.arange(0,4.,0.001)
             #
             plt.plot( zx, zy, 'o', label=pcOrig[jo]+', a = '+str(round(zA,2)), color=vcolor[jo], linewidth=vlwdth[jo],
-                      markersize=9, fillstyle=vfills[jo], markeredgewidth=vlwdth[jo] )
+                      markersize=9, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo] )
             #plt.plot( zzx, zA*zzx*zzx, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
             plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
 

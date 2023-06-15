@@ -149,11 +149,21 @@ if __name__ == '__main__':
     elif l3files:
 
         cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cperiod+cfxtraScl
+
+
+        # subsitutions for name for paper:
+        corig2 = str.replace( corig2, '2305', '')
+        corig3 = str.replace( corig3, '2305', '')
+
         
-        # Only log-log !
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
+        # Only log-log with N:
+        #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
+        #                    title=cName+': '+cscale, period=cperiod, origin=corig,
+        #                    ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
+        # Without `N`:
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
                             title=cName+': '+cscale, period=cperiod, origin=corig,
-                            ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
+                            ppdf2=PDF2,  origin2=corig2, ppdf3=PDF3,  origin3=corig3 )
     
     else:
         # log-log and histogram:
