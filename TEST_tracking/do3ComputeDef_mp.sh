@@ -136,11 +136,20 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     fi ; # if [ "$1" != "2" ]
 
 
-    wait
+done
 
-    
-    if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
-        
+wait
+
+
+
+
+if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
+
+    for NEMO_EXP in ${LIST_NEMO_EXP}; do
+        echo; echo
+
+
+
         for cbtch in ${list_btch}; do
 
 
@@ -161,8 +170,10 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         done
 
 
-    fi
 
 
-done
-wait
+
+    done
+    wait
+
+fi
