@@ -35,7 +35,7 @@ def initialize( mode='model' ):
     lc_cancelShore      = True
     nc_MinDistFromLand  = 100. ; # how far from the nearest coast should our buoys be? [km]
     if mode in ['rgps_map']:
-        lc_cancelShore = False
+        nc_MinDistFromLand  = 50. ; # how far from the nearest coast should our buoys be? [km]
     
     nc_forced_batch_length = 2 ; # enforce the length of a batch (each batch will have a maximum of `nc_forced_batch_length` records)
     nc_min_cnsctv = 2          ; # minimum number of consecutive buoy positions to store (>=2, because we need to do a d/dt)    

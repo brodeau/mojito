@@ -133,9 +133,11 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
 
         done
 
-
-
     fi ; # if [ "$1" != "2" ]
+
+
+    wait
+
     
     if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
         

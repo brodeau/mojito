@@ -137,6 +137,7 @@ if [ "$1" != "2" ]; then
 
 fi ; # if [ "$1" != "2" ]
 
+wait
 
 
 if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
