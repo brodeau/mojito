@@ -933,15 +933,26 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     zlat3, zlon3 = ConvertCartesianNPSkm2Geo( p4Y3, p4X3 )
 
     # Colormap:
+
+    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip=False)
+
+    if   cwhat=='div':
+        cm = plt.cm.get_cmap('RdBu_r')
     if   cwhat=='shr':
-        cm = plt.cm.get_cmap('plasma_r')
+        #cm = plt.cm.get_cmap('plasma_r')
+        cm = plt.cm.get_cmap('inferno')
+        #cn = colors.PowerNorm(gamma=2.5, vmin=pFmin, vmax=pFmax, clip=False)
+        cn = colors.PowerNorm(gamma=0.6, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma<1 => compresses high values
     elif   cwhat=='tot':
         cm = plt.cm.get_cmap('viridis')
+        #cn = colors.PowerNorm(gamma=2.5, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma>1 => compresses small values
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
         cm = plt.cm.get_cmap('RdBu_r')
-    cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
+        
+    #
+    
     
     _, NP = _SelectArcticProjExtent_( nmproj )
 
@@ -996,7 +1007,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
         kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.2, 0.09, 0.6, 0.03], cunit=unit )
         
     print('     ===> saving figure: '+cfig)
-    plt.savefig(cfig)
+    plt.savefig(cfig, dpi=300)
     plt.close(1)
     return 0
 

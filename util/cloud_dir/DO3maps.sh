@@ -4,35 +4,34 @@
 
 EXE="${MOJITO_DIR}/diags/plot_map_def.py"
 
-dir_in="npz_rgps_map"
+dir_in="npz_maps"
 
 
 VEXPS=( `echo ${EXPS} | sed -e s/','/' '/g` )
-
+vexps=( ${VEXPS[*],,} ) ; # same in lower case
 echo ${VEXPS[*]}
 
 NO=`echo ${VEXPS[*]} | wc -w`
 echo ${NO}
         
+LEXPS=""
+ji=0
+while [ ${ji} -lt ${NO} ]; do
 
-fbbm=""
-fevp=""
+    echo ${ji}
 
-frgps=`\ls ${dir_in}/rgps/DEFORMATIONS_RGPS_S003_dt120_1997*_10km.npz 2>/dev/null`
-LEXPS="${frgps} "
-if [ ${NO} -ge 2 ]; then
-    fbbm=`\ls ${dir_in}/bbm2302/DEFORMATIONS_NEMO-SI3_NANUK4_${VEXPS[1]}_S003_dt120_1997*_10km.npz 2>/dev/null`
-    LEXPS+="${fbbm} "
-fi
-if [ ${NO} -ge 3 ]; then
-    fevp=`\ls ${dir_in}/evp2302/DEFORMATIONS_NEMO-SI3_NANUK4_${VEXPS[2]}_S003_dt120_1997*_10km.npz 2>/dev/null`
-    LEXPS+="${fevp}"
-fi
+    ff=`\ls  ${dir_in}/${vexps[${ji}]}/DEFORMATIONS_*${VEXPS[${ji}]}*_S003_dt120_????????_SLCT10km.npz`
+    echo ${ff}
+    LEXPS+="${ff} "
+    echo
+    
 
+    ji=$((ji+1))
+done
 
 echo " LEXPS = ${LEXPS} "; echo
 
-for cf in "shear" "divergence" "total"; do
+for cf in "shear" "total" "divergence"; do
 
     CMD="${EXE} ${cf} ${LEXPS}"
     
@@ -44,4 +43,4 @@ for cf in "shear" "divergence" "total"; do
 
 done
 
-rsync -avP figs/maps/map_*.png ~/Nextcloud/Laurent/Work/2023/paper_bbmsi3/Maps/
+rsync -avP figs/maps/map_*.png ${DIR_EXPORT_CLOUD}/Maps/
