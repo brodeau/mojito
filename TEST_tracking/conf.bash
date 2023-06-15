@@ -51,7 +51,8 @@ case ${host} in
     "jackzilla")
         export DATA_DIR="/data1/nobackup/laurent"
         #
-        LIST_NEMO_EXP="BBM2305" ; ISEED_BASE='defs' ; # For scaling
+        LIST_NEMO_EXP="EVP2305" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="BBM2305" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2304" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For maps
         #
