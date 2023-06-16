@@ -289,8 +289,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         elif res_km>=150. and res_km<300.:
             rc_t_dev_cancel =  3*3600
         elif res_km>=300. and res_km<600.:
-            #rc_t_dev_cancel =  6*3600 ; #ok!
-            rc_t_dev_cancel =  18*3600 ; #???
+            #rc_t_dev_cancel =  6*3600
+            rc_t_dev_cancel =  18*3600 ; #ok!
         elif res_km>=600.:
             rc_t_dev_cancel = 12*3600 ; #???
             #rc_t_dev_cancel = 24*3600 ; #ok...
