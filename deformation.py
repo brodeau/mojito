@@ -73,8 +73,7 @@ if __name__ == '__main__':
 
     reskm, reskm2 = QUA1.reskm_nmnl, QUA2.reskm_nmnl
     if reskm != reskm2:
-        print('ERROR: quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
-        exit(0)
+        mjt.printEE('quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)        
     print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
 
 
@@ -102,7 +101,7 @@ if __name__ == '__main__':
         cbatch =  split('_',cf1)[-5]
         cdtbin = '_'+split('_',cf1)[-4]
     if not cdtbin[1:3] in ['dt','No']:
-        print('ERROR: we could not figure out `cdtbin`!'); exit
+        mjt.printEE('we could not figure out `cdtbin`!')
 
 
     # Test for coarsening realisations:
@@ -111,7 +110,7 @@ if __name__ == '__main__':
     if len(cc1)==2: cr1 = cc1[0]+'-'
     if len(cc2)==2: cr2 = cc2[0]+'-'
     if cr1!='' and cr1!=cr2:
-        print('ERROR: with the realisation coarsening res:',cr1,cr2); exit(0)
+        mjt.printEE('with the realisation coarsening res:',cr1,cr2)
     else:
         print('     => realisation with `rd_ss` =',cc1[0],'km !!!')
 
@@ -144,8 +143,8 @@ if __name__ == '__main__':
         znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
         nQ2 = len(znm)
         if nQ!=nQ2 or np.sum(zidx1-idxK1)!=0 or np.sum(zidx2-idxK2)!=0:
-            print('ERROR: we do not get the same info based on Quad names and Quad Ids !!!')
-            exit(0)
+            mjt.printEE('we do not get the same info based on Quad names and Quad Ids !!!')
+        #
     print('       => there are '+str(nQ)+' Quads common to the 2 records!\n')
 
 
@@ -154,9 +153,8 @@ if __name__ == '__main__':
     zTime2 = QUA2.MeshVrtcPntTime()[idxK2,:]
     zdT = zTime2-zTime1
     if np.any(zdT==0.):
-        print('\n [ERROR]: time for some buoys is the same in the 2 records!')
+        mjt.printEE('time for some buoys is the same in the 2 records!')
         # => this should be fixed at the quad generation level!!! No here!!!
-        sys.exit(0)
     del zTime1, zTime2, zdT
 
 
@@ -220,9 +218,9 @@ if __name__ == '__main__':
 
     (nD,) = np.shape(zdiv)
     if  nQ != nD:
-        print('ERROR: `Q != nD` !!!'); exit(0)
+        mjt.printEE('`Q != nD` !!!')
     if  np.shape(zshr2) != (nD,):
-        print('ERROR: `np.shape(zdiv) != np.shape(zshr2)` !!!'); exit(0)
+        mjt.printEE('`np.shape(zdiv) != np.shape(zshr2)` !!!')
 
     # Maximum Shear Strain Rate aka SigmaII:
     zshr = np.zeros(nD)
@@ -284,12 +282,12 @@ if __name__ == '__main__':
         # Last-man standing quad indices:
         idxQ1, idxQ2 = idxK1[idxKeep], idxK2[idxKeep]
         if np.shape(idxQ1)!=(nD,) or np.shape(idxQ2)!=(nD,):
-            print('ERROR: fuck-up #1'); exit(0)
+            mjt.printEE('fuck-up #1')
 
         zPXY1, zPids1, zTime1, zQpnts1, zQnam1, _ = mjt.KeepSpcfdQuads( idxQ1, QUA1.PointXY, QUA1.PointIDs, QUA1.PointTime, QUA1.MeshVrtcPntIdx, QUA1.QuadNames )
         zPXY2, zPids2, zTime2, zQpnts2, zQnam2, _ = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
         if any(zPids2-zPids1!=0):
-            print('ERROR: fuck-up #2'); exit(0)
+            mjt.printEE('fuck-up #2')
         
         QR1 = mjt.Quadrangle( zPXY1, zQpnts1, zPids1, zTime1, zQnam1, origin='RGPS', reskm_nmnl=reskm )
         if idebug>0 and iplot>0:

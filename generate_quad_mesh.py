@@ -83,8 +83,8 @@ if __name__ == '__main__':
     vcrec = split(',',lstrec)
     Nrec  = len(vcrec)
     if Nrec!=2:
-        print('ERROR: we expect only 2 records!!! Nrec =',Nrec)
-        exit(0)    
+        mjt.printEE('we expect only 2 records!!! Nrec =',Nrec)
+    
     vRec = np.array( [ int(vcrec[i]) for i in range(Nrec) ], dtype=int )
     del vcrec
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     Nt, NbP, corigin, lTimePos = mjt.GetDimNCdataMJT( cf_nc_in )
 
     if NbP<4:
-        print('  \n *** Only '+str(NbP)+' points in the cloud! => exiting!!!');  exit(0)    
+        printEE('only '+str(NbP)+' points in the cloud! => exiting!!!')
     
     if lTimePos: print(' *** "time_pos" data present in input netCDF file! => will use it!')
 
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     
 
     if np.any(vRec>=Nt):
-        print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
+        mjt.printEE('some of the specified records # are >= '+str(Nt)+'  !')
     #
     vdate = np.zeros( Nrec,  dtype=int )
     vIDs  = np.zeros( NbP, dtype=int )
@@ -155,7 +155,7 @@ if __name__ == '__main__':
             vIDs[:] = zIDs[:]
         else:
             if np.sum(zIDs[:]-vIDs[:])!=0:
-                print('ERROR: ID fuck up in input file!') ; exit(0)
+                mjt.printEE('ID fuck up in input file!') 
         jr=jr+1
 
         
@@ -178,10 +178,10 @@ if __name__ == '__main__':
         # Time control:
         zzt = ztim[:,1] - ztim[:,0]
         if np.any( zzt == 0. ):
-            print('ERROR: some identical times in the 1st and 2nd records!!!')
-            (idxFU,) = np.where( zzt == 0. )
-            print('  => for '+str(len(idxFU))+' points!')
-            exit(0)
+            mjt.printEE('some identical times in the 1st and 2nd records!!!')
+            #(idxFU,) = np.where( zzt == 0. )
+            #print('  => for '+str(len(idxFU))+' points!')
+            #exit(0)
         del zzt
     
     mask = np.zeros( NbP      , dtype='i1') + 1  ; # Mask to for "deleted" points (to cancel)    
@@ -198,7 +198,7 @@ if __name__ == '__main__':
                 print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',vIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
                        ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',e2c(ztim[jc,jr]) )
                 if str(vIDs[jc])!=zPnm[jc]:
-                    print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
+                    mjt.printEE(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] )
         print('')
 
         
@@ -244,14 +244,14 @@ if __name__ == '__main__':
 
         if not lOK:
             if NbPnew > NbP:
-                print('ERROR: `NbPnew > NbP` !!!'); exit(0)
+                mjt.printEE('`NbPnew > NbP` !!!')
             print('\n *** Need to cancel the '+str(NbP-NbPnew)+' points that vanished in Delaunay triangulation!')
             mask  = np.zeros(  NbP, dtype=int )
             zPntIdx0 = np.arange( NbP, dtype=int )
             _,ind2keep,_ = np.intersect1d(zPntIdx0, PntIdxInUse, return_indices=True); # retain only indices of `zPntIdx0` that exist in `PntIdxInUse`
             mask[ind2keep] = 1
             if np.sum(mask) != NbPnew:
-                print('ERROR: `np.sum(mask) != NbPnew` !!!'); exit(0)
+                mjt.printEE('`np.sum(mask) != NbPnew` !!!')
             zPnm, vIDs, zGC, zXY, ztim = mjt.ShrinkArrays( mask, zPnm, vIDs, zGC, zXY, ztim )
             del zPntIdx0, mask, ind2keep
             NbP = NbPnew
@@ -285,7 +285,7 @@ if __name__ == '__main__':
         (nbP,_), (nbQ,_) = np.shape(xPxy1), np.shape(xQpnts1)                
         lquit = (nbQ<=0)
     if lquit:
-        print('  \n *** 0 quads from triangles!!! => exiting!!!');  exit(0)
+        printEE('  \n *** 0 quads from triangles!!! => exiting!!!')
         
     print('\n *** After `Tri2Quad()`: we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')
 
@@ -336,7 +336,7 @@ if __name__ == '__main__':
     #        (idx,) = np.where( (np.round(zXY[:,0,jr],6) == round(zx,6)) & (np.round(zXY[:,1,jr],6) == round(zy,6)) )
     #        #print('idx =',idx)
     #        if len(idx)!=1:
-    #            print('ERROR: `len(idx)!=1` !'); exit(0)
+    #            mjt.printEE('`len(idx)!=1` !')
     #        zPgc[jb,:,jr] =  zGC[idx[0],:,jr]
     #        zpid[jb]      = vIDs[idx[0]]
     #        zmask[jb,jr] = zmsk[idx[0],jr]
@@ -384,7 +384,7 @@ if __name__ == '__main__':
         #
         (nbP,_), (nbQ,_) = np.shape(xPxy2), np.shape(xQpnts2)
         if nbQo-nbQ != nFU:
-            print('ERROR: `nbQo-nbQ != nFU` (Areas) !'); exit(0)
+            mjt.printEE('`nbQo-nbQ != nFU` (Areas) !')
         #
         print('    * '+str(nbQo-nbQ)+' quads in second records had to be supressed because of negative area!!!')
         print('       => cancelling the same quads at 1st record as well!')
@@ -418,7 +418,7 @@ if __name__ == '__main__':
 
 
     if QUADS1.nP!=nbP or QUADS1.nQ!=nbQ or QUADS2.nP!=nbP or QUADS2.nQ!=nbQ:
-        print('ERROR: problem in the final number of quads and points!!!'); exit(0)    
+        mjt.printEE('problem in the final number of quads and points!!!')    
     print('\n *** Finally, we have '+str(nbQ)+' quadrangles out of '+str(nbP)+' points!\n')  
     
     k1 = mjt.QuadStat( 0, QUADS1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
@@ -464,60 +464,4 @@ if __name__ == '__main__':
     del TRIAS, QUADS1, QUADS2
 
     print('\n --- Over!\n')
-    
-    exit(0)
-    
-
-    #if lExportCloudPoints:
-    #    # To be save in a NC file:
-    #    zPxy[:,:,jr] = xPxy2[:,:]
-    #    for jb in range(nbP):
-    #        [zx,zy] = xPxy2[jb,:]
-    #        (idx,) = np.where( (np.round(zXY[:,0,jr],6) == round(zx,6)) & (np.round(zXY[:,1,jr],6) == round(zy,6)) )
-    #        if len(idx)!=1:
-    #            print('ERROR: `len(idx)!=1` !'); exit(0)
-    #        zPgc[jb,:,jr] =  zGC[idx[0],:,jr]
-    #        zpid[jb]      = vIDs[idx[0]]
-    #        zmask[jb,jr]  = zmsk[idx[0],jr]
-    #        ztime[jb,jr]  =  ztim[idx[0],jr]
-
-
-    #if lExportCloudPoints:
-    #    cf_nc_out = str.replace( cf_nc_in, '.nc', '_postQG.nc' )
-    #
-    #    zYkm = np.zeros( (Nrec,nbP) )
-    #    zXkm = np.zeros( (Nrec,nbP) )
-    #    zlat = np.zeros( (Nrec,nbP) )
-    #    zlon = np.zeros( (Nrec,nbP) )
-    #
-    #    zYkm[:,:] = zPxy[:,1,:].T
-    #    zXkm[:,:] = zPxy[:,0,:].T
-    #    zlat[:,:] = zPgc[:,1,:].T
-    #    zlon[:,:] = zPgc[:,0,:].T
-    #
-    #    print('   * saving '+cf_nc_out)
-    #
-    #    kk = mjt.ncSaveCloudBuoys( cf_nc_out, vdate, zpid, zYkm, zXkm, zlat, zlon, mask=zmask.T,
-    #                               xtime=ztime.T, fillVal=mjt.FillValue, corigin=corigin )
-    #    if iplot>0:
-    #        # Ploting what we saved in NC file:
-    #        for jr in range(Nrec):
-    #            cfig = str.replace( cf_nc_out, '.nc', '_postQG'+'_rec%3.3i'%(jr)+'.png' )
-    #            cfig = str.replace( cfig , './nc', fdir )
-    #            kk = mjt.ShowBuoysMap( vdate[jr], zlon[jr,:], zlat[jr,:], pvIDs=vIDs[:], cfig=cfig,
-    #                                   cnmfig=None, ms=5, ralpha=0.5, lShowDate=True, zoom=1, title=None )
-    #
-
-    
-
-    
-
-                
-        
-    
-    
-
-
-
-
     

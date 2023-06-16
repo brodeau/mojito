@@ -130,7 +130,7 @@ if __name__ == '__main__':
                     print( ' * #'+str(jc)+' => Name: "'+zPnm[jc]+'": ID=',vIDs[jc],', X=',zXY[jc,0,jr],', Y=',zXY[jc,1,jr],
                            ', lon=',zGC[jc,0,jr],', lat=',zGC[jc,1,jr], ', time=',mjt.epoch2clock(ztim[jc,jr]) )
                     if str(vIDs[jc])!=zPnm[jc]:
-                        print(' Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] ); exit(0)
+                        mjt.printEE('Fuck Up!!!! => vIDs[jc], zPnm[jc] =',vIDs[jc], zPnm[jc] )
             print('')
     
         cdate0  = str.replace( mjt.epoch2clock(vdate[0], precision='D'), '-', '')
