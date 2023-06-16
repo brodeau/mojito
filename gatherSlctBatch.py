@@ -366,11 +366,11 @@ if __name__ == '__main__':
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence.png', nmproj=NameArcticProj, cwhat='div',
                                   pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': divergence '+str(cresinfo), idate=itimeC )
+                                  title=corigin+': divergence '+str(cresinfo), idate=itimeC, edgecolor='k' )
 
         mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear.png',      nmproj=NameArcticProj, cwhat='shr',
                                   pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': shear '+cresinfo, idate=itimeC )
+                                  title=corigin+': shear '+cresinfo, idate=itimeC, edgecolor='k' )
 
 
         cix = ''
@@ -378,5 +378,5 @@ if __name__ == '__main__':
 
         mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
                                   pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': total deformation '+cresinfo, idate=itimeC )
+                                  title=corigin+': total deformation '+cresinfo, idate=itimeC, edgecolor='k' )
 
