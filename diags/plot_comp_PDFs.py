@@ -143,7 +143,7 @@ if __name__ == '__main__':
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
-                            title=cName+': '+cscale, period=cperiod, origin=corig,
+                            title=cName+' ('+cscale+')', period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2 )    
     
     elif l3files:
@@ -162,7 +162,7 @@ if __name__ == '__main__':
         #                    ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
         # Without `N`:
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
-                            title=cName+': '+cscale, period=cperiod, origin=corig,
+                            title=cName+' ('+cscale+')', period=cperiod, origin=corig,
                             ppdf2=PDF2,  origin2=corig2, ppdf3=PDF3,  origin3=corig3 )
     
     else:

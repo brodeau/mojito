@@ -78,12 +78,12 @@ def FigInitStyle( fntzoom=1., color_top='k' ):
     mpl.rcParams.update(params)
     #
     cfont_clbunit   = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(7.5*fntzoom), 'color':color_top }
-    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(13.*fntzoom_inv), 'color':color_top }
+    cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(6.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(9.*fntzoom), 'color':color_top }
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'light', 'fontsize':int(6.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
-    cfont_abc   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(10*fntzoom), 'color':color_top }
+    cfont_abc   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(10*fntzoom), 'color':color_top }
     #
     return 0
 
@@ -1206,17 +1206,17 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if reskm>30:
         lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
 
-    ki = FigInitStyle( fntzoom=2 )
+    ki = FigInitStyle( fntzoom=4. )
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
-    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
+    ax = plt.axes([0.13, 0.105, 0.83, 0.83])
 
     if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
 
     clbl = origin
     if Np and origin:
         clbl = origin+' (N = '+str(Np)+')'
-    #lili
+
     jo = 0
     plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
@@ -1265,10 +1265,20 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if Np and not (l_comp2 or l_comp3):
         ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
     if period:
-        ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
+        ax.annotate('Period = '+period, xy=(0.5, 0.85), xycoords='figure fraction', **cfont_clock)
     if title:
         ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
 
+    if split('\.',cfig)[-1] == 'svg':
+        cltr = ''
+        if name=='Shear':
+            cltr = 'a)'
+        elif name=='Divergence':
+            cltr = 'b)'
+        elif name=='Convergence':
+            cltr = 'c)'
+        ax.annotate(cltr, xy=(0.04, 0.94), xycoords='figure fraction', **cfont_abc)
+        
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [LogPDFdef()]: created figure '+cfig)
