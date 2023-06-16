@@ -10,6 +10,10 @@ from re import split
 import mojito   as mjt
 from mojito import config as cfg
 
+
+figfrmt = '.png'
+#figfrmt = '.svg'
+
 idebug=1
 iplot=1 ; Naxis = None
 #iplot=1 ; Naxis = 1
@@ -213,13 +217,13 @@ if __name__ == '__main__':
     
     cfroot = './figs/SCALING_'+cfield+'_'+corig+'_dt'+str(dtbin)
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, lAddPowerLawFit=lPowerLawFit,
-                              cfig=cfroot+'.png', lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis,  )
+                              cfig=cfroot+figfrmt, lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis,  )
 
     # Separate: 
     cfroot = './figs/0scaling_'+cfield+'_q1_mean_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.png', lAddPowerLawFit=lPowerLawFit )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+figfrmt, lAddPowerLawFit=lPowerLawFit )
     cfroot = './figs/0scaling_'+cfield+'_q2_variance_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.png', lAddPowerLawFit=lPowerLawFit )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+figfrmt, lAddPowerLawFit=lPowerLawFit )
     cfroot = './figs/0scaling_'+cfield+'_q3_skewness_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.png', lAddPowerLawFit=lPowerLawFit )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+figfrmt, lAddPowerLawFit=lPowerLawFit )
     
