@@ -79,7 +79,7 @@ def FigInitStyle( fntzoom=1., color_top='k' ):
     #
     cfont_clbunit   = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(7.5*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(6.*fntzoom_inv), 'color':color_top }
-    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
+    cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(7.*fntzoom), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(9.*fntzoom), 'color':color_top }
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'light', 'fontsize':int(6.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
@@ -1021,119 +1021,6 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
 
 
-#def LogScaling( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=None,
-#               title=None, period=None, origin=None,
-#               ppdf2=[], Np2=None, origin2=None,
-#               ppdf3=[], Np3=None, origin3=None ):
-#    '''
-#      * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
-#      * pbinc: vector of the center of the bins (x-axis), size = nB
-#      * ppdf:  the PDF, same size as `pbinc`, size = nB
-#    '''
-#    from math import ceil
-#
-#    (nB,) = np.shape(ppdf)
-#    if len(pbinc) != nB:
-#        print('\n *** ERROR ['+caller+'/LogScaling]: wrong size for `pbinc`!'); exit(0)
-#    if len(pbinb) != nB+1:
-#        print('\n *** ERROR ['+caller+'/LogScaling]: wrong size for `pbinb`!'); exit(0)
-#
-#    rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
-#
-#    l_comp2 = ( np.shape(ppdf2)==(nB,) )
-#    l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
-#
-#    
-#    # For figure axes:
-#    xlog_min, xlog_max = 2.75e-3, 0.5
-#    ylog_min,ylog_max = 5.e-3, 3.5e2
-#    rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
-#    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
-#    lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
-#
-#    if reskm:
-#        if reskm>30 and reskm<70:
-#            ylog_min = 3.e-2
-#            xlog_max = 0.2
-#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1, 0.2]
-#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1', '0.2']
-#            rycut_tiny =3.e-2
-#        if reskm>=70 and reskm<120:
-#            ylog_min = 5.e-2
-#            xlog_max = 0.15
-#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-#            rycut_tiny =0.5e-1
-#        elif reskm>=120 and reskm<240:
-#            ylog_min = 1.e-1
-#            xlog_max = 0.1
-#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-#            rycut_tiny =1.e-1
-#        elif reskm>=240 and reskm<480:
-#            ylog_min = 0.8e-1
-#            xlog_max = 0.1
-#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-#            rycut_tiny =0.7e-1
-#        elif reskm>=480 and reskm<700:
-#            ylog_min = 0.8
-#            xlog_max = 0.1
-#            rxlabs = [0.005, 0.01, 0.025, 0.05, 0.1]
-#            cxlabs = ['0.005', '0.01', '0.025', '0.05', '0.1']
-#            rycut_tiny =0.7
-#
-#        if reskm>30:
-#            lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
-#    ki = FigInitStyle()
-#
-#    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
-#    ax = plt.axes([0.11, 0.085, 0.85, 0.85])
-#    if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
-#    clbl = origin
-#    if Np and origin:
-#        clbl = origin+' (N = '+str(Np)+')'
-#    plt.loglog(pbinc[:], ppdf[:], 'o', markersize=12, linestyle='-', linewidth=6, fillstyle='none', color='k', label=clbl, zorder=5)
-#    if l_comp2:
-#        clbl = origin2
-#        if Np2 and origin2:
-#            origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
-#            clbl = origin2+' (N = '+str(Np2)+')'
-#        if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
-#        plt.loglog(pbinc[:], ppdf2[:], 's', markersize=12, fillstyle='none', color='0.4', linestyle='-', linewidth=4,  label=clbl, zorder=10)
-#        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-#    if l_comp3:
-#        clbl = origin3
-#        if Np3 and origin3:
-#            origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
-#            clbl = origin3+' (N = '+str(Np3)+')'
-#        if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
-#        plt.loglog(pbinc[:], ppdf3[:], '*', markersize=14, color='0.65', linestyle='-', linewidth=4, label=clbl, zorder=10)
-#        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-#    # X-axis:
-#    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
-#    ax.set_xlim(xlog_min, xlog_max)
-#    ax.set_xticks(rxlabs)
-#    ax.set_xticklabels(cxlabs)
-#    #plt.tick_params(axis='x', which='minor')
-#    #from matplotlib.ticker import FormatStrFormatter
-#    #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
-#    # Y-axis:
-#    plt.ylabel('PDF', color='k')
-#    ax.set_ylim(ylog_min, ylog_max)
-#    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
-#    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
-#    if Np and not (l_comp2 or l_comp3):
-#        ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
-#    if period:
-#        ax.annotate('Period = '+period, xy=(0.62, 0.79), xycoords='figure fraction', **cfont_clock)
-#    if title:
-#        ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
-#    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
-#    plt.close(1)
-#    print(' * [LogScaling()]: created figure '+cfig)
-#    return 0
-
 
 
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
@@ -1408,7 +1295,6 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #
     #rxlabs = [ 10, 20, 40, 80, 100, 200, 300, 500, 800 ]
     #cxlabs = np.array(rxlabs,dtype='U4')
-
         
     (Ns,No) = np.shape(pscales)
     if np.shape(pcOrig) != (No,):
@@ -1443,23 +1329,24 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             vNbPoints[js,jo] = len(idxOk)
 
         
-    ki = FigInitStyle()
+    ki = FigInitStyle( fntzoom=3 )
 
     fig = plt.figure( num = 1, figsize=(7,12), dpi=None )
-    ax = plt.axes([0.13, 0.06, 0.83, 0.92])
+    ax = plt.axes([0.15, 0.065, 0.815, 0.93])
 
     if lOnlyObs: No=1
-    
+
     for jo in range(No):
+        #clbl = pcOrig[jo]+cxtralab
         zlw, cxtralab = vlwdth[jo], ''
         if lAddPowerLawFit:
             zlw = 0             # 
             cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
-                    color=vcolor[jo], label=pcOrig[jo]+cxtralab, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], 'o', markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+                    color=vcolor[jo], label=vorig[jo], zorder=5 )
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
         
     # Add power-law to points:
@@ -1467,10 +1354,10 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         for jo in range(No):
             for jq in range(3):
                 #[zA,zE] = zAB[:,jo,jq]
-                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, vmrk[jo], markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                 #            color=vcolor[jo], label=None, zorder=5 )
                 [zA,zB] = zAB[:,jo,jq]
-                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), vmrk[jo], markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                             color=vcolor[jo], label=None, zorder=5 )
         
     #X-axis:
@@ -1487,9 +1374,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-    ax.annotate('q=1', xy=(720, 0.85e-2), xycoords='data', ha='left', **cfont_axis)
-    ax.annotate('q=2', xy=(720, 1.5e-4), xycoords='data', ha='left', **cfont_axis)
-    ax.annotate('q=3', xy=(720, 2.e-6),  xycoords='data', ha='left', **cfont_axis)
+    ax.annotate('q=1', xy=(610, 0.85e-2), xycoords='data', ha='left', **cfont_clbunit)
+    ax.annotate('q=2', xy=(610, 1.5e-4), xycoords='data', ha='left', **cfont_clbunit)
+    ax.annotate('q=3', xy=(610, 2.e-6),  xycoords='data', ha='left', **cfont_clbunit)
     #
     if lAddNumberPoints:
         for js in range(Ns):
