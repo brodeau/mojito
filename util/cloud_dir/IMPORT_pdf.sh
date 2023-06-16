@@ -13,16 +13,6 @@ import_frazilo()
 
 
 DIR_NPZ="npz"
-#DIR_NPZ="BAK_DEF"
-
-#if [ "${1}" = "c" ]; then
-#    for cw in "rgps" "tracking"; do rm -rf TEST_${cw}/npz/PDF*.npz; done
-#    exit
-#fi
-
-
-
-# /home/laurent/tmp/MOJITO/TEST_tracking
 
 HERE=`pwd`
 
@@ -54,8 +44,6 @@ for EXP in ${lst_exps}; do
         
     dir=${DIR_TRCK_REMOTE}
 
-    #echo " ${dir}/TEST_${csfx}/${DIR_NPZ}"
-    #exit
 
     echo " * Will import from: ${dir}/TEST_${csfx}/${DIR_NPZ} !"
     

@@ -50,6 +50,7 @@ for RESKM in ${VRESKM[*]}; do
             nbw=`echo ${ff} | wc -w`
             if [ ${nbw} -ne 1 ]; then
                 echo "PROBLEM: with ${EXP} ${RESKM} ${cf}"
+                echo " => all files = ${ff}"
                 exit
             fi
             
