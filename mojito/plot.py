@@ -62,26 +62,28 @@ vmrkfs = ['none','none','full','none','none']
 
 def FigInitStyle( fntzoom=1., color_top='k' ):
     #
-    global cfont_clb, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail
+    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail, cfont_abc
     #
-    fntzoom_inv = 1.*fntzoom**0.5
+    #fntzoom_inv = 1.*fntzoom**0.5
+    fntzoom_inv = fntzoom
     #
     params = { 'font.family':'Open Sans',
                'font.weight':    'normal',
-               'font.size':       int(10.*fntzoom_inv),
-               'legend.fontsize': int(10.*fntzoom_inv),
-               'xtick.labelsize': int(10.*fntzoom_inv),
-               'ytick.labelsize': int(10.*fntzoom_inv),
-               'axes.labelsize':  int(10.*fntzoom) }
+               'font.size':       int(6.*fntzoom_inv),
+               'legend.fontsize': int(6.*fntzoom_inv),
+               'xtick.labelsize': int(6.5*fntzoom_inv),
+               'ytick.labelsize': int(6.5*fntzoom_inv),
+               'axes.labelsize':  int(6.5*fntzoom) }
     #
     mpl.rcParams.update(params)
     #
-    cfont_clb   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(8.*fntzoom), 'color':color_top }
+    cfont_clbunit   = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(7.5*fntzoom), 'color':color_top }
     cfont_clock = { 'fontname':'Ubuntu Mono', 'fontweight':'normal', 'fontsize':int(13.*fntzoom_inv), 'color':color_top }
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(15.*fntzoom), 'color':color_top }
-    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(10.*fntzoom), 'color':color_top }
+    cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(9.*fntzoom), 'color':color_top }
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'light', 'fontsize':int(6.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
+    cfont_abc   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(10*fntzoom), 'color':color_top }
     #
     return 0
 
@@ -599,7 +601,7 @@ def ShowDeformation( pX, pY, pF, cfig='deformation_map.png', cwhat='div', zoom=1
         # => triggers the colorbar
         ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
-        clb.set_label(unit, **cfont_clb)
+        clb.set_label(unit, **cfont_clbunit)
 
     plt.savefig(cfig)
     plt.close(1)
@@ -791,7 +793,7 @@ def ShowDefQuad( pX4, pY4, pF, cfig='deformation_map.png', cwhat='div', zoom=1,
         # => triggers the colorbar
         ax2 = plt.axes([0.1, ziy/2., 0.8, 0.02])
         clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
-        clb.set_label(unit, **cfont_clb)
+        clb.set_label(unit, **cfont_clbunit)
 
     print('     ===> saving figure: '+cfig)
     plt.savefig(cfig)
@@ -819,7 +821,7 @@ def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., df=None, paxes=[0.
         cb_labs[(cb_labs=='-0.0')] = '0'
         clb = mpl.colorbar.ColorbarBase(ax=axCB, ticks=vcbt, cmap=pcm, norm=pcn, orientation='horizontal', extend=cxtnd )
         clb.ax.set_xticklabels(cb_labs)
-        clb.set_label(cunit, **cfont_clb)
+        clb.set_label(cunit, **cfont_clbunit)
         return 0
 
 
@@ -926,7 +928,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
         print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
 
-    kk = FigInitStyle(fntzoom=2.*zoom)
+    kk = FigInitStyle(fntzoom=2.5*zoom)
 
     zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
     zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )
@@ -964,11 +966,11 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     
     fig = plt.figure(num=1, figsize=(zoom*18.5,zoom*7), dpi=None, facecolor='w', edgecolor='k')
 
-    zyf = 0.11
+    zyf = 0.12
 
-    dxL, xw = 0.03, 0.29
+    dxL, xw = 0.04, 0.288
     
-    ax1  = plt.axes([0.03,zyf,xw,0.9], facecolor='w')
+    ax1  = plt.axes([dxL,zyf,xw,0.9], facecolor='w')
     x1,y1 = PROJ(zlon1,zlat1)
     for jQ in range(nQ1):
         if not np.isnan(pF1[jQ]):
@@ -978,7 +980,6 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     _AdjustMapArctic_( nmproj, PROJ )
     if title1:
         ax1.annotate(title1, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
-
     
     ax2  = plt.axes([1./3.+dxL,zyf,xw,0.9], facecolor='w')
     x2,y2 = PROJ(zlon2,zlat2)
@@ -1004,10 +1005,14 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     if unit:
         # => triggers the colorbar
-        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.2, 0.09, 0.6, 0.03], cunit=unit )
-        
+        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.2, 0.095, 0.6, 0.03], cunit=r'['+unit+']' )
+
+    ax1.annotate('a)', xy=(0.01, 0.925), xycoords='axes fraction', **cfont_abc)
+    ax2.annotate('b)', xy=(0.01, 0.925), xycoords='axes fraction', **cfont_abc)
+    ax3.annotate('c)', xy=(0.01, 0.925), xycoords='axes fraction', **cfont_abc)
+    
     print('     ===> saving figure: '+cfig)
-    plt.savefig(cfig, dpi=300)
+    plt.savefig(cfig, dpi=200)
     plt.close(1)
     return 0
 
