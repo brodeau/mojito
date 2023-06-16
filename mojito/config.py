@@ -220,7 +220,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==320:
         rc_d_ss = 315.6
-        rcFracOverlapOK = 0.2
+        #rcFracOverlapOK = 0.2; #ok
+        rcFracOverlapOK = 0.3; # better
         rc_maxDevMeanAreaQuads = 64
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
@@ -232,8 +233,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==640:
         rc_d_ss = 636.
-        #rcFracOverlapOK = 0.6 ; #ok!
-        rcFracOverlapOK = 0.6 ; #ok! #lili
+        rcFracOverlapOK = 0.6 ; #ok!
         rc_maxDevMeanAreaQuads = 128
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
@@ -289,8 +289,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         elif res_km>=150. and res_km<300.:
             rc_t_dev_cancel =  3*3600
         elif res_km>=300. and res_km<600.:
-            rc_t_dev_cancel =  6*3600
-            #rc_t_dev_cancel =  18*3600 ; #???
+            #rc_t_dev_cancel =  6*3600 ; #ok!
+            rc_t_dev_cancel =  18*3600 ; #???
         elif res_km>=600.:
             rc_t_dev_cancel = 12*3600 ; #???
             #rc_t_dev_cancel = 24*3600 ; #ok...
