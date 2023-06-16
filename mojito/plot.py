@@ -1239,7 +1239,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     if np.shape(pF) != (Ns,No):
         print('ERROR [plotScalingDef]: wrong shape for `pF` !'); exit(0)
 
-    ki = FigInitStyle()
+    ki = FigInitStyle( fntzoom=3 )
 
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
