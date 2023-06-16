@@ -1446,7 +1446,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         cfig = str.replace(cfig,'_dt0','')
 
         fig = plt.figure( num = 1, figsize=(8,8), dpi=None )
-        ax = plt.axes([0.12, 0.08, 0.84, 0.88])
+        ax = plt.axes([0.12, 0.09, 0.84, 0.88])
 
         zx = np.arange(0,4.,1.)
                 
@@ -1455,8 +1455,10 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             [zA,zB,zC] = _quadratic_fit_(zx[:], zy[:])
             zzx = np.arange(0,4.,0.001)
             #
-            plt.plot( zx, zy, 'o', label=pcOrig[jo]+', a = '+str(round(zA,2)), color=vcolor[jo], linewidth=vlwdth[jo],
-                      markersize=9, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo] )
+            #clbl = pcOrig[jo]+', a = '+str(round(zA,2))
+            clbl = vorig[jo]
+            plt.plot( zx, zy, vmrk[jo], label=clbl, color=vcolor[jo], linewidth=vlwdth[jo],
+                      markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo] )
             #plt.plot( zzx, zA*zzx*zzx, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
             plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
 
