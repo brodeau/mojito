@@ -30,14 +30,13 @@ case ${host} in
         DT_BINS_H=72
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
-        DT_BINS_H=72 ;  RESKM=10; LIST_RD_SS="5 6 7" ; USE_S="S"
+        #RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
         #
         # 20km:
-        #RESKM=20 ; LIST_RD_SS="14 15 16" ; USE_S="S"
+        #RESKM=20 ; LIST_RD_SS="13 14 15 16 17" ; USE_S="S"
         #
         # 40km:
-        #RESKM=40 ; LIST_RD_SS="31 33 35 37 39" ; USE_S="S"
+        RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
         #
         # 80km:
         #RESKM=80 ; LIST_RD_SS="66 69 72 75 78 81 84" ; USE_S="S"; #ok
@@ -81,20 +80,19 @@ case ${host} in
         #
         NJPAR=34
         #
-               DATE1="19961215" ; DATE2="${YEAR}0420"
+        DATE1="19961215" ; DATE2="${YEAR}0420"
         #
         MODE='rgps' ; DEF_EXPORT='E'
         DT_BINS_H=72
         #
         # 10km:
-        #DT_BINS_H=6 ;  RESKM=10
-        RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
+        #RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
         #
         # 20km:
         #RESKM=20 ; LIST_RD_SS="13 14 15 16 17" ; USE_S="S"
         #
         # 40km:
-        #RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
+        RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
         #
         # 80km:
         #RESKM=80 ; LIST_RD_SS="66 69 72 75 78 81 84" ; USE_S="S"; #ok
