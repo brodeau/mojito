@@ -826,7 +826,8 @@ def __AddColorBar__( field, pltH, pcm, pcn, fmin=0., fmax=1., df=None, paxes=[0.
 
 
 def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='CentralArctic', cwhat='div', zoom=1,
-                          pFmin=-1., pFmax=1., pdF=None, rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$', idate=None ):
+                          pFmin=-1., pFmax=1., pdF=None, rangeX=None, rangeY=None, title=None, unit=r'days$^{-1}$',
+                          idate=None, edgecolor=None ):
     '''
     ### Show points, triangle, and quad meshes on the map!
     ### => each quadrangle is filled with the appropriate color from colormap !!!
@@ -874,11 +875,15 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
 
     x0,y0 = PROJ(zlon,zlat)
 
+    lw=0
+    if edgecolor:
+        lw=1
+    
     for jQ in range(nQ):
         if not np.isnan(pF[jQ]):
             znorm = cn(pF[jQ])
             colrgb = cm(znorm)
-            plt.fill( x0[jQ,:], y0[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
+            plt.fill( x0[jQ,:], y0[jQ,:], facecolor=colrgb, edgecolor=edgecolor, linewidth=lw )
 
     _AdjustMapArctic_( nmproj, PROJ )
 
