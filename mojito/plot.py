@@ -55,7 +55,7 @@ vlwdth = [ 9  ,   6    ,    6   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
 #
 vmrk   = ['o','s','*','s','d']
-vmrksz = [12,12,14,12,12]
+vmrksz = [11,12,14,12,12]
 vmrkfs = ['none','none','full','none','none']
 
 
@@ -1347,11 +1347,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if lAddPowerLawFit:
             zlw = 0             # 
             cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=vorig[jo], zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=10, linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
         
     # Add power-law to points:
