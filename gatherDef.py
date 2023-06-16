@@ -35,14 +35,14 @@ if __name__ == '__main__':
         if argv[5]=='S':
             listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_SLCT'+creskm+'km.npz') )
         else:
-            print('ERROR: argument 6 can only be "S"!!!'); exit(0)
+            mjt.printEE('argument 6 can only be "S"!!!')
 
     else:
         listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_'+creskm+'km.npz') )
         listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_*-'+creskm+'km.npz') )
     
         if len(listnpz1)>0 and len(listnpz2)>0:
-            print('ERROR: we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!'); exit(0)
+            mjt.printEE('we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!')
         if len(listnpz2)>0:
             lrlstKM = True
             listnpz = listnpz2
@@ -105,8 +105,7 @@ if __name__ == '__main__':
         cinfobin = '_dt'+cdtbin
         
     if str(reskm) != creskm:
-        print('ERROR: spatial scale (km) passed as argument does not match that found in deformation files!')
-        exit(0)
+        mjt.printEE('spatial scale (km) passed as argument does not match that found in deformation files!')
     
     # Now that we know the total number of points we can allocate and fill arrays for divergence and shear    
     Zshr = np.zeros(nP)

@@ -1379,9 +1379,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
     #
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
-    ax.annotate('q=1', xy=(610, 0.85e-2), xycoords='data', ha='left', **cfont_clbunit)
-    ax.annotate('q=2', xy=(610, 1.5e-4), xycoords='data', ha='left', **cfont_clbunit)
-    ax.annotate('q=3', xy=(610, 2.e-6),  xycoords='data', ha='left', **cfont_clbunit)
+    ax.annotate('q=1', xy=(610, 0.015), xycoords='data', ha='left', **cfont_clbunit)
+    ax.annotate('q=2', xy=(610, 2.5e-4), xycoords='data', ha='left', **cfont_clbunit)
+    ax.annotate('q=3', xy=(610, 4.5e-6),  xycoords='data', ha='left', **cfont_clbunit)
     #
     if lAddNumberPoints:
         for js in range(Ns):
