@@ -32,6 +32,7 @@ done
 echo " LEXPS = ${LEXPS} "; echo
 
 for cf in "shear" "total" "divergence"; do
+#for cf in "total"; do
 
     CMD="${EXE} ${cf} ${LEXPS}"
     
@@ -42,5 +43,5 @@ for cf in "shear" "total" "divergence"; do
     echo
 
 done
-
+#exit
 rsync -avP figs/maps/map_*.png ${DIR_EXPORT_CLOUD}/Maps/
