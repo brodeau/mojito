@@ -144,8 +144,10 @@ if __name__ == '__main__':
     nn = len(idxmax)
     # Takes the one the closest to the reference resolution
     if nn>1:
-        ki = np.argmin( np.abs(vsubRes[idxmax] - int(creskm)) )
-        print(vsubRes[idxmax] - (int(creskm)-2), ki) ; # "-2" to be closer to the actual scale used to coarsify!
+        (idxSckm,) = np.where( cfg.rcV_sckm == int(creskm) )
+        zdss = cfg.rcV_d_ss[idxSckm]
+        print('LOLO [gatherSlctBatch]: `zdss` for res '+creskm+' is:',zdss)
+        ki = np.argmin( np.abs(vsubRes[idxmax] - zdss ) )
         kw = idxmax[ki]
     Nmax = kNbPoints[kw]
     print(' *** Winner is at index:',kw,'(',Nmax,'points),',vsubRes[kw],'km,',nn,'files with this number of points.')

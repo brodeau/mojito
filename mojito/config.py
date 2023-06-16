@@ -17,6 +17,7 @@ def controlModeName( caller, mode ):
 def initialize( mode='model' ):
     '''
     '''
+    import numpy as np
     from os import environ
     #    
     global rc_day2sec, nc_min_buoys_in_batch, nc_forced_batch_length, nc_min_cnsctv, rc_dev_dt_Nmnl, nc_min_buoys_in_batch
@@ -25,6 +26,7 @@ def initialize( mode='model' ):
     global rc_Tang_min, rc_Tang_max
     global lc_accurate_time    
     global lc_cancelShore, fdist2coast_nc, nc_MinDistFromLand
+    global rcV_sckm, rcV_d_ss
     
     lk = controlModeName( 'initialize', mode )
 
@@ -62,12 +64,10 @@ def initialize( mode='model' ):
     fdist2coast_nc = data_dir+'/data/'+fn_file_dist2coast
 
 
+    #                     10   20   40     80    160   320    640
+    rcV_sckm = np.array( [10,   20,   40,     80,    160,   320,    640 ], dtype=int)
+    rcV_d_ss = np.array( [5.5,  15., 34.5,  74.75,   156., 315.6,  636. ]) ; # that could be `rcV_sckm - 4`a ...
 
-
-
-
-
-    
     return 0
 
 
@@ -150,7 +150,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     if mode=='rgps_map' and irk>10:
         print('ERROR [updateConfig4Scale]: "mode=rgps_map" is only meant to be used at 10km !!!')
         exit(0)
-    
+        
     if   irk==10:
         rc_d_ss = 5.5
         rcFracOverlapOK = 1.e-9
@@ -232,7 +232,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==640:
         rc_d_ss = 636.
-        rcFracOverlapOK = 0.4
+        #rcFracOverlapOK = 0.6 ; #ok!
+        rcFracOverlapOK = 0.6 ; #ok! #lili
         rc_maxDevMeanAreaQuads = 128
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
@@ -245,7 +246,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     else:
         print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
 
-    
+        
+        
     if mode in ['rgps','rgps_track']:
         from math import log2
         # scales = np.array([2**i * 10 for i in range(7)])
@@ -287,11 +289,11 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         elif res_km>=150. and res_km<300.:
             rc_t_dev_cancel =  3*3600
         elif res_km>=300. and res_km<600.:
-            #rc_t_dev_cancel =  6*3600 ; #???
-            rc_t_dev_cancel =  12*3600 ; #???
-            #rc_t_dev_cancel =  18*3600 ; #ok            
+            rc_t_dev_cancel =  6*3600
+            #rc_t_dev_cancel =  18*3600 ; #???
         elif res_km>=600.:
-            rc_t_dev_cancel = 24*3600 ; #ok...
+            rc_t_dev_cancel = 12*3600 ; #???
+            #rc_t_dev_cancel = 24*3600 ; #ok...
                 
     if rc_t_dev_cancel > 60:
         if ltalk: print('\n *** `rc_t_dev_cancel` updated to ',rc_t_dev_cancel/3600,'hours!')
