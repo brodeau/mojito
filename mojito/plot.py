@@ -22,7 +22,6 @@ from .util import epoch2clock as e2c
 
 #idebug = 0
 
-
 col_obs =   'k'
 col_red = '#873520'
 col_blu = '#3475a3'
