@@ -18,7 +18,7 @@ idebug=1
 iplot=1 ; Naxis = None
 #iplot=1 ; Naxis = 1
 
-lAdaptMinDef = False
+#lAdaptMinDef = False
 
 #dir_in = '<HOME>/Nextcloud/data/mojitoNEW'
 
@@ -71,27 +71,26 @@ if __name__ == '__main__':
 
 
     k2 = cfg.updateConfig4Scale( 10, mode='model' )
-    zmin_tot_def[:] = cfg.rc_tot_min
+    zmin_tot_def[:] = cfg.rc_MinDef
 
-    if lAdaptMinDef:
-        iscl=0
-        for res in do_scales:
-            if res==20:
-                zmin_tot_def[iscl] = 0.8e-4        
-            if res==40:
-                zmin_tot_def[iscl] = 1.5e-4        
-            if res==80:
-                zmin_tot_def[iscl] = 2.e-4        
-            if res==160:
-                zmin_tot_def[iscl] = 3.e-4        
-            if res==320:
-                zmin_tot_def[iscl] = 3.5e-4        
-            if res==640:
-                zmin_tot_def[iscl] = 1.5e-3
-            iscl+=1
+    #if lAdaptMinDef:
+    #    iscl=0
+    #    for res in do_scales:
+    #        if res==20:
+    #            zmin_tot_def[iscl] = 0.8e-4        
+    #        if res==40:
+    #            zmin_tot_def[iscl] = 1.5e-4        
+    #        if res==80:
+    #            zmin_tot_def[iscl] = 2.e-4        
+    #        if res==160:
+    #            zmin_tot_def[iscl] = 3.e-4        
+    #        if res==320:
+    #            zmin_tot_def[iscl] = 3.5e-4        
+    #        if res==640:
+    #            zmin_tot_def[iscl] = 1.5e-3
+    #        iscl+=1
+    #print(zmin_tot_def[:])
 
-    print(zmin_tot_def[:])
-    #exit(0)
         
     ### Save the name of files to read
     ### and get the number of points...
