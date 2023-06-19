@@ -16,7 +16,7 @@ iplot=1 ; NameArcticProj='SmallArctic'
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
-lExportCloud = False
+#lExportCloud = False
 
 
 def lIntersect2Quads( pQxy1, pQxy2 ):
@@ -30,9 +30,9 @@ def lIntersect2Quads( pQxy1, pQxy2 ):
     #
     (n4,n2) = np.shape(pQxy1)
     if n4!=4 or n2!=2:
-        print('ERROR [lIntersect2Quads()]: wrong shape for `pQxy1` !'); exit(0)
+        mjt.printEE('[lIntersect2Quads()]: wrong shape for `pQxy1` !')
     if np.shape(pQxy2) != (n4,n2):
-        print('ERROR [lIntersect2Quads()]: wrong shape for `pQxy2` !'); exit(0)
+        mjt.printEE('[lIntersect2Quads()]: wrong shape for `pQxy2` !')
     #
     zP1 = Polygon( [ (pQxy1[i,0],pQxy1[i,1]) for i in range(4) ] )
     zP2 = Polygon( [ (pQxy2[i,0],pQxy2[i,1]) for i in range(4) ] )
@@ -41,12 +41,14 @@ def lIntersect2Quads( pQxy1, pQxy2 ):
 
 
 
-def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, frac_overlap=0.1, iverbose=0 ):
+def lOverlapAnyOtherQuad( pQxy, pQA, pMQxy, pMQA, scale=320, frac_overlap=0.1, iverbose=0 ):
     '''
        * pQxy: cartesian coordinates of 1 quad, shape = (4,2)
-       * pMQ:  cartesian coordinates of a groupd of quads, shape = (nq,4,2)
+       * pQA:  area of this quad (km^2)
+       * pMQxy:  cartesian coordinates of a groupd of quads, shape = (nq,4,2)
+       * pMQA:  Area of a groupd of quads, shape = (nq) (km^2)
 
-       => will return true if the quad `pQxy` overlaps partially (or completely) at least 1 quad of `pMQ` !
+       => will return true if the quad `pQxy` overlaps partially (or completely) at least 1 quad of `pMQxy` !
           ==> to be considered an overlap the intersection area of the 2 quads must be > frac_overlap*(scale*scale)
 
     '''
@@ -54,20 +56,25 @@ def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, frac_overlap=0.1, iverbose=0 ):
     #
     (n4,n2) = np.shape(pQxy)
     if n4!=4 or n2!=2:
-        print('ERROR [lOverlapAnyOtherQuad()]: wrong shape for `pQxy` !'); exit(0)
-    (nq,n4,n2) = np.shape(pMQ)
+        mjt.printEE('[lOverlapAnyOtherQuad()]: wrong shape for `pQxy` !')
+    (nq,n4,n2) = np.shape(pMQxy)
     if n4!=4 or n2!=2:
-        print('ERROR [lOverlapAnyOtherQuad()]: wrong shape for `pMQ` !'); exit(0)
+        mjt.printEE('[lOverlapAnyOtherQuad()]: wrong shape for `pMQxy` !')
+    (iq,) = np.shape(pMQA)
+    if iq!=nq:
+        mjt.printEE('[lOverlapAnyOtherQuad()]: wrong shape for `pMQA` !')
+        
     if iverbose>0: print(' *** [lOverlapAnyOtherQuad()]: we have',nq,'quads to test against...')
     #
-    znmnl_area = float(scale*scale)
+    #znmnl_area = float(scale*scale)
     #
     lovrlp = False
     for jq in range(nq):
-        li, zAi = lIntersect2Quads( pQxy, pMQ[jq,:,:] )
+        li, zAi = lIntersect2Quads( pQxy, pMQxy[jq,:,:] )
         if li:
+            znmnl_area = max( pQA, pMQA[jq] )
             if zAi<0.:
-                print('ERROR [lOverlapAnyOtherQuad()]: negative intersection area!'); exit(0)
+                mjt.printEE('[lOverlapAnyOtherQuad()]: negative intersection area!')
             if zAi/znmnl_area > frac_overlap:
                 lovrlp = True
                 break
@@ -78,8 +85,6 @@ def lOverlapAnyOtherQuad( pQxy, pMQ, scale=320, frac_overlap=0.1, iverbose=0 ):
 
 
 if __name__ == '__main__':
-
-    
 
     if not len(argv) in [6]:
         print('Usage: '+argv[0]+' <directory_input_npz_files> <SXXX> <dtbin_h> <creskm> <string_id_origin>')
@@ -105,13 +110,13 @@ if __name__ == '__main__':
     print('\n *** We found '+str(nbF)+' deformation files into '+cd_in+' !')
     print('      => files to gather into a single one:',listnpz,'\n')
     
-    if lExportCloud:
-        # nc/PointsOfQuadsOfDEF_RGPS_S006_dt72_19970119_19970122_275-320km.nc        
-        listnc = np.array( glob('./nc/PointsOfQuadsOfDEF_'+cidorg+'_'+cbatch+'_'+cdtbin+'_*_*-'+creskm+'km.nc')  )
-        ccr = [ split('_',path.basename(cf))[-1] for cf in listnc ] ; # list of resolution suffixes... (for odering)
-        listnc = listnc[np.argsort(ccr)]
-        if len(listnc) != nbF:
-            print('ERROR: `len(listnc) != nbF`')
+    #if lExportCloud:
+    #    # nc/PointsOfQuadsOfDEF_RGPS_S006_dt72_19970119_19970122_275-320km.nc        
+    #    listnc = np.array( glob('./nc/PointsOfQuadsOfDEF_'+cidorg+'_'+cbatch+'_'+cdtbin+'_*_*-'+creskm+'km.nc')  )
+    #    ccr = [ split('_',path.basename(cf))[-1] for cf in listnc ] ; # list of resolution suffixes... (for odering)
+    #    listnc = listnc[np.argsort(ccr)]
+    #    if len(listnc) != nbF:
+    #        mjt.printEE('`len(listnc) != nbF`')
 
     
     # First, populate the number of deformation quadrangles in each file:
@@ -146,7 +151,6 @@ if __name__ == '__main__':
     if nn>1:
         (idxSckm,) = np.where( cfg.rcV_sckm == int(creskm) )
         zdss = cfg.rcV_d_ss[idxSckm]
-        print('LOLO [gatherSlctBatch]: `zdss` for res '+creskm+' is:',zdss)
         ki = np.argmin( np.abs(vsubRes[idxmax] - zdss ) )
         kw = idxmax[ki]
     Nmax = kNbPoints[kw]
@@ -158,13 +162,14 @@ if __name__ == '__main__':
 
 
     if str(reskm) != creskm:
-        print('ERROR: `str(reskm) != creskm` !'); exit(0)
+        mjt.printEE('`str(reskm) != creskm` !')
 
     cf_keep = str.replace( listnpz[kw], '_'+str(vsubRes[kw])+'-'+creskm, '_SLCT'+creskm)
     
     # The "in use" quads coordinates array:
     nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...
     zInUseXY = np.zeros((nQmaxF,4,2)) - 9999.
+    zInUseAa = np.zeros((nQmaxF))     - 9999. ; # Area of quad in km
     zmsk     = np.zeros( nQmaxF , dtype='i1' )
 
     # 1/ Save all the quads of winner:
@@ -172,13 +177,11 @@ if __name__ == '__main__':
     print(' *** will keep all the quads found in file:',cf)
     with np.load(cf) as data:
         zInUseXY[0:Nmax,:,0], zInUseXY[0:Nmax,:,1] = data['X4'], data['Y4']
+        zInUseAa[0:Nmax,] = data['quadArea'] ;#lili
         zmsk[0:Nmax] = 1
     #
     knxt = Nmax
-    print('')
-
-
-    print(' Shape of zInUseXY =',np.shape(zInUseXY))
+    print('\n Shape of zInUseXY =',np.shape(zInUseXY))
 
 
     kf = 0
@@ -190,6 +193,7 @@ if __name__ == '__main__':
             print('\n *** Getting the quads found in file:',cf)
             with np.load(cf) as data:
                 zX4, zY4 = data['X4'], data['Y4']
+                zAa = data['quadArea'] ; #lili
             #
             (nQ,_) = np.shape(zX4)
             print('     ==>',nQ,'quads...')
@@ -198,7 +202,9 @@ if __name__ == '__main__':
             idxQ2K = []
             for jQ in range(nQ):
                 zQxy = np.array([zX4[jQ,:],zY4[jQ,:]]).T ; # shape = (4,2)  (1 quad => x,y coordinates for 4 points)
-                if not lOverlapAnyOtherQuad( zQxy, zInUseXY[:knxt,:,:], scale=reskm, frac_overlap=cfg.rcFracOverlapOK ):
+                zQAa =           zAa[jQ]
+                if not lOverlapAnyOtherQuad( zQxy, zQAa, zInUseXY[:knxt,:,:], zInUseAa[:knxt],
+                                             scale=reskm, frac_overlap=cfg.rcFracOverlapOK ):
                     print('       * quad #',jQ,'is SELECTED! ('+str(vsubRes[kf])+'km)')
                     zInUseXY[knxt,:,:] = zQxy[:,:]
                     zmsk[knxt] = 1
@@ -239,7 +245,7 @@ if __name__ == '__main__':
     print('')
 
     if qcpt != nQtot:
-        print('ERROR: something went wrong! `qcpt != nQtot`'); exit(0)
+        mjt.printEE('something went wrong! `qcpt != nQtot`')
 
     #zX4 = np.array(zX4)
     #print(np.shape(zX4))
@@ -261,14 +267,14 @@ if __name__ == '__main__':
         jqe = jq+nQr
         #
         with np.load(cf) as data:
-            zXc[jq:jqe] = data['Xc'][ikeep]
-            zYc[jq:jqe] = data['Yc'][ikeep]
+            zXc[jq:jqe]   = data['Xc'][ikeep]
+            zYc[jq:jqe]   = data['Yc'][ikeep]
             zX4[jq:jqe,:] = data['X4'][ikeep,:]
             zY4[jq:jqe,:] = data['Y4'][ikeep,:]
-            zdiv[jq:jqe] = data['divergence'][ikeep]
-            zshr[jq:jqe] = data['shear'][ikeep]
-            ztot[jq:jqe] = data['total'][ikeep]
-            zAq[jq:jqe] = data['quadArea'][ikeep]
+            zdiv[jq:jqe]  = data['divergence'][ikeep]
+            zshr[jq:jqe]  = data['shear'][ikeep]
+            ztot[jq:jqe]  = data['total'][ikeep]
+            zAq[jq:jqe]   = data['quadArea'][ikeep]
             #
             if jf==0:
                 itimeC = data['time']
@@ -290,49 +296,6 @@ if __name__ == '__main__':
 
 
 
-    if lExportCloud:
-        jf = 0
-        jq = 0
-        for cf in listnc[idxF2K]:
-            print('    - '+cf+' ('+str(vsubRes[idxF2K[jf]])+'km)'); # => indices of quads to keep:',idxF_Q2K[jf])
-            ikeep = idxF_Q2K[jf]
-            nQr = len(ikeep)
-            jqe = jq+nQr
-            #
-            idate, zIDs, zGC, zXY, ztim = mjt.LoadNCdataMJT( cf, krec=0, lGetTimePos=True, convention='F' )
-
-            print('shape zXY =>',np.shape(zXY))
-
-            # Coordinates associated to the Quads we keep
-            z4x = zX4[jq:jqe,:]
-            z4y = zY4[jq:jqe,:]
-
-            print('shape z4x =>',np.shape(z4x))
-
-            # FINISH ME !!!
-            exit(0)
-
-            
-            #
-            jf += 1
-            jq = jqe
-        ### cf in listnpz[idxF2K]
-        print('')
-
-
-        #makedirs( './nc', exist_ok=True )    
-        #kk = mjt.ncSaveCloudBuoys( './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc', vtim, zPids1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
-        #                           xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
-
-
-
-        
-        exit(0)
-        
-
-
-
-    
 
     # Some plots:
     if iplot>0:
@@ -341,11 +304,6 @@ if __name__ == '__main__':
         cfnm = str.replace( cfnm, '.npz', '')
         
         zoom = 1
-        
-        
-        
-        
-
         
         cresinfo = '('+str(reskm)+' km)'
         
@@ -359,7 +317,6 @@ if __name__ == '__main__':
         cresinfo = '('+str(reskm)+' km)'
 
         nmproj=NameArcticProj
-
 
         zrx = [ np.min(zX4)-25. , np.max(zX4)+25. ]
         zry = [ np.min(zY4)-25. , np.max(zY4)+25. ]
@@ -375,10 +332,39 @@ if __name__ == '__main__':
                                   title=corigin+': shear '+cresinfo, idate=itimeC, edgecolor='k' )
 
 
-        cix = ''
-        cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
-
-        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
+        #cix = ''
+        #cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
+        #mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
+        
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
                                   pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo, idate=itimeC, edgecolor='k' )
+
+
+
+    #if lExportCloud:
+    #    jf = 0
+    #    jq = 0
+    #    for cf in listnc[idxF2K]:
+    #        print('    - '+cf+' ('+str(vsubRes[idxF2K[jf]])+'km)'); # => indices of quads to keep:',idxF_Q2K[jf])
+    #        ikeep = idxF_Q2K[jf]
+    #        nQr = len(ikeep)
+    #        jqe = jq+nQr
+    #        #
+    #        idate, zIDs, zGC, zXY, ztim = mjt.LoadNCdataMJT( cf, krec=0, lGetTimePos=True, convention='F' )
+    #        print('shape zXY =>',np.shape(zXY))
+    #        # Coordinates associated to the Quads we keep
+    #        z4x = zX4[jq:jqe,:]
+    #        z4y = zY4[jq:jqe,:]
+    #        print('shape z4x =>',np.shape(z4x))
+    #        # FINISH ME !!!
+    #        exit(0)
+    #        jf += 1
+    #        jq = jqe
+    #    ### cf in listnpz[idxF2K]
+    #    print('')
+    #    #makedirs( './nc', exist_ok=True )    
+    #    #kk = mjt.ncSaveCloudBuoys( './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc', vtim, zPids1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
+    #    #                           xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
+
 
