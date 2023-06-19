@@ -243,6 +243,8 @@ if __name__ == '__main__':
     if quality_mode in ['rgps','rgps_map','rgps_track']:
         ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
 
+
+        # Mind: `rc_MinDef` & `rc_MaxDef` are mode-dependant !
         lNeedClean = np.any( (ztotdm1 < cfg.rc_MinDef) | (ztotdm1 > cfg.rc_MaxDef) )
         
         if lNeedClean:
