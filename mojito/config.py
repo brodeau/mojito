@@ -228,8 +228,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #
     elif irk==640:
         rc_d_ss = 636.
-        #rcFracOverlapOK = 0.6 ; #ok!
-        rcFracOverlapOK = 0.7 ; #ok!
+        rcFracOverlapOK = 0.5 ; #??? best?
         rc_maxDevMeanAreaQuads = 128
         rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
         rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
