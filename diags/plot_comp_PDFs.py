@@ -11,8 +11,8 @@ from re import split
 import mojito   as mjt
 
 idebug=1
-#iffrmt='png'
-iffrmt='svg'
+iffrmt='png'
+#iffrmt='svg'
 
 
 if __name__ == '__main__':
