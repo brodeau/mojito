@@ -194,7 +194,6 @@ if __name__ == '__main__':
         s_shear = mjt.StdDev( m_shear, ZshrClean )
         print('LOLO: mean and sigma for shear =', m_shear, s_shear)
         zE = (xbin_center_shr[:] - m_shear )/s_shear
-        #zE = xbin_center_shr[:]/s_shear
 
         zIntShear = np.sum( PDF_shr[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )
         print(' Integral of PDF of shear =', zIntShear)

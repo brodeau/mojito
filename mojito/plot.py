@@ -1063,9 +1063,12 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         xlog_min, xlog_max = cfg.rc_shr_min_pdf, cfg.rc_shr_max_pdf
     
     # For figure axes:
-    ylog_min,ylog_max = 5.e-3, 3.5e2
-    rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
-    cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
+    #ylog_min,ylog_max = 5.e-3, 3.5e2
+    #rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
+    #cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
+    ylog_min,ylog_max = 8.e-5, 3.5e2
+    rxlabs = [8.e-5, 0.005, 0.01, 0.05, 0.1, 0.5]
+    cxlabs = ['8.e-5','0.005', '0.01', '0.05', '0.1', '0.5']
     lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
 
     if reskm>30 and reskm<70:
