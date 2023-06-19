@@ -66,15 +66,6 @@ if __name__ == '__main__':
     if np.shape(VDTB1) != (nbF1,):
         print('ERROR: problem #0 for file 1!'); exit(0)
 
-    #if corigin1=='RGPS':
-    #    # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
-    #    from mojito import config as cfg
-    #    kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
-    #    print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean RGPS data!!!')        
-    #    (idxKeep,) = np.where(ZDEF1>cfg.rc_tot_min)
-    #    ZDEF1 = ZDEF1[idxKeep]
-    #    Zdat1 = Zdat1[idxKeep]
-
     if ldo2 or ldo3:
         cf_in2 = argv[2]
         mjt.chck4f(cf_in2)        
@@ -148,39 +139,39 @@ if __name__ == '__main__':
         k0 = mjt.PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
 
 
-    # DEBUG:
-    if cfield=='shear' and lPlotPDFs and ldo3:
-        max_shr = 1.5 ; # day^-1
-        zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1
-        rfexp_bin = 0.25
-        wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
-
-        (Nt,) = np.shape(VDTB1)
-        for jt in range(Nt):
-            kd1, kd2, kd3 = VDTB1[jt],VDTB2[jt],VDTB3[jt] ;  # date
-            print('\n *** Preparing PDF plot batch at date:',e2c(kd1))
-            (idxDate1,) = np.where( Zdat1 == kd1 )
-            (idxDate2,) = np.where( Zdat2 == kd2 )
-            (idxDate3,) = np.where( Zdat3 == kd3 )
-            nV1,nV2,nV3 = len(idxDate1),len(idxDate2),len(idxDate3)
-            print('         => '+str(nV1)+' '+cv_in+' deformation for this date....')
-
-            if nV1>=Nmin and nV2>=Nmin and nV3>=Nmin:
-                zdf1, zdf2, zdf3 = ZDEF1[idxDate1], ZDEF2[idxDate2], ZDEF3[idxDate3]
-
-            nBinsS, xbin_bounds, xbin_center = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear' )
-            nP1, PDF1 = mjt.computePDF( xbin_bounds, xbin_center,    zdf1,  cwhat='shear' )
-            nP2, PDF2 = mjt.computePDF( xbin_bounds, xbin_center,    zdf2,  cwhat='shear' )
-            nP3, PDF3 = mjt.computePDF( xbin_bounds, xbin_center,    zdf3,  cwhat='shear' )
-
-            #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1)+'.png' )
-            #, reskm=reskm,
-            #title=cName+cnxtraScl, period=cperiod )
-
-            kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1,precision='D')+'.png',
-                                origin=mjt.vorig[0], title='Shear', period=e2c(kd1),
-                                ppdf2=PDF2, Np2=nP2, origin2=mjt.vorig[1], ppdf3=PDF3, Np3=nP3, origin3=mjt.vorig[2] )
-    #DEBUG.
+    ##DEBUG:
+    #if cfield=='shear' and lPlotPDFs and ldo3:
+    #    max_shr = 1.5 ; # day^-1
+    #    zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1
+    #    rfexp_bin = 0.25
+    #    wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
+    #
+    #    (Nt,) = np.shape(VDTB1)
+    #    for jt in range(Nt):
+    #        kd1, kd2, kd3 = VDTB1[jt],VDTB2[jt],VDTB3[jt] ;  # date
+    #        print('\n *** Preparing PDF plot batch at date:',e2c(kd1))
+    #        (idxDate1,) = np.where( Zdat1 == kd1 )
+    #        (idxDate2,) = np.where( Zdat2 == kd2 )
+    #        (idxDate3,) = np.where( Zdat3 == kd3 )
+    #        nV1,nV2,nV3 = len(idxDate1),len(idxDate2),len(idxDate3)
+    #        print('         => '+str(nV1)+' '+cv_in+' deformation for this date....')
+    #
+    #        if nV1>=Nmin and nV2>=Nmin and nV3>=Nmin:
+    #            zdf1, zdf2, zdf3 = ZDEF1[idxDate1], ZDEF2[idxDate2], ZDEF3[idxDate3]
+    #
+    #        nBinsS, xbin_bounds, xbin_center = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear' )
+    #        nP1, PDF1 = mjt.computePDF( xbin_bounds, xbin_center,    zdf1,  cwhat='shear' )
+    #        nP2, PDF2 = mjt.computePDF( xbin_bounds, xbin_center,    zdf2,  cwhat='shear' )
+    #        nP3, PDF3 = mjt.computePDF( xbin_bounds, xbin_center,    zdf3,  cwhat='shear' )
+    #
+    #        #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1)+'.png' )
+    #        #, reskm=reskm,
+    #        #title=cName+cnxtraScl, period=cperiod )
+    #
+    #        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1,precision='D')+'.png',
+    #                            origin=mjt.vorig[0], title='Shear', period=e2c(kd1),
+    #                            ppdf2=PDF2, Np2=nP2, origin2=mjt.vorig[1], ppdf3=PDF3, Np3=nP3, origin3=mjt.vorig[2] )
+    ##DEBUG.
             
 
 

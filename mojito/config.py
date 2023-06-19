@@ -81,7 +81,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     global ivc_KnownScales, rc_d_ss, rcFracOverlapOK
     global rc_Qang_min, rc_Qang_max, rc_dRatio_max
     global rc_Qarea_min, rc_Qarea_max, rc_maxDevMeanAreaQuads, rc_t_dev_cancel
-    global rc_div_min, rc_shr_min, rc_tot_min, rc_div_max, rc_shr_max, rc_tot_max
+    global rc_MinDef, rc_MaxDef
     global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig
     global rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf, rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf
     
@@ -99,13 +99,11 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     #                        # as a fraction of the nominal areas (=`reskm*reskm`)
     
     # Extremas for deformations, in [day^-1]:
-    rc_div_max, rc_shr_max, rc_tot_max = 1., 1., 1.
-    #if mode in ['rgps','rgps_track']:
+    rc_MaxDef = 2.
     if mode in ['rgps']:
-        #fixme?
-        rc_div_min, rc_shr_min, rc_tot_min = 8.e-5, 8.e-5, 8.e-5    ; # # Because noisy at tiny deformation!!! Based on scatter plot of scaling        
+        rc_MinDef = 8.e-5   ; # Because noisy at tiny deformation!!! Based on scatter plot of scaling at 10km
     else:
-        rc_div_min, rc_shr_min, rc_tot_min = 1.e-15, 1.e-15, 1.e-15 ; # for deformation generation
+        rc_MinDef = 1.e-15  ; # ~ 0 !
 
     # Extremas for deformations for PDFs only:
     rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
@@ -113,9 +111,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     
     # Extremas for deformations for figures only:
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  1., 1., 1.,0.1
-
-
-
 
     if mode in ['thorough','model']:
         rc_Qang_min =  40.  ; # minimum angle tolerable in a quadrangle [degree]

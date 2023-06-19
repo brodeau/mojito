@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     k1 = cfg.initialize(                mode=quality_mode )
     k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
-    print(' *** Min and max deformation allowed:',cfg.rc_tot_min, cfg.rc_tot_max,' days^-1 !')
+    print(' *** Min and max deformation allowed:',cfg.rc_MinDef, cfg.rc_MaxDef,' days^-1 !')
     if not cfg.lc_accurate_time:
         print(' *** Time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
@@ -243,11 +243,11 @@ if __name__ == '__main__':
     if quality_mode in ['rgps','rgps_map','rgps_track']:
         ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
 
-        lNeedClean = np.any( (ztotdm1 < cfg.rc_tot_min) | (ztotdm1 > cfg.rc_tot_max) )
+        lNeedClean = np.any( (ztotdm1 < cfg.rc_MinDef) | (ztotdm1 > cfg.rc_MaxDef) )
         
         if lNeedClean:
-            # Must get rid of extremely small deformation (if RGPS! if not => `rc_div_min, rc_shr_min, rc_tot_min` taken ridiculously tiny!)
-            (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_tot_min) & (ztotdm1 <= cfg.rc_tot_max) )
+            # Must get rid of extremely small deformation (if RGPS! if not => `rc_MinDef` taken ridiculously tiny!)
+            (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_MinDef) & (ztotdm1 <= cfg.rc_MaxDef) )
             #
             nDn = len(idxKeep)
             if nDn < nD:

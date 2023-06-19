@@ -18,10 +18,6 @@ l_cst_bins = False ; rfexp_bin = 0.25
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
-max_div = 1.5 ; # day^-1
-max_shr = 1.5 ; # day^-1
-max_tot = 1.5 ; # day^-1
-
 # About width of bins:
 if l_cst_bins:
     wbin_div = 0.001 ; # day^-1
@@ -46,7 +42,7 @@ if __name__ == '__main__':
     cf_div_in    = argv[1]
     
     quality_mode = argv[2]
-    ik = cfg.controlModeName( path.basename(__file__), quality_mode )
+    k1 = cfg.controlModeName( path.basename(__file__), quality_mode )
     
     cf_shr_in = str.replace( cf_div_in, 'DIV', 'SHR' )
     cf_tot_in = str.replace( cf_div_in, 'DIV', 'TOT' )
@@ -98,9 +94,10 @@ if __name__ == '__main__':
     cperiod = cperd1
 
 
-    # Minimum deformation values acceptable:
-    k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
-    zmin_div, zmin_shr, zmin_tot = cfg.rc_div_min, cfg.rc_shr_min, cfg.rc_tot_min ; # day^-1 ; mainly because RGPS is noisy around 0! We do not want have the zero on the PDF...
+    # Minimum and maximum deformation values acceptable for pdf:
+    k2 = = cfg.updateConfig4Scale( reskm, mode='rgps', ltalk=False )
+    print(' * [Construct90P()] => uses `rc_MinDef` =',cfg.rc_MinDef,'to clean all data / rgps, regardless of origin!!!')
+    zmin_def, zmax_def = cfg.rc_MinDef, cfg.rc_MaxDef ; # day^-1
     
     # For large scales, we must increase the size of bins:
     if   reskm >= 35. and reskm < 50.:
@@ -127,30 +124,30 @@ if __name__ == '__main__':
     cxtra = ''
     if l_cst_bins:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = mjt.constructCstBins( zmin_div, max_div, wbin_div, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = mjt.constructCstBins( zmin_def, zmax_def, wbin_div, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructCstBins( zmin_shr, max_shr, wbin_shr, name='shear',      iverbose=idebug )        
+        nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructCstBins( zmin_def, zmax_def, wbin_shr, name='shear',      iverbose=idebug )        
         # For the total deformation:
-        nBinsS, xbin_bounds_tot, xbin_center_tot = mjt.constructCstBins( zmin_tot, max_tot, wbin_tot, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_tot, xbin_center_tot = mjt.constructCstBins( zmin_def, zmax_def, wbin_tot, name='shear',      iverbose=idebug )
         
     else:
         # For the divergence
-        nBinsD, xbin_bounds_div, xbin_center_div = mjt.constructExpBins( rfexp_bin, zmin_div, max_div, wVbin_min, name='divergence', iverbose=idebug )
+        nBinsD, xbin_bounds_div, xbin_center_div = mjt.constructExpBins( rfexp_bin, zmin_def, zmax_def, wVbin_min, name='divergence', iverbose=idebug )
         # For the shear:
-        nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear',      iverbose=idebug )
+        nBinsS, xbin_bounds_shr, xbin_center_shr = mjt.constructExpBins( rfexp_bin, zmin_def, zmax_def, wVbin_min, name='shear',      iverbose=idebug )
         # For the total deformation:
-        nBinsS, xbin_bounds_tot, xbin_center_tot = mjt.constructExpBins( rfexp_bin, zmin_tot, max_tot, wVbin_min, name='total',      iverbose=idebug )
+        nBinsS, xbin_bounds_tot, xbin_center_tot = mjt.constructExpBins( rfexp_bin, zmin_def, zmax_def, wVbin_min, name='total',      iverbose=idebug )
         cxtra = '_incB'
 
 
 
     # Signed divergence:
-    (idxN,) = np.where(ZDiv<-zmin_div)
+    (idxN,) = np.where(ZDiv<-zmin_def)
     nPn  = len(idxN)
     Zcnv = np.zeros(nPn)
     Zcnv[:] = - ZDiv[idxN] ; # We want it to be positive for the graph...
     
-    (idxP,) = np.where(ZDiv> zmin_div)
+    (idxP,) = np.where(ZDiv> zmin_def)
     nPp  = len(idxP)
     Zdiv = np.zeros(nPp)
     Zdiv[:] = ZDiv[idxP]

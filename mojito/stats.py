@@ -138,6 +138,7 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000  ):
     '''
         * ifile: number of the file treated
+        *  pdef must be in days^-1
         
     '''
     lmaskArrays = True
@@ -149,11 +150,11 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000  ):
 
     zdates, zdef = pdates.copy(), pdef.copy()
 
-    # Need to remove erroneous extremely small values: rc_div_min, rc_shr_min, rc_tot_min !
+    # Need to remove erroneous extremely small values:
     from mojito import config as cfg
     kk = cfg.updateConfig4Scale( 10, mode='rgps', ltalk=False )
-    print(' USING: rc_tot_min =',cfg.rc_tot_min,'to clean all data!!!')        
-    (idxKeep,) = np.where(pdef>cfg.rc_tot_min)
+    print(' * [Construct90P()] => uses `rc_MinDef` =',cfg.rc_MinDef,'to clean all data / rgps, regardless of origin!!!')        
+    (idxKeep,) = np.where(pdef>cfg.rc_MinDef)
     zdef = pdef[idxKeep]
     zdates = pdates[idxKeep]
 
