@@ -237,6 +237,9 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
         else:
             rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
+        #bricolage:
+        if mode in ['rgps_track']:
+            rc_MaxDef = 0.026
         #
     else:
         print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
