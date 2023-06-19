@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
 
     # Minimum and maximum deformation values acceptable for pdf:
-    k2 = = cfg.updateConfig4Scale( reskm, mode='rgps', ltalk=False )
+    k2 = cfg.updateConfig4Scale( reskm, mode='rgps', ltalk=False )
     print(' * [Construct90P()] => uses `rc_MinDef` =',cfg.rc_MinDef,'to clean all data / rgps, regardless of origin!!!')
     zmin_def, zmax_def = cfg.rc_MinDef, cfg.rc_MaxDef ; # day^-1
     
