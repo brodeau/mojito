@@ -9,6 +9,7 @@ import numpy as np
 from re import split
 #
 import mojito   as mjt
+from mojito import config as cfg
 
 idebug=1
 #iffrmt='png'
@@ -132,6 +133,8 @@ if __name__ == '__main__':
         cnxtraScl = ', '+cscale
         
 
+
+    k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
         
     fdir = './figs/PDFs'
     if not path.exists(fdir): makedirs( fdir, exist_ok=True )
@@ -150,6 +153,8 @@ if __name__ == '__main__':
 
         cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cperiod+cfxtraScl
 
+        if not cfg.lc_StrictPDF:
+            cfroot += '_Min1e-3'
 
         # subsitutions for name for paper:
         corig2 = str.replace( corig2, '2305', '')
@@ -161,8 +166,9 @@ if __name__ == '__main__':
         #                    title=cName+': '+cscale, period=cperiod, origin=corig,
         #                    ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
         # Without `N`:
+        # title=cName+' ('+cscale+')' ; period=cperiod,        
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
-                            title=cName+' ('+cscale+')', period=cperiod, origin=corig,
+                            title=cName, origin=corig,
                             ppdf2=PDF2,  origin2=corig2, ppdf3=PDF3,  origin3=corig3 )
     
     else:
