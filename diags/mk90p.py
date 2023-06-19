@@ -50,7 +50,7 @@ if __name__ == '__main__':
         cfield = 'total'
         cvar   = 'xtot'
     else:
-        print('ERROR: wrong `cv_in` !!! ', cv_in); exit(0)
+        mjt.printEE('wrong `cv_in` !!! ', cv_in)
 
     mjt.chck4f(cf_in1)
     with np.load(cf_in1) as data:
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         ZDEF1 = data[cvar]
     cdtbin1 = str(dtbin1)
     if np.shape(VDTB1) != (nbF1,):
-        print('ERROR: problem #0 for file 1!'); exit(0)
+        mjt.printEE('problem #0 for file 1!')
 
     if ldo2 or ldo3:
         cf_in2 = argv[2]
@@ -79,14 +79,15 @@ if __name__ == '__main__':
             Zdat2 = data['dates_point']
             ZDEF2 = data[cvar]
             if reskm2!=reskm1:
-                print('ERROR: wrong resolutin for '+cf_in2+'!!! ', reskm2); exit(0)
+                mjt.printEE('wrong resolutin for '+cf_in2+'!!! ', reskm2)
         cdtbin2 = str(dtbin2)
         if np.shape(VDTB2) != (nbF2,):
-            print('ERROR: problem #0 for file 2!'); exit(0)
+            mjt.printEE('problem #0 for file 2!')
         if corigin2=='RGPS':
-            print('ERROR: oops did not expect second file to be RGPS!'); exit(0)
+            mjt.printEE('oops did not expect second file to be RGPS!')
         if np.shape(VDTB2)!=np.shape(VDTB1):
-            print('ERROR: `shape(VDTB2)!=shape(VDTB1)`!'); exit(0)
+            print('    ', np.shape(VDTB2), np.shape(VDTB1))
+            mjt.printEE('`shape(VDTB2)!=shape(VDTB1)`!')
         
 
     if ldo3:
@@ -101,14 +102,15 @@ if __name__ == '__main__':
             Zdat3 = data['dates_point']
             ZDEF3 = data[cvar]
             if reskm3!=reskm1:
-                print('ERROR: wrong resolutin for '+cf_in3+'!!! ', reskm3); exit(0)
+                mjt.printEE('wrong resolutin for '+cf_in3+'!!! ', reskm3)
         cdtbin3 = str(dtbin3)
         if np.shape(VDTB3) != (nbF3,):
-            print('ERROR: problem #0 for file 3!'); exit(0)
+            mjt.printEE('problem #0 for file 3!')
         if corigin3=='RGPS':
-            print('ERROR: oops did not expect third file to be RGPS!'); exit(0)
+            mjt.printEE('oops did not expect third file to be RGPS!')
         if np.shape(VDTB3)!=np.shape(VDTB1):
-            print('ERROR: `shape(VDTB3)!=shape(VDTB1)`!'); exit(0)
+            print('    ', np.shape(VDTB3), np.shape(VDTB1))
+            mjt.printEE('`shape(VDTB3)!=shape(VDTB1)`!')
 
         
     reskm  = reskm1

@@ -150,8 +150,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 5.5
         rcFracOverlapOK = 1.e-9
         rc_maxDevMeanAreaQuads = 2        
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.003, 0.003, 0.003
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
+        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.0003, 0.0003, 0.0003 ; # juste avant le milieu de la 1ere bin
+        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5 ; # xlim de la figure de pdf!
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  0.12, 0.12, 0.12, 0.01
         if mode in ['thorough','model']:            
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
