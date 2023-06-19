@@ -43,8 +43,8 @@ def constructExpBins( rfexp, rmin, rmax, wbmin, name='unknown', iverbose=0 ):
     zacc  = rmin
     while not zacc>=rmax:
         rc = float(kc)
-        #wb = wbmin*exp(rfexp*rc)
-        wb = wbmin*10.**(rfexp*rc)
+        wb = wbmin*exp(rfexp*rc)
+        #wb = wbmin*10.**(rfexp*rc)
         zwbin.append(wb)
         zacc = zacc+wb
         kc = kc+1
