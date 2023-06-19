@@ -83,7 +83,7 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     global rc_Qarea_min, rc_Qarea_max, rc_maxDevMeanAreaQuads, rc_t_dev_cancel
     global rc_MinDef, rc_MaxDef
     global rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig
-    global rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf, rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf
+    global lc_StrictPDF, rc_def_min_pdf, rc_def_max_pdf
     
     irk = int(res_km)
 
@@ -104,10 +104,15 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_MinDef = 8.e-5   ; # Because noisy at tiny deformation!!! Based on scatter plot of scaling at 10km
     else:
         rc_MinDef = 1.e-15  ; # ~ 0 !
-
+    
     # Extremas for deformations for PDFs only:
-    rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
-    rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf =  8.e-5, 8.e-5, 8.e-5
+    lc_StrictPDF = False
+    if lc_StrictPDF:
+        rc_def_max_pdf =  0.5
+        rc_def_min_pdf =  rc_MinDef
+    else:
+        rc_def_max_pdf =  0.5   ; # `2.0`for Anton in Olason al. 2022 !
+        rc_def_min_pdf =  0.001 ; # Like Anton for Olason al. 2022 !
     
     # Extremas for deformations for figures only:
     rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  1., 1., 1.,0.1
@@ -150,8 +155,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 5.5
         rcFracOverlapOK = 1.e-9
         rc_maxDevMeanAreaQuads = 2        
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.0003, 0.0003, 0.0003 ; # juste avant le milieu de la 1ere bin
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5 ; # xlim de la figure de pdf!
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  0.12, 0.12, 0.12, 0.01
         if mode in ['thorough','model']:            
             rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
@@ -168,8 +171,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 15.
         rcFracOverlapOK = 1.e-9
         rc_maxDevMeanAreaQuads = 4
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 0.001, 0.001, 0.001
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.5, 0.5, 0.5
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.02
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
@@ -180,8 +181,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 34.5
         rcFracOverlapOK = 0.05
         rc_maxDevMeanAreaQuads = 8
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 5.e-4, 5.e-4, 5.e-4
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.2, 0.2, 0.2
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 0.5e-1, 0.5e-1, 0.5e-1, 0.01
         if mode=='model':            
             #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
@@ -193,8 +192,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 74.75
         rcFracOverlapOK = 0.05
         rc_maxDevMeanAreaQuads = 16
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-4, 1.e-4, 1.e-4
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.15, 0.15, 0.15
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.025
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
@@ -205,8 +202,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 156.
         rcFracOverlapOK = 0.1
         rc_maxDevMeanAreaQuads = 32
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 7.5e-2, 7.5e-2, 7.5e-2, 0.02
         if mode=='model':            
             rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
@@ -218,8 +213,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         #rcFracOverlapOK = 0.2; #ok
         rcFracOverlapOK = 0.3; # better
         rc_maxDevMeanAreaQuads = 64
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 5.e-2, 5.e-2, 5.e-2, 0.01
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
@@ -230,8 +223,6 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         rc_d_ss = 636.
         rcFracOverlapOK = 0.5 ; #??? best?
         rc_maxDevMeanAreaQuads = 128
-        rc_div_min_pdf, rc_shr_min_pdf, rc_tot_min_pdf = 1.e-5, 1.e-5, 1.e-5
-        rc_div_max_pdf, rc_shr_max_pdf, rc_tot_max_pdf =  0.1, 0.1, 0.1
         rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 2.5e-2, 2.5e-2, 2.5e-2, 0.01
         if mode=='model':
             rc_Qarea_min, rc_Qarea_max =  624*624, 656*656

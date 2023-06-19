@@ -93,11 +93,10 @@ if __name__ == '__main__':
     corigin = corig1
     cperiod = cperd1
 
-
     # Minimum and maximum deformation values acceptable for pdf:
     k2 = cfg.updateConfig4Scale( reskm, mode='rgps', ltalk=False )
     print(' * [Construct90P()] => uses `rc_MinDef` =',cfg.rc_MinDef,'to clean all data / rgps, regardless of origin!!!')
-    zmin_def, zmax_def = cfg.rc_MinDef, cfg.rc_MaxDef ; # day^-1
+    zmin_def, zmax_def = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf  ; # day^-1
 
     # For large scales, we must increase the size of bins:
     if   reskm >= 35. and reskm < 50.:

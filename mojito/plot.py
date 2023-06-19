@@ -1053,22 +1053,17 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     print('WARNING [LogPDFdef]: setup for nominal resolution of '+str(reskm)+' km !!!')
     
     k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
-    if name=="Divergence":
-        xlog_min, xlog_max = cfg.rc_div_min_pdf, cfg.rc_div_max_pdf
-    elif name=="Shear":
-        xlog_min, xlog_max = cfg.rc_shr_min_pdf, cfg.rc_shr_max_pdf
-    elif name=="Total":
-        xlog_min, xlog_max = cfg.rc_tot_min_pdf, cfg.rc_tot_max_pdf
-    else:
-        xlog_min, xlog_max = cfg.rc_shr_min_pdf, cfg.rc_shr_max_pdf
-    
+            
     # For figure axes:
-    ylog_min,ylog_max = 5.e-3, 3.5e2
+    xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf
+    ylog_min, ylog_max = 5.e-3, 3.5e2
     #rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
     #cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
     # xlog_min,xlog_max => config file !!! cfg.rc_tot_min_pdf,
+    #if cfg.lc_StrictPDF:
     rxlabs = [ 0.001, 0.01, 0.1, 0.5]
     cxlabs = ['0.001', '0.01', '0.1', '0.5']
+        
     lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
 
     if reskm>30 and reskm<70:
