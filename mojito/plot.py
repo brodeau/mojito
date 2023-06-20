@@ -61,7 +61,7 @@ vmrkfs = ['none','none','full','none','none']
 
 def FigInitStyle( fntzoom=1., color_top='k' ):
     #
-    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail, cfont_abc
+    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail, cfont_abc, cfont_uya
     #
     #fntzoom_inv = 1.*fntzoom**0.5
     fntzoom_inv = fntzoom
@@ -83,6 +83,7 @@ def FigInitStyle( fntzoom=1., color_top='k' ):
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'light', 'fontsize':int(6.*fntzoom), 'color':color_top }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     cfont_abc   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(10*fntzoom), 'color':color_top }
+    cfont_uya   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(7.*fntzoom), 'color':color_top }
     #
     return 0
 
@@ -1481,7 +1482,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 
-def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
+def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, whatP=90,
                    figname='fig_series_P90.png', y_range=(0.,0.1), x_range=None, dy=0.01 ):
     '''
         * vt1: time array as Epoch Unix time 
@@ -1505,8 +1506,6 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
     else:
         (xmin,xmax) = (np.min(vt1), np.max(vt1))
         
-    #vdate1 = np.array([ e2c(vt1[jt], precision='D') for jt in range(nT1) ], dtype='U10')    
-    #VX1 = [dtm.strptime(d, "%Y-%m-%d").date() for d in vdate1]
     vdate1 = np.array([ e2c(dt) for dt in vt1 ], dtype='U19')    
     VX1    = np.array([dtm.strptime(d, "%Y-%m-%d_%H:%M:%S").date() for d in vdate1])
     
@@ -1526,10 +1525,10 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
         vdate3 = np.array([ e2c(vt3[jt], precision='D') for jt in range(nT3) ], dtype='U10')    
         VX3 = [dtm.strptime(d, "%Y-%m-%d").date() for d in vdate3]
     
-    kk = FigInitStyle( fntzoom=1.5 )
+    kk = FigInitStyle( fntzoom=3. )
         
-    fig = plt.figure(num = 1, figsize=(12,7), facecolor='w', edgecolor='k')
-    ax  = plt.axes([0.07, 0.18, 0.9, 0.75])
+    fig = plt.figure(num = 1, figsize=(15,8.75), facecolor='w', edgecolor='k')
+    ax  = plt.axes([0.072, 0.16, 0.925, 0.8])
 
     # Date ticks stuff:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
@@ -1540,12 +1539,12 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
     #ax.xaxis.set_minor_formatter(mdates.DateFormatter('%d'))
     #ax.xaxis.set_minor_locator(mdates.MonthLocator())
     #ax.xaxis.set_minor_locator(mdates.DayLocator(bymonthday=(1,5,10), interval=3, tz=None))
-    
-    plt.plot(VX1, V1, 'o-', color=vcolor[0], linewidth=vlwdth[0], markersize=6, alpha=0.9,     label=vorig[0], zorder=10)
+
+    plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], alpha=0.9, label=vorig[0], zorder=10)
     if ldo2:
-        plt.plot(VX2, V2, 'o-', color=vcolor[1], linewidth=vlwdth[1], markersize=6, alpha=0.9, label=vorig[1], zorder=10)
+        plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], alpha=0.9, label=vorig[1], zorder=10)
     if ldo3:
-        plt.plot(VX3, V3, 'o-', color=vcolor[2], linewidth=vlwdth[2], markersize=6, alpha=0.9, label=vorig[2], zorder=10)
+        plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], alpha=0.9, label=vorig[2], zorder=10)
 
     (ymin,ymax) = y_range
 
@@ -1553,9 +1552,9 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3,
     ax.set_ylim(ymin,ymax)
 
     if field:
-        plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
+        plt.ylabel(r'P'+whatP+': '+field+' deformation rate [days$^{-1}$]', **cfont_uya )
     ax.grid(color='0.5', linestyle='-', linewidth=0.3)
-    plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
+    plt.legend(bbox_to_anchor=(0.2, 1.), ncol=1, shadow=True, fancybox=True)
 
     print(' *** Saving figure',figname)
     plt.savefig( figname )

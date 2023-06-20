@@ -9,9 +9,13 @@ import numpy as np
 
 
 def printEE( cmsg ):
-    print('\n * ERROR '+cmsg, file=stderr)
+    print('\n * ERROR!!! => '+cmsg, file=stderr)
     exit(0)
 
+def printW( cmsg ):
+    print('\n * WARNING => '+cmsg, file=stderr)
+
+    
 def chck4f( cf ):
     from os.path import exists
     if not exists(cf):

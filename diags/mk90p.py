@@ -22,6 +22,8 @@ Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to ac
 
 zP=98
 
+iffrmt='png'
+
 if __name__ == '__main__':
 
     ldo1 = True
@@ -55,6 +57,7 @@ if __name__ == '__main__':
     mjt.chck4f(cf_in1)
     with np.load(cf_in1) as data:
         dtbin1 = data['dtbin']
+        dates_batch1 = data['dates_batch']
         reskm1 = data['reskm_nmnl']
         corigin1 = str(data['origin'])        
         #cperiod1 = str(data['period'])
@@ -71,6 +74,7 @@ if __name__ == '__main__':
         mjt.chck4f(cf_in2)        
         with np.load(cf_in2) as data:
             dtbin2 = data['dtbin']
+            dates_batch2 = data['dates_batch']
             reskm2 = data['reskm_nmnl']
             corigin2 = str(data['origin'])        
             #cperiod2 = str(data['period'])
@@ -87,7 +91,9 @@ if __name__ == '__main__':
             mjt.printEE('oops did not expect second file to be RGPS!')
         if np.shape(VDTB2)!=np.shape(VDTB1):
             print('    ', np.shape(VDTB2), np.shape(VDTB1))
-            mjt.printEE('`shape(VDTB2)!=shape(VDTB1)`!')
+            print(dates_batch2)
+            print(dates_batch1)
+            mjt.printW('`shape(VDTB2)!=shape(VDTB1)`!')
         
 
     if ldo3:
@@ -95,6 +101,7 @@ if __name__ == '__main__':
         mjt.chck4f(cf_in3)        
         with np.load(cf_in3) as data:
             dtbin3 = data['dtbin']
+            dates_batch3 = data['dates_batch']
             reskm3 = data['reskm_nmnl']
             corigin3 = str(data['origin'])        
             nbF3 = int(data['Nbatch']) # 
@@ -110,7 +117,7 @@ if __name__ == '__main__':
             mjt.printEE('oops did not expect third file to be RGPS!')
         if np.shape(VDTB3)!=np.shape(VDTB1):
             print('    ', np.shape(VDTB3), np.shape(VDTB1))
-            mjt.printEE('`shape(VDTB3)!=shape(VDTB1)`!')
+            mjt.printW('`shape(VDTB3)!=shape(VDTB1)`!')
 
         
     reskm  = reskm1
@@ -181,21 +188,22 @@ if __name__ == '__main__':
     VDAT1, V90P1 = mjt.Construct90P(1, VDTB1, Zdat1, ZDEF1, pp=zP, Nmin=Nmin )
     
     if ldo3:
+
         if lPlotClouds:
             k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
             k0 = mjt.PlotCloud( 3, Zdat3, ZDEF3, field=cfield, figname='./figs/Cloud_'+corigin3+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-        cfig = 'fig_series_P90_RGPS-BBM-aEVP_'+cfield+'_P'+str(zP)+'.png'        
+        cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM-aEVP_'+cfield+'.'+iffrmt        
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin )
         VDAT3, V90P3 = mjt.Construct90P(3, VDTB3, Zdat3, ZDEF3, pp=zP, Nmin=Nmin )
 
-        kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.25), dy=0.05 )
+        kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, whatP=str(zP), figname='./figs/'+cfig, y_range=(0.,0.25), dy=0.05 )
         
     elif ldo2:
         if lPlotClouds:
             k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-        cfig = 'fig_series_P90_RGPS-BBM'+cfield+'_P'+str(zP)+'.png'        
+        cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM'+cfield+'.'+iffrmt        
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin  )
     
     else:
-        cfig = 'fig_series_P90_RGPS'+cfield+'_P'+str(zP)+'.png'        
+        cfig = 'fig_series_P'+str(zP)+'_RGPS'+cfield+'.'+iffrmt        
         kk= mjt.PlotP90Series( VDAT1, V90P1, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
