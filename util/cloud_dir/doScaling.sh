@@ -4,7 +4,7 @@
 
 str_exps=`echo ${EXPS} | sed -e s/','/'_'/g`
 
-fout="scaling_TotDefRate_${str_exps}.pdf"
+#fout="scaling_TotDefRate_${str_exps}.pdf"
 
 EXE="${HOME}/DEV/mojito/diags/mkscaling.py"
 

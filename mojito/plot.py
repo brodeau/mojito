@@ -688,7 +688,7 @@ def PlotPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png',
     #
     ax.set_ylim(0.,ymax)
     #ax.set_ylim(0.,np.max(ppdf))
-    ax.set_ylabel(r'PDF')
+    ax.set_ylabel(r'PDF', **cfont_uya)
     #
     # X-axis:
     plt.xticks( np.arange(0., xmax+dx, dx) )
@@ -1147,7 +1147,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
 
     # Y-axis:
-    plt.ylabel('PDF', color='k')
+    plt.ylabel('PDF', **cfont_uya)
     ax.set_ylim(ylog_min, ylog_max)
 
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
@@ -1270,7 +1270,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     ax.set_xticks(rxlabs)
     ax.set_xticklabels(cxlabs)
     # Y-axis:
-    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', **cfont_uya)
     ax.set_ylim(ylog_min, ylog_max)
     #
     #ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
@@ -1336,7 +1336,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ki = FigInitStyle( fntzoom=3 )
 
     fig = plt.figure( num = 1, figsize=(7,12), dpi=None )
-    ax = plt.axes([0.15, 0.065, 0.815, 0.93])
+    ax = plt.axes([0.157, 0.065, 0.81, 0.93])
 
     if lOnlyObs: No=1
 
@@ -1371,7 +1371,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     #ax.set_xticklabels(cxlabs)
     #
     # Y-axis:
-    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', **cfont_uya)
     ax.set_ylim(ylog_min, ylog_max)
     #
     #ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
@@ -1411,7 +1411,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
     # Y-axis:
-    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', color='k')
+    plt.ylabel(r'Total Deformation Rate [day$^{-1}$]', **cfont_uya)
     ax.set_ylim(ylog_min, ylog_max)
     #
     #ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
@@ -1466,7 +1466,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         plt.xlabel('Moment order (q)')
         ax.set_xlim(-0.1,3.1)
         # Y-axis:
-        plt.ylabel(r'$\beta(q)$', color='k')
+        plt.ylabel(r'$\beta(q)$', **cfont_uya)
         ax.set_ylim(-0.1, 1.6)
         #
         ax.legend(loc='upper left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
@@ -1605,7 +1605,7 @@ def PlotCloud( ki, xdate, xdef, field=None, dt_days=3,
     ax.set_ylim(ymin,ymax)
 
     #if field:
-    #    plt.ylabel(r'P90: '+field+' [days$^{-1}$]')
+    #    plt.ylabel(r'P90: '+field+' [days$^{-1}$]', **cfont_uya)
     #ax.grid(color='0.5', linestyle='-', linewidth=0.3)
     #plt.legend(bbox_to_anchor=(0.55, 1.), ncol=1, shadow=True, fancybox=True)
 
