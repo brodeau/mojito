@@ -214,7 +214,6 @@ if __name__ == '__main__':
 
 
     cfroot = './figs/SCALING_'+cfield+'_RGPS_vs_SI3_dt'+str(dtbin)
-
     
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, lAddPowerLawFit=lPowerLawFit,
                               cfig=cfroot+iffrmt, lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis,  )
