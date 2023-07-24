@@ -11,8 +11,8 @@ import mojito   as mjt
 from mojito import config as cfg
 
 
-#iffrmt = '.png'
-iffrmt = '.svg'
+iffrmt = '.png'
+#iffrmt = '.svg'
 
 idebug=1
 iplot=1 ; Naxis = None
@@ -32,7 +32,7 @@ cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
 
 lOnlyRGPS = False
 
-lPowerLawFit = True
+lPowerLawFit = False
 
 if __name__ == '__main__':
 
