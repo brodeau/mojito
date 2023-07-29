@@ -48,7 +48,8 @@ msPoints = 2  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
-vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
+#vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
+vorig  = [ 'RGPS',   'BBM_no_s_adv',  'SI3_s_adv',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
 vlwdth = [ 9  ,   6    ,    6   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
@@ -1250,7 +1251,8 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
 
     for jo in range(No):
         plt.loglog( pscales[:,jo], pF[:,jo], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
-                    color=vcolor[jo], label=pcOrig[jo], zorder=5 )
+                    color=vcolor[jo], label=vorig[jo], zorder=5 ) ; #lili                    
+#                    color=vcolor[jo], label=pcOrig[jo], zorder=5 ) ; #lili
 
 
     # Fit power-law to points:
