@@ -1,12 +1,13 @@
 #!/bin/bash
 
-YEAR="1997"
+#YEAR="1997"
+YEAR="2016"
 
 SITRCK_DIR="${HOME}/DEV/sitrack"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
-NEMO_CONF="NANUK4"
-LIST_NEMO_EXP="BBM00 EVP00"
+NEMO_CONF="HUDSON4"; NLEV=16
+LIST_NEMO_EXP="BBM00"
 
 DATE1="${YEAR}0101"
 DATE2="${YEAR}0331"
@@ -18,7 +19,7 @@ export SI3DATE1="${YEAR}0101"
 export SI3DATE2="${YEAR}0331"
 
 
-export FMASK_RGPS="mask_RGPS_all.nc"
+export FMASK_RGPS="tmask_HUDSON4.nc"
 
 MODE="model"
 
@@ -77,7 +78,7 @@ case ${host} in
         #export LCOARSEN=(  "320" ) ; export LDTINCRM=(   "0.5" )
         #export LCOARSEN=(  "640" ) ; export LDTINCRM=(   "0.25" )
         #
-        LIST_NEMO_EXP="BBM2302 EVP2302"
+        #LIST_NEMO_EXP="BBM2302 EVP2302"
         #LIST_NEMO_EXP="EVP2302"
         #
         ;;
@@ -91,8 +92,8 @@ esac
 
 
 
-export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/mesh_mask_${NEMO_CONF}_L31_4.2_1stLev.nc"
-export FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L31-I/${FMASK_RGPS}"
+export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NLEV}-I/mesh_mask_${NEMO_CONF}_L${NLEV}_4.2_1stLev.nc"
+export FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NLEV}-I/${FMASK_RGPS}"
 
 mkdir -p ./figs ./npz
 

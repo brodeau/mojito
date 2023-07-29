@@ -64,9 +64,10 @@ for RESKM in ${LCOARSEN[*]}; do
 
         if [ ! -f ${fout} ]; then
 
-            CMD="${EXE} -d ${LDATE0} -m ${FNMM} -i ${FSI3IN} -k 0 -f ${fmaskRGPS} -C ${RESKM}"
+            CMD="${EXE} -d ${LDATE0} -m ${FNMM} -i ${FSI3IN} -k 0 -f ${fmaskRGPS} -C ${RESKM} -N ${NEMO_CONF}"
             echo
             echo " *** About to launch:"; echo "     ${CMD}"; echo
+            exit;#lolo
             ijob=$((ijob+1))
             ${CMD} 1>"./logs/${flog}.out" 2>"./logs/${flog}.err" &
             echo
