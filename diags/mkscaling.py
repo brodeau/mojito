@@ -32,7 +32,7 @@ cfield = 'total'; cfld = 'tot'; cFLD = 'TOT'
 
 lOnlyRGPS = False
 
-lPowerLawFit = False
+lPowerLawFit = True
 
 if __name__ == '__main__':
 
