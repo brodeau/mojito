@@ -1324,7 +1324,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         zAB = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
         for jo in range(No):
             for jq in range(3):
-                (idxKeep,) = np.where(pscales[:,jo]<300)
+                #lolo:(idxKeep,) = np.where(pscales[:,jo]<300)
+                (idxKeep,) = np.where(pscales[:,jo]<600)
                 zAB[:,jo,jq] = _linear_fit_loglog_(pscales[idxKeep,jo], pMQ[idxKeep,jo,jq])
 
 
@@ -1447,7 +1448,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         cfig = str.replace(cfig,'_dt0','')
 
         fig = plt.figure( num = 1, figsize=(8,8), dpi=None )
-        ax = plt.axes([0.12, 0.09, 0.84, 0.88])
+        ax = plt.axes([0.13, 0.09, 0.84, 0.88])
 
         zx = np.arange(0,4.,1.)
                 
@@ -1469,7 +1470,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         ax.set_xlim(-0.1,3.1)
         # Y-axis:
         plt.ylabel(r'$\beta(q)$', **cfont_uya)
-        ax.set_ylim(-0.1, 1.6)
+        ax.set_ylim(-0.1, 1.75)
         #
         ax.legend(loc='upper left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
         

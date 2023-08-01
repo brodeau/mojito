@@ -7,8 +7,11 @@
 #fi
 
 
-listo=`find ./figs -name "*_o.png"`
-list=`find  ./figs -name "*.png" | grep -v 'o.png'`
+#listo=`find ./figs -name "*_o.png"`
+#list=`find  ./figs -name "*.png" | grep -v 'o.png'`
+
+listo=`\ls ./figs/*_o.png 2> /dev/null`
+list=`\ls ./figs/*.png | grep -v 'o.png'`
 
 echo $list ; echo; sleep 1
 
