@@ -106,8 +106,10 @@ def FigInitStyle( fntzoom=1., color_top='k' ):
 
 def _SelectArcticProjExtent_( nameProj ):
     #
-    if not nameProj in ['CentralArctic','SmallArctic','BigArctic']:
+    if not nameProj in ['CentralArctic','SmallArctic','BigArctic','HudsonB']:
         print('ERROR [_SelectArcticProjExtent_()] unknown projection: '+nameProj+' !!!'); exit(0)
+    #
+    vfig_WH = [ 7.54, 7.2 ]
     #
     # Stereographice projections:
     if   nameProj=='BigArctic':
@@ -122,7 +124,12 @@ def _SelectArcticProjExtent_( nameProj ):
         NProj =  [ -90.7, 70.9, 149.3, 68.,    90.,  -12., 10., 'h', 'stere' ]  # North Pole CentralArctic (zoom)
         LocTtl = (0.025, 0.925)
         #
-    return LocTtl, NProj
+    elif nameProj=='HudsonB':
+        NProj =  [ -93.5, 52., -74, 64.,   60.,  -85., 10., 'h', 'tmerc' ]  # North Pole CentralArctic (zoom)
+        LocTtl = (0.3, 0.1)
+        vfig_WH = [ 6., 7.2 ]
+        #
+    return LocTtl, NProj, np.array(vfig_WH)
 
 def _AdjustMapArctic_( nameProj, projH ):
     '''
@@ -188,7 +195,7 @@ def _set_fig_axis_( pX, pY, rdr=0.05, zoom=1., rangeX=None, rangeY=None ):
 
 
 
-def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png',
+def _figMap_( pt, pvlon, pvlat, BMProj, figWH=[7,7], cdate='', pvIDs=[], cfig='buoys_RGPS.png',
               ms=5, ralpha=0.5, caller='unknown', rzoom=1., title=None, title_loc=(10,10) ):
     '''
         IN:
@@ -214,7 +221,8 @@ def _figMap_( pt, pvlon, pvlat, BMProj, cdate='', pvIDs=[], cfig='buoys_RGPS.png
         NbValid = zmsk.sum()
         del zmsk
     #
-    vfig_size = [ 7.54*rzoom, 7.2*rzoom ]
+    #vfig_size = [ 7.54*rzoom, 7.2*rzoom ]
+    vfig_size = figWH*rzoom
     
     fig = plt.figure(num=1, figsize=(vfig_size), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor=col_bg)
@@ -277,7 +285,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
 
     ki = FigInitStyle( fntzoom=zoom , color_top='w' )
 
-    LocTitle, NP = _SelectArcticProjExtent_( nmproj )
+    LocTitle, NP, vfigWH = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
@@ -291,7 +299,7 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
     if cnmfig:
         cfig = './figs/'+cnmfig+'_'+split('_',ct)[0]+'.png' ; #cfig = 'buoys_'+'%3.3i'%(jt+1)+'.'+fig_type #
 
-    return _figMap_( pt, pvlon, pvlat, PROJ, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms,
+    return _figMap_( pt, pvlon, pvlat, PROJ, figWH=vfigWH, cdate=ct, pvIDs=pvIDs, cfig=cfig, ms=ms,
                      ralpha=ralpha, caller='ShowBuoysMap', rzoom=zoom, title=title, title_loc=LocTitle )
 
 
@@ -317,7 +325,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
 
     ki = FigInitStyle()
 
-    LocTitle, NP = _SelectArcticProjExtent_( nmproj )
+    LocTitle, NP, vfigWH = _SelectArcticProjExtent_( nmproj )
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
@@ -344,7 +352,7 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
 
             print('\n *** [ShowBuoysMap_Trec] plotting for time = '+ct)
 
-            kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, cdate=ct, pvIDs=pvIDs,
+            kk = kk + _figMap_( pvt[jt], pvlon[jt,:], pvlat[jt,:], PROJ, figWH=vfigWH, cdate=ct, pvIDs=pvIDs,
                                 cfig=cfig, ms=ms, ralpha=ralpha, title_loc=LocTitle )
     #
     return kk
@@ -878,13 +886,13 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
         cm = plt.cm.get_cmap('RdBu_r')
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip = False)
 
-    LocTitle, NP = _SelectArcticProjExtent_( nmproj )
+    LocTitle, NP, vfigWH = _SelectArcticProjExtent_( nmproj )
 
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
                    lat_0=NP[4], lon_0=NP[5], epsg=None)
 
-    fig = plt.figure(num=1, figsize=(7.54*1.3, 7.2*1.3), dpi=None, facecolor=col_bg, edgecolor=col_bg)
+    fig = plt.figure(num=1, figsize=(vfigWH[0]*1.3,vfigWH[1]*1.3), dpi=None, facecolor=col_bg, edgecolor=col_bg)
     ax  = plt.axes(vsporg, facecolor='w')
 
     x0,y0 = PROJ(zlon,zlat)
@@ -975,7 +983,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     #
     
     
-    _, NP = _SelectArcticProjExtent_( nmproj )
+    _, NP, _ = _SelectArcticProjExtent_( nmproj )
 
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \
                    resolution=NP[7], area_thresh=1000., projection=NP[8], \
