@@ -76,7 +76,7 @@ for RESKM in ${LCOARSEN[*]}; do
                         exit
                     fi
 
-                    CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP}"
+                    CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${FSEED} -e ${DATE_STOP} -N ${NEMO_CONF} -F"
 
                     echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
 

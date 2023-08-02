@@ -63,13 +63,12 @@ def GetOriginNames():
     global vorig
     #
     corigin_nms = environ.get('ORIGIN_NMS')
-    if corigin_nms==None:
-        print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `GetOriginNames()`!')
-        print('          => so not updating `vorig` !\n')
-    else:
+    if corigin_nms:
         vn   = corigin_nms.split(',')
         vorig[:len(vn)] = vn[:]
         print('\n Updated origin strings after `GetOriginNames()` =>', vorig)
+        #print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `GetOriginNames()`!')
+        #print('          => so not updating `vorig` !\n')
 
 
 def FigInitStyle( fntzoom=1., color_top='k' ):
