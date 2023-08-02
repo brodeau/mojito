@@ -5,7 +5,7 @@
 ##################################################################
 
 from sys import exit
-from os import path, mkdir
+from os import path, mkdir, environ
 import numpy as np
 from re import split
 
@@ -59,11 +59,24 @@ vmrksz = [11,12,14,12,12]
 vmrkfs = ['none','none','full','none','none']
 
 
+def GetOriginNames():
+    global vorig
+    #
+    corigin_nms = environ.get('ORIGIN_NMS')
+    if corigin_nms==None:
+        print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `GetOriginNames()`!')
+        print('          => so not updating `vorig` !\n')
+    else:
+        vn   = corigin_nms.split(',')
+        vorig[:len(vn)] = vn[:]
+        print('\n Updated origin strings after `GetOriginNames()` =>', vorig)
+
 
 def FigInitStyle( fntzoom=1., color_top='k' ):
     #
     global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail, cfont_abc, cfont_uya
     #
+    GetOriginNames()
     #fntzoom_inv = 1.*fntzoom**0.5
     fntzoom_inv = fntzoom
     #
@@ -1227,6 +1240,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
                     cfig='Scaling.png', lAddPowerLawFit=False ):
     '''
     '''
+    #    
     xlog_min, xlog_max = 7.5 , 800.
     if   what=='Mean':
         ylog_min,ylog_max =  6.e-3, 0.2e-1
@@ -1245,7 +1259,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
         print('ERROR [plotScalingDef]: wrong shape for `pF` !'); exit(0)
 
     ki = FigInitStyle( fntzoom=3 )
-
+    
     fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
