@@ -22,7 +22,7 @@ for RESKM in ${LCOARSEN[*]}; do
         echo; echo
 
         # Populating the batches available:
-        listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${YEAR}????-??h??t0_${YEAR}????-??h??${csf}.npz`
+        listQ=`\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${YEAR}????t0_${YEAR}????${csf}.npz`
         #          npz/Q-mesh_NEMO-SI3_NANUK4_BBM00_nemoTsi3_NoBin_19970101t0_19970101_640km.npz
         echo "${listQ}"
 
@@ -42,7 +42,7 @@ for RESKM in ${LCOARSEN[*]}; do
 
             echo
 
-            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${dr}_${YEAR}????-??h??${csf}.npz 2>/dev/null` )
+            lst=( `\ls npz/Q-mesh_NEMO-SI3_${NEMO_CONF}_${NEMO_EXP}_nemoTsi3_NoBin_${dr}_${YEAR}????${csf}.npz 2>/dev/null` )
             if [ "${lst}" != "" ]; then
                 nf=`echo ${lst[*]} | wc -w` ; #echo " => ${nf} files "
                 #

@@ -135,7 +135,7 @@ def _AdjustMapArctic_( nameProj, projH ):
          * nameProj:  name of polar projection
          * projH: handle of the basemap projection
     '''
-    if not nameProj in ['CentralArctic','SmallArctic','BigArctic']:
+    if not nameProj in ['CentralArctic','SmallArctic','BigArctic','HudsonB']:
         print('ERROR [_AdjustMapArctic_()] unknown projection: '+nameProj+' !!!'); exit(0)
     #
     if nameProj == 'CentralArctic':
@@ -151,6 +151,12 @@ def _AdjustMapArctic_( nameProj, projH ):
         projH.drawparallels(np.arange( 20, 90,5),  labels=[0,0,0,1], linewidth=0.3)
         #
     elif  nameProj == 'BigArctic':
+        projH.drawcoastlines(linewidth=0.5)
+        projH.fillcontinents(color='grey') #, alpha=0)
+        projH.drawmeridians(np.arange(-180,180,20), labels=[1,0,0,0], linewidth=0.3)
+        projH.drawparallels(np.arange( 20, 90,5),  labels=[0,0,0,1], linewidth=0.3)
+        #
+    elif  nameProj == 'HudsonB':
         projH.drawcoastlines(linewidth=0.5)
         projH.fillcontinents(color='grey') #, alpha=0)
         projH.drawmeridians(np.arange(-180,180,20), labels=[1,0,0,0], linewidth=0.3)

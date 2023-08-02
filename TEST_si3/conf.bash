@@ -6,7 +6,7 @@ YEAR="2016"
 SITRCK_DIR="${HOME}/DEV/sitrack"
 MOJITO_DIR="${HOME}/DEV/mojito"
 
-NEMO_CONF="HUDSON4"; NLEV=16
+export NEMO_CONF="HUDSON4"; NLEV=16
 LIST_NEMO_EXP="BBM00"
 
 DATE1="${YEAR}0101"
@@ -50,6 +50,7 @@ case ${host} in
         NJPAR=30
         #
         export LCOARSEN=( "10" ); export LDTINCRM=( "3" )
+        export MODE="rgps_map" ; #xlose
         #
         #LIST_NEMO_EXP="BBM2302 EVP2302"
         #LIST_NEMO_EXP="EVP2302"

@@ -10,7 +10,7 @@
 '''
 
 from sys import argv, exit
-from os import path, mkdir, makedirs
+from os import path, mkdir, makedirs, environ
 import numpy as np
 from re import split
 
@@ -21,7 +21,7 @@ from mojito import config as cfg
 from mojito.util import epoch2clock as e2c
 
 idebug=0
-iplot=1 ; NameArcticProj='SmallArctic'
+iplot=1
 zoom=2
 
 lExportNC4Seed = False ; # Triggers the saving of the "mojito" netCDF and npz files that can be used to seed in `sitrack` the
@@ -45,6 +45,24 @@ if __name__ == '__main__':
     if len(argv)==6:
         lExportNC4Seed = (argv[5] in ['E','e'] )
 
+
+    if iplot>0:
+        NEMO_CONF = environ.get('NEMO_CONF')
+        if NEMO_CONF:
+            print(' *** NEMO_CONF is: '+NEMO_CONF+' !')
+        else:
+            mjt.printEE('environment variable "NEMO_CONF" must be defined for plotting')
+            
+        if   NEMO_CONF=='NANUK4':
+            NameArcticProj = 'SmallArctic'
+        elif NEMO_CONF=='HUDSON4':
+            NameArcticProj = 'HudsonB'
+        else:
+            print('ERROR: NEMO_CONF "'+NEMO_CONF+'" is unknown (to know what proj to use for plots...)')
+            exit(0)
+
+
+        
     ik = cfg.controlModeName( path.basename(__file__), quality_mode )
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
 
@@ -325,8 +343,6 @@ if __name__ == '__main__':
             corigin = str.replace( corigin,'_NANUK4_','-')
 
         cresinfo = '('+str(reskm)+' km)'
-
-        nmproj=NameArcticProj
 
         # Filled quads projected on the Arctic map:
         mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
