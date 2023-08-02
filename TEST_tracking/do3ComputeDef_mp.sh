@@ -15,6 +15,7 @@ mkdir -p ./logs
 
 ijob=0
 
+
 for NEMO_EXP in ${LIST_NEMO_EXP}; do
     echo; echo
 
@@ -140,7 +141,7 @@ done
 
 wait
 
-
+echo "Boo!"
 
 
 if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then

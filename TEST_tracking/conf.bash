@@ -43,10 +43,10 @@ case ${host} in
     "frazilo")
         export DATA_DIR="/data"
         #
-        #LIST_NEMO_EXP="EVP2305" ; ISEED_BASE='defs' ; # For scaling
-        #LIST_NEMO_EXP="BBM2305" ; ISEED_BASE='defs' ; # For scaling
-        #LIST_NEMO_EXP="BBM2305 EVP2305" ; ISEED_BASE='defs' ; # For scaling
-        LIST_NEMO_EXP="BBM23A00" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="BBM23A00" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="EVP23A01" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="BBM23A01" ; ISEED_BASE='defs' ; # For scaling ; # nbbm=150 !
+        LIST_NEMO_EXP="BBM23A00 EVP23A01 BBM23A01" ; ISEED_BASE='defs' ; # For scaling
         #
         ;;
     "jackzilla")

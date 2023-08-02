@@ -88,6 +88,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 if [ "${ISEED_BASE}" = "defs" ]; then
                     fnd=`\ls ${DIRIN_PREPARED_RGPS}/nc/PointsOfQuadsOfDEF_RGPS_${SB}_dt${DT_BINS_H}_199?????_199?????_${rdss}-${RESKM}km${XTRASFX}.nc 2>/dev/null`
                     if [ `echo ${fnd} | wc -w` -gt 1 ]; then echo "ERROR: more than 1 candidate for fnd !!!"; echo "  ==> ${fnd}"; exit; fi
+                    #echo "LOLO: fnd = ${fnd}"; exit
                 else
                     fnd=`echo ${fnc} | sed -e "s|_${cr1}-${RESKM}km|_${rdss}-${RESKM}km|g"`
                 fi
