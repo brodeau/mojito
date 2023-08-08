@@ -31,11 +31,11 @@ case ${host} in
         #
         # 10km:
         #RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
-        #RESKM=10
+        RESKM=10
         #
         # 20km:
         ###RESKM=20 ; LIST_RD_SS="13 14 15 16 17" ; USE_S="S"
-        RESKM=20 ; LIST_RD_SS="13 15 17" ; USE_S="S"
+        #RESKM=20 ; LIST_RD_SS="13 15 17" ; USE_S="S"
         #
         # 40km:
         ###RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
