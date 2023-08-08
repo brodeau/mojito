@@ -14,7 +14,7 @@ LIST_MINDC=""
 RESKM=10
 MODE='rgps'
 DEF_EXPORT=''
-export USE_S=''
+export USE_S='' ; # tells `gatherDeformation` that we need to use the 'SLCT' deformation files...
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
@@ -35,7 +35,7 @@ case ${host} in
         #
         # 20km:
         ###RESKM=20 ; LIST_RD_SS="13 14 15 16 17" ; USE_S="S"
-        #RESKM=20 ; LIST_RD_SS="13 15 17" ; USE_S="S"
+        RESKM=20 ; LIST_RD_SS="13 15 17" ; USE_S="S"
         #
         # 40km:
         ###RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
@@ -45,7 +45,7 @@ case ${host} in
         #RESKM=80 ; LIST_RD_SS="66 69 72 75 78 81 84 87 90" ; USE_S="S"; #ok
         #
         # 160km:
-        RESKM=160 ; LIST_RD_SS="144 148 152 154  155  156 158 160 164" ; USE_S="S"
+        #RESKM=160 ; LIST_RD_SS="144 148 152 154  155  156 158 160 164" ; USE_S="S"
         #
         # 320km:
         ##DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
