@@ -71,7 +71,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         
         if [ "${LIST_RD_SS}" = "" ]; then
             # -i FSI3 -m FMMM -s FSDG [-k KREC] [-e DEND]
-            CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc} -N ${NEMO_EXP}" ; # with nc file for init seed...
+            CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnc} -E ${NEMO_EXP} -N ${NEMO_CONF}" ; # with nc file for init seed...
             echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
             #exit;#lolo
             flog="tracking__${NEMO_EXP}`basename ${fnc} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
@@ -94,7 +94,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                 fi
                 #
                 if [ "${fnd}" != "" ] && [ -f ${fnd} ]; then
-                    CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnd} -N ${NEMO_EXP}" ; # with nc file for init seed...
+                    CMD="${EXE} -i ${FSI3IN} -m ${FNMM} -s ${fnd} -E ${NEMO_EXP} -N ${NEMO_CONF}" ; # with nc file for init seed...
                     echo; echo " *** About to launch:"; echo "     ${CMD}"; echo
                     #exit;#lolo
                     flog="tracking__${NEMO_EXP}_`basename ${fnd} | sed -e s/"SELECTION_RGPS_"/"${NEMO_EXP}_"/g -e s/".nc"/""/g`"
