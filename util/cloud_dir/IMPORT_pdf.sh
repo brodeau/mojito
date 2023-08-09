@@ -48,7 +48,7 @@ for EXP in ${lst_exps}; do
     echo " * Will import from: ${dir}/TEST_${csfx}/${DIR_NPZ} !"
     
     import_frazilo ${dir}/TEST_${csfx}/${DIR_NPZ}/def_\*${EXP}\*.npz .
-    import_frazilo ${dir}/TEST_${csfx}/${DIR_NPZ}/PDF_\*${EXP}\*.npz .
+    #import_frazilo ${dir}/TEST_${csfx}/${DIR_NPZ}/PDF_\*${EXP}\*.npz .
     
     cd ../
 
