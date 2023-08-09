@@ -19,9 +19,9 @@ elif [ "$1" = "5" ]; then
     rm -f npz/PDF_*.npz figs/*PDF_*.*
     
 elif [ "$1" = "all" ]; then
-    rm -f *.out *.err *~ \#*
-    rm -rf figs logs nc
-    rm -f npz/PDF_* npz/DEFORMATIONS_* npz/[QT]-mesh* npz/def_*
+    rm -f *.out *.err *~ \#* out
+    rm -rf figs logs nc npz
+    #rm -f npz/PDF_* npz/DEFORMATIONS_* npz/[QT]-mesh* npz/def_*
 
 else
     echo "Tell me something!"
