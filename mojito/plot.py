@@ -48,8 +48,7 @@ msPoints = 2  ; # size  of markers for points aka vertices...
 clPoints = 'w' ; # color   "                  "
 clPNames = 'w' ; # color for city/point annotations
 
-#vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
-vorig  = [ 'RGPS',   'BBM_no_s_adv',  'BBM_s_adv',  'unknown1', 'unknown2' ]
+vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
 vlwdth = [ 9  ,   6    ,    6   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
