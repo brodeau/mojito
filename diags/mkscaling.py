@@ -104,7 +104,17 @@ if __name__ == '__main__':
             dirin = dir_npz_in+'/'+csdir
             if not path.exists(dirin):
                 print('ERROR: directory "'+dirin+'" does not exist!'); exit(0)            
-            cc  = dirin+'/def_'+cFLD+'_*'+corig+'*_'+str(res)+'km_????????-????????.npz'
+            cc1 = dirin+'/def_'+cFLD+'_*'+corig+'*_'+str(res)+'km_????????-????????.npz'
+            cc2 = dirin+'/def_'+cFLD+'_*'+corig+'*_'+str(res)+'km.npz'
+
+            lst1, lst2 = np.sort( glob(cc1) ), np.sort( glob(cc2) )
+            if len(lst1)==0 and len(lst2)>0:
+                lst, cc = lst2, cc2
+            elif len(lst2)==0 and len(lst1)>0:
+                lst, cc = lst1, cc1
+            else:
+                print('ERROR: we have both type of files!'); exit(0)
+
             lst = np.sort( glob(cc) )
             if len(lst)>1: print('ERROR: we have more than 1 file!!! =>',cc); exit(0)
             if len(lst)<1: print('ERROR: we do not have any file!!! =>',cc); exit(0)
@@ -153,7 +163,6 @@ if __name__ == '__main__':
                 dtbin = data['dtbin']
                 reskm = data['reskm_nmnl']
                 corig = str(data['origin'])
-                cperd = str(data['period'])
                 nbF   = int(data['Nbatch'])
                 Ztot  =     data['x'+cfld]
                 ZA    =     data['quadArea']
