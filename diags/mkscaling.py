@@ -113,7 +113,7 @@ if __name__ == '__main__':
             elif len(lst2)==0 and len(lst1)>0:
                 lst, cc = lst1, cc1
             else:
-                print('ERROR: we have both type of files!'); exit(0)
+                print('ERROR: we have both type of files or none!'); exit(0)
 
             lst = np.sort( glob(cc) )
             if len(lst)>1: print('ERROR: we have more than 1 file!!! =>',cc); exit(0)
