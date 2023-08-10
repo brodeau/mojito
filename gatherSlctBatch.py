@@ -165,6 +165,9 @@ if __name__ == '__main__':
         mjt.printEE('`str(reskm) != creskm` !')
 
     cf_keep = str.replace( listnpz[kw], '_'+str(vsubRes[kw])+'-'+creskm, '_SLCT'+creskm)
+    # We do not want the date in the final file, it causes troubles later on...    
+    cdt = split('_',path.basename(cf_keep))[-2] ;  #print('cdt = ', cdt)
+    cf_keep = str.replace( cf_keep, '_'+cdt+'_', '_')
     
     # The "in use" quads coordinates array:
     nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...

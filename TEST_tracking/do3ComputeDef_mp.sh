@@ -44,8 +44,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
     echo; echo
     echo " *** ${RESKM} km ***"
     echo
-
-
+    
     if [ "$1" != "2" ]; then
 
         for cbtch in ${list_btch}; do
@@ -113,7 +112,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
                             flog="def__`basename ${fQ1}`"; flog=`echo ${flog} | sed -e s/".npz"/""/g`
                             ijob=$((ijob+1))
                             CMD="${EXE} ${fQ1} ${fQ2} ${MAX_T_DEV} ${MODE}"
-                            echo "  ==> ${CMD}"; echo ; #exit;#lolo
+                            echo "  ==> ${CMD}"; echo
                             ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
                             echo; echo
                             if [ $((ijob%NJPAR)) -eq 0 ]; then
@@ -149,8 +148,6 @@ if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
     for NEMO_EXP in ${LIST_NEMO_EXP}; do
         echo; echo
 
-
-
         for cbtch in ${list_btch}; do
 
 
@@ -160,6 +157,7 @@ if [ "${LIST_RD_SS}" != "" ] && [ "${USE_S}" != "" ]; then
             flog="gatherSlctBatch_${cbtch}_dt${DT_BINS_H}_${RESKM}"
 
             echo "  ==> ${CMD}"; echo
+
             ${CMD} 1>logs/${flog}.out 2>logs/${flog}.err &
             echo; echo
             ijob=$((ijob+1))
