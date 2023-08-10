@@ -30,8 +30,8 @@ case ${host} in
         DT_BINS_H=72
         #
         # 10km:
-        #RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
-        #RESKM=10
+        RESKM=10; LIST_RD_SS="5 6 7 8" ; USE_S="S"
+        ##RESKM=10
         #
         # 20km:
         ###RESKM=20 ; LIST_RD_SS="13 14 15 16 17" ; USE_S="S"
@@ -49,7 +49,7 @@ case ${host} in
         #
         # 320km:
         ##DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="290 295 300 305 310 313  315  317 320 325 330 335 340"; export USE_S="S"
-        DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="270 280 290 295 300 305 310 313   315   317 320 325 330 335 340 350 360"; export USE_S="S"
+        #DT_BINS_H=72 ;  RESKM=320; LIST_RD_SS="270 280 290 295 300 305 310 313   315   317 320 325 330 335 340 350 360"; export USE_S="S"
         #
         # 640km:
         #DT_BINS_H=72 ; RESKM=640 ; LIST_RD_SS="520 530 540 550 560 570 580 590 600 610 615 620 625 630 635 640 645 650 655 660 670 680 690 700 710 720 730 740 750 760"; export USE_S="S"
