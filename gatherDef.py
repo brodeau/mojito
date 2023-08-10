@@ -34,7 +34,8 @@ if __name__ == '__main__':
     if len(argv)==6:
         lgroup = (argv[5]=='S')
         if lgroup:
-            listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_SLCT'+creskm+'km.npz') )
+            listnpz = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_SLCT'+creskm+'km.npz') )
+            print(cd_in+'/'+cprefixIn+'*'+cidorg+'*_dt'+cdtbin+'*_SLCT'+creskm+'km.npz')
         else:
             mjt.printEE('argument 6 can only be "S"!!!')
 
