@@ -132,8 +132,8 @@ if __name__ == '__main__':
     else:
         print('     => realisation with `rd_ss` =',cc1[0],'km !!!')
 
-    cfnm0 = corigin+'_'+cbatch+cdtbin
-    cfnm  = cfnm0+'_'+cclck
+    cfnm = corigin+'_'+cbatch+cdtbin
+    #cfnm  = cfnm0+'_'+cclck
     cfnm += '_'+cr1+str(reskm)+'km'
 
 
