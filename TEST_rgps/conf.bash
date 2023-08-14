@@ -39,10 +39,10 @@ case ${host} in
         #
         # 40km:
         ###RESKM=40 ; LIST_RD_SS="31 33 35 37 39 41" ; USE_S="S"
-        RESKM=40 ; LIST_RD_SS="33 35 37 39" ; USE_S="S"
+        #RESKM=40 ; LIST_RD_SS="33 35 37 39" ; USE_S="S"
         #
         # 80km:
-        #RESKM=80 ; LIST_RD_SS="66 69 72 75 78 81 84 87 90" ; USE_S="S"; #ok
+        RESKM=80 ; LIST_RD_SS="66 69 72  75  78 81 84 87" ; USE_S="S"
         #
         # 160km:
         #RESKM=160 ; LIST_RD_SS="144 148 152 154  155  156 158 160 164" ; USE_S="S"
