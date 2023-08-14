@@ -137,6 +137,8 @@ if [ "$1" != "2" ]; then
 
 fi ; # if [ "$1" != "2" ]
 
+
+exit;#lolo
 wait
 
 

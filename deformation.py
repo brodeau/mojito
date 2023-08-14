@@ -133,7 +133,7 @@ if __name__ == '__main__':
         print('     => realisation with `rd_ss` =',cc1[0],'km !!!')
 
     cfnm = corigin+'_'+cbatch+cdtbin
-    #cfnm  = cfnm0+'_'+cclck
+    #cfnm  = cfnm+'_'+cclck
     cfnm += '_'+cr1+str(reskm)+'km'
 
 
@@ -320,9 +320,9 @@ if __name__ == '__main__':
         zPXY, zPGC = np.array([ zPXY1, zPXY2]), np.array([ zPGC1, zPGC2])
         del zPGC1, zPGC2
 
-        cdt1 = e2c(vtim[0], precision='D', frmt='nodash')
-        cfnm1  = cfnm0+'_'+cdt1+'_'+cr1+str(reskm)+'km'
-        cfnm2  = cfnm0+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
+        cdt1  = e2c(vtim[0], precision='D', frmt='nodash')
+        cfnm1 = cfnm+'_'+cdt1+'_'+cr1+str(reskm)+'km'
+        cfnm2 = cfnm+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
 
         k1 = mjt.QuadStat( 0, QR1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )        
         mjt.SaveClassPolygon( './npz/QUADSofDEF_'+cfnm1+'.npz', QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )

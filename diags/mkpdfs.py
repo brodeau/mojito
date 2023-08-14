@@ -53,7 +53,7 @@ if __name__ == '__main__':
         dtbin1 = data['dtbin']
         reskm1 = data['reskm_nmnl']
         corig1 = str(data['origin'])
-        cperd1 = str(data['period'])
+        #cperd1 = str(data['period'])
         nbF1 = int(data['Nbatch'])
         ZDiv = data['xdiv']
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         dtbin2 = data['dtbin']
         reskm2 = data['reskm_nmnl']
         corig2 = str(data['origin'])
-        cperd2 = str(data['period'])
+        #cperd2 = str(data['period'])
         nbF2   = int(data['Nbatch'])
         Zshr   =     data['xshr']
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         dtbin3 = data['dtbin']
         reskm3 = data['reskm_nmnl']
         corig3 = str(data['origin'])
-        cperd3 = str(data['period'])
+        #cperd3 = str(data['period'])
         nbF3   = int(data['Nbatch'])
         Ztot   =     data['xtot']
 
@@ -81,8 +81,8 @@ if __name__ == '__main__':
         print('ERROR: `reskm1!=reskm2` !!!'); exit(0)
     if corig1!=corig2 or corig1!=corig3:
         print('ERROR: `corig1!=corig2` !!!'); exit(0)
-    if cperd1!=cperd2 or cperd1!=cperd3:
-        print('ERROR: `cperd1!=cperd2` !!!'); exit(0)
+    #if cperd1!=cperd2 or cperd1!=cperd3:
+    #    print('ERROR: `cperd1!=cperd2` !!!'); exit(0)
     if nbF1!=nbF2 or nbF1!=nbF3:
         print('ERROR: `nbF1!=nbF2` !!!'); exit(0)
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     reskm  = reskm1
     creskm = str(reskm1)
     corigin = corig1
-    cperiod = cperd1
+    #cperiod = cperd1
 
     # Minimum and maximum deformation values acceptable for pdf:
     k2 = cfg.updateConfig4Scale( reskm, mode='rgps', ltalk=False )
@@ -163,27 +163,28 @@ if __name__ == '__main__':
     nPc, PDF_cnv = mjt.computePDF( xbin_bounds_div, xbin_center_div,        Zcnv , cwhat='convergence', iverbose=idebug )
 
 
-    cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod
+    #cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km_'+cperiod
+    cfroot = 'PDF_'+corigin+'_dt'+cdtbin+'_'+str(reskm)+'km'
 
     # Saving PDFs in `npz` files:
     np.savez_compressed( cd_in+'/'+cfroot+'_shear.npz',      name='shear',      origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                         reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_shr )
 
     np.savez_compressed( cd_in+'/'+cfroot+'_total.npz',      name='total',      origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                         reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nPs, xbin_bounds=xbin_bounds_tot, xbin_center=xbin_center_tot, PDF=PDF_tot )
 
     np.savez_compressed( cd_in+'/'+cfroot+'_absDiv.npz', name='Divergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                         reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nPD, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_Div )
 
     np.savez_compressed( cd_in+'/'+cfroot+'_divergence.npz', name='divergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                         reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nPd, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_div )
 
     np.savez_compressed( cd_in+'/'+cfroot+'_convergence.npz', name='convergence', origin=corigin,
-                         reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                         reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nPc, xbin_bounds=xbin_bounds_div, xbin_center=xbin_center_div, PDF=PDF_cnv )
 
 
@@ -191,7 +192,7 @@ if __name__ == '__main__':
         from math import pi, sqrt
         m_shear = np.mean(ZshrClean)
         s_shear = mjt.StdDev( m_shear, ZshrClean )
-        print('LOLO: mean and sigma for shear =', m_shear, s_shear)
+        print(' *** mean and sigma for shear =', m_shear, s_shear)
         zE = (xbin_center_shr[:] - m_shear )/s_shear
 
         zIntShear = np.sum( PDF_shr[:]*(xbin_bounds_shr[1:]-xbin_bounds_shr[:-1]) )
@@ -206,7 +207,7 @@ if __name__ == '__main__':
 
 
         np.savez_compressed( cd_in+'/'+cfroot+'_GAUSSIAN-shear.npz',      name='shear',      origin=corigin,
-                             reskm_nmnl=reskm, period=cperiod, dtbin=dtbin,
+                             reskm_nmnl=reskm, dtbin=dtbin,
                              Np=nPs, xbin_bounds=xbin_bounds_shr, xbin_center=xbin_center_shr, PDF=PDF_NormS )
 
 
@@ -224,40 +225,40 @@ if __name__ == '__main__':
         if not path.exists(cdir): mkdir(cdir)
 
         kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
-                            cfig=cdir+'/loglog'+cfroot+'_shear'+cxtra+'.png',      title=corigin, period=cperiod, origin=corigin )
+                            cfig=cdir+'/loglog'+cfroot+'_shear'+cxtra+'.png',      title=corigin, origin=corigin )
 
         kk = mjt.LogPDFdef( xbin_bounds_tot, xbin_center_tot, PDF_tot, Np=nPs, name='Total',
-                            cfig=cdir+'/loglog'+cfroot+'_total'+cxtra+'.png',      title=corigin, period=cperiod, origin=corigin )
+                            cfig=cdir+'/loglog'+cfroot+'_total'+cxtra+'.png',      title=corigin, origin=corigin )
 
         kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='|Divergence|',
-                            cfig=cdir+'/loglog'+cfroot+'_Divergence'+cxtra+'.png', title=corigin, period=cperiod, origin=corigin )
+                            cfig=cdir+'/loglog'+cfroot+'_Divergence'+cxtra+'.png', title=corigin, origin=corigin )
 
         kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_div, Np=nPd, name='Divergence',
-                            cfig=cdir+'/loglog'+cfroot+'_divergence'+cxtra+'.png', title=corigin, period=cperiod, origin=corigin )
+                            cfig=cdir+'/loglog'+cfroot+'_divergence'+cxtra+'.png', title=corigin, origin=corigin )
 
         kk = mjt.LogPDFdef( xbin_bounds_div, xbin_center_div, PDF_cnv, Np=nPc, name='Convergence',
-                            cfig=cdir+'/loglog'+cfroot+'_convergence'+cxtra+'.png', title=corigin, period=cperiod, origin=corigin )
+                            cfig=cdir+'/loglog'+cfroot+'_convergence'+cxtra+'.png', title=corigin, origin=corigin )
 
 
         if idebug>0:
             kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_shr, Np=nPs, name='Shear',
-                                 cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',           title=corigin, period=cperiod )
+                                 cfig=cdir+'/'+cfroot+'_shear'+cxtra+'.png',           title=corigin )
 
             kk = mjt.PlotPDFdef( xbin_bounds_tot, xbin_center_tot, PDF_tot, Np=nPs, name='Total',
-                                 cfig=cdir+'/'+cfroot+'_total'+cxtra+'.png',           title=corigin, period=cperiod )
+                                 cfig=cdir+'/'+cfroot+'_total'+cxtra+'.png',           title=corigin )
 
             kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPD, name='Divergence',
-                                 cfig=cdir+'/'+cfroot+'_Divergence'+cxtra+'.png',      title=corigin, period=cperiod )
+                                 cfig=cdir+'/'+cfroot+'_Divergence'+cxtra+'.png',      title=corigin )
 
             kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPd, name='Divergence',
-                                 cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin, period=cperiod )
+                                 cfig=cdir+'/'+cfroot+'_divergence'+cxtra+'.png',      title=corigin )
 
             kk = mjt.PlotPDFdef( xbin_bounds_div, xbin_center_div, PDF_Div, Np=nPc, name='Convergence',
-                                 cfig=cdir+'/'+cfroot+'_convergence'+cxtra+'.png',      title=corigin, period=cperiod )
+                                 cfig=cdir+'/'+cfroot+'_convergence'+cxtra+'.png',      title=corigin )
 
         if l_add_gaussian:
             kk = mjt.LogPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_NormS, Np=nPs, name='Shear',
-                                cfig=cdir+'/loglog'+cfroot+'_GAUSSIAN-shear'+cxtra+'.png',      title=corigin, period=cperiod )
+                                cfig=cdir+'/loglog'+cfroot+'_GAUSSIAN-shear'+cxtra+'.png',      title=corigin )
 
             kk = mjt.PlotPDFdef( xbin_bounds_shr, xbin_center_shr, PDF_NormS, Np=nPs, name='Shear',
-                                 cfig=cdir+'/'+cfroot+'_GAUSSIAN_shear'+cxtra+'.png',           title=corigin, period=cperiod )
+                                 cfig=cdir+'/'+cfroot+'_GAUSSIAN_shear'+cxtra+'.png',           title=corigin )
