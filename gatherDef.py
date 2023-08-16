@@ -59,7 +59,7 @@ if __name__ == '__main__':
     print('      => files to gather into a single one:',listnpz,'\n')
 
     kBatchName  = np.zeros(nbFiles, dtype='U4')
-    #kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
+    kiDate      = np.zeros(nbFiles, dtype=int ) ; # date in epoch time at which deformations were calculated
     kNbPoints   = np.zeros(nbFiles, dtype=int ) ; # number of points in file    
     
     #list_date = []
@@ -83,11 +83,11 @@ if __name__ == '__main__':
         else:
             kBatchName[kf] = vf[-4]
     
-        #kiDate[kf] = rdate
+        kiDate[kf] = rdate
         kNbPoints[kf] = nPnts
     
         print('   * Batch: '+kBatchName[kf] )
-        #print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
+        print('   * Date = ',mjt.epoch2clock(kiDate[kf]))
         print('   * Nb. of points = ',kNbPoints[kf] )
 
         kf = kf+1
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         Zshr[jP:jPe] = cfg.rc_day2sec*zshr ; # day^-1
         Ztot[jP:jPe] = cfg.rc_day2sec*ztot ; # day^-1
         ZAqd[jP:jPe] =     za     ; # km^2
-        #Zdat[jP:jPe] =  kiDate[kf]
+        Zdat[jP:jPe] =  kiDate[kf]
         #
         jP = jPe
         kf = kf+1
@@ -146,19 +146,19 @@ if __name__ == '__main__':
     #   , dates_batch=kiDate, period=cperiod
     print(' *** Saving: '+cd_in+'/def_SHR_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
-                         Nbatch=nbFiles,
+                         Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nP, xshr=Zshr, quadArea=ZAqd) ; #, dates_point=Zdat )
 
     print(' *** Saving: '+cd_in+'/def_DIV_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
-                         Nbatch=nbFiles,
+                         Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nP, xdiv=ZDiv, quadArea=ZAqd) ; #, dates_point=Zdat )
 
     print(' *** Saving: '+cd_in+'/def_TOT_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_TOT_'+cfroot+'.npz', name='shear', origin=corigin,
-                         Nbatch=nbFiles,
+                         Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, dtbin=dtbin,
                          Np=nP, xtot=Ztot, quadArea=ZAqd) ; #, dates_point=Zdat )
 
