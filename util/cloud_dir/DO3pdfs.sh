@@ -42,7 +42,7 @@ for RESKM in ${VRESKM[*]}; do
             #    cdt=dt0
             #fi
 
-            ff=`find -L ./${exp} -name "PDF_*${EXP}*_${cdt}_${RESKM}km_*_${cf}.npz" 2>/dev/null`
+            ff=`find -L ./${exp} -name "PDF_*${EXP}*_${cdt}_${RESKM}km_${cf}.npz" 2>/dev/null`
 
 
             echo " *** ff = ${ff}"

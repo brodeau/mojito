@@ -32,7 +32,7 @@ if __name__ == '__main__':
         corig = str(data['origin'])
         reskm = int(data['reskm_nmnl'])
         dtbin = int(data['dtbin'])
-        cperiod = str(data['period'])
+        #cperiod = str(data['period'])
         nP    = data['Np']
         xbin_bounds = data['xbin_bounds']
         xbin_center = data['xbin_center']
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     print(' * orig =', corig)
     print(' * reskm =', reskm)
     print(' * dtbin =', dtbin)
-    print(' * period =', cperiod)
+    #print(' * period =', cperiod)
     print(' * nP =', nP)
 
     if l2files or l3files:
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             corig2 = str(data['origin'])
             reskm2 = int(data['reskm_nmnl'])
             dtbin2 = int(data['dtbin'])
-            cperiod2 = str(data['period'])
+            #cperiod2 = str(data['period'])
             nP2    = data['Np']
             xbin_bounds2 = data['xbin_bounds']
             xbin_center2 = data['xbin_center']
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         print(' * orig_2 =', corig2)
         print(' * reskm_2 =', reskm2)
         print(' * dtbin_2 =', dtbin2)
-        print(' * period_2 =', cperiod2)
+        #print(' * period_2 =', cperiod2)
         print(' * nP_2 =', nP2)
         if cname2!=cname:
             print('ERROR: `cname2!=cname` !',cname2,cname)
@@ -78,7 +78,7 @@ if __name__ == '__main__':
             corig3 = str(data['origin'])
             reskm3 = int(data['reskm_nmnl'])
             dtbin3 = int(data['dtbin'])
-            cperiod3 = str(data['period'])
+            #cperiod3 = str(data['period'])
             nP3    = data['Np']
             xbin_bounds3 = data['xbin_bounds']
             xbin_center3 = data['xbin_center']
@@ -87,14 +87,13 @@ if __name__ == '__main__':
         print(' * orig_3 =', corig3)
         print(' * reskm_3 =', reskm3)
         print(' * dtbin_3 =', dtbin3)
-        print(' * period_3 =', cperiod3)
+        #print(' * period_3 =', cperiod3)
         print(' * nP_3 =', nP3)
         if cname3!=cname:
             print('ERROR: `cname3!=cname` !',cname3,cname)
             exit(0)
         if np.sum(np.abs(xbin_bounds3-xbin_bounds))!=0:
             print('ERROR: PDF in file 3 looks too different than in first file in terms of bin bounds?...')
-            #or cperiod3!=cperiod
             exit(0)
             
     if   cname == 'Divergence':
@@ -142,7 +141,7 @@ if __name__ == '__main__':
     
     if   l2files:
 
-        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cperiod+cfxtraScl
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cfxtraScl
         
         # Only log-log !
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
@@ -151,7 +150,7 @@ if __name__ == '__main__':
     
     elif l3files:
 
-        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cperiod+cfxtraScl
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig3+'_'+cfname+'_'+cfxtraScl
 
         if not cfg.lc_StrictPDF:
             cfroot += '_Min1e-3'
@@ -173,7 +172,7 @@ if __name__ == '__main__':
     
     else:
         # log-log and histogram:
-        cfroot = 'PDF_'+corig+'_'+cfname+'_'+cperiod+cfxtraScl
+        cfroot = 'PDF_'+corig+'_'+cfname+'_'+cfxtraScl
         
         kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
                             title=cName+cnxtraScl, period=cperiod )    
