@@ -114,7 +114,7 @@ if __name__ == '__main__':
     ZDiv = np.zeros(nP)
     Ztot = np.zeros(nP)
     ZAqd = np.zeros(nP)
-    #Zdat = np.zeros(nP,dtype=int)
+    Zdat = np.zeros(nP,dtype=int)
     
     jP = 0 ; # Counter from 0 to nP-1
     kf = 0 ; # Counter for files, 0 to nbFiles-1
@@ -148,17 +148,17 @@ if __name__ == '__main__':
     np.savez_compressed( cd_in+'/def_SHR_'+cfroot+'.npz', name='shear', origin=corigin,
                          Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, dtbin=dtbin,
-                         Np=nP, xshr=Zshr, quadArea=ZAqd) ; #, dates_point=Zdat )
+                         Np=nP, xshr=Zshr, quadArea=ZAqd, dates_point=Zdat )
 
     print(' *** Saving: '+cd_in+'/def_DIV_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_DIV_'+cfroot+'.npz', name='divergence', origin=corigin,
                          Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, dtbin=dtbin,
-                         Np=nP, xdiv=ZDiv, quadArea=ZAqd) ; #, dates_point=Zdat )
+                         Np=nP, xdiv=ZDiv, quadArea=ZAqd, dates_point=Zdat )
 
     print(' *** Saving: '+cd_in+'/def_TOT_'+cfroot+'.npz')
     np.savez_compressed( cd_in+'/def_TOT_'+cfroot+'.npz', name='shear', origin=corigin,
                          Nbatch=nbFiles, dates_batch=kiDate,
                          reskm_nmnl=reskm, dtbin=dtbin,
-                         Np=nP, xtot=Ztot, quadArea=ZAqd) ; #, dates_point=Zdat )
+                         Np=nP, xtot=Ztot, quadArea=ZAqd, dates_point=Zdat )
 
