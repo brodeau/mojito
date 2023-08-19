@@ -11,8 +11,8 @@ import mojito   as mjt
 from mojito import config as cfg
 
 
-iffrmt = '.png'
-#iffrmt = '.svg'
+#iffrmt = '.png'
+iffrmt = '.svg'
 
 idebug=1
 iplot=1 ; Naxis = None

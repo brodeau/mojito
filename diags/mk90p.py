@@ -20,24 +20,42 @@ lPlotPDFs   = False
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
-zP=98
+#zP=98
 
-iffrmt='png'
+#iffrmt='png'
+iffrmt='svg'
 
 if __name__ == '__main__':
 
     ldo1 = True
     
     Narg = len(argv)
-    if not Narg in [2,3,4]:
-        print('Usage: '+argv[0]+' <file_deformation_gatherd.npz> (<file_deformation_gatherd.npz>) (<file_deformation_gatherd.npz>)')
+    if not Narg in [3,4,5]:
+        print('Usage: '+argv[0]+' <percentile> <file_deformation_gatherd.npz> (<file_deformation_gatherd.npz>) (<file_deformation_gatherd.npz>)')
         exit(0)
 
-    cf_in1 = argv[1]
+    zP     = int(argv[1])
+    cf_in1 = argv[2]
 
-    ldo2 = (Narg==3)
-    ldo3 = (Narg==4)
+    ldo2 = (Narg==4)
+    ldo3 = (Narg==5)
 
+    
+
+    if   zP==98:
+        vyrng=(0.,0.2)
+        zdy=0.05
+    elif zP==90:
+        vyrng=(0.,0.07)
+        zdy=0.01
+    else:
+        vyrng=(0.,0.1)
+        zdy=0.01
+        
+
+
+
+    
     # What fields are we dealing with based on filename:
     cv_in = split( '_', path.basename(cf_in1) )[1]
     print(cv_in)
@@ -70,7 +88,7 @@ if __name__ == '__main__':
         mjt.printEE('problem #0 for file 1!')
 
     if ldo2 or ldo3:
-        cf_in2 = argv[2]
+        cf_in2 = argv[3]
         mjt.chck4f(cf_in2)        
         with np.load(cf_in2) as data:
             dtbin2 = data['dtbin']
@@ -97,7 +115,7 @@ if __name__ == '__main__':
         
 
     if ldo3:
-        cf_in3 = argv[3]
+        cf_in3 = argv[4]
         mjt.chck4f(cf_in3)        
         with np.load(cf_in3) as data:
             dtbin3 = data['dtbin']
@@ -196,7 +214,8 @@ if __name__ == '__main__':
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin )
         VDAT3, V90P3 = mjt.Construct90P(3, VDTB3, Zdat3, ZDEF3, pp=zP, Nmin=Nmin )
 
-        kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, whatP=str(zP), figname='./figs/'+cfig, y_range=(0.,0.25), dy=0.05 )
+        kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, whatP=str(zP),
+                               figname='./figs/'+cfig, y_range=vyrng, dy=zdy )
         
     elif ldo2:
         if lPlotClouds:

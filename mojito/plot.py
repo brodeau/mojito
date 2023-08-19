@@ -1583,7 +1583,7 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     if field:
         plt.ylabel(r'P'+whatP+': '+field+' deformation rate [days$^{-1}$]', **cfont_uya )
     ax.grid(color='0.5', linestyle='-', linewidth=0.3)
-    plt.legend(bbox_to_anchor=(0.2, 1.), ncol=1, shadow=True, fancybox=True)
+    plt.legend(bbox_to_anchor=(0.95, 1.), ncol=1, shadow=True, fancybox=True)
 
     print(' *** Saving figure',figname)
     plt.savefig( figname )

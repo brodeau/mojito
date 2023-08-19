@@ -6,7 +6,6 @@ EXE="${HOME}/DEV/mojito/diags/plot_comp_PDFs.py"
 
 
 VEXPS=( `echo ${EXPS} | sed -e s/','/' '/g`)
-#VRESKM=( `echo ${SCALES} | sed -e s/','/' '/g`)
 VRESKM=( 10 )
 VDTBIN=( `echo ${BINS}   | sed -e s/','/' '/g`)
 
@@ -74,6 +73,5 @@ echo
 echo " * Exporting figures to ${DIR_EXPORT_CLOUD}/Figures/PDFs !"
 
 rsync -avP ./figs/PDFs/*.png ${DIR_EXPORT_CLOUD}/Figures/PDFs/
-
 
 

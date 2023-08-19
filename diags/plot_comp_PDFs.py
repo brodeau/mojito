@@ -12,8 +12,8 @@ import mojito   as mjt
 from mojito import config as cfg
 
 idebug=1
-iffrmt='png'
-#iffrmt='svg'
+#iffrmt='png'
+iffrmt='svg'
 
 
 if __name__ == '__main__':
