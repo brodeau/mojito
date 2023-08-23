@@ -4,7 +4,7 @@
 
 '''
     # The present script should only compute deformations, and nothing else!
-    # As such, it is not expected to do any selection of what deformations 
+    # As such, it is not expected to do any selection of what deformations
     # are acceptable or not! => should be done elsewhere
 
 '''
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             print(' *** NEMO_CONF is: '+NEMO_CONF+' !')
         else:
             mjt.printEE('environment variable "NEMO_CONF" must be defined for plotting')
-            
+
         if   NEMO_CONF=='NANUK4':
             NameArcticProj = 'SmallArctic'
         elif NEMO_CONF=='HUDSON4':
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             exit(0)
 
 
-        
+
     ik = cfg.controlModeName( path.basename(__file__), quality_mode )
     print('\n *** Max time_dev_from_mean_allowed =',time_dev_max/3600,'hours')
 
@@ -70,12 +70,12 @@ if __name__ == '__main__':
     QUA1 = mjt.LoadClassPolygon( cf_Q1, ctype='Q' )
     nP1,nQ1 = QUA1.nP,QUA1.nQ
     print('        =>  '+str(nQ1)+' Quads constructed on '+str(nP1)+' points.')
-    
-    QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )    
+
+    QUA2 = mjt.LoadClassPolygon( cf_Q2, ctype='Q' )
     nP2,nQ2 = QUA2.nP,QUA2.nQ
     print('        =>  '+str(nQ2)+' Quads constructed on '+str(nP2)+' points.')
 
-    
+
     # Debug have a look at the times of all points and get the actual mean time for each file:
     rTm1, rStD1 = mjt.CheckTimeConsistencyQuads(1, QUA1, time_dev_max, iverbose=idebug)
     rTm2, rStD2 = mjt.CheckTimeConsistencyQuads(2, QUA2, time_dev_max, iverbose=idebug)
@@ -91,25 +91,25 @@ if __name__ == '__main__':
 
     reskm, reskm2 = QUA1.reskm_nmnl, QUA2.reskm_nmnl
     if reskm != reskm2:
-        mjt.printEE('quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)        
+        mjt.printEE('quads do not have the same nominal resolution in the 2 files:',reskm, reskm2)
     print('\n *** Nominal resolution for the Quads in both files =',reskm,'km')
 
 
-    makedirs( './npz', exist_ok=True )    
+    makedirs( './npz', exist_ok=True )
     if iplot>0:
         cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
 
     # Comprehensive name for npz and figs to save later on:
     corigin = QUA1.origin
-    
+
     k1 = cfg.initialize(                mode=quality_mode )
     k2 = cfg.updateConfig4Scale( reskm, mode=quality_mode )
     print(' *** Min and max deformation allowed:',cfg.rc_MinDef, cfg.rc_MaxDef,' days^-1 !')
     if not cfg.lc_accurate_time:
         print(' *** Time step to be used: `dt` = '+str(round(rdt,2))+' = '+str(round(rdt/cfg.rc_day2sec,2))+' days')
 
-        
+
     # Some info from npz file name: #fixme: too much dependency on file name...
     cf1, cf2 = path.basename(cf_Q1), path.basename(cf_Q2)
     if corigin == 'RGPS':
@@ -147,15 +147,15 @@ if __name__ == '__main__':
     else:
         figSfx='_tglob.png'
 
-    
+
     vnm, idxK1, idxK2 = np.intersect1d( QUA1.QuadNames, QUA2.QuadNames, assume_unique=True, return_indices=True )
-        
+
     if nQ1 == nQ2:
         print('\n *** Great! Both files have the same number of Quads!!!')
         nQ = nQ1
     else:
         print('\n [WARNING]: the 2 files/records do not have the same number of Quads!!!')
-        # The Quads we retain, i.e. those who exist in both snapshots:        
+        # The Quads we retain, i.e. those who exist in both snapshots:
         nQ = len(vnm) ; # also = len(vidx*)
         znm, zidx1, zidx2 = np.intersect1d( QUA1.QuadIDs, QUA2.QuadIDs, assume_unique=True, return_indices=True )
         nQ2 = len(znm)
@@ -176,7 +176,7 @@ if __name__ == '__main__':
 
 
     # Okay, no we can start the real shit...
-    
+
     # Coordinates of the 4 points of quadrangles for the 2 consecutive records:
     zXY1 = QUA1.MeshPointXY[idxK1,:,:].copy() ; #  km !
     zXY2 = QUA2.MeshPointXY[idxK2,:,:].copy() ; #  km !
@@ -197,7 +197,7 @@ if __name__ == '__main__':
                                                               iverbose=idebug )
 
     del zXY1, zXY2
-    
+
     # zX, zY => positions  of the 4 vertices at center of time interval!
     # zU, zV => velocities of the 4 vertices at center of time interval!
     #   zAq  => Quad area used in the estimation of `zdUdxy, zdVdxy` !
@@ -255,7 +255,7 @@ if __name__ == '__main__':
 
     lNeedClean = False
 
-    
+
     # Non-realistic / error extreme values in computed deformation:
     if quality_mode in ['rgps','rgps_map','rgps_track']:
         ztotdm1 = ztot*cfg.rc_day2sec ; # same but in days^-1 !
@@ -263,7 +263,7 @@ if __name__ == '__main__':
 
         # Mind: `rc_MinDef` & `rc_MaxDef` are mode-dependant !
         lNeedClean = np.any( (ztotdm1 < cfg.rc_MinDef) | (ztotdm1 > cfg.rc_MaxDef) )
-        
+
         if lNeedClean:
             # Must get rid of extremely small deformation (if RGPS! if not => `rc_MinDef` taken ridiculously tiny!)
             (idxKeep,) = np.where( (ztotdm1 >= cfg.rc_MinDef) & (ztotdm1 <= cfg.rc_MaxDef) )
@@ -283,11 +283,11 @@ if __name__ == '__main__':
         else:
             print('\n *** Great! No extreme deformation values were found!')
             idxKeep = np.arange(nD, dtype=int)
-            
+
         del ztotdm1
         #
         print('        =>  '+str(nD)+' Quads left.')
-    
+
     # Save the deformation data:
     np.savez_compressed( './npz/DEFORMATIONS_'+cfnm+'.npz', time=itimeC, date=ctimeC, Npoints=nD,
                          Xc=zXc, Yc=zYc, X4=zX, Y4=zY, divergence=zdiv, shear=zshr, total=ztot,
@@ -307,15 +307,15 @@ if __name__ == '__main__':
         zPXY2, zPids2, zTime2, zQpnts2, zQnam2, _ = mjt.KeepSpcfdQuads( idxQ2, QUA2.PointXY, QUA2.PointIDs, QUA2.PointTime, QUA2.MeshVrtcPntIdx, QUA2.QuadNames )
         if any(zPids2-zPids1!=0):
             mjt.printEE('fuck-up #2')
-        
+
         QR1 = mjt.Quadrangle( zPXY1, zQpnts1, zPids1, zTime1, zQnam1, origin='RGPS', reskm_nmnl=reskm )
         if idebug>0 and iplot>0:
             QR2 = mjt.Quadrangle( zPXY2, zQpnts2, zPids2, zTime2, zQnam2, origin='RGPS', reskm_nmnl=reskm )
-                
+
         Nrec, Np, Nq = 2, len(zPids1), nD
         vtim = np.array([ np.mean(zTime1), np.mean(zTime2) ], dtype=int) ; # Fill `vtim` with mean date at each record:
-        xtim = np.array([ zTime1, zTime2 ], dtype=int)        
-        zPGC1, zPGC2 = mjt.CartNPSkm2Geo1D( zPXY1, convArray='F' ), mjt.CartNPSkm2Geo1D( zPXY2, convArray='F' )        
+        xtim = np.array([ zTime1, zTime2 ], dtype=int)
+        zPGC1, zPGC2 = mjt.CartNPSkm2Geo1D( zPXY1, convArray='F' ), mjt.CartNPSkm2Geo1D( zPXY2, convArray='F' )
         zPXY, zPGC = np.array([ zPXY1, zPXY2]), np.array([ zPGC1, zPGC2])
         del zPGC1, zPGC2
 
@@ -323,17 +323,17 @@ if __name__ == '__main__':
         cfnm1 = cfnm0+'_'+cdt1+'_'+cr1+str(reskm)+'km'
         cfnm2 = cfnm0+'_'+cdt1+'_'+e2c(vtim[1], precision='D', frmt='nodash')+'_'+cr1+str(reskm)+'km'
 
-        k1 = mjt.QuadStat( 0, QR1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )        
+        k1 = mjt.QuadStat( 0, QR1, resolkm=reskm, tolArea=cfg.rc_maxDevMeanAreaQuads )
         mjt.SaveClassPolygon( './npz/QUADSofDEF_'+cfnm1+'.npz', QR1, ctype='Q', origin='RGPS', reskm_nmnl=reskm )
 
-        makedirs( './nc', exist_ok=True )    
+        makedirs( './nc', exist_ok=True )
         kk = mjt.ncSaveCloudBuoys( './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc', vtim, zPids1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
                                    xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
         del zPGC, xtim
         print('\n *** All info necessary to seed the points and reconstruct the Quads involved in computed deformation cells is saved!')
         print('         => that is '+str(Nq)+' Quads constructed on '+str(Np)+' points.\n')
 
-    
+
     # Some plots:
     if iplot>0:
 
@@ -344,20 +344,26 @@ if __name__ == '__main__':
         cresinfo = '('+str(reskm)+' km)'
 
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx, nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence'+figSfx,
+                                  nmproj=NameArcticProj, cwhat='div',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': divergence '+cresinfo, idate=itimeC, edgecolor=None )
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear'+figSfx,      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear'+figSfx,
+                                  nmproj=NameArcticProj, cwhat='shr',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': shear '+cresinfo, idate=itimeC, edgecolor=None )
 
 
         cix = ''
         cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
 
-        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total'+figSfx,      nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+        mjt.ShowDefQuadGeoArctic( zX, zY, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total'+figSfx,
+                                  nmproj=NameArcticProj, cwhat='tot',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                   title=corigin+': total deformation '+cresinfo, idate=itimeC, edgecolor=None )
 
 
@@ -366,17 +372,19 @@ if __name__ == '__main__':
             vrngY = mjt.roundAxisRange( QR1.PointXY[:,1], rndKM=50. )
             #
             jr=0
-            kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1], cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
+            kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1],
+                                 cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
                                  ppntIDs=zPids1, QuadMesh=QR1.MeshVrtcPntIdx, qIDs=QR1.QuadIDs,
                                  lGeoCoor=False, zoom=4, rangeX=vrngX, rangeY=vrngY, lShowIDs=True )
             jr=1
-            kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1], cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
+            kf = mjt.ShowTQMesh( zPXY[jr,:,0], zPXY[jr,:,1],
+                                 cfig=cfdir+'/RECONSTRUCTED_remaining_Quads_'+cfnm2+'_rec%2.2i'%(jr)+'.png',
                                  ppntIDs=zPids2, QuadMesh=QR2.MeshVrtcPntIdx, qIDs=QR2.QuadIDs,
                                  lGeoCoor=False, zoom=4, rangeX=vrngX, rangeY=vrngY, lShowIDs=True )
-            
 
 
-        
+
+
     if iplot>1:
         # Filled quads projected on RGPS projection (Cartesian):
         mjt.ShowDefQuad( zX, zY, cfg.rc_day2sec*zdiv, cfig=cfdir+'/zd_'+cfnm+'_Divergence'+figSfx, cwhat='div',

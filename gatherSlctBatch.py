@@ -63,7 +63,7 @@ def lOverlapAnyOtherQuad( pQxy, pQA, pMQxy, pMQA, scale=320, frac_overlap=0.1, i
     (iq,) = np.shape(pMQA)
     if iq!=nq:
         mjt.printEE('[lOverlapAnyOtherQuad()]: wrong shape for `pMQA` !')
-        
+
     if iverbose>0: print(' *** [lOverlapAnyOtherQuad()]: we have',nq,'quads to test against...')
     #
     #znmnl_area = float(scale*scale)
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     k2 = cfg.updateConfig4Scale( int(creskm), mode='rgps' )
     print('\n *** IMPORTANT: `rcFracOverlapOK` to be used for '+str(creskm)+':', cfg.rcFracOverlapOK, '\n')
 
-    # Populating files and ordering them according to SS resolution:    
+    # Populating files and ordering them according to SS resolution:
     listnpz = np.array( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'_'+cbatch+'_'+cdtbin+'*_*-'+creskm+'km.npz') )
     ccr = [ split('_',path.basename(cf))[-1] for cf in listnpz ] ; # list of resolution suffixes... (for odering)
     listnpz = listnpz[np.argsort(ccr)]
@@ -109,22 +109,22 @@ if __name__ == '__main__':
     nbF = len(listnpz)
     print('\n *** We found '+str(nbF)+' deformation files into '+cd_in+' !')
     print('      => files to gather into a single one:',listnpz,'\n')
-    
+
     #if lExportCloud:
-    #    # nc/PointsOfQuadsOfDEF_RGPS_S006_dt72_19970119_19970122_275-320km.nc        
+    #    # nc/PointsOfQuadsOfDEF_RGPS_S006_dt72_19970119_19970122_275-320km.nc
     #    listnc = np.array( glob('./nc/PointsOfQuadsOfDEF_'+cidorg+'_'+cbatch+'_'+cdtbin+'_*_*-'+creskm+'km.nc')  )
     #    ccr = [ split('_',path.basename(cf))[-1] for cf in listnc ] ; # list of resolution suffixes... (for odering)
     #    listnc = listnc[np.argsort(ccr)]
     #    if len(listnc) != nbF:
     #        mjt.printEE('`len(listnc) != nbF`')
 
-    
+
     # First, populate the number of deformation quadrangles in each file:
     kNbPoints = np.zeros(nbF, dtype=int ) ; # number of points in file
     vsubRes   = np.zeros(nbF, dtype=int ) ; # coarsifying resolution
 
     kf = 0
-    for cf in listnpz:        
+    for cf in listnpz:
         css   = split( '-', split( '_', split('\.',path.basename(cf))[0] )[-1] )[0]
         vsubRes[kf] = int(css)
         csskm = css+'km'
@@ -166,11 +166,11 @@ if __name__ == '__main__':
 
     cf_keep = str.replace( listnpz[kw], '_'+str(vsubRes[kw])+'-'+creskm, '_SLCT'+creskm)
     #print( 'lolo cf_keep =', cf_keep )
-    ## We do not want the date in the final file, it causes troubles later on...    
+    ## We do not want the date in the final file, it causes troubles later on...
     #cdt = split('_',path.basename(cf_keep))[-2] ;  print('cdt = ', cdt)
     #cf_keep = str.replace( cf_keep, '_'+cdt+'_', '_')
     #print( 'lolo cf_keep =', cf_keep ); exit(0)
-    
+
     # The "in use" quads coordinates array:
     nQmaxF = nbF*Nmax ; # the ever max number of gathered quads we can expect, final version of `nQmaxF` will have less points...
     zInUseXY = np.zeros((nQmaxF,4,2)) - 9999.
@@ -307,18 +307,18 @@ if __name__ == '__main__':
 
         cfnm = str.replace( path.basename(cf_keep), 'DEFORMATIONS_', '')
         cfnm = str.replace( cfnm, '.npz', '')
-        
-        zoom = 1
-        
+
+        zoom = 2
+
         cresinfo = '('+str(reskm)+' km)'
-        
+
         cfdir = './figs/deformation/'+str(reskm)+'km'
         makedirs( cfdir, exist_ok=True )
 
         if corigin != 'RGPS':
             corigin = str.replace( corigin,'NEMO-','')
             corigin = str.replace( corigin,'_NANUK4_','-')
-            
+
         cresinfo = '('+str(reskm)+' km)'
 
         nmproj=NameArcticProj
@@ -326,24 +326,25 @@ if __name__ == '__main__':
         zrx = [ np.min(zX4)-25. , np.max(zX4)+25. ]
         zry = [ np.min(zY4)-25. , np.max(zY4)+25. ]
 
-        
+
         # Filled quads projected on the Arctic map:
-        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence.png', nmproj=NameArcticProj, cwhat='div',
-                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': divergence '+str(cresinfo), idate=itimeC, edgecolor='k' )
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zdiv, cfig=cfdir+'/map_zd_'+cfnm+'_Divergence.png',
+                                  nmproj=NameArcticProj, cwhat='div',
+                                  pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_div_max_fig, pdF=cfg.rc_df_fig, zoom=zoom,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': divergence '+str(cresinfo), idate=itimeC, edgecolor=None )
 
-        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear.png',      nmproj=NameArcticProj, cwhat='shr',
-                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': shear '+cresinfo, idate=itimeC, edgecolor='k' )
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*zshr, cfig=cfdir+'/map_zs_'+cfnm+'_Shear.png',
+                                  nmproj=NameArcticProj, cwhat='shr',
+                                  pFmin=0.,      pFmax=cfg.rc_shr_max_fig, pdF=cfg.rc_df_fig, zoom=zoom,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': shear '+cresinfo, idate=itimeC, edgecolor=None )
 
-
-        #cix = ''
-        #cix ='max%5.5i'%(int( round( 10000.*np.max(cfg.rc_day2sec*ztot) , 0) ))+'_'
-        #mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cix+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
-        
-        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cfnm+'_Total.png', nmproj=NameArcticProj, cwhat='tot',
-                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom, rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                  title=corigin+': total deformation '+cresinfo, idate=itimeC, edgecolor='k' )
+        mjt.ShowDefQuadGeoArctic( zX4, zY4, cfg.rc_day2sec*ztot, cfig=cfdir+'/map_zt_'+cfnm+'_Total.png',
+                                  nmproj=NameArcticProj, cwhat='tot',
+                                  pFmin=0.,      pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig, zoom=zoom,
+                                  rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
+                                  title=corigin+': total deformation '+cresinfo, idate=itimeC, edgecolor=None )
 
 
 
@@ -368,7 +369,7 @@ if __name__ == '__main__':
     #        jq = jqe
     #    ### cf in listnpz[idxF2K]
     #    print('')
-    #    #makedirs( './nc', exist_ok=True )    
+    #    #makedirs( './nc', exist_ok=True )
     #    #kk = mjt.ncSaveCloudBuoys( './nc/PointsOfQuadsOfDEF_'+cfnm2+'.nc', vtim, zPids1, zPXY[:,:,1], zPXY[:,:,0], zPGC[:,:,1], zPGC[:,:,0],
     #    #                           xtime=xtim, fillVal=mjt.FillValue, corigin='RGPS' )
 
