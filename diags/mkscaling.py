@@ -11,9 +11,6 @@ import mojito   as mjt
 from mojito import config as cfg
 
 
-#iffrmt = '.png'
-iffrmt = '.svg'
-
 idebug=1
 iplot=1 ; Naxis = None
 #iplot=1 ; Naxis = 1
@@ -49,9 +46,12 @@ if __name__ == '__main__':
     vORIGS    = np.array( split(',',lst_exp),    dtype='U16')
 
 
-
-    #dir_npz_in = str.replace( dir_npz_in, '<HOME>', environ.get('HOME') )
-
+    figsfx = "png"
+    ctmp   = environ.get('FIG_SFX')
+    if ctmp:
+        figsfx = ctmp
+    print('\n *** Image type for figures will be: "'+figsfx+'"\n')
+    
     print('\n *** Will find deformation files into: '+dir_npz_in)
 
     print('\n *** Scales to work with:', do_scales)
@@ -225,13 +225,13 @@ if __name__ == '__main__':
     cfroot = './figs/SCALING_'+cfield+'_RGPS_vs_SI3_dt'+str(dtbin)
     
     kk = mjt.plot3ScalingDef( reskm_actual, xMQ, vORIGS, pXQ=xXQ, pXS=xXS, lAddPowerLawFit=lPowerLawFit,
-                              cfig=cfroot+iffrmt, lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis,  )
+                              cfig=cfroot+'.'+figsfx, lOnlyObs=lOnlyRGPS, lShowScat=True, Naxis=Naxis,  )
 
     # Separate: 
     cfroot = './figs/0scaling_'+cfield+'_q1_mean_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+iffrmt, lAddPowerLawFit=lPowerLawFit )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,0], vORIGS, what='Mean', cfig=cfroot+'.'+figsfx, lAddPowerLawFit=lPowerLawFit )
     cfroot = './figs/0scaling_'+cfield+'_q2_variance_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+iffrmt, lAddPowerLawFit=lPowerLawFit )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,1], vORIGS, what='Variance', cfig=cfroot+'.'+figsfx, lAddPowerLawFit=lPowerLawFit )
     cfroot = './figs/0scaling_'+cfield+'_q3_skewness_'+corig+'_dt'+str(dtbin)
-    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+iffrmt, lAddPowerLawFit=lPowerLawFit )
+    kk = mjt.plotScalingDef( reskm_actual, xMQ[:,:,2], vORIGS, what='Skewness', cfig=cfroot+'.'+figsfx, lAddPowerLawFit=lPowerLawFit )
     
