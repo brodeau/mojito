@@ -4,7 +4,7 @@
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
 
-known_modes = ['thorough','model','rgps','xlose','rgps_map','rgps_track']
+known_modes = ['thorough','model','rgps','xlose','rgps_map','rgps_track', 'rgps_PX' ]
 
 
 def controlModeName( caller, mode ):
@@ -130,10 +130,16 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         if irk in [640]:
             rc_Qang_min =  20. ; # minimum angle tolerable in a quadrangle [degree]
         #
+    elif mode in ['rgps_PX']:        
+        rc_Qang_min =  30.  ; # minimum angle tolerable in a quadrangle [degree]
+        rc_Qang_max = 150.
+        rc_dRatio_max = 0.7 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
+        #
     elif mode in ['rgps_map']:        
         rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.
         rc_dRatio_max = 0.9 ; # value that `max(h1/h2,h2/h1)-1` should not exceed! h1 being the "height" and "width" of the quadrangle
+        #
     elif mode in ['xlose']:
         rc_Qang_min =  20.  ; # minimum angle tolerable in a quadrangle [degree]
         rc_Qang_max = 160.  ; # maximum angle tolerable in a quadrangle [degree]
@@ -161,6 +167,9 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         elif mode=='rgps_map':
             rc_maxDevMeanAreaQuads = 5
             rc_Qarea_min, rc_Qarea_max = 6.*6.,14.*14.
+        elif mode=='rgps_PX':
+            rc_maxDevMeanAreaQuads = 3
+            rc_Qarea_min, rc_Qarea_max = 7.*7.,13.*13.
         elif mode=='xlose':
             rc_maxDevMeanAreaQuads = 10
             rc_Qarea_min, rc_Qarea_max = 5*5, 15*15

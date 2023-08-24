@@ -44,7 +44,9 @@ case ${host} in
         export DATA_DIR="/data"
         #
         #LIST_NEMO_EXP="BBM23A00" ; ISEED_BASE='defs' ; # For scaling
-        LIST_NEMO_EXP="EVP23A00" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="EVP23A00" ; ISEED_BASE='defs' ; # For scaling
+        #LIST_NEMO_EXP="BBM23A01" ; ISEED_BASE='defs' ; # For scaling
+        LIST_NEMO_EXP="BBM23A02" ; ISEED_BASE='defs' ; # For scaling        
         #
         ;;
     "jackzilla")
