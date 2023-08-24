@@ -244,7 +244,8 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
         zdA_exp = 2.2
         zxp = int(log2(irk/10))
         zdA_tol = round( zdA_exp**zxp, 1 )
-        rc_maxDevMeanAreaQuads = zdA_tol ; # this is lose 
+        rc_maxDevMeanAreaQuads = zdA_tol ; # this is lose
+        print(' *** [updateConfig4Scale](): `rc_maxDevMeanAreaQuads` =', rc_maxDevMeanAreaQuads, 'km^2')
         zrk = float(irk)
         if irk==10:
             zrk = 10.25
