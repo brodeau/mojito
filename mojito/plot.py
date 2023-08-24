@@ -69,6 +69,16 @@ def GetOriginNames():
         #print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `GetOriginNames()`!')
         #print('          => so not updating `vorig` !\n')
 
+def GetFigDotSuffix():
+    ctmp = environ.get('FIG_SFX')
+    if ctmp:
+        figsfx = ctmp
+    else:
+        figsfx = 'png'
+    print('\n *** Image type for figures will be: "'+figsfx+'"\n')
+    return '.'+figsfx
+
+        
 
 def FigInitStyle( fntzoom=1., color_top='k' ):
     #
