@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     if len(argv)==6:
         lExportNC4Seed = (argv[5] in ['E','e'] )
-
+    if lExportNC4Seed: print('\n *** Will export NC files of deformation quads!!!!')
 
     if iplot>0:
         NEMO_CONF = environ.get('NEMO_CONF')

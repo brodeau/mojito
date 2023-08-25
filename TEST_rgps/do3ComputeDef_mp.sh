@@ -80,7 +80,7 @@ if [ "$1" != "2" ]; then
                             flog="def_S${cbtch}_dt${DT_BINS_H}_${cdt1}-${cdt2}_${RESKM}km"
                             #
                             if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600)) ${MODE} ${DEF_EXPORT}"
+                                CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))         ${MODE} ${DEF_EXPORT}"
                             else
                                 CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/15)) ${MODE} ${DEF_EXPORT}"
                             fi
@@ -111,7 +111,7 @@ if [ "$1" != "2" ]; then
                                 ijob=$((ijob+1))
                                 #
                                 if [ ${RESKM} -ge 50 ] && [ ${DT_BINS_H} -ge 72 ]; then
-                                    CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600)) ${MODE} ${DEF_EXPORT}"
+                                    CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600))         ${MODE} ${DEF_EXPORT}"
                                 else
                                     CMD="${EXE} ${fQ1} ${fQ2} $((DT_BINS_H*3600/2*20/15)) ${MODE} ${DEF_EXPORT}"
                                 fi
