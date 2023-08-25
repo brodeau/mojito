@@ -20,10 +20,6 @@ lPlotPDFs   = False
 
 Nmin = 1000 ; # smallest `N` (size of the sample at a given date) required to accept a value for the 90th percentile ()
 
-#zP=98
-
-#iffrmt='png'
-iffrmt='svg'
 
 if __name__ == '__main__':
 
@@ -54,7 +50,7 @@ if __name__ == '__main__':
         
 
 
-
+    figsfx = mjt.GetFigDotSuffix()
     
     # What fields are we dealing with based on filename:
     cv_in = split( '_', path.basename(cf_in1) )[1]
@@ -210,7 +206,7 @@ if __name__ == '__main__':
         if lPlotClouds:
             k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
             k0 = mjt.PlotCloud( 3, Zdat3, ZDEF3, field=cfield, figname='./figs/Cloud_'+corigin3+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-        cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM-aEVP_'+cfield+'.'+iffrmt        
+        cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM-aEVP_'+cfield+figsfx        
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin )
         VDAT3, V90P3 = mjt.Construct90P(3, VDTB3, Zdat3, ZDEF3, pp=zP, Nmin=Nmin )
 
@@ -220,9 +216,9 @@ if __name__ == '__main__':
     elif ldo2:
         if lPlotClouds:
             k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-        cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM'+cfield+'.'+iffrmt        
+        cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM'+cfield+figsfx        
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin  )
     
     else:
-        cfig = 'fig_series_P'+str(zP)+'_RGPS'+cfield+'.'+iffrmt        
+        cfig = 'fig_series_P'+str(zP)+'_RGPS'+cfield+figsfx        
         kk= mjt.PlotP90Series( VDAT1, V90P1, field=cfield, figname='./figs/'+cfig, y_range=(0.,0.1), dy=0.01 )
