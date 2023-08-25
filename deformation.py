@@ -248,11 +248,7 @@ if __name__ == '__main__':
     ztot[:] = np.sqrt( zdiv[:]*zdiv[:] + zshr2[:] )
     del zshr2
 
-
-    #idxKeep = np.arange(nD,dtype=int) ; # default we keep everything
-    #print(idxKeep[::10])
-    #exit(0);#lili
-
+    idxKeep = np.arange(nD, dtype=int) ; # default we keep everything
     lNeedClean = False
 
 
