@@ -40,7 +40,13 @@ if __name__ == '__main__':
 
     if   zP==98:
         vyrng=(0.,0.2)
-        zdy=0.05
+        zdy=0.02
+    elif zP==95:
+        vyrng=(0.,0.11)
+        zdy=0.01
+    elif zP==92:
+        vyrng=(0.,0.08)
+        zdy=0.01
     elif zP==90:
         vyrng=(0.,0.07)
         zdy=0.01
@@ -215,7 +221,8 @@ if __name__ == '__main__':
         
     elif ldo2:
         if lPlotClouds:
-            k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
+            k0 = mjt.PlotCloud( 2, Zdat2, ZDEF2, field=cfield, figname='./figs/Cloud_'+corigin2+'_'+cfield+'.png',
+                                y_range=(0.,1.), dy=0.1, zoom=1 )
         cfig = 'fig_series_P'+str(zP)+'_RGPS-BBM'+cfield+figsfx        
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin  )
     
