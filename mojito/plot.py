@@ -987,7 +987,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
         cn = colors.PowerNorm(gamma=0.6, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma<1 => compresses high values
     elif   cwhat=='tot':
         cm = plt.cm.get_cmap('magma')
-        cn = colors.PowerNorm(gamma=0.8, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma<1 => compresses high values
+        cn = colors.PowerNorm(gamma=0.7, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma<1 => compresses high values
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
