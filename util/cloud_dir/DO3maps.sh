@@ -31,8 +31,7 @@ done
 
 echo " LEXPS = ${LEXPS} "; echo
 
-for cf in "shear" "total" "divergence"; do
-#for cf in "total"; do
+for cf in "total" "shear" "divergence"; do
 
     CMD="${EXE} ${cf} ${LEXPS}"
     

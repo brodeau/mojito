@@ -194,8 +194,6 @@ if __name__ == '__main__':
                                            rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
                                            title1=corig+': '+cv_in+' '+cresinfo, idate=itime,
                                            title2=mjt.vorig[1]+': '+cv_in+' '+cresinfo, title3=mjt.vorig[2]+': '+cv_in+' '+cresinfo )
-
-        
         else:
             print('Fixme!')
 
