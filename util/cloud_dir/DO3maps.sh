@@ -20,7 +20,7 @@ while [ ${ji} -lt ${NO} ]; do
 
     echo ${ji}
 
-    ff=`\ls  ${dir_in}/${vexps[${ji}]}/DEFORMATIONS_*${VEXPS[${ji}]}*_S003_dt120_SLCT10km.npz`
+    ff=`\ls  ${dir_in}/${vexps[${ji}]}/DEFORMATIONS_*${VEXPS[${ji}]}*_${BATCH}_dt120_SLCT10km.npz`
     echo ${ff}
     LEXPS+="${ff} "
     echo
