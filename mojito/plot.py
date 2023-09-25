@@ -1019,7 +1019,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
             plt.fill( x1[jQ,:], y1[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
     _AdjustMapArctic_( nmproj, PROJ )
     if title1:
-        ax1.annotate(vorig[0]+title1, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
+        ax1.annotate(title1, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
     
     ax2  = plt.axes([1./3.+dxL,zyf,xw,0.9], facecolor='w')
     x2,y2 = PROJ(zlon2,zlat2)
@@ -1030,7 +1030,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
             plt.fill( x2[jQ,:], y2[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
     _AdjustMapArctic_( nmproj, PROJ )
     if title2:
-        ax2.annotate(vorig[1]+title2, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
+        ax2.annotate(title2, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
 
     ax3  = plt.axes([2./3.+dxL,zyf,xw,0.9], facecolor='w')
     x3,y3 = PROJ(zlon3,zlat3)
@@ -1041,7 +1041,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
             plt.fill( x3[jQ,:], y3[jQ,:], facecolor=colrgb, edgecolor=None, linewidth=0. )
     _AdjustMapArctic_( nmproj, PROJ )
     if title3:
-        ax3.annotate(vorig[2]+title3, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
+        ax3.annotate(title3, xy=LTtl, xycoords='axes fraction', ha='center', **cfont_ttl) ; #ha='center'
 
     if unit:
         # => triggers the colorbar

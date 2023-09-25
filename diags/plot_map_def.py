@@ -130,6 +130,8 @@ if __name__ == '__main__':
 
 
 
+    mjt.GetOriginNames()
+
     if l3files:
         cfname = mjt.vorig[0]+'_'+mjt.vorig[1]+'_'+mjt.vorig[2]
     else:
@@ -153,8 +155,8 @@ if __name__ == '__main__':
                                            nmproj=NameArcticProj, cwhat=cwhat,
                                            pFmin=-cfg.rc_div_max_fig, pFmax=cfg.rc_tot_max_fig, pdF=cfg.rc_df_fig,
                                            rangeX=zrx, rangeY=zry, unit=r'day$^{-1}$',
-                                           title1=': '+cv_in+' '+cresinfo, idate=itime,
-                                           title2=': '+cv_in+' '+cresinfo, title3=': '+cv_in+' '+cresinfo )
+                                           title1=mjt.vorig[0]+': '+cv_in+' '+cresinfo, idate=itime,
+                                           title2=mjt.vorig[1]+': '+cv_in+' '+cresinfo, title3=mjt.vorig[2]+': '+cv_in+' '+cresinfo )
         else:
             print('Fixme!')
         
