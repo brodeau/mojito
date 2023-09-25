@@ -50,6 +50,7 @@ clPNames = 'w' ; # color for city/point annotations
 
 vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
+vlstyl = [   '-'  ,   '-'  ,   '-'  ,  '--',   '-' ]
 vlwdth = [ 9  ,   6    ,    6   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
 #
@@ -64,7 +65,8 @@ def GetOriginNames():
     corigin_nms = environ.get('ORIGIN_NMS')
     if corigin_nms:
         vn   = corigin_nms.split(',')
-        vorig[:len(vn)] = vn[:]
+        #vorig[:len(vn)] = vn[:]
+        vorig = vn[:]
         print('\n Updated origin strings after `GetOriginNames()` =>', vorig)
         #print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `GetOriginNames()`!')
         #print('          => so not updating `vorig` !\n')
@@ -73,9 +75,10 @@ def GetFigDotSuffix():
     ctmp = environ.get('FIG_SFX')
     if ctmp:
         figsfx = ctmp
+        print('\n +++ Image type for figures will be: "'+figsfx+'" !\n')
     else:
-        figsfx = 'png'
-    print('\n *** Image type for figures will be: "'+figsfx+'"\n')
+        print('\n +++ Environment variable "FIG_SFX" not defines => falling back on "png" !\n')
+        figsfx = 'png'    
     return '.'+figsfx
 
         
@@ -1066,7 +1069,8 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
                title=None, period=None, origin=None,
                ppdf2=[], Np2=None, origin2=None,
-               ppdf3=[], Np3=None, origin3=None ):
+               ppdf3=[], Np3=None, origin3=None,
+               ppdf4=[], Np4=None, origin4=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
@@ -1083,8 +1087,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
 
-    l_comp2 = ( np.shape(ppdf2)==(nB,) )
+    l_comp2 = (  np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
+    l_comp4 = ( l_comp2 and l_comp3 and np.shape(ppdf4)==(nB,) )
 
     print('WARNING [LogPDFdef]: setup for nominal resolution of '+str(reskm)+' km !!!')
     
@@ -1093,14 +1098,10 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     # For figure axes:
     xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf
     ylog_min, ylog_max = 5.e-3, 3.5e2
-    #rxlabs = [0.005, 0.01, 0.05, 0.1, 0.5]
-    #cxlabs = ['0.005', '0.01', '0.05', '0.1', '0.5']
-    # xlog_min,xlog_max => config file !!! cfg.rc_tot_min_pdf,
-    #if cfg.lc_StrictPDF:
     rxlabs = [ 0.001, 0.01, 0.1, 0.5]
     cxlabs = ['0.001', '0.01', '0.1', '0.5']
         
-    lmask_tiny, lmask_tiny2, lmask_tiny3 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS')
+    lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS'), (origin4!='RGPS')
 
     if reskm>30 and reskm<70:
         ylog_min = 3.e-2
@@ -1129,7 +1130,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         rycut_tiny =0.7
 
     if reskm>30:
-        lmask_tiny, lmask_tiny2, lmask_tiny3 = True, True, True
+        lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = True, True, True
 
     ki = FigInitStyle( fntzoom=4. )
 
@@ -1143,7 +1144,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         clbl = origin+' (N = '+str(Np)+')'
 
     jo = 0
-    plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
+    plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
 
     if l_comp2:
@@ -1154,7 +1155,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             clbl = origin2+' (N = '+str(Np2)+')'
         if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
         #
-        plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
+        plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
         
@@ -1166,7 +1167,19 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             clbl = origin3+' (N = '+str(Np3)+')'
         if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
         #
-        plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle='-',
+        plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
+                   linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
+        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+
+    if l_comp4:
+        jo=3
+        clbl = origin4
+        if Np4 and origin4:
+            origin4 = str.replace( str.replace( origin4, 'NEMO-','') , '_NANUK4', '')
+            clbl = origin4+' (N = '+str(Np4)+')'
+        if lmask_tiny4: ppdf4 = np.ma.masked_where( ppdf4<rycut_tiny, ppdf4 )
+        #
+        plt.loglog(pbinc[:], ppdf4[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
@@ -1188,7 +1201,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
 
-    if Np and not (l_comp2 or l_comp3):
+    if Np and not (l_comp2 or l_comp3 or l_comp4):
         ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
     if period:
         ax.annotate('Period = '+period, xy=(0.5, 0.85), xycoords='figure fraction', **cfont_clock)
@@ -1285,7 +1298,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pF[:,jo], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+        plt.loglog( pscales[:,jo], pF[:,jo], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                     color=vcolor[jo], label=vorig[jo], zorder=5 )
 
     # Fit power-law to points:
@@ -1295,7 +1308,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
         (idxKeep,) = np.where(pscales[:,jo]<300)
         [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
         
-        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle='-', linewidth=2, fillstyle=vmrkfs[jo],
+        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle=vlstyl[jo], linewidth=2, fillstyle=vmrkfs[jo],
                     color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
         
         
@@ -1382,11 +1395,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if lAddPowerLawFit:
             zlw = 0             # 
             cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=vorig[jo], zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], linestyle='-', linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=5 )
         
     # Add power-law to points:
@@ -1394,10 +1407,10 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         for jo in range(No):
             for jq in range(3):
                 #[zA,zE] = zAB[:,jo,jq]
-                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, vmrk[jo], markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, vmrk[jo], markersize=0, linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                 #            color=vcolor[jo], label=None, zorder=5 )
                 [zA,zB] = zAB[:,jo,jq]
-                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), vmrk[jo], markersize=0, linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), vmrk[jo], markersize=0, linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                             color=vcolor[jo], label=None, zorder=5 )
         
     #X-axis:
@@ -1440,7 +1453,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=vmrksz[jo], linestyle='-', linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
                     color=vcolor[jo], label=None, zorder=50 )
                     #color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:

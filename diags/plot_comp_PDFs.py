@@ -12,19 +12,17 @@ import mojito   as mjt
 from mojito import config as cfg
 
 idebug=1
-#iffrmt='png'
-iffrmt='svg'
-
 
 if __name__ == '__main__':
 
-    if not len(argv) in [2,3,4]:
-        print('Usage: '+argv[0]+' <PDFfile.npz> (<PDFfile2.npz>) (<PDFfile3.npz>)')
+    if not len(argv) in [2,3,4,5]:
+        print('Usage: '+argv[0]+' <PDFfile.npz> (<PDFfile2.npz>) (<PDFfile3.npz>) (<PDFfile3.npz>)')
         exit(0)
     cf_in = argv[1]
 
     l2files = (len(argv)==3)
     l3files = (len(argv)==4)
+    l4files = (len(argv)==5)
     
     mjt.chck4f(cf_in)
     with np.load(cf_in) as data:
@@ -44,7 +42,7 @@ if __name__ == '__main__':
     #print(' * period =', cperiod)
     print(' * nP =', nP)
 
-    if l2files or l3files:
+    if l2files or l3files or l4files:
         cf_in2 = argv[2]        
         mjt.chck4f(cf_in2)
         with np.load(cf_in2) as data:
@@ -70,7 +68,7 @@ if __name__ == '__main__':
             print('ERROR: PDF in file 2 looks too different than in first file in terms of bin bounds?...')
             exit(0)
 
-    if l3files:
+    if l3files or l4files:
         cf_in3 = argv[3]        
         mjt.chck4f(cf_in3)
         with np.load(cf_in3) as data:
@@ -95,6 +93,34 @@ if __name__ == '__main__':
         if np.sum(np.abs(xbin_bounds3-xbin_bounds))!=0:
             print('ERROR: PDF in file 3 looks too different than in first file in terms of bin bounds?...')
             exit(0)
+
+    if l4files:
+        cf_in4 = argv[4]        
+        mjt.chck4f(cf_in4)
+        with np.load(cf_in4) as data:
+            cname4 = str(data['name'])
+            corig4 = str(data['origin'])
+            reskm4 = int(data['reskm_nmnl'])
+            dtbin4 = int(data['dtbin'])
+            #cperiod4 = str(data['period'])
+            nP4    = data['Np']
+            xbin_bounds4 = data['xbin_bounds']
+            xbin_center4 = data['xbin_center']
+            PDF4   = data['PDF']
+        print('\n * name_4 =', cname4)
+        print(' * orig_4 =', corig4)
+        print(' * reskm_4 =', reskm4)
+        print(' * dtbin_4 =', dtbin4)
+        #print(' * period_4 =', cperiod4)
+        print(' * nP_4 =', nP4)
+        if cname4!=cname:
+            print('ERROR: `cname4!=cname` !',cname4,cname)
+            exit(0)
+        if np.sum(np.abs(xbin_bounds4-xbin_bounds))!=0:
+            print('ERROR: PDF in file 4 looks too different than in first file in terms of bin bounds?...')
+            exit(0)
+
+            
             
     if   cname == 'Divergence':
         cName = '|Divergence|';      cfname = 'AbsDiv'
@@ -116,14 +142,18 @@ if __name__ == '__main__':
     corig = str.replace( corig, 'NEMO-SI3_NANUK4', 'SI3' )
     corig = str.replace( corig, '_', '-')
     cSclKM = str(reskm)+'km'
-    if l2files or l3files:
+    if l2files or l3files or l4files:
         corig2 = str.replace( corig2, 'NEMO-SI3_NANUK4', 'SI3' )
         corig2 = str.replace( corig2, '_', '-' )
         if not reskm2==reskm: cSclKM = ''
-    if l3files:
+    if l3files or l4files:
         corig3 = str.replace( corig3, 'NEMO-SI3_NANUK4', 'SI3' )
         corig3 = str.replace( corig3, '_', '-' )
         if not( reskm2==reskm and reskm3==reskm ): cSclKM = ''
+    if l4files:
+        corig4 = str.replace( corig4, 'NEMO-SI3_NANUK4', 'SI3' )
+        corig4 = str.replace( corig4, '_', '-' )
+        if not( reskm2==reskm and reskm4==reskm ): cSclKM = ''
         
     cfxtraScl, cnxtraScl, cscale = '', '', ''
     if cSclKM != '':
@@ -138,13 +168,16 @@ if __name__ == '__main__':
     fdir = './figs/PDFs'
     if not path.exists(fdir): makedirs( fdir, exist_ok=True )
 
+
+    iffrmt = mjt.GetFigDotSuffix()
+
     
     if   l2files:
 
         cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cfxtraScl
         
         # Only log-log !
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
                             title=cName+' ('+cscale+')', period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2 )    
     
@@ -155,28 +188,31 @@ if __name__ == '__main__':
         if not cfg.lc_StrictPDF:
             cfroot += '_Min1e-3'
 
-        # subsitutions for name for paper:
-        corig2 = str.replace( corig2, '2305', '')
-        corig3 = str.replace( corig3, '2305', '')
-
-        
-        # Only log-log with N:
-        #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
-        #                    title=cName+': '+cscale, period=cperiod, origin=corig,
-        #                    ppdf2=PDF2, Np2=nP2, origin2=corig2, ppdf3=PDF3, Np3=nP3, origin3=corig3 )
-        # Without `N`:
-        # title=cName+' ('+cscale+')' ; period=cperiod,        
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
                             title=cName, origin=corig,
-                            ppdf2=PDF2,  origin2=corig2, ppdf3=PDF3,  origin3=corig3 )
+                            ppdf2=PDF2,  origin2=corig2,
+                            ppdf3=PDF3,  origin3=corig3 )
+    
+    elif l4files:
+
+        cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_vs_'+corig4+'_'+cfname+'_'+cfxtraScl
+
+        if not cfg.lc_StrictPDF:
+            cfroot += '_Min1e-3'
+        
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
+                            title=cName, origin=corig,
+                            ppdf2=PDF2,  origin2=corig2,
+                            ppdf3=PDF3,  origin3=corig3,
+                            ppdf4=PDF4,  origin4=corig4 )
     
     else:
         # log-log and histogram:
         cfroot = 'PDF_'+corig+'_'+cfname+'_'+cfxtraScl
         
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+'.'+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
                             title=cName+cnxtraScl, period=cperiod )    
     
-        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/'+cfroot+'.'+iffrmt,
+        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/'+cfroot+iffrmt,
                              title=cName+': '+corig+cnxtraScl, period=cperiod )
     
