@@ -59,7 +59,7 @@ vmrksz = [11,12,14,12,12]
 vmrkfs = ['none','none','full','none','none']
 
 
-def GetOriginNames():
+def OriginNames():
     global vorig
     #
     corigin_nms = environ.get('ORIGIN_NMS')
@@ -67,10 +67,18 @@ def GetOriginNames():
         vn   = corigin_nms.split(',')
         #vorig[:len(vn)] = vn[:]
         vorig = vn[:]
-        print('\n Updated origin strings after `GetOriginNames()` =>', vorig)
-        #print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `GetOriginNames()`!')
+        print('\n Updated origin strings after `OriginNames()` =>', vorig)
+        #print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `OriginNames()`!')
         #print('          => so not updating `vorig` !\n')
+def GetOriginNames():
+    #
+    OriginNames()
+    return vorig
 
+        
+
+
+        
 def GetFigDotSuffix():
     ctmp = environ.get('FIG_SFX')
     if ctmp:
@@ -83,11 +91,11 @@ def GetFigDotSuffix():
 
         
 
-def FigInitStyle( fntzoom=1., color_top='k' ):
+def FigInitStyle( fntzoom=1., color_top='k', l_getOriginNames=True ):
     #
     global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail, cfont_abc, cfont_uya
     #
-    GetOriginNames()
+    if l_getOriginNames: OriginNames()
     #fntzoom_inv = 1.*fntzoom**0.5
     fntzoom_inv = fntzoom
     #
@@ -972,7 +980,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     if np.shape(p4X3)!=(nQ3,4) or np.shape(p4Y3)!=(nQ3,4):
         print('\n *** ERROR [ShowMultiDefQuadGeoArctic]: wrong shape for `p4X3` or/and `p4Y3`!'); exit(0)
 
-    kk = FigInitStyle(fntzoom=2.5*zoom)
+    kk = FigInitStyle( fntzoom=2.5*zoom, l_getOriginNames=False )
 
     zlat1, zlon1 = ConvertCartesianNPSkm2Geo( p4Y1, p4X1 )
     zlat2, zlon2 = ConvertCartesianNPSkm2Geo( p4Y2, p4X2 )
