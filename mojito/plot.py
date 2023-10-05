@@ -65,18 +65,13 @@ def OriginNames():
     corigin_nms = environ.get('ORIGIN_NMS')
     if corigin_nms:
         vn   = corigin_nms.split(',')
-        #vorig[:len(vn)] = vn[:]
         vorig = vn[:]
         print('\n Updated origin strings after `OriginNames()` =>', vorig)
-        #print('\n WARNING: Set the `ORIGIN_NMS` environement variable when calling `OriginNames()`!')
-        #print('          => so not updating `vorig` !\n')
+#
 def GetOriginNames():
     #
     OriginNames()
     return vorig
-
-        
-
 
         
 def GetFigDotSuffix():
@@ -1546,7 +1541,6 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     '''
     import matplotlib.dates as mdates
     from datetime import datetime as dtm
-
     (nT1,) = np.shape(vt1)
 
     if np.shape(V1) != (nT1,):

@@ -169,7 +169,7 @@ if __name__ == '__main__':
     if not path.exists(fdir): makedirs( fdir, exist_ok=True )
 
 
-    iffrmt = mjt.GetFigDotSuffix()
+    figsfx = mjt.GetFigDotSuffix()
 
     
     if   l2files:
@@ -177,7 +177,7 @@ if __name__ == '__main__':
         cfroot = 'Comp_PDF_'+corig+'_vs_'+corig2+'_'+cfname+'_'+cfxtraScl
         
         # Only log-log !
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm,
                             title=cName+' ('+cscale+')', period=cperiod, origin=corig,
                             ppdf2=PDF2, Np2=nP2, origin2=corig2 )    
     
@@ -188,7 +188,7 @@ if __name__ == '__main__':
         if not cfg.lc_StrictPDF:
             cfroot += '_Min1e-3'
 
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm,
                             title=cName, origin=corig,
                             ppdf2=PDF2,  origin2=corig2,
                             ppdf3=PDF3,  origin3=corig3 )
@@ -200,7 +200,7 @@ if __name__ == '__main__':
         if not cfg.lc_StrictPDF:
             cfroot += '_Min1e-3'
         
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm,
                             title=cName, origin=corig,
                             ppdf2=PDF2,  origin2=corig2,
                             ppdf3=PDF3,  origin3=corig3,
@@ -210,9 +210,9 @@ if __name__ == '__main__':
         # log-log and histogram:
         cfroot = 'PDF_'+corig+'_'+cfname+'_'+cfxtraScl
         
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+iffrmt, reskm=reskm,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm,
                             title=cName+cnxtraScl, period=cperiod )    
     
-        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/'+cfroot+iffrmt,
+        kk = mjt.PlotPDFdef( xbin_bounds, xbin_center, PDF, Np=nP, name=cName, cfig=fdir+'/'+cfroot+figsfx,
                              title=cName+': '+corig+cnxtraScl, period=cperiod )
     
