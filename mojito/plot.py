@@ -1535,7 +1535,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, whatP=90,
-                   figname='fig_series_P90.png', y_range=(0.,0.1), x_range=None, dy=0.01 ):
+                   figname='fig_series_P90.png', y_range=(0.,0.1), x_range=None, dy=0.01, letter='' ):
     '''
         * vt1: time array as Epoch Unix time 
     '''
@@ -1578,8 +1578,8 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     
     kk = FigInitStyle( fntzoom=3. )
         
-    fig = plt.figure(num = 1, figsize=(15,8.75), facecolor='w', edgecolor='k')
-    ax  = plt.axes([0.072, 0.16, 0.925, 0.8])
+    fig = plt.figure(num = 1, figsize=(16,8.75), facecolor='w', edgecolor='k')
+    ax  = plt.axes([0.082, 0.18, 0.91, 0.78])
 
     # Date ticks stuff:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
@@ -1607,6 +1607,9 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     ax.grid(color='0.5', linestyle='-', linewidth=0.3)
     plt.legend(bbox_to_anchor=(0.95, 1.), ncol=1, shadow=True, fancybox=True)
 
+    if letter:
+        ax.annotate(letter+')', xy=(0.005, 0.94), xycoords='figure fraction', **cfont_abc)
+    
     print(' *** Saving figure',figname)
     plt.savefig( figname )
     plt.close(1)

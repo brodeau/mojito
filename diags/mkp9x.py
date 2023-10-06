@@ -216,8 +216,16 @@ if __name__ == '__main__':
         VDAT2, V90P2 = mjt.Construct90P(2, VDTB2, Zdat2, ZDEF2, pp=zP, Nmin=Nmin )
         VDAT3, V90P3 = mjt.Construct90P(3, VDTB3, Zdat3, ZDEF3, pp=zP, Nmin=Nmin )
 
+
+        if zP==90:
+            cl = 'a'
+        elif zP==95:
+            cl = 'b'
+        elif zP==98:
+            cl = 'c'
+                    
         kk= mjt.PlotP90Series( VDAT1,V90P1, vt2=VDAT2,V2=V90P2, vt3=VDAT3,V3=V90P3, field=cfield, whatP=str(zP),
-                               figname='./figs/'+cfig, y_range=vyrng, dy=zdy )
+                               figname='./figs/'+cfig, y_range=vyrng, dy=zdy, letter=cl )
         
     elif ldo2:
         if lPlotClouds:
