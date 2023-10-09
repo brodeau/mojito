@@ -104,6 +104,10 @@ if __name__ == '__main__':
             cc2 = dirin+'/def_'+cFLD+'_*'+corig+'*_'+str(res)+'km.npz'
 
             lst1, lst2 = np.sort( glob(cc1) ), np.sort( glob(cc2) )
+
+            print('  *** cc1 =',cc1)
+            print('  *** cc2 =',cc2)
+            
             if len(lst1)==0 and len(lst2)>0:
                 lst, cc = lst2, cc2
             elif len(lst2)==0 and len(lst1)>0:
