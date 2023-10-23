@@ -69,9 +69,9 @@ for RESKM in ${VRESKM[*]}; do
     ic=`expr ${ic} + 1`
 done
 
+exit
 echo
 echo " * Exporting figures to ${DIR_EXPORT_CLOUD}/Figures/PDFs !"
-
 rsync -avP ./figs/PDFs/*.png ${DIR_EXPORT_CLOUD}/Figures/PDFs/
 
 

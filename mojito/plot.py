@@ -1071,7 +1071,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
 
 def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
-               title=None, period=None, origin=None,
+               title=None, period=None, origin=None, lShowSlope=False,
                ppdf2=[], Np2=None, origin2=None,
                ppdf3=[], Np3=None, origin3=None,
                ppdf4=[], Np4=None, origin4=None ):
@@ -1091,6 +1091,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
 
+    if lShowSlope:
+        vA, vB = np.zeros(5), np.zeros(5)
+    
     l_comp2 = (  np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
     l_comp4 = ( l_comp2 and l_comp3 and np.shape(ppdf4)==(nB,) )
@@ -1147,11 +1150,17 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if Np and origin:
         clbl = origin+' (N = '+str(Np)+')'
 
+    No = 1
+        
     jo = 0
     plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
-
+    if lShowSlope:
+        (idxKeep,) = np.where( (pbinc>0.04) & (pbinc<0.492) )
+        [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf[idxKeep])
+    
     if l_comp2:
+        No = 2
         jo = 1
         #clbl = origin2
         if Np2 and origin2:
@@ -1161,9 +1170,11 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         #
         plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
-        ax.legend(loc='center left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+        if lShowSlope:
+            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf2[idxKeep])
         
     if l_comp3:
+        No = 3
         jo=2
         clbl = origin3
         if Np3 and origin3:
@@ -1173,9 +1184,11 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         #
         plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
-        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+        if lShowSlope:
+            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf3[idxKeep])
 
     if l_comp4:
+        No = 4
         jo=3
         clbl = origin4
         if Np4 and origin4:
@@ -1185,7 +1198,20 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         #
         plt.loglog(pbinc[:], ppdf4[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
-        ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
+        if lShowSlope:
+            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf4[idxKeep])
+
+        
+    if lShowSlope:
+        # Fit power-law to points:
+        jo = 0
+        plt.loglog( pbinc[idxKeep], np.exp(vA[jo]*np.log(pbinc[idxKeep]))*np.exp(vB[jo]) *5., '-', linestyle='-',
+                    linewidth=2., color='0.5', label=r'y = x$^{'+str(round(vA[jo],2))+'}$', zorder=5)
+
+                    #'o', markersize=0, linestyle=vlstyl[jo], linewidth=2, fillstyle=vmrkfs[jo],
+                    #color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
+
+    ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
     # X-axis:
@@ -1225,6 +1251,13 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
     plt.close(1)
     print(' * [LogPDFdef()]: created figure '+cfig)
+
+    if lShowSlope:
+        print('\n###############################################################')
+        print(' *** Slopes for '+name+':')
+        for jo in range(No):
+            print('    * '+vorig[jo]+' =', round(vA[jo],2))
+        print('###############################################################\n')
     return 0
 
 
