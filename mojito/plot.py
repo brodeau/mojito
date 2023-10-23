@@ -14,8 +14,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 #
-from mpl_toolkits.basemap import Basemap
-#from mpl_toolkits.basemap import shiftgrid
+
 
 from .util import epoch2clock as e2c
 
@@ -297,6 +296,8 @@ def ShowBuoysMap( pt, pvlon, pvlat, pvIDs=[], cfig='buoys_RGPS.png', nmproj='Cen
             * pvlat => 1D array (Nb) of  latitudes (float)
             * pvIDs => (OPTIONAL) vector of length Nb of buoys IDs (integer)
     '''
+    from mpl_toolkits.basemap import Basemap
+    #
     (Nb,) = np.shape(pvlon)
     if np.shape(pvlat) != (Nb,):
         print('\n *** ERROR [ShowBuoysMap]: lon and lat vectors disagree in shape!'); exit(0)
@@ -335,7 +336,8 @@ def ShowBuoysMap_Trec( pvt, pvlon, pvlat, pvIDs=[], cnmfig='buoys_RGPS', nmproj=
             *
             * NminPnts => if a record contains less points than this number we stop plotting!
     '''
-
+    from mpl_toolkits.basemap import Basemap
+    #
     (Nt,Nb) = np.shape(pvlon)
     if Nt != len(pvt):
         print('\n *** ERROR [ShowBuoysMap_Trec]: record length different for `pvt` and `coordinates`!',len(pvt),Nt)
@@ -883,8 +885,9 @@ def ShowDefQuadGeoArctic( pX4, pY4, pF, cfig='deformation_map.png', nmproj='Cent
     ###     Specify pX4_Q & pY4_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
+    from mpl_toolkits.basemap import Basemap
     from .util import ConvertCartesianNPSkm2Geo
-
+    #
     (nQ,) = np.shape(pF)
     if np.shape(pX4)!=(nQ,4) or np.shape(pY4)!=(nQ,4):
         print('\n *** ERROR [ShowDefQuadGeoArctic]: wrong shape for `pX4` or/and `pY4`!'); exit(0)
@@ -963,6 +966,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     ###     Specify p4X1_Q & p4Y1_Q when plotting QuadMesh when IDs are not those of the
     ###     traingle world!
     '''
+    from mpl_toolkits.basemap import Basemap
     from .util import ConvertCartesianNPSkm2Geo
 
     (nQ1,) = np.shape(pF1)
@@ -997,11 +1001,8 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
-        cm = plt.cm.get_cmap('RdBu_r')
-        
-    #
-    
-    
+        cm = plt.cm.get_cmap('RdBu_r')        
+    #    
     _, NP, _ = _SelectArcticProjExtent_( nmproj )
 
     PROJ = Basemap(llcrnrlon=NP[0], llcrnrlat=NP[1], urcrnrlon=NP[2], urcrnrlat=NP[3], \

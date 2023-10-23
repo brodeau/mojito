@@ -6,10 +6,19 @@ lst_exps=`echo ${EXPS} | sed -e s/','/' '/g -e s/'BBM00'/''/g`
 echo " => ${lst_exps} "
 
 
-import_frazilo()
-{
-    rsync -avP -e "ssh -p ${PORT_FRAZILO} -c aes128-ctr" laurent@localhost:${1} ${2}
-}
+if [ "`hostname`" = "ige-mcpc-36" ]; then
+    import_frazilo()
+    {
+        rsync -avP -e 'ssh' laurent@${IP_FRAZILO}:${1} ${2}/
+    }
+else
+    import_frazilo()
+    {
+        rsync -avP -e "ssh -p ${PORT_FRAZILO} -c aes128-ctr" laurent@localhost:${1} ${2}
+    }
+fi
+
+
 
 
 DIR_NPZ="npz"
