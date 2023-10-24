@@ -1103,8 +1103,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
             
     # For figure axes:
-    xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf
-    ylog_min, ylog_max = 5.e-3, 3.5e2
+    xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf+0.1
+    ylog_min, ylog_max = 2.5e-3, 3.5e2
+    if name=='Divergence': ylog_min = 1.2e-3
     rxlabs = [ 0.001, 0.01, 0.1, 0.5]
     cxlabs = ['0.001', '0.01', '0.1', '0.5']
         
@@ -1156,7 +1157,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
     if lShowSlope:
-        (idxKeep,) = np.where( (pbinc>0.04) & (pbinc<0.492) )
+        (idxKeep,) = np.where( (pbinc>0.04) & (pbinc<0.501) & (ppdf>0.) )
         [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf[idxKeep])
     
     if l_comp2:
@@ -1216,7 +1217,6 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     # X-axis:
     plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
-    print('LOLO: xlog_min, xlog_max =',xlog_min, xlog_max)
     ax.set_xlim(xlog_min, xlog_max)
     ax.set_xticks(rxlabs)
     ax.set_xticklabels(cxlabs)
