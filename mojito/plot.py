@@ -1067,6 +1067,61 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
 
 
+def CleanTailPDF( pbins, pPDF ):
+    # Find when the PDF starts to become sloppy:
+    (idxTst,) = np.where( (pbins>0.05) & (pPDF>0.) ) ; # only looking at the tail...
+    vpdf = pPDF[idxTst]
+    vtst = vpdf[1:] - vpdf[:-1] ; # cut will be where this vector is >0 !
+    if np.any(vtst > 0.):
+        [idxFU,] = np.where(vtst > 0.)
+        zPDF_FU = pPDF[idxTst[idxFU[0] + 1]]
+        [idxFU,] = np.where(pPDF==zPDF_FU)
+        pPDF[idxFU[0]:] = -9.
+        pPDF = np.ma.masked_where( pPDF<-1., pPDF )
+    #
+    return pPDF
+
+
+def IdxPercentilePDF( pbinb, ppdf, xp=90 ):
+    zperc_jk_old = -1.
+    jk = 0
+    lfound = False
+    while not lfound:
+        jk+=1
+        zperc_jk = 1. - np.sum( ppdf[jk:]*(pbinb[jk+1:]-pbinb[jk:-1]) )
+        #print(' jk, zperc_jk = ',jk, zperc_jk)
+        lfound = (zperc_jk_old<xp/100. and zperc_jk>=xp/100.)
+        zperc_jk_old = zperc_jk
+    #print(' *** jk = ',jk)
+    return jk
+
+
+def _linear_fit_loglog_( px, py,  pbins_bnd=[], from_prcntl=None ):
+    from scipy.optimize import curve_fit
+    #
+    Np = len(py)
+    jp = 0
+    (nbb,) = np.shape(pbins_bnd)
+    if from_prcntl and nbb==Np+1:
+        jp = IdxPercentilePDF( pbins_bnd, py, xp=from_prcntl )        
+    #
+    idxKeep = np.where(py>0.)
+    zx = px[idxKeep][jp:]
+    zy = py[idxKeep][jp:]
+    #
+    zx = np.log(zx)
+    zy = np.log(zy)
+    #
+    # Define the linear function:
+    def _line_(x, a, b):
+        return a*x + b
+    # Perform the curve fitting
+    zcoeffs, _ = curve_fit(_line_, zx, zy)
+    #
+    if jp>0:
+        return zcoeffs, jp
+    else:
+        return zcoeffs
 
 
 
@@ -1089,10 +1144,12 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if len(pbinb) != nB+1:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinb`!'); exit(0)
 
-    rycut_tiny =1.e-6 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
+    rycut_tiny =1.e-8 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
 
     if lShowSlope:
         vA, vB = np.zeros(5), np.zeros(5)
+        # (pbinc>0.04) & (pbinc<0.501) lili
+        #zscl1, zscl2 = 0.04, 0.501 ; # scale range to extrac
     
     l_comp2 = (  np.shape(ppdf2)==(nB,) )
     l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
@@ -1104,12 +1161,13 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             
     # For figure axes:
     xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf+0.1
-    ylog_min, ylog_max = 2.5e-3, 3.5e2
-    if name=='Divergence': ylog_min = 1.2e-3
+    ylog_min, ylog_max = 0.5e-3, 3.5e2
+        
     rxlabs = [ 0.001, 0.01, 0.1, 0.5]
     cxlabs = ['0.001', '0.01', '0.1', '0.5']
         
-    lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS'), (origin4!='RGPS')
+    #lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS'), (origin4!='RGPS')
+    lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = True, True, True, True
 
     if reskm>30 and reskm<70:
         ylog_min = 3.e-2
@@ -1142,11 +1200,14 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     ki = FigInitStyle( fntzoom=4. )
 
-    fig = plt.figure( num = 1, figsize=(10,9), dpi=None )
+    fig = plt.figure( num = 1, figsize=(10,10), dpi=None )
     ax = plt.axes([0.13, 0.105, 0.83, 0.83])
 
     if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
+    ppdf = CleanTailPDF( pbinc, ppdf )
 
+
+    
     clbl = origin
     if Np and origin:
         clbl = origin+' (N = '+str(Np)+')'
@@ -1156,9 +1217,10 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     jo = 0
     plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
+
     if lShowSlope:
-        (idxKeep,) = np.where( (pbinc>0.04) & (pbinc<0.501) & (ppdf>0.) )
-        [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf[idxKeep])
+        zfrom_perc = 95
+        [vA[jo],vB[jo]], jperc0 = _linear_fit_loglog_( pbinc, ppdf,  pbins_bnd=pbinb, from_prcntl=zfrom_perc ) ;#lili
     
     if l_comp2:
         No = 2
@@ -1168,11 +1230,12 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
             clbl = origin2+' (N = '+str(Np2)+')'
         if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+        ppdf2 = CleanTailPDF( pbinc, ppdf2 )
         #
         plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         if lShowSlope:
-            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf2[idxKeep])
+            [vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf2,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
         
     if l_comp3:
         No = 3
@@ -1182,11 +1245,12 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
             clbl = origin3+' (N = '+str(Np3)+')'
         if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        ppdf3 = CleanTailPDF( pbinc, ppdf3 )
         #
         plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         if lShowSlope:
-            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf3[idxKeep])
+            [vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf3,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
 
     if l_comp4:
         No = 4
@@ -1196,17 +1260,18 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             origin4 = str.replace( str.replace( origin4, 'NEMO-','') , '_NANUK4', '')
             clbl = origin4+' (N = '+str(Np4)+')'
         if lmask_tiny4: ppdf4 = np.ma.masked_where( ppdf4<rycut_tiny, ppdf4 )
+        ppdf4 = CleanTailPDF( pbinc, ppdf4 )
         #
         plt.loglog(pbinc[:], ppdf4[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         if lShowSlope:
-            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxKeep], ppdf4[idxKeep])
+            [vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf4,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
 
         
     if lShowSlope:
         # Fit power-law to points:
         jo = 0
-        plt.loglog( pbinc[idxKeep], np.exp(vA[jo]*np.log(pbinc[idxKeep]))*np.exp(vB[jo]) *5., '-', linestyle='-',
+        plt.loglog( pbinc[jperc0:], np.exp(vA[jo]*np.log(pbinc[jperc0:]))*np.exp(vB[jo]) *5., '-', linestyle='-',
                     linewidth=2., color='0.5', label=r'y = x$^{'+str(round(vA[jo],2))+'}$', zorder=5)
 
                     #'o', markersize=0, linestyle=vlstyl[jo], linewidth=2, fillstyle=vmrkfs[jo],
@@ -1246,6 +1311,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             cltr = 'b)'
         elif name=='Convergence':
             cltr = 'c)'
+        elif name=='Total':
+            cltr = 'd)'
         ax.annotate(cltr, xy=(0.04, 0.94), xycoords='figure fraction', **cfont_abc)
         
     plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
@@ -1262,19 +1329,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
 #=================================
-
-def _linear_fit_loglog_(x, y):
-    from scipy.optimize import curve_fit
-    #
-    zx = np.log(x)
-    zy = np.log(y)
-    # Define the linear function:
-    def _line_(x, a, b):
-        return a*x + b
-    # Perform the curve fitting
-    zcoeffs, _ = curve_fit(_line_, zx, zy)
-    #
-    return zcoeffs
+ 
 
 
 def _power_law_fit_(x, y):

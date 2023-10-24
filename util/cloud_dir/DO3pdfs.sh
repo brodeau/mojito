@@ -26,6 +26,7 @@ for RESKM in ${VRESKM[*]}; do
     echo; echo " *** RESKM=${RESKM} ; DT_BINS_H=${DT_BINS_H} !"
 
     for cf in "shear" "total" "divergence" "convergence" "absDiv"; do
+    #for cf in "convergence"; do
 
         list_ff=""
         
