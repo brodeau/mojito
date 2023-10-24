@@ -1096,18 +1096,23 @@ def IdxPercentilePDF( pbinb, ppdf, xp=90 ):
     return jk
 
 
-def _linear_fit_loglog_( px, py,  pbins_bnd=[], from_prcntl=None ):
+def _linear_fit_loglog_( px, py,  pbins_bnd=[], from_prcntl=None, to_prcntl=None ):
     from scipy.optimize import curve_fit
     #
     Np = len(py)
-    jp = 0
+    jp1 = 0
+    jp2 = Np-1
     (nbb,) = np.shape(pbins_bnd)
-    if from_prcntl and nbb==Np+1:
-        jp = IdxPercentilePDF( pbins_bnd, py, xp=from_prcntl )        
+    if (from_prcntl or to_prcntl) and nbb==Np+1:
+        if from_prcntl: jp1 = IdxPercentilePDF( pbins_bnd, py, xp=from_prcntl )
+        if to_prcntl:   jp2 = IdxPercentilePDF( pbins_bnd, py, xp=to_prcntl )
+        print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
+        print('LOLO: 1st and last:', py[jp1], py[jp2-1])
+        print('&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     #
     idxKeep = np.where(py>0.)
-    zx = px[idxKeep][jp:]
-    zy = py[idxKeep][jp:]
+    zx = px[idxKeep][jp1:jp2]
+    zy = py[idxKeep][jp1:jp2]
     #
     zx = np.log(zx)
     zy = np.log(zy)
@@ -1118,8 +1123,8 @@ def _linear_fit_loglog_( px, py,  pbins_bnd=[], from_prcntl=None ):
     # Perform the curve fitting
     zcoeffs, _ = curve_fit(_line_, zx, zy)
     #
-    if jp>0:
-        return zcoeffs, jp
+    if nbb==Np+1:
+        return zcoeffs, px[jp1], px[jp2-1]
     else:
         return zcoeffs
 
@@ -1219,9 +1224,18 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
 
     if lShowSlope:
-        zfrom_perc = 95
-        [vA[jo],vB[jo]], jperc0 = _linear_fit_loglog_( pbinc, ppdf,  pbins_bnd=pbinb, from_prcntl=zfrom_perc ) ;#lili
-    
+        zfrom_perc = 98
+        zto_perc   = 99.99
+        if name=='Total Deformation':
+            zto_perc = 99.85
+        #elif name=='Convergence':
+        #    zto_perc = 99.995
+        
+        [vA[jo],vB[jo]], xprc1, xprc2 = _linear_fit_loglog_( pbinc, ppdf,  pbins_bnd=pbinb, from_prcntl=zfrom_perc, to_prcntl=zto_perc ) ;#lili
+        #
+        print('LOLO: xprc1, xprc2 =', xprc1, xprc2)
+        idxK = np.where( (pbinc>=xprc1) & (pbinc<=xprc2) )
+
     if l_comp2:
         No = 2
         jo = 1
@@ -1235,8 +1249,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         if lShowSlope:
-            [vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf2,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
-        
+            #[vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf2,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)            
+            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxK], ppdf2[idxK])
+            
     if l_comp3:
         No = 3
         jo=2
@@ -1250,7 +1265,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         if lShowSlope:
-            [vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf3,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
+            #[vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf3,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
+            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxK], ppdf3[idxK])
 
     if l_comp4:
         No = 4
@@ -1265,17 +1281,18 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         plt.loglog(pbinc[:], ppdf4[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                    linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=10)
         if lShowSlope:
-            [vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf4,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
+            #[vA[jo],vB[jo]], jperc = _linear_fit_loglog_(pbinc, ppdf4,  pbins_bnd=pbinb, from_prcntl=zfrom_perc)
+            [vA[jo],vB[jo]] = _linear_fit_loglog_(pbinc[idxK], ppdf4[idxK])
 
         
     if lShowSlope:
         # Fit power-law to points:
         jo = 0
-        plt.loglog( pbinc[jperc0:], np.exp(vA[jo]*np.log(pbinc[jperc0:]))*np.exp(vB[jo]) *5., '-', linestyle='-',
-                    linewidth=2., color='0.5', label=r'y = x$^{'+str(round(vA[jo],2))+'}$', zorder=5)
-
-                    #'o', markersize=0, linestyle=vlstyl[jo], linewidth=2, fillstyle=vmrkfs[jo],
-                    #color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
+        plt.loglog( pbinc[idxK], np.exp(vA[jo]*np.log(pbinc[idxK]))*np.exp(vB[jo]) *5., '-', linestyle='-',
+                    linewidth=2., color='0.5', zorder=5) ;#, label=r'y = x$^{'+str(round(vA[jo],2))+'}$'
+        #for jo in range(3):
+        #    plt.loglog( pbinc[idxK], np.exp(vA[jo]*np.log(pbinc[idxK]))*np.exp(vB[jo]) *5., '-', linestyle='-',
+        #                linewidth=2., color=vcolor[jo], label=r'y = x$^{'+str(round(vA[jo],2))+'}$', zorder=5)
 
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
@@ -1311,7 +1328,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             cltr = 'b)'
         elif name=='Convergence':
             cltr = 'c)'
-        elif name=='Total':
+        elif name=='Total Deformation':
             cltr = 'd)'
         ax.annotate(cltr, xy=(0.04, 0.94), xycoords='figure fraction', **cfont_abc)
         
