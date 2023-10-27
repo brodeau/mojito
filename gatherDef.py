@@ -31,6 +31,7 @@ if __name__ == '__main__':
     creskm = argv[3]
     cidorg = argv[4]
 
+    lgroup = False
     if len(argv)==6:
         lgroup = (argv[5]=='S')
         if lgroup:
