@@ -989,15 +989,19 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     cn = colors.Normalize(vmin=pFmin, vmax=pFmax, clip=False)
 
+    cnm = ''
     if   cwhat=='div':
         cm = plt.cm.get_cmap('RdBu_r')
-    if   cwhat=='shr':
+        cnm = 'Divergence'
+    elif cwhat=='shr':
         #cm = plt.cm.get_cmap('plasma_r')
         cm = plt.cm.get_cmap('viridis')
         cn = colors.PowerNorm(gamma=0.6, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma<1 => compresses high values
+        cnm = 'Maximum shear'
     elif   cwhat=='tot':
         cm = plt.cm.get_cmap('magma')
         cn = colors.PowerNorm(gamma=0.7, vmin=pFmin, vmax=pFmax, clip=False) ; # gamma<1 => compresses high values
+        cnm = 'Total deformation'
     elif   cwhat=='UMc':
         cm = plt.cm.get_cmap('plasma')
     else:
@@ -1052,7 +1056,7 @@ def ShowMultiDefQuadGeoArctic( p4X1, p4Y1, pF1, p4X2, p4Y2, pF2, p4X3, p4Y3, pF3
 
     if unit:
         # => triggers the colorbar
-        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.15, 0.095, 0.7, 0.03], cunit=r'['+unit+']' )
+        kc = __AddColorBar__( cwhat, plt, cm, cn, fmin=pFmin, fmax=pFmax, df=pdF, paxes=[0.15, 0.095, 0.7, 0.03], cunit=r''+cnm+' ['+unit+']' )
 
     ax1.annotate('a)', xy=(0.01, 0.925), xycoords='axes fraction', **cfont_abc)
     ax2.annotate('b)', xy=(0.01, 0.925), xycoords='axes fraction', **cfont_abc)
