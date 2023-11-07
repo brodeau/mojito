@@ -101,7 +101,8 @@ def FigInitStyle( fntzoom=1., color_top='k', l_getOriginNames=True ):
                'legend.fontsize': int(6.*fntzoom_inv),
                'xtick.labelsize': int(6.5*fntzoom_inv),
                'ytick.labelsize': int(6.5*fntzoom_inv),
-               'axes.labelsize':  int(6.5*fntzoom) }
+               'axes.labelsize':  int(6.5*fntzoom),
+               'legend.framealpha': 1 }
     #
     mpl.rcParams.update(params)
     #
