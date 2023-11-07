@@ -52,11 +52,11 @@ clPNames = 'w' ; # color for city/point annotations
 vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
 vlstyl = [   '-'  ,   '-'  ,   '-'  ,  '--',   '-' ]
-vlwdth = [ 9  ,   6    ,    6   ,    4   ,  4  ]
+vlwdth = [ 11  ,   8    ,    8   ,    4   ,  4  ]
 vlwdth = np.array(vlwdth)/2
 #
 vmrk   = ['o','s','*','s','d']
-vmrksz = [11,12,14,12,12]
+vmrksz = [14,12,15,12,12]
 vmrkfs = ['none','none','full','none','none']
 
 
