@@ -13,8 +13,8 @@ from mojito import config as cfg
 idebug=1
 iplot=1
 
-#l_cst_bins = False ; rfexp_bin = 0.3
-l_cst_bins = False ; rfexp_bin = 0.25
+l_cst_bins = False ; rfexp_bin = 0.3
+#l_cst_bins = False ; rfexp_bin = 0.25
 
 cprefixIn='DEFORMATIONS_' ; # Prefix of deformation files...
 
