@@ -1299,7 +1299,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         #            linewidth=2., color='0.5', zorder=5) ;#, label=r'y = x$^{'+str(round(vA[jo],2))+'}$'
         #
         #0.14266264108122328 0.003
-        zmin,zmax = 0.1,0.5
+        zmin,zmax = 0.1,0.8
         zB_ao = 5.
         if name=='Divergence': zB_ao = 10.
         idxK = np.where( (pbinc>=zmin) & (pbinc<=zmax) )
