@@ -39,7 +39,7 @@ if __name__ == '__main__':
     
 
     if   zP==98:
-        vyrng=(0.,0.2)
+        vyrng=(0.,0.205)
         zdy=0.02
     elif zP==95:
         vyrng=(0.,0.11)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         vyrng=(0.,0.08)
         zdy=0.01
     elif zP==90:
-        vyrng=(0.,0.07)
+        vyrng=(0.,0.075)
         zdy=0.01
     else:
         vyrng=(0.,0.1)

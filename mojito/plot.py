@@ -1706,7 +1706,7 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
 
     # Date ticks stuff:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.xticks(rotation='60')
+    plt.xticks(rotation=60)
     #ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
     #
