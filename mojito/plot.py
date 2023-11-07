@@ -34,6 +34,8 @@ rndaxiskm = 500 ;
 l_show_IDs_fig = False  ; # annotate ID beside marker in plot...
 color_top = 'w'
 
+color_slope = '#27522D'
+
 
 fig_type='png'
 rDPI = 150
@@ -87,7 +89,7 @@ def GetFigDotSuffix():
 
 def FigInitStyle( fntzoom=1., color_top='k', l_getOriginNames=True ):
     #
-    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_mail, cfont_abc, cfont_uya
+    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_slope, cfont_mail, cfont_abc, cfont_uya
     #
     if l_getOriginNames: OriginNames()
     #fntzoom_inv = 1.*fntzoom**0.5
@@ -108,6 +110,7 @@ def FigInitStyle( fntzoom=1., color_top='k', l_getOriginNames=True ):
     cfont_axis  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(7.*fntzoom), 'color':color_top }
     cfont_ttl   = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(9.*fntzoom), 'color':color_top }
     cfont_mrkr  = { 'fontname':'Open Sans', 'fontweight':'light', 'fontsize':int(6.*fntzoom), 'color':color_top }
+    cfont_slope = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(5.*fntzoom), 'color':color_slope }
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     cfont_abc   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(10*fntzoom), 'color':color_top }
     cfont_uya   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(7.*fntzoom), 'color':color_top }
@@ -1157,7 +1160,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     if lShowSlope:
         vA, vB = np.zeros(5), np.zeros(5)
-        # (pbinc>0.04) & (pbinc<0.501) lili
+        # (pbinc>0.04) & (pbinc<0.501)
         #zscl1, zscl2 = 0.04, 0.501 ; # scale range to extrac
     
     l_comp2 = (  np.shape(ppdf2)==(nB,) )
@@ -1235,7 +1238,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         #elif name=='Convergence':
         #    zto_perc = 99.995
         
-        [vA[jo],vB[jo]], xprc1, xprc2 = _linear_fit_loglog_( pbinc, ppdf,  pbins_bnd=pbinb, from_prcntl=zfrom_perc, to_prcntl=zto_perc ) ;#lili
+        [vA[jo],vB[jo]], xprc1, xprc2 = _linear_fit_loglog_( pbinc, ppdf,  pbins_bnd=pbinb, from_prcntl=zfrom_perc, to_prcntl=zto_perc )
         #
         print('LOLO: xprc1, xprc2 =', xprc1, xprc2)
         idxK = np.where( (pbinc>=xprc1) & (pbinc<=xprc2) )
@@ -1292,11 +1295,19 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if lShowSlope:
         # Fit power-law to points:
         jo = 0
-        plt.loglog( pbinc[idxK], np.exp(vA[jo]*np.log(pbinc[idxK]))*np.exp(vB[jo]) *5., '-', linestyle='-',
-                    linewidth=2., color='0.5', zorder=5) ;#, label=r'y = x$^{'+str(round(vA[jo],2))+'}$'
-        #for jo in range(3):
-        #    plt.loglog( pbinc[idxK], np.exp(vA[jo]*np.log(pbinc[idxK]))*np.exp(vB[jo]) *5., '-', linestyle='-',
-        #                linewidth=2., color=vcolor[jo], label=r'y = x$^{'+str(round(vA[jo],2))+'}$', zorder=5)
+        #plt.loglog( pbinc[idxK], np.exp(vA[jo]*np.log(pbinc[idxK]))*np.exp(vB[jo]) *5., '-', linestyle='-',
+        #            linewidth=2., color='0.5', zorder=5) ;#, label=r'y = x$^{'+str(round(vA[jo],2))+'}$'
+        #
+        #0.14266264108122328 0.003
+        zmin,zmax = 0.1,0.5
+        zB_ao = 5.
+        if name=='Divergence': zB_ao = 10.
+        idxK = np.where( (pbinc>=zmin) & (pbinc<=zmax) )
+        vy = np.exp(-3.*np.log(pbinc[idxK]))*np.exp(vB[jo]) *zB_ao
+        plt.loglog( pbinc[idxK], vy, '-', linestyle='-',
+                    linewidth=2., color=color_slope, zorder=5)
+        ax.annotate('s = -3', xy=(np.mean(pbinc[idxK]), np.mean(vy)), xycoords='data', ha='center', **cfont_slope)
+        #lili
 
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
