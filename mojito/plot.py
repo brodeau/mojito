@@ -1313,7 +1313,8 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
 
     # X-axis:
-    plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+    #plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
+    plt.xlabel(r'[day$^{-1}$]', color='k')
     ax.set_xlim(xlog_min, xlog_max)
     ax.set_xticks(rxlabs)
     ax.set_xticklabels(cxlabs)
