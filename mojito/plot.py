@@ -1759,11 +1759,11 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         if lAddPowerLawFit:
             zlw = 0             # 
             cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], 
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], 
                     color=vcolor[jo], label=vorig[jo], zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], 
                     color=vcolor[jo], label=None, zorder=5 )
         
     # Add power-law to points:
@@ -1869,10 +1869,10 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             #
             #clbl = pcOrig[jo]+', a = '+str(round(zA,2))
             clbl = vorig[jo]
-            plt.plot( zx, zy, vmrk[jo], label=clbl, color=vcolor[jo], linewidth=vlwdth[jo],
-                      markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=vlwdth[jo] )
-            #plt.plot( zzx, zA*zzx*zzx, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
-            plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=None, color=vcolor[jo], linewidth=vlwdth[jo] )
+            plt.plot( zx, zy, vmrk[jo], label=None, color=vcolor[jo], linewidth=vlwdth[jo],
+                      markersize=vmrksz[jo], fillstyle=vmrkfs[jo])
+            # , markeredgewidth=vlwdth[jo] 
+            plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=clbl, color=vcolor[jo], linewidth=vlwdth[jo] )
 
         ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
         #X-axis:
@@ -1945,18 +1945,13 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     # Date ticks stuff:
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation=60)
-    #ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-    #
-    #ax.xaxis.set_minor_formatter(mdates.DateFormatter('%d'))
-    #ax.xaxis.set_minor_locator(mdates.MonthLocator())
-    #ax.xaxis.set_minor_locator(mdates.DayLocator(bymonthday=(1,5,10), interval=3, tz=None))
-
-    plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], alpha=0.9, label=vorig[0], zorder=10)
+    #lili1
+    plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], fillstyle=vmrkfs[0], alpha=0.9, label=vorig[0], zorder=10)
     if ldo2:
-        plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], alpha=0.9, label=vorig[1], zorder=10)
+        plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], fillstyle=vmrkfs[1], alpha=0.9, label=vorig[1], zorder=10)
     if ldo3:
-        plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], alpha=0.9, label=vorig[2], zorder=10)
+        plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], fillstyle=vmrkfs[2], alpha=0.9, label=vorig[2], zorder=10)
 
     (ymin,ymax) = y_range
 
