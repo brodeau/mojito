@@ -1240,17 +1240,17 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
     if Np and origin:
         clbl = origin+' (N = '+str(Np)+')'
 
-    No = 1
-        
-    jo = 0
-    plt.loglog(pbinc[:], ppdf1[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
-               linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
 
+    No = 1
+    
+    jo = 0
+    clab = vorig[jo]
+    
     if lShowSlope:
         zfrom_perc = 98
         zto_perc   = 99.99
-        if name=='Total Deformation':
-            zto_perc = 99.85
+        #if name=='Total Deformation':
+        #    zto_perc = 99.85
         #elif name=='Convergence':
         #    zto_perc = 99.995
         
@@ -1258,6 +1258,14 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
         #
         print('LOLO: xprc1, xprc2 =', xprc1, xprc2)
         idxK = np.where( (pbinc>=xprc1) & (pbinc<=xprc2) )
+        clab += ' (s='+str(round(vA[jo],2))+')'
+    #
+    
+    
+    #
+    plt.loglog(pbinc[:], ppdf1[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
+               linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=clab, zorder=5)
+
 
     if l_comp2:
         No = 2
@@ -1325,10 +1333,10 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
         zB_ao = 5.
         if name=='Divergence': zB_ao = 10.
         idxK = np.where( (pbinc>=zmin) & (pbinc<=zmax) )
-        vy = np.exp(-3.5*np.log(pbinc[idxK]))*np.exp(vB[jo]) *zB_ao
+        vy = np.exp(-3.*np.log(pbinc[idxK]))*np.exp(vB[jo]) *zB_ao
         plt.loglog( pbinc[idxK], vy, '-', linestyle='-',
                     linewidth=2., color=color_slope, zorder=5)
-        ax.annotate('s = -3.5', xy=(np.mean(pbinc[idxK]), np.mean(vy)), xycoords='data', ha='center', **cfont_slope)
+        ax.annotate('s = -3', xy=(np.mean(pbinc[idxK]), np.mean(vy)), xycoords='data', ha='center', **cfont_slope)
 
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
@@ -1366,7 +1374,7 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
             cltr = 'c)'
         elif name=='Total Deformation':
             cltr = 'd)'
-        ax.annotate(cltr, xy=(0.01, y_ttl), xycoords='figure fraction', **cfont_abc)
+        ax.annotate(cltr, xy=(0.03, y_ttl-0.003), xycoords='figure fraction', **cfont_abc)
 
         
     if lShowSlope:
