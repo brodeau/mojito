@@ -1308,7 +1308,6 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         plt.loglog( pbinc[idxK], vy, '-', linestyle='-',
                     linewidth=2., color=color_slope, zorder=5)
         ax.annotate('s = -3', xy=(np.mean(pbinc[idxK]), np.mean(vy)), xycoords='data', ha='center', **cfont_slope)
-        #lili
 
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
@@ -1359,6 +1358,140 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         for jo in range(No):
             print('    * '+vorig[jo]+' =', round(vA[jo],2))
         print('###############################################################\n')
+    return 0
+
+
+
+
+
+
+def HovmlrPDF( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
+               title=None, period=None, origin=None, lShowSlope=False,
+               ppdf2=[], Np2=None, origin2=None,
+               ppdf3=[], Np3=None, origin3=None,
+               ppdf4=[], Np4=None, origin4=None ):
+    '''
+      * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
+      * pbinc: vector of the center of the bins (x-axis), size = nB
+      * ppdf1:  the PDF, same size as `pbinc`, size = nB
+    '''
+    from math import ceil
+    from mojito import config as cfg
+    
+    (nB,) = np.shape(ppdf1)
+    if len(pbinc) != nB:
+        print('\n *** ERROR ['+caller+'/HovmlrPDF]: wrong size for `pbinc`!'); exit(0)
+    if len(pbinb) != nB+1:
+        print('\n *** ERROR ['+caller+'/HovmlrPDF]: wrong size for `pbinb`!'); exit(0)
+
+    rycut_tiny =1.e-8 ; # mask probability values (Y-axis) below this limit for non-RGPS data!!!
+
+    if lShowSlope:
+        vA, vB = np.zeros(5), np.zeros(5)
+        # (pbinc>0.04) & (pbinc<0.501)
+        #zscl1, zscl2 = 0.04, 0.501 ; # scale range to extrac
+    
+    l_comp2 = (  np.shape(ppdf2)==(nB,) )
+    l_comp3 = ( l_comp2 and np.shape(ppdf3)==(nB,) )
+    l_comp4 = ( l_comp2 and l_comp3 and np.shape(ppdf4)==(nB,) )
+
+    if not l_comp3 or l_comp4:
+        print('\n *** ERROR ['+caller+'/HovmlrPDF]: we need 3 PDFs to do the job!'); exit(0)
+    print('WARNING [HovmlrPDF]: setup for nominal resolution of '+str(reskm)+' km !!!')
+
+    No = 3
+    if l_comp4: No = 4
+
+    
+    k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
+            
+    # For figure axes:
+    xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf+0.1
+    ylog_min, ylog_max = 0.5e-3, 3.5e2
+        
+    rxlabs = [ 0.001, 0.01, 0.1, 0.5]
+    cxlabs = ['0.001', '0.01', '0.1', '0.5']
+        
+    lmask_tiny = True
+
+
+    if lmask_tiny:
+        ppdf1 = np.ma.masked_where( ppdf1<rycut_tiny, ppdf1 )
+        ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+        ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        
+    ppdf1 = CleanTailPDF( pbinc, ppdf1 )
+    ppdf2 = CleanTailPDF( pbinc, ppdf2 )
+    ppdf3 = CleanTailPDF( pbinc, ppdf3 )
+
+    (Np,) = np.shape(ppdf1)
+    print('LOLO shape:', np.shape(ppdf1), np.shape(ppdf3), np.shape(ppdf3))
+    print('LOLO ppdf1:', ppdf1[:])
+    print('LOLO ppdf2:', ppdf2[:])
+    print('LOLO ppdf3:', ppdf3[:])
+    
+    XHVMLR = np.zeros((2,Np))
+    XHVMLR[0,:] = np.log10(ppdf2[:]) - np.log10(ppdf1[:])
+    XHVMLR[1,:] = np.log10(ppdf3[:]) - np.log10(ppdf1[:])
+    
+    print(XHVMLR)
+
+
+    ki = FigInitStyle( fntzoom=4. )
+
+    fig = plt.figure( num = 1, figsize=(10*5/3,5), dpi=None )
+    ax = plt.axes([0.12, 0.5, 0.83, 0.4])
+
+    cm = plt.cm.get_cmap('RdBu')
+    cn = colors.Normalize(vmin=-2., vmax=2., clip = False)
+    #cn = colors.LogNorm(vmin=1.e-9, vmax=10., clip = False)
+    
+
+    print('LOLO: pbinc =',pbinc)
+
+    vx  = pbinc
+
+    # Y-axis
+    vy  = np.array([1,2]) - 0.5
+    ax.set_ylim(0,2)
+    plt.yticks( np.array([0,1])+0.5 )
+    ax.set_yticklabels([str(vorig[1]),str(vorig[2])])
+
+    
+    #X,Y = np.meshgrid(vx,vy)
+    #plt.pcolormesh( X, Y, XHVMLR, cmap=cm, norm=cn );#, edgecolors='k')
+    plt.pcolormesh( vx, vy, XHVMLR, cmap=cm, norm=cn );#, edgecolors='k')
+
+    plt.axhline(1, color='0.5')
+    
+    ax.set_xscale('log')
+    
+    ax.set_xlim(xlog_min, xlog_max)
+    ax.set_xticks(rxlabs)
+    ax.set_xticklabels(cxlabs)
+    plt.xlabel(r'[day$^{-1}$]', color='k')
+    
+    # Name of experiments as Y-axis:
+
+        
+    #ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    #ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+
+    ax2 = plt.axes([0.2, 0.2, 0.6, 0.05])
+    clb = mpl.colorbar.ColorbarBase(ax=ax2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
+    clb.set_label('Deviation', **cfont_clbunit)
+
+    
+    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+    plt.close(1)
+    print(' * [HovmlrPDF()]: created figure '+cfig)
+
+
+
+
+    
+    #lili
+
     return 0
 
 
