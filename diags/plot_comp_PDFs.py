@@ -188,17 +188,16 @@ if __name__ == '__main__':
         if not cfg.lc_StrictPDF:
             cfroot += '_Min1e-3'
 
-        #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm, lShowSlope=True,
-        #                    title=cName, origin=corig,
-        #                    ppdf2=PDF2,  origin2=corig2,
-        #                    ppdf3=PDF3,  origin3=corig3 )
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm, lShowSlope=True,
+                            title=cName, origin=corig,
+                            ppdf2=PDF2,  origin2=corig2,
+                            ppdf3=PDF3,  origin3=corig3 )
 
-        #lili: diag a la Bouchat:
+        #Diag a la Bouchat:
         kk = mjt.HovmlrPDF( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/Hovmuller_PDF'+cfroot+figsfx, reskm=reskm, lShowSlope=True,
                             title=cName, origin=corig,
                             ppdf2=PDF2,  origin2=corig2,
                             ppdf3=PDF3,  origin3=corig3 )
-        exit(0)
         
     elif l4files:
 
