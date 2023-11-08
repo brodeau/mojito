@@ -88,8 +88,8 @@ def GetFigDotSuffix():
         
 
 def FigInitStyle( fntzoom=1., color_top='k', l_getOriginNames=True ):
-    #
-    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_slope, cfont_mail, cfont_abc, cfont_uya
+    #cfont_ttl
+    global cfont_clbunit, cfont_clock, cfont_axis, cfont_ttl, cfont_mrkr, cfont_slope, cfont_mail, cfont_abc, cfont_uya, cfont_xlabel
     #
     if l_getOriginNames: OriginNames()
     #fntzoom_inv = 1.*fntzoom**0.5
@@ -115,6 +115,7 @@ def FigInitStyle( fntzoom=1., color_top='k', l_getOriginNames=True ):
     cfont_mail  = { 'fontname':'Times New Roman', 'fontweight':'normal', 'fontstyle':'italic', 'fontsize':int(14.*fntzoom), 'color':'0.8'}
     cfont_abc   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(10*fntzoom), 'color':color_top }
     cfont_uya   = { 'fontname':'Open Sans', 'fontweight':'semibold', 'fontsize':int(7.*fntzoom), 'color':color_top }
+    cfont_xlabel = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':int(5.*fntzoom), 'color':color_top }
     #
     return 0
 
@@ -1138,20 +1139,20 @@ def _linear_fit_loglog_( px, py,  pbins_bnd=[], from_prcntl=None, to_prcntl=None
 
 
 
-def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
-               title=None, period=None, origin=None, lShowSlope=False,
+def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
+               title=None, period=None, origin=None, lShowSlope=False, lAddHovm=False,
                ppdf2=[], Np2=None, origin2=None,
                ppdf3=[], Np3=None, origin3=None,
                ppdf4=[], Np4=None, origin4=None ):
     '''
       * pbinb: vector of the bounds of the bins (x-axis), size = nB+1
       * pbinc: vector of the center of the bins (x-axis), size = nB
-      * ppdf:  the PDF, same size as `pbinc`, size = nB
+      * ppdf1:  the PDF, same size as `pbinc`, size = nB
     '''
     from math import ceil
     from mojito import config as cfg
     
-    (nB,) = np.shape(ppdf)
+    (nB,) = np.shape(ppdf1)
     if len(pbinc) != nB:
         print('\n *** ERROR ['+caller+'/LogPDFdef]: wrong size for `pbinc`!'); exit(0)
     if len(pbinb) != nB+1:
@@ -1213,11 +1214,25 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
 
     ki = FigInitStyle( fntzoom=4. )
 
-    fig = plt.figure( num = 1, figsize=(10,10), dpi=None )
-    ax = plt.axes([0.13, 0.105, 0.83, 0.83])
 
-    if lmask_tiny: ppdf = np.ma.masked_where( ppdf<rycut_tiny, ppdf )
-    ppdf = CleanTailPDF( pbinc, ppdf )
+    zfs = (10.,10.)
+    zx0, zex = 0.13, 0.85
+    zdy, zey, y_ttl = 0, 0.83, 0.95
+    if lAddHovm:
+        hfig = 12.5
+        zfs = (10.,hfig)
+        zdy, zey, y_ttl = 0.18, zey*10./hfig, 0.965
+        cxlabs_hm = ['', '', '', '']
+        #cxlabs_hm = cxlabs
+        #cxlabs = ['', '', '', '']
+    
+    fig = plt.figure( num = 1, figsize=zfs, dpi=None )
+    ax = plt.axes([zx0, 0.105+zdy, zex, zey])
+
+    if lmask_tiny:
+        ppdf1[np.where(ppdf1<rycut_tiny)] = -9999.
+        ppdf1 = np.ma.masked_where( ppdf1<rycut_tiny, ppdf1 )
+    ppdf1 = CleanTailPDF( pbinc, ppdf1 )
 
 
     
@@ -1228,7 +1243,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     No = 1
         
     jo = 0
-    plt.loglog(pbinc[:], ppdf[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
+    plt.loglog(pbinc[:], ppdf1[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
                linewidth=vlwdth[jo], fillstyle=vmrkfs[jo], color=vcolor[jo], label=vorig[jo], zorder=5)
 
     if lShowSlope:
@@ -1239,7 +1254,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         #elif name=='Convergence':
         #    zto_perc = 99.995
         
-        [vA[jo],vB[jo]], xprc1, xprc2 = _linear_fit_loglog_( pbinc, ppdf,  pbins_bnd=pbinb, from_prcntl=zfrom_perc, to_prcntl=zto_perc )
+        [vA[jo],vB[jo]], xprc1, xprc2 = _linear_fit_loglog_( pbinc, ppdf1,  pbins_bnd=pbinb, from_prcntl=zfrom_perc, to_prcntl=zto_perc )
         #
         print('LOLO: xprc1, xprc2 =', xprc1, xprc2)
         idxK = np.where( (pbinc>=xprc1) & (pbinc<=xprc2) )
@@ -1251,7 +1266,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         if Np2 and origin2:
             origin2 = str.replace( str.replace( origin2, 'NEMO-','') , '_NANUK4', '')
             clbl = origin2+' (N = '+str(Np2)+')'
-        if lmask_tiny2: ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
+        if lmask_tiny2:
+            ppdf2[np.where(ppdf2<rycut_tiny)] = -9999.
+            ppdf2 = np.ma.masked_where( ppdf2<rycut_tiny, ppdf2 )
         ppdf2 = CleanTailPDF( pbinc, ppdf2 )
         #
         plt.loglog(pbinc[:], ppdf2[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
@@ -1267,7 +1284,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         if Np3 and origin3:
             origin3 = str.replace( str.replace( origin3, 'NEMO-','') , '_NANUK4', '')
             clbl = origin3+' (N = '+str(Np3)+')'
-        if lmask_tiny3: ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
+        if lmask_tiny3:
+            ppdf3[np.where(ppdf3<rycut_tiny)] = -9999.
+            ppdf3 = np.ma.masked_where( ppdf3<rycut_tiny, ppdf3 )
         ppdf3 = CleanTailPDF( pbinc, ppdf3 )
         #
         plt.loglog(pbinc[:], ppdf3[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
@@ -1283,7 +1302,9 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         if Np4 and origin4:
             origin4 = str.replace( str.replace( origin4, 'NEMO-','') , '_NANUK4', '')
             clbl = origin4+' (N = '+str(Np4)+')'
-        if lmask_tiny4: ppdf4 = np.ma.masked_where( ppdf4<rycut_tiny, ppdf4 )
+        if lmask_tiny4:
+            ppdf4[np.where(ppdf4<rycut_tiny)] = -9999.
+            ppdf4 = np.ma.masked_where( ppdf4<rycut_tiny, ppdf4 )
         ppdf4 = CleanTailPDF( pbinc, ppdf4 )
         #
         plt.loglog(pbinc[:], ppdf4[:], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo],
@@ -1297,34 +1318,33 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
         # Fit power-law to points:
         jo = 0
         #plt.loglog( pbinc[idxK], np.exp(vA[jo]*np.log(pbinc[idxK]))*np.exp(vB[jo]) *5., '-', linestyle='-',
-        #            linewidth=2., color='0.5', zorder=5) ;#, label=r'y = x$^{'+str(round(vA[jo],2))+'}$'
+        #    0.95        linewidth=2., color='0.5', zorder=5) ;#, label=r'y = x$^{'+str(round(vA[jo],2))+'}$'
         #
         #0.14266264108122328 0.003
         zmin,zmax = 0.1,0.8
         zB_ao = 5.
         if name=='Divergence': zB_ao = 10.
         idxK = np.where( (pbinc>=zmin) & (pbinc<=zmax) )
-        vy = np.exp(-3.*np.log(pbinc[idxK]))*np.exp(vB[jo]) *zB_ao
+        vy = np.exp(-3.5*np.log(pbinc[idxK]))*np.exp(vB[jo]) *zB_ao
         plt.loglog( pbinc[idxK], vy, '-', linestyle='-',
                     linewidth=2., color=color_slope, zorder=5)
-        ax.annotate('s = -3', xy=(np.mean(pbinc[idxK]), np.mean(vy)), xycoords='data', ha='center', **cfont_slope)
+        ax.annotate('s = -3.5', xy=(np.mean(pbinc[idxK]), np.mean(vy)), xycoords='data', ha='center', **cfont_slope)
 
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
-    # X-axis:
-    #plt.xlabel(r''+name+' [day$^{-1}$]', color='k')
-    plt.xlabel(r'[day$^{-1}$]', color='k')
+    # X-axis: lili
+    plt.xlabel(r'[day$^{-1}$]', **cfont_xlabel )
     ax.set_xlim(xlog_min, xlog_max)
     ax.set_xticks(rxlabs)
     ax.set_xticklabels(cxlabs)
-    #plt.tick_params(axis='x', which='minor')
-    #from matplotlib.ticker import FormatStrFormatter
-    #ax.xaxis.set_minor_formatter(FormatStrFormatter("%.3f"))
+    ax.tick_params(axis='x',which='major', length=6., width=2.)
+    ax.tick_params(axis='x',which='minor', length=4., width=1.5)
 
     # Y-axis:
     plt.ylabel('PDF', **cfont_uya)
     ax.set_ylim(ylog_min, ylog_max)
+    #ax.tick_params(axis='y',which='both', length=3.5, width=1.5)
 
     ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
     ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
@@ -1334,7 +1354,7 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
     if period:
         ax.annotate('Period = '+period, xy=(0.5, 0.85), xycoords='figure fraction', **cfont_clock)
     if title:
-        ax.annotate(title, xy=(0.5, 0.95), xycoords='figure fraction', ha='center', **cfont_ttl)
+        ax.annotate(title, xy=(0.5, y_ttl), xycoords='figure fraction', ha='center', **cfont_ttl)
 
     if split('\.',cfig)[-1] == 'svg':
         cltr = ''
@@ -1346,18 +1366,91 @@ def LogPDFdef( pbinb, pbinc, ppdf, Np=None, name='Divergence', cfig='PDF.png', r
             cltr = 'c)'
         elif name=='Total Deformation':
             cltr = 'd)'
-        ax.annotate(cltr, xy=(0.04, 0.94), xycoords='figure fraction', **cfont_abc)
-        
-    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
-    plt.close(1)
-    print(' * [LogPDFdef()]: created figure '+cfig)
+        ax.annotate(cltr, xy=(0.01, y_ttl), xycoords='figure fraction', **cfont_abc)
 
+        
     if lShowSlope:
         print('\n###############################################################')
         print(' *** Slopes for '+name+':')
         for jo in range(No):
             print('    * '+vorig[jo]+' =', round(vA[jo],2))
         print('###############################################################\n')
+
+
+    if lAddHovm:
+        if not l_comp3 or l_comp4:
+            print('\n *** ERROR ['+caller+'/LogPDFdef]: we need 3 PDFs to do the job!'); exit(0)
+        
+        (Np,) = np.shape(ppdf1)
+        XHVMLR = np.zeros((2,Np))
+        xmask  = np.ones( (2,Np), dtype='int')
+        XHVMLR[0,:] = np.log10(ppdf2[:]) - np.log10(ppdf1[:])
+        XHVMLR[1,:] = np.log10(ppdf3[:]) - np.log10(ppdf1[:])
+        
+        axh = plt.axes([zx0, 0.12, zex, 0.08], facecolor='0.4')
+    
+        cm = plt.cm.get_cmap('RdBu')
+
+        #zhmin,zhmax = np.min(XHVMLR[:,:]) , np.max(XHVMLR[1,:])
+        #zmax = max(np.abs(zhmin),np.abs(zhmax))
+        #print('LOLO: min max XHVMLR:',zhmin,zhmax,zmax)
+        zmax = 1.5
+        cn = colors.Normalize(vmin=-zmax, vmax=zmax, clip = False)
+        #cn = colors.LogNorm(vmin=1.e-9, vmax=10., clip = False)
+        
+
+        print('LOLO: ppdf1 =',ppdf1.data)
+        print('LOLO: ppdf2 =',ppdf2.data)
+        print('LOLO: ppdf3 =',ppdf3.data)
+
+        idxm = np.where( (ppdf1.data<-9000.) | (ppdf2.data<-9000.) )
+        xmask[0,idxm] = 0
+        idxm = np.where( (ppdf1.data<-9000.) | (ppdf3.data<-9000.) )
+        xmask[1,idxm] = 0
+
+        XHVMLR = np.ma.masked_where( xmask==0, XHVMLR )
+
+        
+        vx  = pbinc
+    
+        # Y-axis
+        vy  = np.array([1,2]) - 0.5
+        axh.set_ylim(0,2)
+        plt.yticks( np.array([0,1])+0.5 )
+        axh.set_yticklabels([str(vorig[2]),str(vorig[1])], **cfont_xlabel)
+    
+        plt.pcolormesh( vx, vy[:], XHVMLR[::-1], cmap=cm, norm=cn );#, edgecolors='k')
+    
+        plt.axhline(1, color='0.5')
+        
+        axh.set_xscale('log')
+        
+        axh.set_xlim(xlog_min, xlog_max)
+
+        axh.xaxis.tick_top()
+        axh.tick_params(axis='x',which='major', length=6., width=2.)
+        axh.tick_params(axis='x',which='minor', length=4., width=1.5)
+
+        axh.set_xticks(rxlabs)
+        axh.set_xticklabels(cxlabs_hm)
+
+        # Colorbar:
+        vtcks = np.arange(-zmax,zmax+0.5,0.5)
+        axh2 = plt.axes([0.2, 0.07, 0.72, 0.015])
+        clb = mpl.colorbar.ColorbarBase(ticks=vtcks, ax=axh2, cmap=cm, norm=cn, orientation='horizontal', extend='both')
+        clb.set_label('Log deviation from RGPS PDF', **cfont_xlabel)
+        vna = []
+        for zc in vtcks:
+            cc = str(zc)
+            if zc%1.==0: cc = str(int(zc))
+            vna.append(cc)
+        clb.ax.set_xticklabels(vna, **cfont_xlabel)
+        
+        
+    plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+    plt.close(1)
+    print(' * [LogPDFdef()]: created figure '+cfig)
+        
     return 0
 
 

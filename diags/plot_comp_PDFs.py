@@ -11,7 +11,9 @@ from re import split
 import mojito   as mjt
 from mojito import config as cfg
 
-idebug=1
+idebug=0
+
+l_hovmuller=True
 
 if __name__ == '__main__':
 
@@ -188,16 +190,17 @@ if __name__ == '__main__':
         if not cfg.lc_StrictPDF:
             cfroot += '_Min1e-3'
 
-        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm, lShowSlope=True,
+        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/loglog'+cfroot+figsfx, reskm=reskm,
+                            lShowSlope=True, lAddHovm=l_hovmuller,
                             title=cName, origin=corig,
                             ppdf2=PDF2,  origin2=corig2,
                             ppdf3=PDF3,  origin3=corig3 )
 
         #Diag a la Bouchat:
-        kk = mjt.HovmlrPDF( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/Hovmuller_PDF'+cfroot+figsfx, reskm=reskm, lShowSlope=True,
-                            title=cName, origin=corig,
-                            ppdf2=PDF2,  origin2=corig2,
-                            ppdf3=PDF3,  origin3=corig3 )
+        #kk = mjt.HovmlrPDF( xbin_bounds, xbin_center, PDF, name=cName, cfig=fdir+'/Hovmuller_PDF'+cfroot+figsfx, reskm=reskm, lShowSlope=True,
+        #                    title=cName, origin=corig,
+        #                    ppdf2=PDF2,  origin2=corig2,
+        #                    ppdf3=PDF3,  origin3=corig3 )
         
     elif l4files:
 
