@@ -1223,8 +1223,6 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
         zfs = (10.,hfig)
         zdy, zey, y_ttl = 0.18, zey*10./hfig, 0.965
         cxlabs_hm = ['', '', '', '']
-        #cxlabs_hm = cxlabs
-        #cxlabs = ['', '', '', '']
     
     fig = plt.figure( num = 1, figsize=zfs, dpi=None )
     ax = plt.axes([zx0, 0.105+zdy, zex, zey])
@@ -1386,15 +1384,18 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
 
 
     if lAddHovm:
-        if not l_comp3 or l_comp4:
-            print('\n *** ERROR ['+caller+'/LogPDFdef]: we need 3 PDFs to do the job!'); exit(0)
+        if not (l_comp3 or l_comp4):
+            print('\n *** ERROR ['+caller+'/LogPDFdef]: we need at least 3 PDFs to do the job!'); exit(0)
+        if l_comp3 and (not l_comp4): nPP=3
+        if l_comp4: nPP=4
         
         (Np,) = np.shape(ppdf1)
-        XHVMLR = np.zeros((2,Np))
-        xmask  = np.ones( (2,Np), dtype='int')
+        XHVMLR = np.zeros((nPP-1,Np))
+        xmask  = np.ones( (nPP-1,Np), dtype='int')
         XHVMLR[0,:] = np.log10(ppdf2[:]) - np.log10(ppdf1[:])
         XHVMLR[1,:] = np.log10(ppdf3[:]) - np.log10(ppdf1[:])
-        
+        if l_comp4:
+            XHVMLR[2,:] = np.log10(ppdf4[:]) - np.log10(ppdf1[:])
         axh = plt.axes([zx0, 0.12, zex, 0.08], facecolor='0.4')
     
         cm = plt.cm.get_cmap('RdBu')
@@ -1404,29 +1405,32 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
         #print('LOLO: min max XHVMLR:',zhmin,zhmax,zmax)
         zmax = 1.5
         cn = colors.Normalize(vmin=-zmax, vmax=zmax, clip = False)
-        #cn = colors.LogNorm(vmin=1.e-9, vmax=10., clip = False)
-        
-
-        print('LOLO: ppdf1 =',ppdf1.data)
-        print('LOLO: ppdf2 =',ppdf2.data)
-        print('LOLO: ppdf3 =',ppdf3.data)
 
         idxm = np.where( (ppdf1.data<-9000.) | (ppdf2.data<-9000.) )
         xmask[0,idxm] = 0
         idxm = np.where( (ppdf1.data<-9000.) | (ppdf3.data<-9000.) )
         xmask[1,idxm] = 0
+        if l_comp4:
+            idxm = np.where( (ppdf1.data<-9000.) | (ppdf4.data<-9000.) )
+            xmask[2,idxm] = 0
 
+        
         XHVMLR = np.ma.masked_where( xmask==0, XHVMLR )
 
         
         vx  = pbinc
     
         # Y-axis
-        vy  = np.array([1,2]) - 0.5
-        axh.set_ylim(0,2)
-        plt.yticks( np.array([0,1])+0.5 )
+        vy  = np.array([1,2]) - 0.5        
+        if l_comp4:
+            vy  = np.array([1,2,3]) - 0.5
+        axh.set_ylim(0,nPP-1)
+            
+        plt.yticks( np.arange(nPP-1)+0.5 )
         axh.set_yticklabels([str(vorig[2]),str(vorig[1])], **cfont_xlabel)
-    
+        if l_comp4:
+            axh.set_yticklabels([str(vorig[3]),str(vorig[2]),str(vorig[1])], **cfont_xlabel)
+            
         plt.pcolormesh( vx, vy[:], XHVMLR[::-1], cmap=cm, norm=cn );#, edgecolors='k')
     
         plt.axhline(1, color='0.5')
