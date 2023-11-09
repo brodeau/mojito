@@ -52,12 +52,12 @@ clPNames = 'w' ; # color for city/point annotations
 vorig  = [ 'RGPS',   'SI3-BBM',  'SI3-aEVP',  'unknown1', 'unknown2' ]
 vcolor = [ col_obs, col_blu, col_red, col_ylw, 'g' ]
 vlstyl = [   '-'  ,   '-'  ,   '-'  ,  '--',   '-' ]
-vlwdth = [ 11  ,   8    ,    8   ,    4   ,  4  ]
+vlwdth = [ 11  ,   7    ,    7   ,    5   ,  5  ]
 vlwdth = np.array(vlwdth)/2
 #
 vmrk   = ['o','s','*','s','d']
-vmrksz = [14,12,15,12,12]
-vmrkfs = ['none','none','full','none','none']
+vmrksz = [  14  ,  12  ,  17  ,  12  ,  12  ]
+vmrkfs = ['none','none','none','none','none']
 
 
 def OriginNames():
@@ -1339,7 +1339,7 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
     ax.legend(loc='lower left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
 
 
-    # X-axis: lili
+    # X-axis:
     plt.xlabel(r'[day$^{-1}$]', **cfont_xlabel )
     ax.set_xlim(xlog_min, xlog_max)
     ax.set_xticks(rxlabs)
@@ -1591,12 +1591,6 @@ def HovmlrPDF( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
     plt.close(1)
     print(' * [HovmlrPDF()]: created figure '+cfig)
 
-
-
-
-    
-    #lili
-
     return 0
 
 
@@ -1662,7 +1656,9 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
     ax = plt.axes([0.11, 0.085, 0.85, 0.85])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pF[:,jo], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+        plt.loglog( pscales[:,jo], pF[:,jo],
+                    vmrk[jo], markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2,
+                    linestyle=vlstyl[jo], linewidth=vlwdth[jo],
                     color=vcolor[jo], label=vorig[jo], zorder=5 )
 
     # Fit power-law to points:
@@ -1672,9 +1668,9 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
         (idxKeep,) = np.where(pscales[:,jo]<300)
         [zA,zB] = _linear_fit_loglog_(pscales[idxKeep,jo], pF[idxKeep,jo])    
         
-        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), 'o', markersize=0, linestyle=vlstyl[jo], linewidth=2, fillstyle=vmrkfs[jo],
+        plt.loglog( zvx, np.exp(zA*np.log(zvx))*np.exp(zB), vlstyl[jo], linewidth=2,
                     color='#F5BD3B', label=r'l$^{'+str(round(zB,2))+'}$', zorder=5 )
-        
+        #                    markersize=0, fillstyle=vmrkfs[jo],        
         
     #X-axis:
     plt.xlabel('Spatial scale [km]')
@@ -1754,28 +1750,24 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     if lOnlyObs: No=1
 
     for jo in range(No):
-        #clbl = pcOrig[jo]+cxtralab
         zlw, cxtralab = vlwdth[jo], ''
         if lAddPowerLawFit:
             zlw = 0             # 
             cxtralab=' ('+str(round(zAB[0,jo,0],2))+', '+str(round(zAB[0,jo,1],2))+', '+str(round(zAB[0,jo,2],2))+')'
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], 
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], vmrk[jo], markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2,
                     color=vcolor[jo], label=None, zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], 
+        plt.loglog( pscales[:,jo], pMQ[:,jo,1], vmrk[jo], markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2,
                     color=vcolor[jo], label=vorig[jo], zorder=5 )
-        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=zlw, fillstyle=vmrkfs[jo], 
+        plt.loglog( pscales[:,jo], pMQ[:,jo,2], vmrk[jo], markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2,
                     color=vcolor[jo], label=None, zorder=5 )
         
     # Add power-law to points:
     if lAddPowerLawFit:
         for jo in range(No):
             for jq in range(3):
-                #[zA,zE] = zAB[:,jo,jq]
-                #plt.loglog( pscales[:,jo], zA*pscales[:,jo]**zE, vmrk[jo], markersize=0, linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
-                #            color=vcolor[jo], label=None, zorder=5 )
                 [zA,zB] = zAB[:,jo,jq]
-                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), vmrk[jo], markersize=0, linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
-                            color=vcolor[jo], label=None, zorder=5 )
+                plt.loglog( pscales[:,jo], np.exp(zA*np.log(pscales[:,jo]))*np.exp(zB), vlstyl[jo],
+                            linewidth=vlwdth[jo], color=vcolor[jo], label=None, zorder=5 )
         
     #X-axis:
     plt.xlabel('Spatial scale [km]')
@@ -1817,7 +1809,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
 
     for jo in range(No):
-        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=vmrksz[jo], linestyle=vlstyl[jo], linewidth=vlwdth[jo], fillstyle=vmrkfs[jo],
+        plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2,
+                    linestyle=vlstyl[jo], linewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=50 )
                     #color=str(float(jo)/2.5), label=None, zorder=5 )
     #X-axis:
@@ -1870,8 +1863,8 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             #clbl = pcOrig[jo]+', a = '+str(round(zA,2))
             clbl = vorig[jo]
             plt.plot( zx, zy, vmrk[jo], label=None, color=vcolor[jo], linewidth=vlwdth[jo],
-                      markersize=vmrksz[jo], fillstyle=vmrkfs[jo])
-            # , markeredgewidth=vlwdth[jo] 
+                      markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2)
+            #
             plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=clbl, color=vcolor[jo], linewidth=vlwdth[jo] )
 
         ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
