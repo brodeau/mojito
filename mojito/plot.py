@@ -56,7 +56,7 @@ vlwdth = [ 11  ,   7    ,    7   ,    5   ,  5  ]
 vlwdth = np.array(vlwdth)/2
 #
 vmrk   = ['o','s','*','s','d']
-vmrksz = [  14  ,  12  ,  17  ,  12  ,  12  ]
+vmrksz = [  13  ,  12  ,  17  ,  12  ,  12  ]
 vmrkfs = ['none','none','none','none','none']
 
 
@@ -1803,7 +1803,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     # Same figure With cloud of points *
     # **********************************
     cfig = str.replace(cfig,'total','mean')
-    #ylog_min, ylog_max = 0.5e-6,2. ; # Shows all points!
+    cfig = str.replace(cfig,'svg','png')
     ylog_min, ylog_max = 0.5e-5,1.
     fig = plt.figure( num = 1, figsize=(8,12), dpi=None )
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
@@ -1860,12 +1860,14 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             [zA,zB,zC] = _quadratic_fit_(zx[:], zy[:])
             zzx = np.arange(0,4.,0.001)
             #
-            #clbl = pcOrig[jo]+', a = '+str(round(zA,2))
             clbl = vorig[jo]
-            plt.plot( zx, zy, vmrk[jo], label=None, color=vcolor[jo], linewidth=vlwdth[jo],
+            plt.plot( zx, zy, vmrk[jo], label=clbl, color=vcolor[jo], linewidth=vlwdth[jo],
                       markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2)
             #
-            plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=clbl, color=vcolor[jo], linewidth=vlwdth[jo] )
+            cs='~+~'
+            if zB<0.:cs='~-~'
+            plt.plot( zzx, zA*zzx*zzx+zB*zzx+zC, '-', label=r'$'+str(round(zA,2))+'\,q^2'+cs+str(round(abs(zB),3))+'\,q$',
+                      color=vcolor[jo], linewidth=vlwdth[jo] )
 
         ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
         #X-axis:
