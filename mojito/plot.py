@@ -1803,7 +1803,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     # Same figure With cloud of points *
     # **********************************
     cfig = str.replace(cfig,'total','mean')
-    cfig = str.replace(cfig,'svg','png')
+    cfig_cld = str.replace(cfig,'svg','png')
     ylog_min, ylog_max = 0.5e-5,1.
     fig = plt.figure( num = 1, figsize=(8,12), dpi=None )
     ax = plt.axes([0.12, 0.07, 0.85, 0.9])
@@ -1812,7 +1812,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         plt.loglog( pscales[:,jo], pMQ[:,jo,0], 'o', markersize=vmrksz[jo], fillstyle=vmrkfs[jo], markeredgewidth=2,
                     linestyle=vlstyl[jo], linewidth=vlwdth[jo],
                     color=vcolor[jo], label=None, zorder=50 )
-                    #color=str(float(jo)/2.5), label=None, zorder=5 )
+
     #X-axis:
     plt.xlabel('Spatial scale [km]')
     ax.set_xlim(xlog_min, xlog_max)
@@ -1837,9 +1837,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
             cflabN  = { 'fontname':'Open Sans', 'fontweight':'medium', 'fontsize':14, 'color':vcolor[jo] }
             ax.annotate( str(vNbPoints[js,jo]) , xy=(pscales[js,0],(1.-jo*0.2)*1.5*ylog_min), ha='center', xycoords='data', **cflabN )
     #
-    plt.savefig(cfig, dpi=300, orientation='portrait', transparent=False)
+    plt.savefig(cfig_cld, dpi=300, orientation='portrait', transparent=False)
     plt.close(1)
-    print(' * [plot3ScalingDef()]: created figure '+cfig)
+    print(' * [plot3ScalingDef()]: created figure '+cfig_cld)
 
 
 
@@ -1848,7 +1848,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
     # ********************
     if lAddPowerLawFit:
         cfig = str.replace(cfig,'SCALING_mean','StructureFunction')
-        cfig = str.replace(cfig,'_dt0','')
+        cfig_str = str.replace(cfig,'_dt0','')
 
         fig = plt.figure( num = 1, figsize=(8,8), dpi=None )
         ax = plt.axes([0.13, 0.09, 0.84, 0.88])
@@ -1879,9 +1879,9 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         #
         ax.legend(loc='upper left', fancybox=True) ; # , bbox_to_anchor=(1.07, 0.5)
         
-        plt.savefig(cfig, dpi=100, orientation='portrait', transparent=False)
+        plt.savefig(cfig_str, dpi=100, orientation='portrait', transparent=False)
         plt.close(1)
-        print(' * [plot3ScalingDef()]: created figure '+cfig)
+        print(' * [plot3ScalingDef()]: created figure '+cfig_str)
     
     return 0
 
