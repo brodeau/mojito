@@ -1352,8 +1352,8 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
     ax.set_ylim(ylog_min, ylog_max)
     #ax.tick_params(axis='y',which='both', length=3.5, width=1.5)
 
-    ax.grid(color='0.5', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
-    ax.grid(color='0.5', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
+    ax.grid(color='0.7', linestyle='-', which='minor', linewidth=0.2, zorder=0.1)
+    ax.grid(color='0.7', linestyle='-', which='major', linewidth=0.4, zorder=0.1)
 
     if Np and not (l_comp2 or l_comp3 or l_comp4):
         ax.annotate('N = '+str(Np), xy=(0.72, 0.85), xycoords='figure fraction', **cfont_clock)
