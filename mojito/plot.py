@@ -1954,11 +1954,14 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     plt.xticks(rotation=60)
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
     #lili1
-    plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], fillstyle=vmrkfs[0], alpha=0.9, label=vorig[0], zorder=10)
+    plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], fillstyle=vmrkfs[0], markeredgewidth=2,
+                 label=vorig[0], zorder=10)
     if ldo2:
-        plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], fillstyle=vmrkfs[1], alpha=0.9, label=vorig[1], zorder=10)
+        plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], fillstyle=vmrkfs[1], markeredgewidth=2,
+                 label=vorig[1], zorder=10)
     if ldo3:
-        plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], fillstyle=vmrkfs[2], alpha=0.9, label=vorig[2], zorder=10)
+        plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], fillstyle=vmrkfs[2], markeredgewidth=2,
+                 label=vorig[2], zorder=10)
 
     (ymin,ymax) = y_range
 
