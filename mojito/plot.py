@@ -1696,7 +1696,7 @@ def plotScalingDef( pscales, pF, pcOrig, what='Mean', name='Total Deformation',
 
 
 
-
+#lili:paper:
 def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformation', lAddPowerLawFit=False,
                      lAddNumberPoints=False, cfig='Scaling.png', lOnlyObs=False, lShowScat=True, Naxis=None ):
     '''
@@ -1730,7 +1730,6 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         zAB = np.zeros((2,No,3)) ; # 2 coeffs, `No` origins, 3 moments
         for jo in range(No):
             for jq in range(3):
-                #lolo:(idxKeep,) = np.where(pscales[:,jo]<300)
                 (idxKeep,) = np.where(pscales[:,jo]<600)
                 zAB[:,jo,jq] = _linear_fit_loglog_(pscales[idxKeep,jo], pMQ[idxKeep,jo,jq])
 
@@ -1882,7 +1881,20 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         plt.savefig(cfig_str, dpi=100, orientation='portrait', transparent=False)
         plt.close(1)
         print(' * [plot3ScalingDef()]: created figure '+cfig_str)
-    
+
+
+    # Summary of the slopes:
+    if lAddPowerLawFit:
+        print('\n\n\n##############################################')
+        print(      '################ Slopes Summary ##############')
+        for jq in range(3):
+            print(' **** q =',jq+1,':') # 
+            for jo in range(No):
+                print(' * '+vorig[jo]+' => a =',zAB[0,jo,jq]) # 
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print('##############################################\n')
+
+        
     return 0
 
 
