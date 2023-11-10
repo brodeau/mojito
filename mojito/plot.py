@@ -1997,7 +1997,7 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation=60)
     ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-    #lili1
+    
     plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], fillstyle=vmrkfs[0], markeredgewidth=2,
                  label=vorig[0], zorder=10)
     if ldo2:
@@ -2031,13 +2031,14 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     #lulu
     # Summary of the statistics:
     if lStat:
-        print('\n\n\n##############################################')
-        print(      '################ Stat Summary ################')
+        print('\n\n\n%###############################################')
+        print(      '%############ Stat Summary for P'+whatP+'  ############')
+        print('\n\n\n%###############################################')
         for jo in range(1,3):
-            print('# **** Orig ',vorig[jo],':') # 
-            print('# * Bias, RMSE, Correlation, P-val = ',zbias[jo],zrmse[jo],round(zcorr[jo],3),zpval[jo])            
-            print('#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        print('##############################################\n')
+            print('% **** ',vorig[jo],':') # 
+            print('% * Bias, RMSE, Correlation, P-val = ',zbias[jo],zrmse[jo],round(zcorr[jo],3),zpval[jo])            
+            print('%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print('%##############################################\n')
 
 
             
