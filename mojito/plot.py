@@ -1910,7 +1910,7 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
 
 
 
-def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, whatP=90,
+def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, whatP='90',
                    figname='fig_series_P90.png', y_range=(0.,0.1), x_range=None, dy=0.01, letter='' ):
     '''
         * vt1: time array as Epoch Unix time 
@@ -1951,7 +1951,43 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
         (nT3,) = np.shape(vt3)
         vdate3 = np.array([ e2c(vt3[jt], precision='D') for jt in range(nT3) ], dtype='U10')    
         VX3 = [dtm.strptime(d, "%Y-%m-%d").date() for d in vdate3]
-    
+
+
+    # Stat analysis:
+    lStat = (ldo3 and field=='total')
+    if lStat:
+        from scipy.stats import pearsonr
+        #
+        (nt1,), (nt2,), (nt3,) = np.shape(VX1), np.shape(VX2), np.shape(VX3)
+        nt = np.min([nt1,nt2,nt3])
+        if np.any([nt1,nt2,nt3]-nt != [0,0,0]):
+            if nt2!=nt3:
+                print('\n *** ERROR [PlotP90Series]: nt2!=nt3!'); exit(0)
+            if nt1>nt2:
+                print('\n *** ERROR [PlotP90Series]: nt1>nt2!'); exit(0)
+        _,ind2keep,_ = np.intersect1d(VX2, VX1, return_indices=True)        
+        #
+        for jt in range(nt):
+            jtn = ind2keep[jt]
+            if VX2[jtn] != VX1[jt] or VX3[jtn] != VX1[jt]:
+                print('\n *** ERROR [PlotP90Series]: `VX2[jtn] != VX1[jt] or VX3[jtn] != VX1[jt]` !'); exit(0)
+        #
+        Z1, Z2, Z3 = V1[:], V2[ind2keep], V3[ind2keep]
+        iprec = 3
+        zbias,zrmse,zcorr,zpval = np.zeros(3), np.zeros(3), np.zeros(3), np.zeros(3)
+        #
+        zd = Z2[:]-Z1[:]
+        zbias[1] = round( np.sum(zd[:])/float(nt)  ,iprec)
+        zrmse[1] = round( np.sqrt( np.sum(zd[:]*zd[:])/float(nt) ) ,iprec)
+        (zcorr[1],zpval[1]) = pearsonr(Z2,Z1)
+        #
+        zd = Z3[:]-Z1[:]
+        zbias[2] = round( np.sum(zd[:])/float(nt)  ,iprec)        
+        zrmse[2] = round( np.sqrt( np.sum(zd[:]*zd[:])/float(nt) ) ,iprec)
+        (zcorr[2],zpval[2]) = pearsonr(Z3,Z1)
+        #        
+        del Z1, Z2, Z3
+        
     kk = FigInitStyle( fntzoom=3. )
         
     fig = plt.figure(num = 1, figsize=(16,8.75), facecolor='w', edgecolor='k')
@@ -1965,11 +2001,15 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], fillstyle=vmrkfs[0], markeredgewidth=2,
                  label=vorig[0], zorder=10)
     if ldo2:
+        cxt=''
+        if lStat: cxt=' (B = '+str(zbias[1])+', E = '+str(zrmse[1])+r', $\rho=$ '+str(round(zcorr[1],2))+')'
         plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], fillstyle=vmrkfs[1], markeredgewidth=2,
-                 label=vorig[1], zorder=10)
+                 label=vorig[1]+cxt, zorder=10)
     if ldo3:
+        cxt=''
+        if lStat: cxt=' (B = '+str(zbias[2])+', E = '+str(zrmse[2])+r', $\rho=$ '+str(round(zcorr[2],2))+')'        
         plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], fillstyle=vmrkfs[2], markeredgewidth=2,
-                 label=vorig[2], zorder=10)
+                 label=vorig[2]+cxt, zorder=10)
 
     (ymin,ymax) = y_range
 
@@ -1979,7 +2019,7 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     if field:
         plt.ylabel(r'P'+whatP+': '+field+' deformation rate [days$^{-1}$]', **cfont_uya )
     ax.grid(color='0.5', linestyle='-', linewidth=0.3)
-    plt.legend(bbox_to_anchor=(0.95, 1.), ncol=1, shadow=True, fancybox=True)
+    plt.legend(loc='upper right', ncol=1, shadow=True, fancybox=True)
 
     if letter:
         ax.annotate(letter+')', xy=(0.005, 0.94), xycoords='figure fraction', **cfont_abc)
@@ -1987,6 +2027,20 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     print(' *** Saving figure',figname)
     plt.savefig( figname )
     plt.close(1)
+
+    #lulu
+    # Summary of the statistics:
+    if lStat:
+        print('\n\n\n##############################################')
+        print(      '################ Stat Summary ################')
+        for jo in range(1,3):
+            print('# **** Orig ',vorig[jo],':') # 
+            print('# * Bias, RMSE, Correlation, P-val = ',zbias[jo],zrmse[jo],round(zcorr[jo],3),zpval[jo])            
+            print('#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        print('##############################################\n')
+
+
+            
     return 0
 
 
