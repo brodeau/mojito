@@ -1853,11 +1853,19 @@ def plot3ScalingDef( pscales, pMQ, pcOrig, pXQ=[], pXS=[], name='Total Deformati
         ax = plt.axes([0.13, 0.09, 0.84, 0.88])
 
         zx = np.arange(0,4.,1.)
-                
+        #zx = np.arange(1,4.,1.)
+
+        l_ignore_0=False
+        
         for jo in range(No):
             zy = -1. * np.concatenate([[0],zAB[0,jo,:]])
-            [zA,zB,zC] = _quadratic_fit_(zx[:], zy[:])
+            if l_ignore_0:
+                [zA,zB,zC] = _quadratic_fit_(zx[1:], zy[1:])
+            else:
+                [zA,zB,zC] = _quadratic_fit_(zx[:], zy[:])
             zzx = np.arange(0,4.,0.001)
+            #            
+            zy = np.ma.masked_where( zy<=0., zy )
             #
             clbl = vorig[jo]
             plt.plot( zx, zy, vmrk[jo], label=clbl, color=vcolor[jo], linewidth=vlwdth[jo],
