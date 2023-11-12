@@ -60,7 +60,7 @@ if __name__ == '__main__':
     
     # What fields are we dealing with based on filename:
     cv_in = split( '_', path.basename(cf_in1) )[1]
-    print(cv_in)
+    print(' *** Field treated: '+cv_in)
 
     if cv_in == 'DIV':
         cfield = 'divergence'
@@ -110,9 +110,9 @@ if __name__ == '__main__':
         if corigin2=='RGPS':
             mjt.printEE('oops did not expect second file to be RGPS!')
         if np.shape(VDTB2)!=np.shape(VDTB1):
-            print('    ', np.shape(VDTB2), np.shape(VDTB1))
-            print(dates_batch2)
-            print(dates_batch1)
+            #print('    ', np.shape(VDTB2), np.shape(VDTB1))
+            #print(dates_batch2)
+            #print(dates_batch1)
             mjt.printW('`shape(VDTB2)!=shape(VDTB1)`!')
         
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
         if corigin3=='RGPS':
             mjt.printEE('oops did not expect third file to be RGPS!')
         if np.shape(VDTB3)!=np.shape(VDTB1):
-            print('    ', np.shape(VDTB3), np.shape(VDTB1))
+            #print('    ', np.shape(VDTB3), np.shape(VDTB1))
             mjt.printW('`shape(VDTB3)!=shape(VDTB1)`!')
 
         
@@ -158,52 +158,11 @@ if __name__ == '__main__':
             ZDEF3 = ZDEF3[idxD]
             Zdat3 = Zdat3[idxD]
 
-
     if ldo3:
         print(' * Number of points for '+mjt.vorig[0]+', '+mjt.vorig[1]+', '+mjt.vorig[2]+' =',len(ZDEF1),len(ZDEF2),len(ZDEF3))
-
-
             
     if lPlotClouds:
         k0 = mjt.PlotCloud( 1, Zdat1, ZDEF1, field=cfield, figname='./figs/Cloud_'+corigin1+'_'+cfield+'.png', y_range=(0.,1.), dy=0.1, zoom=1 )
-
-
-    ##DEBUG:
-    #if cfield=='shear' and lPlotPDFs and ldo3:
-    #    max_shr = 1.5 ; # day^-1
-    #    zmin_div, zmin_shr, zmin_tot = 0.003, 0.003, 0.003 ; # day^-1
-    #    rfexp_bin = 0.25
-    #    wVbin_min = 0.0005 ; # Narrowest bin width (for the smalles values of deformation)
-    #
-    #    (Nt,) = np.shape(VDTB1)
-    #    for jt in range(Nt):
-    #        kd1, kd2, kd3 = VDTB1[jt],VDTB2[jt],VDTB3[jt] ;  # date
-    #        print('\n *** Preparing PDF plot batch at date:',e2c(kd1))
-    #        (idxDate1,) = np.where( Zdat1 == kd1 )
-    #        (idxDate2,) = np.where( Zdat2 == kd2 )
-    #        (idxDate3,) = np.where( Zdat3 == kd3 )
-    #        nV1,nV2,nV3 = len(idxDate1),len(idxDate2),len(idxDate3)
-    #        print('         => '+str(nV1)+' '+cv_in+' deformation for this date....')
-    #
-    #        if nV1>=Nmin and nV2>=Nmin and nV3>=Nmin:
-    #            zdf1, zdf2, zdf3 = ZDEF1[idxDate1], ZDEF2[idxDate2], ZDEF3[idxDate3]
-    #
-    #        nBinsS, xbin_bounds, xbin_center = mjt.constructExpBins( rfexp_bin, zmin_shr, max_shr, wVbin_min, name='shear' )
-    #        nP1, PDF1 = mjt.computePDF( xbin_bounds, xbin_center,    zdf1,  cwhat='shear' )
-    #        nP2, PDF2 = mjt.computePDF( xbin_bounds, xbin_center,    zdf2,  cwhat='shear' )
-    #        nP3, PDF3 = mjt.computePDF( xbin_bounds, xbin_center,    zdf3,  cwhat='shear' )
-    #
-    #        #kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1)+'.png' )
-    #        #, reskm=reskm,
-    #        #title=cName+cnxtraScl, period=cperiod )
-    #
-    #        kk = mjt.LogPDFdef( xbin_bounds, xbin_center, PDF1, Np=nP1, name='shear', cfig='./figs/PDF_shear_'+e2c(kd1,precision='D')+'.png',
-    #                            origin=mjt.vorig[0], title='Shear', period=e2c(kd1),
-    #                            ppdf2=PDF2, Np2=nP2, origin2=mjt.vorig[1], ppdf3=PDF3, Np3=nP3, origin3=mjt.vorig[2] )
-    ##DEBUG.
-            
-
-
 
     VDAT1, V90P1 = mjt.Construct90P(1, VDTB1, Zdat1, ZDEF1, pp=zP, Nmin=Nmin )
     

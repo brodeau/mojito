@@ -2001,15 +2001,15 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     plt.plot(    VX1, V1, vmrk[0]+'-', color=vcolor[0], linewidth=vlwdth[0], markersize=vmrksz[0], fillstyle=vmrkfs[0], markeredgewidth=2,
                  label=vorig[0], zorder=10)
     if ldo2:
-        cxt=''
-        if lStat: cxt=' (B = '+str(zbias[1])+', E = '+str(zrmse[1])+r', $\rho=$ '+str(round(zcorr[1],2))+')'
+        #cxt=''
+        #if lStat: cxt=' (B = '+str(zbias[1])+', E = '+str(zrmse[1])+r', $\rho=$ '+str(round(zcorr[1],2))+')'
         plt.plot(VX2, V2, vmrk[1]+'-', color=vcolor[1], linewidth=vlwdth[1], markersize=vmrksz[1], fillstyle=vmrkfs[1], markeredgewidth=2,
-                 label=vorig[1]+cxt, zorder=10)
+                 label=vorig[1], zorder=10)
     if ldo3:
-        cxt=''
-        if lStat: cxt=' (B = '+str(zbias[2])+', E = '+str(zrmse[2])+r', $\rho=$ '+str(round(zcorr[2],2))+')'        
+        #cxt=''
+        #if lStat: cxt=' (B = '+str(zbias[2])+', E = '+str(zrmse[2])+r', $\rho=$ '+str(round(zcorr[2],2))+')'        
         plt.plot(VX3, V3, vmrk[2]+'-', color=vcolor[2], linewidth=vlwdth[2], markersize=vmrksz[2], fillstyle=vmrkfs[2], markeredgewidth=2,
-                 label=vorig[2]+cxt, zorder=10)
+                 label=vorig[2], zorder=10)
 
     (ymin,ymax) = y_range
 
@@ -2028,12 +2028,11 @@ def PlotP90Series( vt1,V1, vt2=[],V2=[], vt3=[],V3=[], field=None, dt_days=3, wh
     plt.savefig( figname )
     plt.close(1)
 
-    #lulu
     # Summary of the statistics:
     if lStat:
         print('\n\n\n%###############################################')
-        print(      '%############ Stat Summary for P'+whatP+'  ############')
-        print('\n\n\n%###############################################')
+        print(      '%######## Stat Summary for P'+whatP+' of '+field+' #######')
+        print(      '%###############################################')
         for jo in range(1,3):
             print('% **** ',vorig[jo],':') # 
             print('% * Bias, RMSE, Correlation, P-val = ',zbias[jo],zrmse[jo],round(zcorr[jo],3),zpval[jo])            

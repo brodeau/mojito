@@ -136,7 +136,7 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
 
 
 
-def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000  ):
+def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000, iverbose=0  ):
     '''
         * ifile: number of the file treated
         *  pdef must be in days^-1
@@ -162,21 +162,16 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000  ):
     
     ic = 0
     for jd in vdates_batch:
-        print('\n *** file #'+str(ifile)+''+e2c(jd))
+        if iverbose>0: print('\n *** file #'+str(ifile)+''+e2c(jd))
 
         (idxDate,) = np.where( zdates == jd )
         nV = len(idxDate)
-        print('         => '+str(nV)+' deformation for this date....')
-                
+        if iverbose>0: print('         => '+str(nV)+' deformation for this date....')
+        
         if nV>=Nmin:
             # sample size must be large enough
             ztmp = zdef[idxDate]
-            #print('LOLO: ztmp[-5:]=',ztmp[-5:])
-            #zmax = np.max(ztmp)
-            #ztmp[:] = ztmp[:]/zmax ; # Normalize with highest value            
-            #Z90P[ic] = np.nanpercentile(ztmp, 90, 'median_unbiased')
             Z90P[ic] = np.percentile(ztmp, pp)
-            #Z90P[ic] = Z90P[ic]*zmax ; # de-normalize!
             zdat[ic] =  jd
             imsk[ic] = 1
             
@@ -190,7 +185,7 @@ def Construct90P( ifile, vdates_batch, pdates, pdef, pp=90, Nmin=1000  ):
         zx = zt[1:] - zt[:-1]
         if np.any(zx<=0):
             print('ERROR [Construct90P]: `zdatm` is not increasing!'); exit(0)
-        print('')        
+
         return zt, np.ma.MaskedArray.compressed( Z90Pm )
     else:
         (idxM,) = np.where(imsk==0)
