@@ -1,3 +1,3 @@
 # MOJITO
 
-A suite of python tools to construct Lagrangian sea-ice trajectories out of SI3 velocities and analyze them.
+A suite of python tools to construct and analyze sea-ice deformation rates out of simulated or observed Lagrangian sea-ice trajectories
