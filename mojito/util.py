@@ -47,6 +47,7 @@ def epoch2clock( it, precision='s', frmt='default' ):
 def clock2epoch( cdate, precision='s', cfrmt='advanced' ):
     from datetime import datetime as dt
     from datetime import timezone
+    from re import split
     #
     if precision=='D':
         cdate = cdate+'_00:00:00'
@@ -54,14 +55,25 @@ def clock2epoch( cdate, precision='s', cfrmt='advanced' ):
         cdate = cdate+':00:00'
     elif precision=='m':
         cdate = cdate+':00'
+    #    
+    zfrmt = cfrmt
+    if cfrmt=='guess':
+        cdz = split('_',cdate)[0]
+        ns = len(cdz)
+        if  ns==10 and len(split('-',cdz))==3:
+            zfrmt = 'advanced'
+        elif ns==8:
+            zfrmt = 'basic'
+        else:
+            printEE('[clock2epoch()]: could not guess format for date string: '+cdate)
     #
-    if   cfrmt=='advanced':
+    if   zfrmt=='advanced':
         it = dt.strptime(cdate, "%Y-%m-%d_%H:%M:%S").replace(tzinfo=timezone.utc)
-    elif cfrmt=='basic':
+    elif zfrmt=='basic':
         it = dt.strptime(cdate, "%Y%m%d_%H:%M:%S").replace(tzinfo=timezone.utc)
     else:
-        printEE('[clock2epoch()]: format "'+cfrmt+'" is unknown!')
-        
+        printEE('[clock2epoch()]: format "'+zfrmt+'" is unknown!')
+    #   
     return int(it.timestamp())
 
         
