@@ -1,4 +1,6 @@
-# MOJITO
+[![DOI](https://zenodo.org/badge/538858248.svg)](https://zenodo.org/badge/latestdoi/538858248)
+
+# mojito
 
 A suite of python tools and bash scripts to construct and analyze sea-ice deformation rates out of simulated or observed Lagrangian sea-ice trajectories.
 
