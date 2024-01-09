@@ -61,11 +61,6 @@ case ${host} in
         exit
 esac
 
-
-
-
-
-
 export FNMM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NLEV}-I/mesh_mask_${NEMO_CONF}_L${NLEV}_4.2_1stLev.nc"
 export FFSM="${DATA_DIR}/${NEMO_CONF}/${NEMO_CONF}.L${NLEV}-I/${FMASK_RGPS}"
 
