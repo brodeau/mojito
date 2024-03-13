@@ -1140,7 +1140,8 @@ def _linear_fit_loglog_( px, py,  pbins_bnd=[], from_prcntl=None, to_prcntl=None
 
 
 def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', reskm=10,
-               title=None, period=None, origin=None, lShowSlope=False, lAddHovm=False,
+               title=None, period=None, origin=None, lShowSlope=False, lAddHovm=False, mode='rgps',
+               ltalk=True,
                ppdf2=[], Np2=None, origin2=None,
                ppdf3=[], Np3=None, origin3=None,
                ppdf4=[], Np4=None, origin4=None ):
@@ -1171,14 +1172,18 @@ def LogPDFdef( pbinb, pbinc, ppdf1, Np=None, name='Divergence', cfig='PDF.png', 
 
     print('WARNING [LogPDFdef]: setup for nominal resolution of '+str(reskm)+' km !!!')
     
-    k2 = cfg.updateConfig4Scale( reskm, mode='rgps' )
+    k2 = cfg.updateConfig4Scale( reskm, mode=mode, ltalk=ltalk )
             
     # For figure axes:
     xlog_min, xlog_max = cfg.rc_def_min_pdf, cfg.rc_def_max_pdf+0.1
     ylog_min, ylog_max = 0.5e-3, 3.5e2
-        
-    rxlabs = [ 0.001, 0.01, 0.1, 0.5]
-    cxlabs = ['0.001', '0.01', '0.1', '0.5']
+
+    if mode=='idealized':
+        rxlabs = [ 0.001, 0.01, 0.1, 0.5, 1.0]
+        cxlabs = ['0.001', '0.01', '0.1', '0.5', '1' ]
+    else:
+        rxlabs = [ 0.001, 0.01, 0.1, 0.5]
+        cxlabs = ['0.001', '0.01', '0.1', '0.5']
         
     #lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = (origin!='RGPS'), (origin2!='RGPS'), (origin3!='RGPS'), (origin4!='RGPS')
     lmask_tiny, lmask_tiny2, lmask_tiny3, lmask_tiny4 = True, True, True, True

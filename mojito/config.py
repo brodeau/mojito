@@ -4,7 +4,7 @@
 fn_file_dist2coast = 'dist2coast/dist2coast_4deg_North.nc'
 
 
-known_modes = ['thorough','model','rgps','xlose','rgps_map','rgps_track', 'rgps_PX' ]
+known_modes = ['thorough','model','rgps','xlose','rgps_map','rgps_track', 'rgps_PX', 'idealized' ]
 
 
 def controlModeName( caller, mode ):
@@ -156,95 +156,109 @@ def updateConfig4Scale( res_km,  mode='model', ltalk=True ):
     if mode=='rgps_map' and irk>10:
         print('ERROR [updateConfig4Scale]: "mode=rgps_map" is only meant to be used at 10km !!!')
         exit(0)
+
+
+    if mode=='idealized':
+
+        print(' #### IDEALIZED ####')
         
-    if   irk==10:
-        rc_d_ss = 5.5
-        rcFracOverlapOK = 1.e-9
-        rc_maxDevMeanAreaQuads = 2        
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  0.12, 0.12, 0.12, 0.01
-        if mode in ['thorough','model']:            
-            rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
-        elif mode=='rgps_map':
-            rc_maxDevMeanAreaQuads = 5
-            rc_Qarea_min, rc_Qarea_max = 6.*6.,14.*14.
-        elif mode=='rgps_PX':
-            rc_maxDevMeanAreaQuads = 3
-            rc_Qarea_min, rc_Qarea_max = 7.*7.,13.*13.
-        elif mode=='xlose':
-            rc_maxDevMeanAreaQuads = 10
-            rc_Qarea_min, rc_Qarea_max = 5*5, 15*15
-        else:
-            rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
-        #
-    elif irk==20:
-        rc_d_ss = 15.
-        rcFracOverlapOK = 1.e-9
-        rc_maxDevMeanAreaQuads = 4
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.02
-        if mode=='model':
-            rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
-        else:
-            rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
-        #
-    elif irk==40:
-        rc_d_ss = 34.5
-        rcFracOverlapOK = 0.05
-        rc_maxDevMeanAreaQuads = 8
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 0.5e-1, 0.5e-1, 0.5e-1, 0.01
-        if mode=='model':            
-            #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
-            rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
-        else:
-            rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
-        #
-    elif irk==80:
-        rc_d_ss = 74.75
-        rcFracOverlapOK = 0.05
-        rc_maxDevMeanAreaQuads = 16
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.025
-        if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
-        else:
-            rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
-        #
-    elif irk==160:
-        rc_d_ss = 156.
-        rcFracOverlapOK = 0.1
-        rc_maxDevMeanAreaQuads = 32
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 7.5e-2, 7.5e-2, 7.5e-2, 0.02
-        if mode=='model':            
-            rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
-        else:
-            rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
-        #
-    elif irk==320:
-        rc_d_ss = 315.6
-        #rcFracOverlapOK = 0.2; #ok
-        rcFracOverlapOK = 0.3; # better
-        rc_maxDevMeanAreaQuads = 64
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 5.e-2, 5.e-2, 5.e-2, 0.01
-        if mode=='model':
-            rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
-        else:
-            rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
-        #
-    elif irk==640:
-        rc_d_ss = 636.
-        rcFracOverlapOK = 0.5 ; #??? best?
-        rc_maxDevMeanAreaQuads = 128
-        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 2.5e-2, 2.5e-2, 2.5e-2, 0.01
-        if mode=='model':
-            rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
-        else:
-            rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
-        #bricolage:
-        if mode in ['rgps_track']:
-            rc_MaxDef = 0.026
-        #
-    else:
-        print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
+        rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  0.12, 0.12, 1.2, 0.01
+        rc_def_max_pdf =  2.
+
 
         
+    else:
+
+        
+        if irk==10:
+            rc_d_ss = 5.5
+            rcFracOverlapOK = 1.e-9
+            rc_maxDevMeanAreaQuads = 2        
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig =  0.12, 0.12, 0.12, 0.01
+            if mode in ['thorough','model']:            
+                rc_Qarea_min, rc_Qarea_max = 9.75*9.75, 10.25*10.25
+            elif mode=='rgps_map':
+                rc_maxDevMeanAreaQuads = 5
+                rc_Qarea_min, rc_Qarea_max = 6.*6.,14.*14.
+            elif mode=='rgps_PX':
+                rc_maxDevMeanAreaQuads = 3
+                rc_Qarea_min, rc_Qarea_max = 7.*7.,13.*13.
+            elif mode=='xlose':
+                rc_maxDevMeanAreaQuads = 10
+                rc_Qarea_min, rc_Qarea_max = 5*5, 15*15
+            else:
+                rc_Qarea_min, rc_Qarea_max = 8.*8., 12.*12.
+            #
+        elif irk==20:
+            rc_d_ss = 15.
+            rcFracOverlapOK = 1.e-9
+            rc_maxDevMeanAreaQuads = 4
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.02
+            if mode=='model':
+                rc_Qarea_min, rc_Qarea_max = 19.5*19.5, 20.5*20.5
+            else:
+                rc_Qarea_min, rc_Qarea_max = 18.*18., 22.*22.
+            #
+        elif irk==40:
+            rc_d_ss = 34.5
+            rcFracOverlapOK = 0.05
+            rc_maxDevMeanAreaQuads = 8
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 0.5e-1, 0.5e-1, 0.5e-1, 0.01
+            if mode=='model':            
+                #rc_Qarea_min, rc_Qarea_max = 39.5*39.5, 40.5*40.5
+                rc_Qarea_min, rc_Qarea_max = 39.*39., 41.*41.
+            else:
+                rc_Qarea_min, rc_Qarea_max = 35*35, 45*45
+            #
+        elif irk==80:
+            rc_d_ss = 74.75
+            rcFracOverlapOK = 0.05
+            rc_maxDevMeanAreaQuads = 16
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 1.e-1, 1.e-1, 1.e-1, 0.025
+            if mode=='model':            
+                rc_Qarea_min, rc_Qarea_max = 78.*78., 82.*82.
+            else:
+                rc_Qarea_min, rc_Qarea_max = 70*70, 90*90
+            #
+        elif irk==160:
+            rc_d_ss = 156.
+            rcFracOverlapOK = 0.1
+            rc_maxDevMeanAreaQuads = 32
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 7.5e-2, 7.5e-2, 7.5e-2, 0.02
+            if mode=='model':            
+                rc_Qarea_min, rc_Qarea_max = 156*156, 164*164
+            else:
+                rc_Qarea_min, rc_Qarea_max = 140*140, 180*180
+            #
+        elif irk==320:
+            rc_d_ss = 315.6
+            #rcFracOverlapOK = 0.2; #ok
+            rcFracOverlapOK = 0.3; # better
+            rc_maxDevMeanAreaQuads = 64
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 5.e-2, 5.e-2, 5.e-2, 0.01
+            if mode=='model':
+                rc_Qarea_min, rc_Qarea_max =  312*312, 328*328
+            else:
+                rc_Qarea_min, rc_Qarea_max =  280*280, 360*360            
+            #
+        elif irk==640:
+            rc_d_ss = 636.
+            rcFracOverlapOK = 0.5 ; #??? best?
+            rc_maxDevMeanAreaQuads = 128
+            rc_div_max_fig, rc_shr_max_fig, rc_tot_max_fig, rc_df_fig = 2.5e-2, 2.5e-2, 2.5e-2, 0.01
+            if mode=='model':
+                rc_Qarea_min, rc_Qarea_max =  624*624, 656*656
+            else:
+                rc_Qarea_min, rc_Qarea_max =  480*480, 800*800
+            #bricolage:
+            if mode in ['rgps_track']:
+                rc_MaxDef = 0.026
+            #
+        else:
+            print('ERROR [updateConfig4Scale()]: scale "'+str(irk)+' km" is unknown!'); sys.exit(0)
+
+
+            
         
     if mode in ['rgps','rgps_track']:
         from math import log2
