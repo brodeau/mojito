@@ -60,7 +60,7 @@ def constructExpBins( rfexp, rmin, rmax, wbmin, name='unknown', iverbose=0 ):
 
     if iverbose>0:
         for jb in range(nB):
-            print( ' * [constructExpBins] Bin #',jb,' =>',zwbin[jb], zbin_bounds[jb],zbin_bounds[jb+1], zbin_center[jb] )
+            print( ' * [constructExpBins] Bin #',jb,', width, start, end, center =>',zwbin[jb], zbin_bounds[jb],zbin_bounds[jb+1], zbin_center[jb] )
 
     print(' * [constructExpBins]: narrowest and widest bins:',zwbin[0],zwbin[-1])
     
@@ -80,6 +80,7 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
     (nbP,) = np.shape(pX)
     #
     zxmin, zxmax = pBb[0], pBb[-1]
+
     zxrng = zxmax - zxmin
     zbW  = np.array( [ (pBb[i+1]-pBb[i]) for i in range(nBins) ] ) ; # width of bins...
     
@@ -107,10 +108,13 @@ def computePDF( pBb, pBc, pX, cwhat='unknown', return_cleaned=False, iverbose=0 
             lOk = ( zX>pBb[jf] and zX<=pBb[jf+1] )
             if not lOk:
                 if zX<=pBb[jf]:   jf = jf-1
-                if zX >pBb[jf+1]: jf = jf+1                
-            if not ( zX>pBb[jf] and zX<=pBb[jf+1] ):
-                print(' Binning error on divergence!')
-                print('  => divergence =',zX)
+                if zX >pBb[jf+1]: jf = jf+1
+                if zX==pBb[0]:     jf=0
+                if zX==pBb[nBins]: jf=nBins-1
+                
+            if not ( zX>=pBb[jf] and zX<=pBb[jf+1] ):
+                print(' Binning error on field '+cwhat+'!')
+                print('  => '+cwhat+' =',zX)
                 print('  => bounds =',pBb[jf],pBb[jf+1])
                 exit(0)
             zPDF[jf] = zPDF[jf] + 1.
