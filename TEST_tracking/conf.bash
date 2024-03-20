@@ -26,6 +26,13 @@ fi
 
 host=`hostname | cut -d '.' -f2`
 case ${host} in
+    "frazilo")
+        export DATA_DIR="/data"
+        #
+        #LIST_NEMO_EXP="BBM23U06 EVP23U06" ; ISEED_BASE='defs' ; # For scaling
+        LIST_NEMO_EXP="BBM23U07" ; ISEED_BASE='defs' ; # For scaling        
+        #
+        ;;    
     "merlat")
         export DATA_DIR="/MEDIA/data"
         XTRA_SFX_SI3="_LIGHT480"
@@ -40,17 +47,10 @@ case ${host} in
         ISEED_BASE='defs'; # use remaining Quads of deformation...
         #
         ;;
-    "frazilo")
-        export DATA_DIR="/data"
-        #
-        #LIST_NEMO_EXP="BBM23U00 EVP23U00" ; ISEED_BASE='defs' ; # For scaling
-        LIST_NEMO_EXP="BBM23U05" ; ISEED_BASE='defs' ; # For scaling        
-        #
-        ;;
     "jackzilla")
         export DATA_DIR="/data1/nobackup/laurent"
         #
-        LIST_NEMO_EXP="EVP2305" ; ISEED_BASE='defs' ; # For scaling
+        LIST_NEMO_EXP="EVP2306" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2305" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2304" ; ISEED_BASE='defs' ; # For scaling
         #LIST_NEMO_EXP="BBM2304 EVP2304" ; ISEED_BASE='defs' ; # For maps
