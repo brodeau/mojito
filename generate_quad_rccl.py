@@ -115,21 +115,22 @@ if __name__ == '__main__':
     print('       + min and max angles, and ratio dev:', cfg.rc_Qang_min, cfg.rc_Qang_max, cfg.rc_dRatio_max)
     
     # We need a string to name the output files:
-    kdt = -4
+    kdt = -5
     if corigin == 'RGPS':
         cfstr = 'RGPS_'+split('_', path.basename(cf_nc_in))[2] ; # Basically the name of the batch
         cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
         #
     elif split('_',corigin)[0] == 'NEMO-SI3':
+        print(split('_', path.basename(cf_nc_in)))
         sl = split('_', path.basename(cf_nc_in))[0:5] ; # Basically the name of the batch
         cfstr = sl[0]+'_'+sl[1]+'_'+sl[2]+'_'+sl[4]
         cdtbin = '_'+split('_', path.basename(cf_nc_in))[kdt] ; print('         > cdtbin =',cdtbin)
     if not cdtbin[1:3] in ['dt']:
         print('WARNING: we could not figure out `cdtbin`!')
         cdtbin = '_NoBin'
-    cfstr += cdtbin
+    cfstr += cdtbin    
+    #print('LOLO: cdtbin =', cdtbin) ;    exit(0)
     
-
     if np.any(vRec>=Nt):
         print('ERROR: some of the specified records # are >= '+str(Nt)+'  !'); exit(0)
     #
