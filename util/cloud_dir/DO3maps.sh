@@ -4,9 +4,6 @@
 
 EXE="${MOJITO_DIR}/diags/plot_map_def.py"
 
-dir_in="npz_maps"
-
-
 VEXPS=( `echo ${EXPS} | sed -e s/','/' '/g` )
 vexps=( ${VEXPS[*],,} ) ; # same in lower case
 echo ${VEXPS[*]}
@@ -18,8 +15,12 @@ LEXPS=""
 ji=0
 while [ ${ji} -lt ${NO} ]; do
 
-    echo ${ji}
+    cexp=
+    echo " * ${ji}, exp = ${cexp}"
 
+    exit
+
+    
     ff=`\ls  ${dir_in}/${vexps[${ji}]}/DEFORMATIONS_*${VEXPS[${ji}]}*_${BATCH}_dt120_SLCT10km.npz`
     echo ${ff}
     LEXPS+="${ff} "
