@@ -125,7 +125,7 @@ if __name__ == '__main__':
             print('  => opening: '+cfi)
             with np.load(cfi) as data:
                 Ztot  =     data['x'+cfld]
-
+            print('')
                 
             (idxOK,) = np.where( np.abs(Ztot)>zmin_tot_def[iscl] )
             Nl = len(idxOK)
