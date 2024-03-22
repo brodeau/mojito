@@ -58,12 +58,12 @@ if idebug>0:
 cc = '_gc'
 if l_work_with_dist: cc = '_cc'
 
-cf_npzT = './npz/T-mesh_Europe.npz'
-cf_npzQ = './npz/Q-mesh_Europe.npz'
+cf_npzT = './msh/T-mesh_Europe.npz'
+cf_npzQ = './msh/Q-mesh_Europe.npz'
 
 if (not path.exists(cf_npzT)) or (not path.exists(cf_npzQ)):
 
-    if not path.exists('./npz'): mkdir('./npz')
+    if not path.exists('./msh'): mkdir('./msh')
 
     # Have to build triangle and quadrangle mesh!
 

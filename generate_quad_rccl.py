@@ -50,7 +50,7 @@ def _init4rec_( kr, pRec, pdate, cdt0, cfs, crkm, css ):
     if css:
         cfbs = cfs+'_'+cdt0+'t0_'+cdte+'_'+css+'-'+crkm+'km'        
     print('    * which is original record '+str(krec)+' => date =',cdts,'=>',cfbs)
-    cf_Q = './npz/Q-mesh_'+cfbs+'.npz'
+    cf_Q = './msh/Q-mesh_'+cfbs+'.npz'
     #
     return kr, krec, cdts, cdte, cfbs, cf_Q
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     mjt.chck4f(cf_nc_in)
     mjt.chck4f(cf_Q_npz)
     
-    if not path.exists('./npz'): mkdir('./npz')
+    if not path.exists('./msh'): mkdir('./msh')
     if iplot>0:
         fdir = './figs/quadgener/'+str(reskm)+'km'
         makedirs( fdir, exist_ok=True )

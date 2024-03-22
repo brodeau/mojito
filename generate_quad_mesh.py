@@ -51,7 +51,7 @@ def _init4rec_( kr, pRec, pdate, cdt0, cfs, crkm, css ):
     if css:
         cfbs = cfs+'_'+cdt0+'t0_'+cdte+'_'+css+'-'+crkm+'km'        
     print('    * which is original record '+str(krec)+' => date =',cdts,'=>',cfbs)
-    cf_Q = './npz/Q-mesh_'+cfbs+'.npz'
+    cf_Q = './msh/Q-mesh_'+cfbs+'.npz'
     #
     return kr, krec, cdts, cdte, cfbs, cf_Q
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     mjt.chck4f(cf_nc_in)
     
-    if not path.exists('./npz'): mkdir('./npz')
+    if not path.exists('./msh'): mkdir('./msh')
     if iplot>0:
         fdir = './figs/quadgener/'+str(reskm)+'km'
         makedirs( fdir, exist_ok=True )
@@ -219,11 +219,11 @@ if __name__ == '__main__':
     #if crd_ss:
     #    cfbase1 = cfstr+'_'+cdate0+'t0_'+cdate+'_'+crd_ss+'-'+creskm+'km'        
     #print('    * which is original record '+str(jrec)+' => date =',cdats,'=>',cfbase1)
-    #cf_npzQ1 = './npz/Q-mesh_'+cfbase1+'.npz'
+    #cf_npzQ1 = './msh/Q-mesh_'+cfbase1+'.npz'
     
     print('\n *** Delaunay triangulation for 1st record!')
 
-    cf_npzT1 = './npz/T-mesh_'+cfbase1+'.npz'
+    cf_npzT1 = './msh/T-mesh_'+cfbase1+'.npz'
 
     # Generating triangular meshes out of the cloud of points for 1st record:
     lOK = False

@@ -33,7 +33,7 @@ for NEMO_EXP in ${LIST_NEMO_EXP}; do
         EXE=${EXE2}
         # Populating npz files to get Quads identification from:
         if [ "${ISEED_BASE}" = "quads" ]; then
-            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_199[67]????-??h??t0_199[67]????-??h??${cxtraRES}${XTRASFX}.npz`
+            list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/msh/Q-mesh_RGPS_S???_dt${DT_BINS_H}_199[67]????-??h??t0_199[67]????-??h??${cxtraRES}${XTRASFX}.npz`
             # need to keep only the first occurence of each:
             lnew="" ; icpt=0
             for ff in ${list_seed_qnpz}; do

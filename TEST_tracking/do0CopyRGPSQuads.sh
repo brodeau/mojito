@@ -29,7 +29,7 @@ echo " RESKM = ${RESKM}"
 echo " cxtraRES = ${cxtraRES}"
 
 #list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/SELECTION_RGPS_S???_dt${DT_BINS_H}_${YEAR}????h??_${YEAR}????h??${cxtraRES}${XTRASFX}.nc`
-list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/npz/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${cxtraRES}${XTRASFX}.npz`
+list_seed_qnpz=`\ls ${DIRIN_PREPARED_RGPS}/msh/Q-mesh_RGPS_S???_dt${DT_BINS_H}_${YEAR}????-??h??t0_${YEAR}????-??h??${cxtraRES}${XTRASFX}.npz`
 
 # need to keep only the first occurence of each:
 lnew=""
