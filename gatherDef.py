@@ -42,16 +42,16 @@ if __name__ == '__main__':
 
     else:
         listnpz1 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_'+creskm+'km.npz') )
-        listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_*-'+creskm+'km.npz') )
+        #listnpz2 = np.sort( glob(cd_in+'/'+cprefixIn+'*'+cidorg+'*'+cdtbin+'*_*-'+creskm+'km.npz') )
     
-        if len(listnpz1)>0 and len(listnpz2)>0:
-            mjt.printEE('we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!')
-        if len(listnpz2)>0:
-            lrlstKM = True
-            listnpz = listnpz2
-        else:
-            lrlstKM = False
-            listnpz = listnpz1
+        #if len(listnpz1)>0 and len(listnpz2)>0:
+        #    mjt.printEE('we have both npz files with suffixes lile `*_Xkm` and `_Y-Xkm` !!!')
+        #if len(listnpz2)>0:
+        #    lrlstKM = True
+        #    listnpz = listnpz2
+        #else:
+        lrlstKM = False
+        listnpz = listnpz1
         
                     
     # Polpulating deformation files available:    
